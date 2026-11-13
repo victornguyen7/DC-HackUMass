@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forecast Calibration</title>
+<meta name="description" content="Held-out check of the DC What-If forecasts and the Tiger Data forecast ledger. Synthetic recorded history.">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --naive: #eb6834;       /* categorical slot 2 */
+    --calibrated: #2a78d6;  /* categorical slot 1 */
+    --good: #0ca30c;
+    --critical: #d03b3b;
+    --good-text: #006300;
+    --chip: #f0efec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+      --naive: #d95926; --calibrated: #3987e5; --good-text: #0ca30c; --chip: #2c2c2a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
+    --naive: #d95926; --calibrated: #3987e5; --good-text: #0ca30c; --chip: #2c2c2a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+  header p { color: var(--ink-2); max-width: 68ch; margin: 6px 0 0; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  h2 { font-size: 18px; margin: 0 0 4px; }
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+    padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--ink-2); margin-bottom: 10px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-top: 20px;
+  }
+  .sub { color: var(--ink-2); margin: 0 0 16px; font-size: 14px; max-width: 72ch; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 12px; margin-top: 20px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .tile .label { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 8px; }
+  .tile .value { font-size: 30px; font-weight: 650; line-height: 1.15; margin-top: 4px; }
+  .tile .note { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .key { display: inline-block; width: 14px; height: 4px; border-radius: 2px; flex: none; }
+  .dotkey { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--ink); flex: none; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--ink-2);
+    padding: 6px 12px; cursor: pointer; min-height: 32px;
+  }
+  .seg button[aria-pressed="true"] { background: var(--chip); color: var(--ink); font-weight: 600; }
+  .seg button:focus-visible { outline: 2px solid var(--calibrated); outline-offset: -2px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--ink-2); margin-bottom: 14px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart { position: relative; width: 100%; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .tip {
+    position: absolute; pointer-events: none; background: var(--surface); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 13px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .12); min-width: 210px; opacity: 0; transition: opacity .1s;
+  }
+  .tip .t { font-weight: 600; margin-bottom: 6px; }
+  .tip .r { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .tip .r strong { font-variant-numeric: tabular-nums; }
+  .tip .r em { font-style: normal; color: var(--ink-2); }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--ink-2); font-size: 14px; }
+  .tablewrap { overflow-x: auto; margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--ink-2); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+  .status svg { flex: none; }
+  .status.inside { color: var(--good-text); }
+  .status.outside { color: var(--critical); }
+  .status.awaiting { color: var(--muted); font-weight: 500; }
+  .caveats { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .caveats li { margin: 4px 0; }
+  .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+  .src { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  code { font-size: 12.5px; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+  @media (max-width: 560px) { h1 { font-size: 22px; } .tile .value { font-size: 26px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="badge">SYNTHETIC recorded history</span>
+    <h1>Do the forecast ranges hold up?</h1>
+    <p id="lede">Fitted on the first four recorded weeks only, then checked against the two weeks the fit never saw.
+      An honest 10–90% range should contain the observed night about 8 times in 10.</p>
+  </header>
+
+  <section class="tiles" id="tiles" aria-live="polite"></section>
+
+  <section class="card">
+    <div class="controls">
+      <div>
+        <h2 id="chart-title">Held-out nights</h2>
+      </div>
+      <div class="seg" role="group" aria-label="Metric" id="metric-seg">
+        <button type="button" data-metric="waste_lb" aria-pressed="true">Waste</button>
+        <button type="button" data-metric="stockout_min" aria-pressed="false">Stockouts</button>
+        <button type="button" data-metric="students" aria-pressed="false">Students</button>
+      </div>
+    </div>
+    <p class="sub" id="chart-sub"></p>
+    <div class="legend" aria-hidden="true">
+      <span><i class="key" style="background:var(--naive)"></i>Naive forecast (seeds only), 10–90%</span>
+      <span><i class="key" style="background:var(--calibrated)"></i>Calibrated forecast, 10–90%</span>
+      <span><i class="dotkey"></i>Observed</span>
+    </div>
+    <div class="chart" id="chart"><div class="tip" id="tip" role="status"></div></div>
+    <details>
+      <summary>Show as a table</summary>
+      <div class="tablewrap"><table id="nights-table"></table></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>Forecast ledger</h2>
+    <p class="sub">Every adopted plan writes its forecast to an append-only table in Tiger Data before the night.
+      The database stamps the time and refuses edits and deletes. Each forecast is scored once that night's numbers arrive.</p>
+    <div class="tablewrap"><table id="ledger"></table></div>
+    <p class="src" id="ledger-src"></p>
+  </section>
+
+  <section class="card">
+    <h2>What this shows, and what it doesn't</h2>
+    <ul class="caveats" id="caveats">
+      <li>It shows the calibrated ranges contain later nights about as often as they claim, and that seed-only ranges are far too narrow.</li>
+      <li>It doesn't show the engine matches Worcester. The recorded history is generated by the same engine plus noise, so this checks the method, not the kitchen.</li>
+      <li>The tables are shaped like MetaFoodX, LeanPath and swipe exports. Real exports load and calibrate with no code change.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const API = params.get("api");  // e.g. ?api=http://127.0.0.1:8000 for live data; default: the static bundle
+  const urls = API
+    ? { cal: `${API}/api/waste/calibration`, led: `${API}/api/forecasts` }
+    : { cal: "cache/waste/calibration.json", led: "cache/waste/forecasts.json" };
+
+  const METRIC = {
+    waste_lb: { name: "Pre-consumer waste", unit: "lb", fmt: v => Math.round(v).toLocaleString() },
+    stockout_min: { name: "Stockout minutes", unit: "min", fmt: v => Math.round(v).toLocaleString() },
+    students: { name: "Students", unit: "", fmt: v => Math.round(v).toLocaleString() },
+  };
+  let report = null, metric = "waste_lb";
+  try { const m = localStorage.getItem("calib.metric"); if (METRIC[m]) metric = m; } catch (e) {}
+
+  const el = (tag, attrs = {}, text) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const svgEl = (tag, attrs = {}) => {
+    const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  };
+  const day = iso => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const inside = (r, y) => y >= r.p10 && y <= r.p90;
+
+  function statusIcon(kind) {
+    const s = svgEl("svg", { width: 14, height: 14, viewBox: "0 0 16 16", "aria-hidden": "true" });
+    const c = kind === "inside" ? "var(--good)" : kind === "outside" ? "var(--critical)" : "var(--muted)";
+    s.append(svgEl("circle", { cx: 8, cy: 8, r: 7, fill: kind === "awaiting" ? "none" : c, stroke: c, "stroke-width": 1.5 }));
+    const path = kind === "inside" ? "M4.5 8.2l2.3 2.3 4.7-4.9" : kind === "outside" ? "M5.3 5.3l5.4 5.4M10.7 5.3l-5.4 5.4" : "M8 4.5V8l2.2 1.5";
+    s.append(svgEl("path", { d: path, fill: "none", stroke: kind === "awaiting" ? c : "#fff", "stroke-width": 1.8, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+    return s;
+  }
+  function status(kind) {
+    const span = el("span", { class: `status ${kind}` });
+    span.append(statusIcon(kind), document.createTextNode(kind));
+    return span;
+  }
+
+  // ---------------------------------------------------------------- tiles
+  function renderTiles() {
+    const s = report.scores, n = report.split.test[2];
+    const [lo, hi] = s.expected_inside80_if_calibrated;
+    const nv = s.forecast_naive[metric], cv = s.forecast_calibrated[metric];
+    const m = METRIC[metric];
+    const tiles = document.getElementById("tiles");
+    tiles.replaceChildren();
+    const tile = (label, keyColor, value, note) => {
+      const t = el("div", { class: "tile" });
+      const l = el("div", { class: "label" });
+      if (keyColor) l.append(el("i", { class: "key", style: `background:${keyColor}` }));
+      l.append(document.createTextNode(label));
+      t.append(l, el("div", { class: "value" }, value), el("div", { class: "note" }, note));
+      tiles.append(t);
+    };
+    tile("Calibrated: nights inside range", "var(--calibrated)", `${cv.inside80} / ${cv.nights}`,
+      `CRPS ${cv.crps.toFixed(1)} ${m.unit} · bias ${cv.bias >= 0 ? "+" : ""}${cv.bias.toFixed(1)}`);
+    tile("Naive: nights inside range", "var(--naive)", `${nv.inside80} / ${nv.nights}`,
+      `CRPS ${nv.crps.toFixed(1)} ${m.unit} · bias ${nv.bias >= 0 ? "+" : ""}${nv.bias.toFixed(1)}`);
+    tile("An honest 80% range lands", null, `${lo}–${hi} of ${n}`, "inside, 95% of the time");
+    const rec = report.recovery;
+    if (rec && rec.available) {
+      tile("Pipeline self-test", null, `r = ${rec.production_per_night.corr.toFixed(2)}`,
+        `fitted vs hidden production ratio, ${rec.production_per_night.nights} nights`);
+    }
+  }
+
+  // ---------------------------------------------------------------- chart
+  function niceTicks(min, max, count = 5) {
+    const span = max - min || 1, raw = span / count;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map(f => f * mag).find(s => span / s <= count) || mag * 10;
+    const t = [];
+    const top = Math.ceil(max / step) * step;
+    for (let v = Math.floor(min / step) * step; v <= top + 1e-9; v += step) t.push(+v.toFixed(6));
+    return t;
+  }
+
+  function renderChart() {
+    const host = document.getElementById("chart"), tip = document.getElementById("tip");
+    host.querySelector("svg")?.remove();
+    const nights = report.nights, m = METRIC[metric];
+    const W = Math.max(320, host.clientWidth), H = W < 560 ? 300 : 340;
+    const pad = { l: 52, r: 8, t: 12, b: 44 };
+    const vals = nights.flatMap(n => [n.observed[metric], n.forecast_naive[metric].p10, n.forecast_naive[metric].p90,
+      n.forecast_calibrated[metric].p10, n.forecast_calibrated[metric].p90]);
+    let ticks = niceTicks(Math.min(...vals), Math.max(...vals));
+    const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+    const y = v => pad.t + (H - pad.t - pad.b) * (1 - (v - y0) / (y1 - y0));
+    const bw = (W - pad.l - pad.r) / nights.length;
+    const x = i => pad.l + bw * (i + 0.5);
+    const off = Math.min(7, bw * 0.2);
+
+    const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": `${m.name}: observed vs naive and calibrated forecast ranges for ${nights.length} held-out nights` });
+    ticks.forEach(t => {
+      svg.append(svgEl("line", { x1: pad.l, x2: W - pad.r, y1: y(t), y2: y(t), stroke: "var(--grid)", "stroke-width": 1 }));
+      const lab = svgEl("text", { x: pad.l - 8, y: y(t) + 4, "text-anchor": "end" });
+      lab.textContent = m.fmt(t);
+      svg.append(lab);
+    });
+    const step = Math.max(1, Math.ceil(46 / bw));  // ~46px per date label
+    nights.forEach((n, i) => {
+      if (i % step) return;
+      const lab = svgEl("text", { x: x(i), y: H - pad.b + 16, "text-anchor": "middle" });
+      lab.textContent = day(n.night);
+      svg.append(lab);
+      if (n.adopted) {
+        const a = svgEl("text", { x: x(i), y: H - pad.b + 30, "text-anchor": "middle" });
+        a.textContent = "adopted";
+        svg.append(a);
+      }
+    });
+
+    const range = (cx, r, color) => {
+      const g = svgEl("g");
+      g.append(svgEl("line", { x1: cx, x2: cx, y1: y(r.p10), y2: y(r.p90), stroke: color, "stroke-width": 4, "stroke-linecap": "round" }));
+      g.append(svgEl("line", { x1: cx - 4, x2: cx + 4, y1: y(r.p50), y2: y(r.p50), stroke: color, "stroke-width": 2, "stroke-linecap": "round" }));
+      return g;
+    };
+    nights.forEach((n, i) => {
+      const cx = x(i), obs = n.observed[metric];
+      svg.append(range(cx - off, n.forecast_naive[metric], "var(--naive)"));
+      svg.append(range(cx + off, n.forecast_calibrated[metric], "var(--calibrated)"));
+      svg.append(svgEl("circle", { cx, cy: y(obs), r: 4.5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 2 }));
+      const hit = svgEl("rect", { x: cx - bw / 2, y: pad.t, width: bw, height: H - pad.t - pad.b, fill: "transparent",
+        tabindex: 0, "aria-label": `${day(n.night)}: observed ${m.fmt(obs)}` });
+      const show = () => {
+        tip.replaceChildren();
+        tip.append(el("div", { class: "t" }, `${n.weekday} ${day(n.night)} · ${n.weather}${n.adopted ? " · adopted plan" : ""}`));
+        const row = (keyStyle, value, label) => {
+          const r = el("div", { class: "r" });
+          const k = el("i", { class: keyStyle ? "key" : "dotkey" });
+          if (keyStyle) k.style.background = keyStyle;
+          r.append(k, el("strong", {}, value), el("em", {}, label));
+          tip.append(r);
+        };
+        row(null, `${m.fmt(obs)} ${m.unit}`, "observed");
+        for (const [key, color, label] of [["forecast_calibrated", "var(--calibrated)", "calibrated"], ["forecast_naive", "var(--naive)", "naive"]]) {
+          const r = n[key][metric];
+          row(color, `${m.fmt(r.p10)}–${m.fmt(r.p90)}`, `${label} · ${inside(r, obs) ? "inside" : "outside"}`);
+        }
+        tip.style.opacity = 1;
+        const tw = tip.offsetWidth, left = cx + 14 + tw > W ? cx - 14 - tw : cx + 14;
+        tip.style.left = `${Math.max(0, left)}px`;
+        tip.style.top = `${Math.max(0, y(obs) - 40)}px`;
+      };
+      const hide = () => { tip.style.opacity = 0; };
+      hit.addEventListener("pointerenter", show);
+      hit.addEventListener("pointerleave", hide);
+      hit.addEventListener("focus", show);
+      hit.addEventListener("blur", hide);
+      svg.append(hit);
+    });
+    host.prepend(svg);
+
+    const cv = report.scores.forecast_calibrated[metric], nv = report.scores.forecast_naive[metric];
+    document.getElementById("chart-title").textContent = `${m.name}, ${nights.length} held-out nights`;
+    document.getElementById("chart-sub").textContent =
+      `The calibrated range contained ${cv.inside80} of ${cv.nights} nights; the naive range contained ${nv.inside80}. ` +
+      `Ranges come only from data before ${day(report.split.test[0])}.`;
+  }
+
+  function renderTable() {
+    const t = document.getElementById("nights-table"), m = METRIC[metric];
+    t.replaceChildren();
+    const head = el("tr");
+    ["Night", "Weather", "Observed", "Naive 10–90%", "", "Calibrated 10–90%", ""].forEach((h, i) =>
+      head.append(el("th", { class: i === 2 ? "num" : "" }, h)));
+    t.appendChild(el("thead")).appendChild(head);
+    const body = t.appendChild(el("tbody"));
+    for (const n of report.nights) {
+      const obs = n.observed[metric], tr = el("tr");
+      tr.append(el("td", {}, `${n.weekday.slice(0, 3)} ${day(n.night)}${n.adopted ? " (adopted)" : ""}`),
+        el("td", {}, n.weather), el("td", { class: "num" }, m.fmt(obs)));
+      for (const key of ["forecast_naive", "forecast_calibrated"]) {
+        const r = n[key][metric];
+        tr.append(el("td", {}, `${m.fmt(r.p10)}–${m.fmt(r.p90)}`));
+        const td = el("td");
+        td.append(status(inside(r, obs) ? "inside" : "outside"));
+        tr.append(td);
+      }
+      body.append(tr);
+    }
+  }
+
+  // ---------------------------------------------------------------- ledger
+  function renderLedger(rows, source) {
+    const t = document.getElementById("ledger");
+    t.replaceChildren();
+    if (!rows.length) {
+      t.append(el("caption", { class: "empty" }, "No forecasts logged yet. Adopt a plan, or run dcsim forecast --date <night>."));
+      return;
+    }
+    const head = el("tr");
+    ["Night", "Forecast", "Plan", "Issued", "Waste 10–90% (lb)", "Observed", "Waste", "Stockouts"].forEach((h, i) =>
+      head.append(el("th", { class: i === 5 ? "num" : "" }, h)));
+    t.appendChild(el("thead")).appendChild(head);
+    const body = t.appendChild(el("tbody"));
+    for (const r of rows) {
+      const tr = el("tr");
+      const issued = new Date(r.issued_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      const before = r.issued_before_open === true ? " · before doors" : "";
+      tr.append(el("td", {}, day(r.for_night)), el("td", {}, r.method), el("td", {}, r.label || ""),
+        el("td", {}, issued + before),
+        el("td", {}, `${Math.round(r.waste_p10)}–${Math.round(r.waste_p90)}`),
+        el("td", { class: "num" }, r.observed_waste_lb == null ? "—" : Math.round(r.observed_waste_lb).toString()));
+      for (const k of ["waste_result", "stockout_result"]) { const td = el("td"); td.append(status(r[k])); tr.append(td); }
+      body.append(tr);
+    }
+    document.getElementById("ledger-src").textContent = source;
+  }
+
+  // ---------------------------------------------------------------- wiring
+  function setMetric(mk) {
+    metric = mk;
+    try { localStorage.setItem("calib.metric", mk); } catch (e) {}
+    document.querySelectorAll("#metric-seg button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.metric === mk)));
+    renderTiles(); renderChart(); renderTable();
+  }
+  document.querySelectorAll("#metric-seg button").forEach(b => b.addEventListener("click", () => setMetric(b.dataset.metric)));
+  let rt;
+  addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => report && renderChart(), 120); });
+
+  fetch(urls.cal).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(rep => {
+    report = rep;
+    setMetric(metric);
+  }).catch(() => {
+    document.getElementById("tiles").append(el("p", { class: "empty" },
+      "No calibration report found. Run make calibrate, then dcsim bundle --waste-only."));
+  });
+  fetch(urls.led).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => {
+    const rows = Array.isArray(d) ? d : d.forecasts;
+    renderLedger(rows, API ? "Live from Tiger Data via the API." :
+      `Snapshot of the Tiger ledger, ${new Date(d.snapshot_at).toLocaleString()}. Add ?api=http://127.0.0.1:8000 for live data.`);
+  }).catch(() => renderLedger([], ""));
+})();
+</script>
+</body>
+</html>

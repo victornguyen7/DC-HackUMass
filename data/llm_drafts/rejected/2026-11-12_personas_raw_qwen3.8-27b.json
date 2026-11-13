@@ -1,0 +1,943 @@
+{
+ "_note": "LLM-PROPOSED personas (ENGINE.md §7.2). Review before `dcsim personas adopt`: remove stereotypes, check variety, check every number. Shares are matched only to sourced diet shares; the rest are the model's guesses until the survey adjustment runs.",
+ "status": "incomplete",
+ "source": "cache",
+ "model": "qwen/qwen3.8-27b",
+ "prompt_version": "personas-v3",
+ "generated_at": "2026-11-12T20:27:02+00:00",
+ "review": {
+  "dropped": [
+   {
+    "id": "id: ",
+    "problems": [
+     "id: : id must be snake_case",
+     "id: : patience is empty",
+     "id: : plate_size is empty",
+     "id: : seconds_prob must be 0.0-0.9",
+     "id: : dwell_median_min must be 5-90",
+     "id: : proposed_share must be in (0, 1]"
+    ]
+   },
+   {
+    "id": "",
+    "problems": [
+     ": id must be snake_case",
+     ": patience is empty",
+     ": plate_size is empty",
+     ": dwell_median_min must be 5-90"
+    ]
+   }
+  ],
+  "unresolved_set_problems": [
+   "propose exactly 2 personas",
+   "one persona must have diet 'vegetarian'",
+   "propose exactly 2 personas"
+  ],
+  "failed_batches": [],
+  "missing_diets": [
+   "vegetarian"
+  ],
+  "checklist": [
+   "no demographic stereotypes in labels or descriptions",
+   "personas differ in patience, seconds, dwell and station tastes",
+   "halal share is a guess; check with the team",
+   "every affinity has a reason a dining manager would agree with"
+  ]
+ },
+ "personas": [
+  {
+   "id": "vegan_quick",
+   "label": "Vegan Quick Eater",
+   "description": "Vegan student who avoids meat-heavy lines, prefers plant-based sides, and eats quickly to finish before 8 pm.",
+   "share": 0.012,
+   "diet": "vegan",
+   "patience": [
+    [
+     5,
+     0.5
+    ],
+    [
+     10,
+     0.3
+    ],
+    [
+     15,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.2
+    ],
+    [
+     2,
+     0.5
+    ],
+    [
+     3,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.3,
+   "dwell_median_min": 25.0,
+   "category_affinity": {
+    "entree": 0.8,
+    "starch": 0.9,
+    "side": 1.2,
+    "dessert": 0.5
+   },
+   "station_affinity": {
+    "street_food": 1.3,
+    "seasons": 1.2,
+    "grill": 0.6,
+    "noodle_bowl": 0.7
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "social_early",
+   "label": "Social Early Bird",
+   "description": "Social student who arrives early to avoid peak crowds, takes large plates, and lingers for conversation.",
+   "share": 0.1021,
+   "diet": "none",
+   "patience": [
+    [
+     20,
+     0.4
+    ],
+    [
+     30,
+     0.4
+    ],
+    [
+     40,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     2,
+     0.1
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.5
+    ]
+   ],
+   "seconds_prob": 0.7,
+   "dwell_median_min": 60.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "soup": 1.5,
+    "dessert": 1.3
+   },
+   "station_affinity": {
+    "soups": 1.4,
+    "display": 1.2,
+    "desserts": 1.3,
+    "mediterranean": 1.1
+   },
+   "_proposed_share": 0.25,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "halal_late",
+   "label": "Halal Late Eater",
+   "description": "Halal student who avoids pork-heavy stations, waits for shorter lines, and eats a moderate, efficient dinner.",
+   "share": 0.0612,
+   "diet": "halal",
+   "patience": [
+    [
+     5,
+     0.1
+    ],
+    [
+     10,
+     0.3
+    ],
+    [
+     15,
+     0.4
+    ],
+    [
+     20,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.2
+    ],
+    [
+     2,
+     0.5
+    ],
+    [
+     3,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.4,
+   "dwell_median_min": 35.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.5,
+    "tandoor": 1.3,
+    "mediterranean": 0.5,
+    "noodle_bowl": 0.7
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_bird",
+   "label": "Early Bird Big Eater",
+   "description": "Student who arrives before the rush, takes a large plate with dessert, and stays seated for a long time.",
+   "share": 0.0817,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.2
+    ],
+    [
+     10,
+     0.5
+    ],
+    [
+     15,
+     0.3
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.3
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.2
+    ]
+   ],
+   "seconds_prob": 0.6,
+   "dwell_median_min": 60.0,
+   "category_affinity": {
+    "entree": 1.1,
+    "side": 1.2,
+    "dessert": 1.3
+   },
+   "station_affinity": {
+    "display": 1.4,
+    "desserts": 1.5,
+    "soups": 1.2,
+    "street_food": 0.8
+   },
+   "_proposed_share": 0.2,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "late_hearty",
+   "label": "Late Hearty Eater",
+   "description": "Arrives after 8:00 PM to avoid crowds, eats a large, hearty meal, and rarely takes seconds.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.1
+    ],
+    [
+     10,
+     0.3
+    ],
+    [
+     15,
+     0.4
+    ],
+    [
+     20,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.2
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.2,
+   "dwell_median_min": 45.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.9,
+    "dessert": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.3,
+    "mediterranean": 1.2,
+    "display": 1.1,
+    "sushi": 0.5
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_light",
+   "label": "Early Light Eater",
+   "description": "Arrives before 6:30 PM, prefers light soups and sides, and often returns for a second small plate.",
+   "share": 0.0817,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.4
+    ],
+    [
+     10,
+     0.4
+    ],
+    [
+     15,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.5
+    ],
+    [
+     2,
+     0.4
+    ],
+    [
+     3,
+     0.1
+    ]
+   ],
+   "seconds_prob": 0.6,
+   "dwell_median_min": 30.0,
+   "category_affinity": {
+    "entree": 0.9,
+    "starch": 0.8,
+    "side": 1.2,
+    "soup": 1.5
+   },
+   "station_affinity": {
+    "soups": 1.5,
+    "seasons": 1.2,
+    "breads": 1.1,
+    "noodle_bowl": 0.6
+   },
+   "_proposed_share": 0.2,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "late_hearty_v2",
+   "label": "Late Hearty Eater",
+   "description": "Arrives after 8:00 PM, eats a large, hearty meal, and has high patience for long lines.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     10,
+     0.1
+    ],
+    [
+     20,
+     0.3
+    ],
+    [
+     30,
+     0.4
+    ],
+    [
+     40,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.2
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.6,
+   "dwell_median_min": 45.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.9,
+    "dessert": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.3,
+    "latino": 1.2,
+    "noodle_bowl": 1.1,
+    "display": 0.9
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_light_v2",
+   "label": "Early Light Eater",
+   "description": "Arrives before 6:00 PM, eats a light meal, and has low patience for lines.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.4
+    ],
+    [
+     10,
+     0.4
+    ],
+    [
+     15,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.5
+    ],
+    [
+     2,
+     0.4
+    ],
+    [
+     3,
+     0.1
+    ]
+   ],
+   "seconds_prob": 0.3,
+   "dwell_median_min": 25.0,
+   "category_affinity": {
+    "entree": 0.9,
+    "starch": 0.8,
+    "side": 1.1,
+    "dessert": 1.2
+   },
+   "station_affinity": {
+    "soups": 1.4,
+    "breads": 1.3,
+    "desserts": 1.2,
+    "grill": 0.8
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "late_hearty_v3",
+   "label": "Late Hearty Eater",
+   "description": "Arrives after 8:00 PM, eats a large, hearty meal, and has high patience for long lines.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     10,
+     0.1
+    ],
+    [
+     20,
+     0.3
+    ],
+    [
+     30,
+     0.4
+    ],
+    [
+     40,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.2
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.6,
+   "dwell_median_min": 45.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.9,
+    "dessert": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.3,
+    "latino": 1.2,
+    "noodle_bowl": 1.1,
+    "sushi": 0.9
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_light_v3",
+   "label": "Early Light Eater",
+   "description": "Arrives before 6:00 PM, eats a light meal, and has low patience for lines.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.4
+    ],
+    [
+     10,
+     0.4
+    ],
+    [
+     15,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.5
+    ],
+    [
+     2,
+     0.4
+    ],
+    [
+     3,
+     0.1
+    ]
+   ],
+   "seconds_prob": 0.3,
+   "dwell_median_min": 25.0,
+   "category_affinity": {
+    "entree": 0.9,
+    "starch": 0.8,
+    "side": 1.1,
+    "dessert": 1.2
+   },
+   "station_affinity": {
+    "display": 1.4,
+    "soups": 1.3,
+    "breads": 1.2,
+    "desserts": 1.1
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "late_slow_feast",
+   "label": "Late Slow Feaster",
+   "description": "Arrives after 8:00 PM, eats a large, slow meal, and rarely returns for seconds.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.1
+    ],
+    [
+     15,
+     0.3
+    ],
+    [
+     25,
+     0.4
+    ],
+    [
+     35,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.2
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.3,
+   "dwell_median_min": 65.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.9,
+    "dessert": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.3,
+    "mediterranean": 1.2,
+    "soups": 0.8,
+    "sushi": 0.7
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_snacker",
+   "label": "Early Light Snacker",
+   "description": "Arrives before 6:00 PM, grabs a light snack, and leaves quickly to study.",
+   "share": 0.0817,
+   "diet": "none",
+   "patience": [
+    [
+     2,
+     0.5
+    ],
+    [
+     5,
+     0.3
+    ],
+    [
+     10,
+     0.15
+    ],
+    [
+     15,
+     0.05
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.6
+    ],
+    [
+     2,
+     0.3
+    ],
+    [
+     3,
+     0.1
+    ],
+    [
+     4,
+     0.0
+    ]
+   ],
+   "seconds_prob": 0.1,
+   "dwell_median_min": 15.0,
+   "category_affinity": {
+    "entree": 0.9,
+    "starch": 0.8,
+    "side": 1.2,
+    "dessert": 1.1
+   },
+   "station_affinity": {
+    "display": 1.5,
+    "soups": 1.4,
+    "breads": 1.3,
+    "grill": 0.5
+   },
+   "_proposed_share": 0.2,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "late_slow_feast_v2",
+   "label": "Late Slow Feaster",
+   "description": "Arrives after 8:00 PM, eats a large, slow meal, and rarely returns for seconds.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.1
+    ],
+    [
+     15,
+     0.3
+    ],
+    [
+     25,
+     0.4
+    ],
+    [
+     35,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.2
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.3,
+   "dwell_median_min": 75.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.9,
+    "dessert": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.3,
+    "mediterranean": 1.2,
+    "soups": 0.8,
+    "sushi": 0.7
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_snacker_v2",
+   "label": "Early Light Snacker",
+   "description": "Arrives before 6:00 PM, eats a small, quick meal, and often grabs a dessert.",
+   "share": 0.0408,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.4
+    ],
+    [
+     10,
+     0.4
+    ],
+    [
+     15,
+     0.2
+    ],
+    [
+     20,
+     0.0
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.5
+    ],
+    [
+     2,
+     0.4
+    ],
+    [
+     3,
+     0.1
+    ],
+    [
+     4,
+     0.0
+    ]
+   ],
+   "seconds_prob": 0.2,
+   "dwell_median_min": 25.0,
+   "category_affinity": {
+    "entree": 0.9,
+    "starch": 0.8,
+    "side": 1.2,
+    "dessert": 1.1
+   },
+   "station_affinity": {
+    "display": 1.4,
+    "desserts": 1.3,
+    "breads": 1.2,
+    "grill": 0.6
+   },
+   "_proposed_share": 0.1,
+   "_arrival_bias": "earlier"
+  },
+  {
+   "id": "late_hearty_v4",
+   "label": "Late Hearty Eater",
+   "description": "Arrives after 8:00 PM, eats slowly, and prioritizes high-calorie entrees over sides.",
+   "share": 0.0612,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.1
+    ],
+    [
+     15,
+     0.3
+    ],
+    [
+     25,
+     0.4
+    ],
+    [
+     35,
+     0.2
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.1
+    ],
+    [
+     2,
+     0.2
+    ],
+    [
+     3,
+     0.4
+    ],
+    [
+     4,
+     0.3
+    ]
+   ],
+   "seconds_prob": 0.6,
+   "dwell_median_min": 75.0,
+   "category_affinity": {
+    "entree": 1.2,
+    "starch": 1.1,
+    "side": 0.9,
+    "dessert": 0.8
+   },
+   "station_affinity": {
+    "grill": 1.3,
+    "latino": 1.2,
+    "noodle_bowl": 1.1,
+    "desserts": 0.7
+   },
+   "_proposed_share": 0.15,
+   "_arrival_bias": "later"
+  },
+  {
+   "id": "early_light_v4",
+   "label": "Early Light Eater",
+   "description": "Arrives before 6:00 PM, avoids long lines, and focuses on light soups and sides.",
+   "share": 0.049,
+   "diet": "none",
+   "patience": [
+    [
+     5,
+     0.4
+    ],
+    [
+     10,
+     0.4
+    ],
+    [
+     15,
+     0.2
+    ],
+    [
+     20,
+     0.0
+    ]
+   ],
+   "plate_size": [
+    [
+     1,
+     0.5
+    ],
+    [
+     2,
+     0.4
+    ],
+    [
+     3,
+     0.1
+    ],
+    [
+     4,
+     0.0
+    ]
+   ],
+   "seconds_prob": 0.2,
+   "dwell_median_min": 35.0,
+   "category_affinity": {
+    "entree": 0.9,
+    "starch": 0.8,
+    "side": 1.2,
+    "soup": 1.5
+   },
+   "station_affinity": {
+    "soups": 1.5,
+    "display": 1.2,
+    "breads": 1.1,
+    "grill": 0.5
+   },
+   "_proposed_share": 0.12,
+   "_arrival_bias": "earlier"
+  }
+ ]
+}

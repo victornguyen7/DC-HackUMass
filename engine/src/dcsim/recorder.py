@@ -1,0 +1,76 @@
+"""Append-only recorder. Cheap tuples during the run; reduced to metrics after.
+
+Pan levels and queue lengths are logged as *changes*, so they form exact step
+functions (minutes out of stock is computed exactly, not sampled). Per-student
+events are kept only when trace=True (the 3D playback night).
+"""
+
+from __future__ import annotations
+
+from enum import IntEnum
+from typing import NamedTuple
+
+
+class Ev(IntEnum):
+    ENTER = 0
+    QUEUE_JOIN = 1
+    BALK = 2
+    SERVED = 3
+    EMPTY_PAN = 4
+    SIT = 5
+    SECONDS = 6
+    DISH_RETURN = 7
+    EXIT = 8
+    RETRY = 9  # going back for the favorite whose line they walked away from
+
+
+class PanEv(IntEnum):
+    OPEN_STOCK = 0
+    TAKE = 1
+    BATCH_START = 2
+    BATCH_READY = 3
+    EXPIRE = 4
+    CLOSE = 5
+
+
+VESSELS = ("plate", "bowl", "cup")
+
+
+class Outcome(NamedTuple):
+    student: int
+    arrive: float
+    plate_done: float
+    first_choice: int  # dish index, -1 if nothing eligible
+    missed_first: bool  # never got their first choice during the whole visit (incl. return trips)
+    got_hot: bool
+    wanted_hot: bool  # first choice is a hot dish
+    items: int
+
+
+class Recorder:
+    __slots__ = ("trace", "events", "pan_events", "pan_levels", "queue_lens", "outcomes", "balks", "empty_seen")
+
+    def __init__(self, n_dishes: int, n_stations: int, trace: bool = False):
+        self.trace = trace
+        self.events: list[tuple] = []  # (t, student, Ev, station, dish, vessel, line)  [trace only]
+        self.pan_events: list[tuple] = []  # (t, dish, level, PanEv)                [trace only]
+        self.pan_levels: list[list[tuple[float, int]]] = [[] for _ in range(n_dishes)]
+        self.queue_lens: list[list[tuple[float, int]]] = [[] for _ in range(n_stations)]
+        self.outcomes: list[Outcome] = []
+        self.balks = 0
+        self.empty_seen = 0
+
+    def ev(self, t: float, student: int, code: Ev, station: int = -1, dish: int = -1, vessel: int = -1,
+           line: int = -1) -> None:
+        """`line`: students already waiting when this one joined or walked away (queue_join / balk)."""
+        if self.trace:
+            self.events.append((t, student, code, station, dish, vessel, line))
+
+    def pan(self, t: float, dish: int, level: int, code: PanEv) -> None:
+        if code not in (PanEv.BATCH_START,):
+            self.pan_levels[dish].append((t, level))
+        if self.trace:
+            self.pan_events.append((t, dish, level, code))
+
+    def queue(self, t: float, station: int, length: int) -> None:
+        self.queue_lens[station].append((t, length))

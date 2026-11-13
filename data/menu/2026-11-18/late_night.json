@@ -1,0 +1,510 @@
+{
+  "_from": "raw/menu/worcester_menus_2026-11-13_to_2026-11-20.json",
+  "location": {
+    "name": "Worcester Dining Commons",
+    "site_location_id": "1"
+  },
+  "date": "2026-11-18",
+  "meal": "late_night",
+  "source_url": "https://www.umassdining.com/foodpro-menu-ajax?tid=1&date=11%2F18%2F2026",
+  "retrieved_at": "2026-11-12T01:39:49.899525+00:00",
+  "stations": [
+    {
+      "name": "Grill Station",
+      "items": [
+        {
+          "name": "Black Bean Burger",
+          "serving_size": "1 each",
+          "ingredients": "Black Bean Burger (Water, Cooked Black Beans, Expeller Pressed Canola Oil, Cooked Brown Rice, Roasted Yellow Corn, Onion, Tomato Paste, Soy Protein Concentrate, Roasted Red & Green Peppers, Organic Cane Sugar, Potato Starch, Modified Vegetable Gum, Sea Salt, Yeast Extract, Onion Powder, Spices, Garlic Powder, Paprika, Black Bean Powder, Natural Flavors (From Plant Sources), Tomato Powder, Citric Acid, Lactic Acid, Instant Coffee, Molasses)",
+          "allergens": [
+            "Soy",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "160",
+            "calories_from_fat": "63",
+            "total_fat": "7g",
+            "total_fat_dv": "9",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "470mg",
+            "sodium_dv": "20",
+            "total_carb": "19g",
+            "total_carb_dv": "15",
+            "dietary_fiber": "4g",
+            "dietary_fiber_dv": "12",
+            "sugars": "3g",
+            "sugars_dv": null,
+            "protein": "7g",
+            "protein_dv": "13"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGN H5 CR2"
+        },
+        {
+          "name": "Halal Burger Patty",
+          "serving_size": "1 each",
+          "ingredients": "Halal Grass Fed Burger Patty (Ground Beef), Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal"
+          ],
+          "nutrition": {
+            "calories": "144",
+            "calories_from_fat": "92",
+            "total_fat": "10.2g",
+            "total_fat_dv": "13",
+            "sat_fat": "3.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.6g",
+            "cholesterol": "45mg",
+            "cholesterol_dv": null,
+            "sodium": "94.1mg",
+            "sodium_dv": "4",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "12.6g",
+            "protein_dv": "23"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "E",
+          "recipe_webcode": "H H2 CR5"
+        },
+        {
+          "name": "Halal French Fries",
+          "serving_size": "3 OZ",
+          "ingredients": "ROMA French Fries (Potatoes, Vegetable Oil (Canola Oil, Soybean Oil, Palm Oil, Hydrogenated Cottonseed Oil), Modified Potato Starch, Rice Flour, Corn Starch, Tapioca Dextrin, Potato Dextrin, Salt, Leavening (Sodium Acid Pyrophosphate, Sodium Bicarbonate, Monocalcium Phosphate), Dextrose, Xanthan Gum, Disodium Dihydrogen Pyrophosphate), Deep Frying Canola Oil   (Canola Oil, TBHQ and Citric Acid, Dimethylpolysiloxane. Dairy, Egg, Soy, Sesame, Corn and/or Wheat Products may be fried in this oil), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "193",
+            "calories_from_fat": "119",
+            "total_fat": "13.2g",
+            "total_fat_dv": "17",
+            "sat_fat": "1.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "467.7mg",
+            "sodium_dv": "20",
+            "total_carb": "17.7g",
+            "total_carb_dv": "14",
+            "dietary_fiber": "1.8g",
+            "dietary_fiber_dv": "5",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "1.8g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H1 CR1"
+        },
+        {
+          "name": "Lemon Pepper Chicken Thigh",
+          "serving_size": "1 EACH",
+          "ingredients": "Antibiotic Free Halal Chicken Thigh     (Boneless, Skinless Chicken Thighs, Containing up to 2% solution of Water, Vinegar. SUB (Farm Smart): Halal Antibiotic Free Chicken), Lemon Pepper Seasoning (Salt, Spices [Including Black Pepper, Corn, Celery], Citric Acid, Onion, Sugar, Garlic, Calcium Stearate, Silicon Dioxide, Calcium Silicate, Lemon Oil, And Riboflavin), Pan Spray (Canola Oil, Caprylic/Capric Triglycerides, Phosphated Mono and Diglycerides [Corn], Silicon Dioxide, Calcium Stearate, Propellant)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal"
+          ],
+          "nutrition": {
+            "calories": "82",
+            "calories_from_fat": "26",
+            "total_fat": "2.8g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "63.2mg",
+            "cholesterol_dv": null,
+            "sodium": "334.2mg",
+            "sodium_dv": "15",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "13.3g",
+            "protein_dv": "24"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "C",
+          "recipe_webcode": "H H3 CR3"
+        },
+        {
+          "name": "Oven Roasted Summer Squash",
+          "serving_size": "3 oz",
+          "ingredients": "Fresh Yellow Summer Squash, Canola Oil  , Fresh Parsley, Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "20",
+            "calories_from_fat": "6",
+            "total_fat": "0.7g",
+            "total_fat_dv": "1",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "100.7mg",
+            "sodium_dv": "4",
+            "total_carb": "3.4g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "1.1g",
+            "dietary_fiber_dv": "3",
+            "sugars": "1.9g",
+            "sugars_dv": null,
+            "protein": "0.7g",
+            "protein_dv": "1"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Display Station",
+      "items": [
+        {
+          "name": "Braised Collards in Tomato Onion Gravy",
+          "serving_size": "3 oz",
+          "ingredients": "Collard Greens, Water, Local Crushed Tomatoes, Local Yellow Onions, Garlic Cloves, Canola Oil  , Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "24",
+            "calories_from_fat": "5",
+            "total_fat": "0.6g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "46.6mg",
+            "sodium_dv": "2",
+            "total_carb": "4g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "2.3g",
+            "dietary_fiber_dv": "7",
+            "sugars": "0.4g",
+            "sugars_dv": null,
+            "protein": "1.9g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H6 CR1"
+        },
+        {
+          "name": "Creamy Southern Slaw",
+          "serving_size": "2 OZ",
+          "ingredients": "Coleslaw Mix (Green and Red Cabbage, Carrots), Mayonnaise (Soybean Oil, Whole Eggs, Egg Yolks, Water, Distilled Vinegar, Salt,  Sugar, Dextrose, Lemon Juice Concentrate, Calcium Disodium EDTA, Natural Flavors), White Vinegar (White Distilled Vinegar, Water), Granulated Sugar, Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [
+            "Eggs",
+            "Soy",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "71",
+            "calories_from_fat": "44",
+            "total_fat": "4.9g",
+            "total_fat_dv": "6",
+            "sat_fat": "0.8g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "4.3mg",
+            "cholesterol_dv": null,
+            "sodium": "241.1mg",
+            "sodium_dv": "10",
+            "total_carb": "6.8g",
+            "total_carb_dv": "5",
+            "dietary_fiber": "0.8g",
+            "dietary_fiber_dv": "2",
+            "sugars": "4.9g",
+            "sugars_dv": null,
+            "protein": "0.5g",
+            "protein_dv": "1"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGT H2 CR2"
+        },
+        {
+          "name": "Local Pickle Chips",
+          "serving_size": "1 oz",
+          "ingredients": "Dill Pickle Chips  (Cucumbers, Brine (Water, Distilled White Vinegar, Salt), Garlic, Dill, Grape Leave. Sub (Regal Crown): Cucumbers, Water, Vinegar, Salt, Garlic, Calcium Chloride, Less Than 1/10th of 1% of Sodium Benzoate, Oleoresin Turmeric, Spices And Flavoring)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "3",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "101.3mg",
+            "sodium_dv": "4",
+            "total_carb": "0.5g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H4 CR1"
+        },
+        {
+          "name": "Local Seasoned Mashed Potatoes",
+          "serving_size": "4 OZ",
+          "ingredients": "Local Potatoes, MAPLELINE Local 1% Milk, Local Unsalted Butter (Cream (Milk), Natural Flavoring), Kosher Salt (Sea Salt), White Ground Pepper",
+          "allergens": [
+            "Milk"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "99",
+            "calories_from_fat": "28",
+            "total_fat": "3.1g",
+            "total_fat_dv": "4",
+            "sat_fat": "1.9g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "8.8mg",
+            "cholesterol_dv": null,
+            "sodium": "132.3mg",
+            "sodium_dv": "6",
+            "total_carb": "15.6g",
+            "total_carb_dv": "12",
+            "dietary_fiber": "1.7g",
+            "dietary_fiber_dv": "5",
+            "sugars": "2g",
+            "sugars_dv": null,
+            "protein": "2.6g",
+            "protein_dv": "5"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGT H1 CR1"
+        },
+        {
+          "name": "Make Your Own Waffles",
+          "serving_size": "1 EACH",
+          "ingredients": "Water, Carbon's Pancake & Waffle Mix (CARBON:  Enriched Wheat Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Sugar, Leavening (Baking Soda, Sodium Aluminum Phosphate), Soybean Oil, Contains 2% or less of: Salt, Yellow Corn Flour, Malted Barley Flour, Dextrose, Buttermilk, Artificial and Natural Flavors  HEARTLAND FOOD:  Enriched Flour {Wheat Flour, Niacin, Iron, Thiamin Mononitrate, Riboflavin, Folic Acid], Sugar, Soy Flour, Yellow Corn Meal, Contains 2% or less of: Salt, Pam Oil, Leavening [Baking Soda, Sodium Aluminum Phosphate, Monocalcium Phosphate], Dextrose, Egg, Egg White, Dried Corn Syrup, Mono and Diglycerides, Sodium Caseinate, Natural and Artificial Flavors, Malted Barley Extract, Acesulfame Potassium, Soy Lecithin), Pan Spray (Water, Silicone, Polysorbate 80, Propylene Glycol, Ethyl and Propyl Paraben (preservative), Sodium Benzoate (preservative), Sodium Lauryl Sulfate)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "222",
+            "calories_from_fat": "20",
+            "total_fat": "2.2g",
+            "total_fat_dv": "3",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "637.1mg",
+            "sodium_dv": "28",
+            "total_carb": "44.5g",
+            "total_carb_dv": "34",
+            "dietary_fiber": "1.5g",
+            "dietary_fiber_dv": "4",
+            "sugars": "4.4g",
+            "sugars_dv": null,
+            "protein": "4.4g",
+            "protein_dv": "8"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGT H1 CR1"
+        },
+        {
+          "name": "Nashville Hot Chic'n",
+          "serving_size": "3 oz",
+          "ingredients": "Gardein Chic'n Strips (Water, Soy Protein Isolate, Vital Wheat Gluten, 2% or less of: Yeast Extract, Sugar, Canola Oil, Titanium Dioxide, Salt, Natural Flavors), Local Unsalted Butter (Cream (Milk), Natural Flavoring), Texas Pete's Hot Sauce (TEXAS PETE'S: Vinegar, Aged Peppers (Peppers, Salt, Vinegar), Water, Xanthan Gum, Benzoate of Soda. FRANK'S: Aged Cayenne Red Peppers, Distilled Vinegar, Water, Salt & Garlic Powder), Golden Brown Sugar (Brown Cane Sugar), Canola Oil  , Paprika    (Paprika (Dried Ground Red Pepper) and Silicon Dioxide), Kosher Salt (Sea Salt), Ground Cayenne Pepper, Ground Black Pepper, Garlic Powder",
+          "allergens": [
+            "Milk",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "151",
+            "calories_from_fat": "71",
+            "total_fat": "7.9g",
+            "total_fat_dv": "10",
+            "sat_fat": "3.8g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.1g",
+            "cholesterol": "15.7mg",
+            "cholesterol_dv": null,
+            "sodium": "365.4mg",
+            "sodium_dv": "16",
+            "total_carb": "2.5g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "1.4g",
+            "sugars_dv": null,
+            "protein": "16.7g",
+            "protein_dv": "30"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR H0 CR2"
+        },
+        {
+          "name": "Nashville Hot Chicken Leg",
+          "serving_size": "1 each",
+          "ingredients": "Antibiotic Free Halal Chicken Drumsticks w/Skin, Low-fat Buttermilk, Texas Pete Hot Sauce (Vinegar, Aged Peppers (Peppers, Salt, Vinegar), Water, Xanthan Gum, Benzoate of Soda), Dill Pickle Chips  (Cucumbers, Brine (Water, Distilled White Vinegar, Salt), Garlic, Dill, Grape Leave. Sub (Regal Crown): Cucumbers, Water, Vinegar, Salt, Garlic, Calcium Chloride, Less Than 1/10th of 1% of Sodium Benzoate, Oleoresin Turmeric, Spices And Flavoring), Local Unsalted Butter (Cream (Milk), Natural Flavoring), Rice Flour (Rice Flour), Corn Starch, Texas Pete Hot Sauce (Vinegar, Aged Peppers (Peppers, Salt, Vinegar), Water, Xanthan Gum, Benzoate of Soda), Golden Brown Sugar (Brown Cane Sugar), Paprika    (Paprika (Dried Ground Red Pepper) and Silicon Dioxide), Kosher Salt (Sea Salt), Ground Cayenne Pepper, Ground Black Pepper, Kosher Salt (Sea Salt), Ground Black Pepper, Kosher Salt (Sea Salt), Garlic Powder, Pan Spray (Canola Oil, Caprylic/Capric Triglycerides, Phosphated Mono and Diglycerides [Corn], Silicon Dioxide, Calcium Stearate, Propellant)",
+          "allergens": [
+            "Milk",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "205",
+            "calories_from_fat": "94",
+            "total_fat": "10.4g",
+            "total_fat_dv": "13",
+            "sat_fat": "5.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.3g",
+            "cholesterol": "91.8mg",
+            "cholesterol_dv": null,
+            "sodium": "869.2mg",
+            "sodium_dv": "38",
+            "total_carb": "12g",
+            "total_carb_dv": "9",
+            "dietary_fiber": "0.4g",
+            "dietary_fiber_dv": "1",
+            "sugars": "1.7g",
+            "sugars_dv": null,
+            "protein": "15g",
+            "protein_dv": "27"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "C",
+          "recipe_webcode": "H LPR H0 CR3"
+        }
+      ]
+    },
+    {
+      "name": "Mediterranean",
+      "items": [
+        {
+          "name": "Fresh Grated Parmesan Cheese",
+          "serving_size": "1/4 OZ",
+          "ingredients": "Grated Parmesan Cheese    (Parmesan Cheese (Pasteurized Cow's Milk, Cheese Cultures, Salt, Microbial Enzymes), Hard Grated Cheese Style (Modified Food Starch, Water, Palm Oil Blend, Salt, Disodium Phosphate, Citric Acid, Xanthan Gum, Trisodium Citrate), Powdered Cellulose, and Calcium Propionate)",
+          "allergens": [
+            "Milk",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "28",
+            "calories_from_fat": "15",
+            "total_fat": "1.6g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "5.3mg",
+            "cholesterol_dv": null,
+            "sodium": "5mg",
+            "sodium_dv": "0",
+            "total_carb": "1.3g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "1.1g",
+            "sugars_dv": null,
+            "protein": "1.8g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "E",
+          "recipe_webcode": "H VGT H3 CR5"
+        }
+      ]
+    }
+  ]
+}

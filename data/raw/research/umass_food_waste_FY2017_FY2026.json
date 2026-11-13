@@ -1,0 +1,599 @@
+{
+  "schema_version": "1.0.0",
+  "title": "UMass Amherst food-waste evidence over ten fiscal-year labels",
+  "as_of_date": "2026-11-11",
+  "coverage": {
+    "start_fiscal_year": 2017,
+    "end_fiscal_year": 2026,
+    "inclusive_year_count": 10,
+    "calendar_2026_is_incomplete": true,
+    "note": "The comparable annual series uses fiscal-year labels. Calendar-year and short campaign measurements are separate observations and are not converted into fiscal-year totals."
+  },
+  "annual_series_complete": false,
+  "ten_year_total_reduction_pct": null,
+  "causal_tool_attribution_available": false,
+  "sources": [
+    {
+      "source_id": "fy26",
+      "title": "UMass Dining Sustainability Annual Report FY2026",
+      "url": "https://www.localumass.com/wp-content/uploads/UMDS-Annual-Report-FY26-1-1.pdf",
+      "source_type": "university_annual_report",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": [
+        6,
+        9,
+        13
+      ],
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "fy25",
+      "title": "UMass Dining Sustainability Annual Report FY2025",
+      "url": "https://www.localumass.com/wp-content/uploads/UMass-Dining-Sustainability-Annual-Report-FY25-2-3.pdf",
+      "source_type": "university_annual_report",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": [
+        5,
+        10,
+        11
+      ],
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "waste_current",
+      "title": "Waste Reduction",
+      "url": "https://www.localumass.com/initiatives/waste-reduction/",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "meta_expansion",
+      "title": "UMass Amherst expansion announcement",
+      "url": "https://www.metafoodx.com/post/umass-amherst-doubles-down-on-investment-in-metafoodx-to-cut-food-waste-across-campus-dining",
+      "source_type": "vendor_claim",
+      "publication_date": "2025-09-03",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "meta_case",
+      "title": "Harvest Market case study",
+      "url": "https://www.metafoodx.com/post/how-umass-amherst-dining-achieved-a-51-reduction-in-overproduction",
+      "source_type": "vendor_claim",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "meta_pilot",
+      "title": "Metafoodx MassLive feature summary",
+      "url": "https://www.metafoodx.com/post/metafoodx-recognized-by-masslive-for-work-with-umass-amherst",
+      "source_type": "vendor_summary_of_reporting",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "foodpro_integration",
+      "title": "UMass Dining carbon-rating integration case study",
+      "url": "https://myemissions.co/articles/umass-dining-case-study-carbon-ratings-reduce-emissions/",
+      "source_type": "vendor_implementation_account",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "foodpro_job",
+      "title": "Executive Sous Chef Catering job posting",
+      "url": "https://careers.pageuppeople.com/1232/cw/en-us/job/509531/executive-sous-chef-catering",
+      "source_type": "university_job_description",
+      "publication_date": "2026-07-23",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "faq",
+      "title": "UMass Dining FAQ",
+      "url": "https://www.umassdining.com/faq",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "frn_current",
+      "title": "Food Security Initiatives",
+      "url": "https://www.umassdining.com/food-security-initiatives",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "lean_2024",
+      "title": "My Experience with Leanpath",
+      "url": "https://www.localumass.com/whats-happening/my-experience-with-leanpath/",
+      "source_type": "university_staff_account",
+      "publication_date": "2024-04-30",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "lean_2014",
+      "title": "UMass Amherst community spotlight",
+      "url": "https://blog.leanpath.com/blog/profile-university-of-massachusetts-amherst",
+      "source_type": "vendor_interview",
+      "publication_date": "2014-01-10",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "owm",
+      "title": "Facilities Waste Management",
+      "url": "https://www.umass.edu/facilities/waste-management",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "race2023",
+      "title": "UMass Amherst Among Top Institutions for Waste Diversion",
+      "url": "https://www.umass.edu/news/article/umass-amherst-among-top-institutions-waste-diversion",
+      "source_type": "university_news",
+      "publication_date": "2023-05-15",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "policy2021",
+      "title": "Waste Not campus guidelines",
+      "url": "https://www.umass.edu/news/article/waste-not-update-campus-guidelines",
+      "source_type": "university_news",
+      "publication_date": "2021-01-22",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "martin2018",
+      "title": "Martin's Farm",
+      "url": "https://www.localumass.com/whats-happening/martins-farm/",
+      "source_type": "university_news",
+      "publication_date": "2018-04-09",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "undated_diversion",
+      "title": "Waste Reduction and Recycling",
+      "url": "https://www.umass.edu/sustainability/operations-and-infrastructure/waste-reduction-recycling",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "source_reduction_guide",
+      "title": "How to Reduce Food Waste",
+      "url": "https://recyclingworksma.com/wp-content/uploads/2015/11/How-to-Reduce-Food-Waste.pdf",
+      "source_type": "massachusetts_technical_assistance_guide",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    }
+  ],
+  "metric_definitions": {
+    "source_reduction": "Food waste prevented before disposal or redistribution.",
+    "overproduction": "Prepared food exceeding a defined consumption or service requirement; source definitions may vary.",
+    "plate_waste": "Food discarded after service to diners.",
+    "pre_consumer_waste": "Waste occurring before diners consume it; may include prep scraps and unserved food.",
+    "anaerobic_diversion": "Food scraps collected for energy/nutrient recovery; not food-waste prevention.",
+    "donation": "Edible surplus redistributed; not necessarily avoided production.",
+    "tracked_production": "Food production measured by a system, not food wasted or saved.",
+    "tracked_consumption": "Consumption quantity recorded or estimated by a system, not waste avoided.",
+    "waste_per_swipe": "Food-waste mass normalized by meal transactions; distinct from annual mass or unique diners.",
+    "cost_savings": "Monetary result; cannot be converted into kilograms without additional data."
+  },
+  "annual_timeline": [
+    {
+      "fiscal_year": 2017,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2018,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [
+        "An April 2018 university account describes compost processing at Martin's Farm. No UMass annual quantity is established by that account."
+      ],
+      "source_ids": [
+        "martin2018"
+      ]
+    },
+    {
+      "fiscal_year": 2019,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2020,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2021,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [
+        "January 2021 university guidance documents pandemic takeout operations and changes excluding packaging from food-waste collection. These are comparability breaks, not numerical reductions."
+      ],
+      "source_ids": [
+        "policy2021"
+      ]
+    },
+    {
+      "fiscal_year": 2022,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2023,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [
+        "FY2025 report plots FY2023 dining-hall intensity values without point labels. No exact values were digitized.",
+        "Separate eight-week calendar-2023 competition figures are stored below, not annualized."
+      ],
+      "source_ids": [
+        "fy25",
+        "race2023"
+      ]
+    },
+    {
+      "fiscal_year": 2024,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "qualitative_and_graphic_evidence",
+      "observations": [
+        "FY2025 report says consolidated campus waste-stream compilation began in FY2024.",
+        "April 2024 staff account documents Leanpath weighing, classification audits and weekly reporting.",
+        "Graphic shows Worcester intensity rising from FY2023 to FY2024; exact underlying values are unavailable."
+      ],
+      "source_ids": [
+        "fy25",
+        "lean_2024"
+      ]
+    },
+    {
+      "fiscal_year": 2025,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": 7.33,
+      "annual_anaerobic_diversion_lb": 2810800,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "reported_metrics_available",
+      "observations": [
+        "FY2025 report gives 0.13 oz less waste per swipe than FY2024.",
+        "224399 lb of pre-consumer waste was tracked by Leanpath. This is tracked waste, not avoided waste.",
+        "347809 lb of consumption was tracked with Metafoodx. This is not total production or waste saved.",
+        "Food Recovery Network served over 2100 meals after the fall-2024 relaunch."
+      ],
+      "source_ids": [
+        "fy25",
+        "fy26"
+      ]
+    },
+    {
+      "fiscal_year": 2026,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": 7.19,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": 1400,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": -1.91,
+      "evidence_status": "reported_metrics_available",
+      "observations": [
+        "University reports rounded 2% less waste per swipe versus FY2025.",
+        "1.79 million lb of food production tracked by Metafoodx across 16 systems and 6 locations.",
+        "More than 6000 lb donated through Food Recovery Network.",
+        "No independent tool-by-tool causal contribution is reported."
+      ],
+      "source_ids": [
+        "fy26"
+      ]
+    }
+  ],
+  "valid_comparisons": [
+    {
+      "comparison_id": "intensity_fy25_fy26",
+      "metric": "food_waste_oz_per_swipe",
+      "baseline_period": "FY2025",
+      "baseline": 7.33,
+      "comparison_period": "FY2026",
+      "comparison": 7.19,
+      "absolute_change": -0.14,
+      "calculated_pct_change": -1.91,
+      "reported_pct_reduction": 2,
+      "source_ids": [
+        "fy26"
+      ],
+      "attribution": "Observed operational trend; not isolated causal effect of Metafoodx or any single tool."
+    },
+    {
+      "comparison_id": "intensity_fy24_fy25",
+      "metric": "food_waste_oz_per_swipe",
+      "absolute_change": -0.13,
+      "baseline_period": "FY2024",
+      "comparison_period": "FY2025",
+      "baseline_value_in_source_text": null,
+      "pct_change": null,
+      "source_ids": [
+        "fy25"
+      ],
+      "attribution": "Program-level improvement. Exact FY2024 aggregate is not filled from an unlabeled graphic."
+    }
+  ],
+  "nonannual_or_undated_observations": [
+    {
+      "observation_id": "calendar2019_organics",
+      "period_type": "calendar_year_description",
+      "year": 2019,
+      "value": 1600,
+      "qualifier": "approximately",
+      "unit": "tons_as_reported",
+      "metric": "food_waste_and_other_compostable_material_shipped_for_on_farm_composting",
+      "source_id": "owm",
+      "not_comparable_to_food_only_totals": true,
+      "note": "Source also approximates this as 3 million lb; no exact unit conversion is imposed."
+    },
+    {
+      "observation_id": "campaign2023_ad",
+      "period_type": "eight_week_competition",
+      "year": 2023,
+      "value": 435000,
+      "unit": "lb",
+      "metric": "food_waste_to_biofuel",
+      "source_id": "race2023"
+    },
+    {
+      "observation_id": "campaign2023_compost",
+      "period_type": "eight_week_competition",
+      "year": 2023,
+      "value": 109000,
+      "unit": "lb",
+      "metric": "food_waste_to_compost",
+      "source_id": "race2023"
+    },
+    {
+      "observation_id": "generic_annual_diversion",
+      "period_type": "undated_annual_description",
+      "year": null,
+      "value": 1200,
+      "unit": "tons_as_reported",
+      "metric": "food_waste_diverted_to_compost_or_digestion",
+      "source_id": "undated_diversion",
+      "note": "Not repeated across the ten annual rows; reference year and scope are undefined."
+    }
+  ],
+  "tool_impact_claims": [
+    {
+      "tool": "Metafoodx",
+      "claim": "Harvest Market overproduction reduction",
+      "value_pct": 51.7,
+      "comparison_length": "12 weeks / approximately 3 months",
+      "publication_date": "2025-09-03",
+      "observation_dates": null,
+      "site": "Harvest Market",
+      "baseline_mass": null,
+      "followup_mass": null,
+      "control_group": null,
+      "evidence_type": "vendor_reported_before_after",
+      "independent_validation": null,
+      "campus_wide": false,
+      "annual_reduction": false,
+      "source_ids": [
+        "meta_expansion",
+        "meta_case"
+      ]
+    },
+    {
+      "tool": "Metafoodx",
+      "claim": "Leftovers reduction during egg-price spike",
+      "value_pct": 42.5,
+      "site": "Harvest Market",
+      "observation_dates": null,
+      "food_scope_detail": null,
+      "evidence_type": "vendor_reported",
+      "source_ids": [
+        "meta_case"
+      ],
+      "note": "Do not label this as all-campus plate waste or an egg-only reduction; metric detail is limited."
+    },
+    {
+      "tool": "Metafoodx",
+      "claim": "Return on investment",
+      "value_pct": 500,
+      "qualifier": "more_than",
+      "metric": "ROI_food_and_labor_savings",
+      "source_ids": [
+        "meta_case"
+      ],
+      "food_waste_reduction_pct": null
+    },
+    {
+      "tool": "Metafoodx",
+      "claim": "Potential annual purchasing/preparation savings at full capacity",
+      "value_usd": 1000000,
+      "qualifier": "or_more",
+      "status": "projection_not_realized_savings",
+      "source_ids": [
+        "meta_pilot"
+      ]
+    },
+    {
+      "tool": "FoodPro",
+      "waste_reduction_pct": null,
+      "status": "No UMass-specific isolated effect found",
+      "source_ids": [
+        "foodpro_job",
+        "foodpro_integration"
+      ]
+    },
+    {
+      "tool": "Meal-plan transactions",
+      "waste_reduction_pct": null,
+      "status": "Demand input, no isolated effect found",
+      "source_ids": [
+        "faq"
+      ]
+    },
+    {
+      "tool": "Food Recovery Network",
+      "period": "FY2025",
+      "value": 2100,
+      "qualifier": "more_than",
+      "unit": "meals_redistributed",
+      "source_ids": [
+        "fy25"
+      ],
+      "waste_prevention_pct": null
+    },
+    {
+      "tool": "Food Recovery Network",
+      "period": "FY2026",
+      "value": 6000,
+      "qualifier": "more_than",
+      "unit": "lb_donated",
+      "source_ids": [
+        "fy26"
+      ],
+      "waste_prevention_pct": null
+    },
+    {
+      "tool": "Vanguard Renewables / Barstow's Farm",
+      "period": "FY2026",
+      "value": 1400,
+      "unit": "tons_diverted_as_reported",
+      "source_ids": [
+        "fy26"
+      ],
+      "waste_prevention_pct": null
+    }
+  ],
+  "historical_instrument_context": {
+    "not_a_current_tool_recommendation": true,
+    "instruments": [
+      {
+        "name": "Leanpath",
+        "latest_quantified_period_found": "FY2025",
+        "tracked_pre_consumer_waste_lb": 224399,
+        "source_ids": [
+          "fy25",
+          "lean_2024"
+        ],
+        "current_FY2026_deployment": null,
+        "replacement_by_metafoodx_confirmed": false,
+        "note": "Retained solely to explain historical measurements, not included in the active ecosystem report.",
+        "older_out_of_window_claim": {
+          "publication_date": "2014-01-10",
+          "worcester_food_cost_change_pct": -1,
+          "metric": "food_cost_not_waste_mass",
+          "source_id": "lean_2014"
+        }
+      }
+    ]
+  },
+  "destination_distribution_fy2026": {
+    "metric": "destinations_of_tracked_overproduction_by_weight",
+    "anaerobic_digestion_pct": 81.3,
+    "donation_pct": 10.1,
+    "reuse_pct": 8.6,
+    "source_id": "fy26",
+    "denominator_mass_lb": null,
+    "note": "Do not apply these shares to all campus food scraps or 1.79M lb of production."
+  },
+  "future_targets": [
+    {
+      "period": "FY2027",
+      "target": "reduce food waste",
+      "target_pct": 10,
+      "baseline_definition": null,
+      "achieved": false,
+      "source_id": "fy26"
+    }
+  ],
+  "comparability_and_attribution_limits": [
+    "No continuous ten-year campus food-waste generation series was located in reviewed sources.",
+    "FY2025 is described as the first dedicated Dining Sustainability annual report; FY2026 is the second. This does not establish that older waste records do not exist.",
+    "Annual diversion, food generation, tracked consumption, production and donated meals are different metrics.",
+    "The FY2026 tonnage unit is not explicitly defined as short tons or metric tonnes.",
+    "FY2025 and FY2026 digestion quantities are close numerically if short tons are assumed, but rounding and scope do not support a precise annual percent change.",
+    "A decline in diverted tonnage can reflect attendance, capture coverage, contamination or operations rather than prevention.",
+    "Pandemic operations and changes excluding packaging break naive pre/post comparisons.",
+    "No annual tool-by-tool counterfactual or controlled attribution analysis was found.",
+    "Do not add tool claims, multiply a site percentage by campus waste, or annualize a 12-week pilot without an explicit model.",
+    "Other UMass campuses and state-wide waste figures were excluded."
+  ],
+  "data_needed_for_full_history": [
+    "Office of Waste Management annual scale-ticket totals by material, site and FY2017-FY2026",
+    "Comparable pre-consumer and plate-waste weights with collection coverage",
+    "Annual admissions and meal counts matching the waste numerator",
+    "Metafoodx site/item exports with scan coverage and deployment dates",
+    "Historical weighing logs with instrument and category changes",
+    "FoodPro planned versus actual production sheets",
+    "Donation weights and pickup records",
+    "Control or matched comparison sites and interventions timeline"
+  ],
+  "null_policy": "Missing values remain null; no interpolation, modeled replacement values or fabricated annual reductions are supplied."
+}

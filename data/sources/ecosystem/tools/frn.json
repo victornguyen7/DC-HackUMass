@@ -1,0 +1,72 @@
+{
+  "_from": "raw/research/umass_dining_current_tools_ecosystem.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "frn_current",
+    "fy26"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "scope": "UMass Amherst, not other UMass campuses",
+  "tool": {
+    "tool_id": "frn",
+    "name": "Food Recovery Network",
+    "ecosystem_role": "Recovery and redistribution of edible surplus",
+    "current_use_evidence": {
+      "status": "current_use_confirmed",
+      "surplus_source": "Franklin Dining Commons",
+      "term": "Fall 2026",
+      "service_start": "2026-10-07",
+      "service_end": "2026-12-10",
+      "no_service": "Thanksgiving break",
+      "service_days": [
+        "Wednesday",
+        "Thursday"
+      ],
+      "service_time_local": "17:00-18:00",
+      "distribution_sites": {
+        "Wednesday": "472 North Pleasant Street, lower level",
+        "Thursday": "University Village Community Center"
+      },
+      "annual_evidence": {
+        "period": "FY2026",
+        "donated_food_lb": 6000,
+        "qualifier": "more_than"
+      }
+    },
+    "assumption_for_the_build": "Produce a manager-reviewed surplus pickup note. Worcester pickup and unscheduled end-of-night collection are proposed extensions, not confirmed current FRN routes.",
+    "proposed_input_fields": [
+      "donating_location",
+      "dish_name",
+      "quantity_kg",
+      "prepared_time",
+      "temperature_log_reference",
+      "allergens",
+      "packaging",
+      "storage_requirements",
+      "proposed_pickup_window",
+      "staff_contact_role"
+    ],
+    "proposed_output_fields": [
+      "surplus_pickup_note",
+      "estimated_available_kg",
+      "confirmed_accepted_kg",
+      "actual_picked_up_kg",
+      "handoff_status"
+    ],
+    "limitations": [
+      "Forecast surplus is not automatically safe or accepted for donation.",
+      "Food safety and pickup eligibility require existing Dining/FRN procedures.",
+      "Redistribution is not the same as preventing overproduction.",
+      "Do not promise a current Worcester pickup service.",
+      "Current schedule supersedes older generic FAQ descriptions."
+    ],
+    "source_ids": [
+      "frn_current",
+      "fy26"
+    ],
+    "verified_live_integration_for_this_project": false,
+    "verified_public_export_schema": false,
+    "data_access_obtained": false,
+    "tool_specific_campus_waste_reduction_pct": null
+  }
+}

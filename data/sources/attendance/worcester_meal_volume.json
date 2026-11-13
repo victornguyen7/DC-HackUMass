@@ -1,0 +1,133 @@
+{
+  "_from": "raw/research/worcester_dining_popularity_report.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "boston_globe_2023",
+    "fer_2021",
+    "stv_2021"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "location": {
+    "name": "Worcester Commons",
+    "alternate_name": "Worcester Dining Commons",
+    "institution": "University of Massachusetts Amherst",
+    "city": "Amherst",
+    "state": "Massachusetts",
+    "country": "United States"
+  },
+  "summary": {
+    "preferred_usage_record_id": "reported_volume_2023_globe",
+    "recommended_metric_label": "Reported daily meal volume during the academic year",
+    "unique_student_daily_average": null,
+    "current_2026_daily_meal_average": null,
+    "current_simultaneous_occupancy": null,
+    "meal_period_breakdown_available": false,
+    "machine_readable_time_series_available_in_this_report": false,
+    "interpretation": "Use the preferred record as a historical, approximate indicator of dining activity. It is not an audited attendance series or a count of distinct students.",
+    "publication_date_is_measurement_date": false
+  },
+  "reported_metrics": [
+    {
+      "record_id": "reported_volume_2023_globe",
+      "metric_type": "reported_daily_meal_volume",
+      "value": 12000,
+      "unit": "meals_per_day",
+      "approximate": true,
+      "seasonal_scope": "academic_year",
+      "publication_date": "2023-09-06",
+      "measurement_window": {
+        "start_date": null,
+        "end_date": null,
+        "number_of_days": null
+      },
+      "source_id": "boston_globe_2023",
+      "source_characterization": "Reported usage figure",
+      "statistical_method": null,
+      "audited": null,
+      "is_unique_person_count": false,
+      "is_student_only_count": null,
+      "is_design_capacity": false,
+      "is_confirmed_current_2026_average": false,
+      "inclusion_of_grab_n_go": null,
+      "inclusion_of_cafe_or_restaurant": null
+    },
+    {
+      "record_id": "capacity_2021_fer",
+      "metric_type": "reported_daily_service_capacity",
+      "value": 12000,
+      "unit": "meals_per_day",
+      "qualifier": "up_to",
+      "publication_date": "2021-03-02",
+      "source_id": "fer_2021",
+      "measurement_window": null,
+      "statistical_method": null,
+      "is_design_capacity": true,
+      "is_observed_attendance": false,
+      "is_unique_person_count": false,
+      "context": "The article describes pandemic-era operations with traffic below the stated capacity.",
+      "included_service_outlets": null,
+      "recommended_use": "Historical service-capacity context only; do not substitute for measured demand."
+    },
+    {
+      "record_id": "capacity_2021_stv",
+      "metric_type": "reported_daily_service_capacity",
+      "value": 10000,
+      "unit": "meals_per_day",
+      "publication_date": "2021-05-28",
+      "source_id": "stv_2021",
+      "measurement_window": null,
+      "statistical_method": null,
+      "is_design_capacity": true,
+      "is_observed_attendance": false,
+      "is_unique_person_count": false,
+      "context": "Project consultant description of the completed dining facility.",
+      "included_service_outlets": null,
+      "recommended_use": "Historical service-capacity context only; do not substitute for measured demand."
+    }
+  ],
+  "data_quality": {
+    "evidence_type": "Published descriptive reports, not raw administrative data",
+    "preferred_usage_record_status": "historical_reported_approximation",
+    "unique_student_average_status": "not_found_in_reviewed_public_sources",
+    "current_average_status": "not_verified",
+    "capacity_figures_disagree": true,
+    "capacity_record_ids": [
+      "capacity_2021_fer",
+      "capacity_2021_stv"
+    ],
+    "capacity_discrepancy_explanation": null,
+    "handling_of_discrepancy": "Retain both source-specific claims. Do not average the figures or present either as measured attendance.",
+    "limitations": [
+      "No sampling window or statistical averaging method is established for the preferred usage record.",
+      "A publication date does not identify the exact dates on which meals were counted.",
+      "Meals, entry transactions, distinct diners and simultaneous occupants are different metrics.",
+      "The student versus non-student breakdown is unavailable.",
+      "Service-outlet coverage within the building is not established.",
+      "No comparison dataset establishes a numeric popularity ranking among campus dining halls.",
+      "Historical descriptive values do not establish a current daily average."
+    ]
+  },
+  "project_use": {
+    "appropriate_uses": [
+      "Describe historical dining scale with source attribution and year.",
+      "Set a provisional simulation scenario, explicitly labeled as an assumption.",
+      "Motivate collection of real entry and meal-service records."
+    ],
+    "unsupported_uses": [
+      "Treat meal volume as a distinct-student count.",
+      "Treat service capacity as observed daily attendance.",
+      "Assign invented breakfast, lunch, dinner or late-night shares.",
+      "Convert a daily total into peak occupancy without dwell-time and arrival data.",
+      "Present historical reports as measured attendance for November 13-20, 2026."
+    ],
+    "suggested_dataset_field": "historical_reported_meals_per_day",
+    "suggested_dataset_value_reference": "reported_metrics[record_id=reported_volume_2023_globe].value",
+    "suggested_companion_fields": [
+      "source_id",
+      "publication_date",
+      "approximate",
+      "measurement_window",
+      "metric_type"
+    ]
+  }
+}

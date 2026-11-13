@@ -1,0 +1,47 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "sports2025",
+    "studentlife"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "athletics_and_fitness": {
+    "intramurals": {
+      "source_id": "sports2025",
+      "reference_year": 2025,
+      "participants": 5700,
+      "qualifier": "more_than",
+      "publication": "May 2026",
+      "reported_context": "Approximately one quarter of undergraduates"
+    },
+    "club_sports": {
+      "source_id": "studentlife",
+      "participants": 1600,
+      "reference_period": null
+    },
+    "recreation_visits": {
+      "source_id": "studentlife",
+      "value": 3600,
+      "qualifier": "more_than",
+      "unit": "students_visiting_per_day_as_reported",
+      "reference_period": null
+    },
+    "share_who_like_sports": null,
+    "share_who_dislike_sports": null,
+    "high_protein_diet_share": null,
+    "limitations": [
+      "Participation does not measure spectator interest or food preference.",
+      "Intramural, club-sport and recreation populations overlap.",
+      "Do not infer a high-protein or meat preference from sports participation."
+    ],
+    "testable_features": [
+      "practice_end_times",
+      "home_game_date",
+      "home_game_start_time",
+      "home_game_end_time",
+      "walking_distance_from_venue",
+      "voluntarily_reported_nutrition_goals"
+    ]
+  }
+}

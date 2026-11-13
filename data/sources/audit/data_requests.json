@@ -1,0 +1,176 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "next_data_requests": [
+    {
+      "id": "R01",
+      "name": "Attendance and arrival export",
+      "prospective_holder": "UMass Dining / UCard / meal-plan system administrator",
+      "access": "Not obtained; request aggregated counts, no student identifiers",
+      "fields": [
+        "service_date",
+        "location_id",
+        "local_timezone",
+        "meal_period_definition",
+        "bin_start",
+        "bin_end",
+        "accepted_entry_count",
+        "unique_diners_if_available",
+        "reentry_count_if_available",
+        "guest_and_staff_count_if_available",
+        "closures_or_reader_outages"
+      ],
+      "purpose": "Dinner expected counts and empirically observed arrival distributions"
+    },
+    {
+      "id": "R02",
+      "name": "Station operations and staffing",
+      "prospective_holder": "Worcester management",
+      "access": "Staff confirmation or observations needed",
+      "fields": [
+        "service_date",
+        "station_id",
+        "public_counter_name",
+        "physical_counter_id",
+        "mode_by_menu_item",
+        "active_servers_by_time",
+        "queue_join_time",
+        "service_start_time",
+        "handoff_time",
+        "batch_size",
+        "shared_staff_or_equipment"
+      ],
+      "purpose": "Service mode, server counts, service-time distributions and capacity"
+    },
+    {
+      "id": "R03",
+      "name": "Current location verification",
+      "prospective_holder": "Worcester facilities / management",
+      "access": "Current plan or authorized photo walk",
+      "fields": [
+        "as_of_date",
+        "counter_label",
+        "counter_polygon_or_coordinates",
+        "queue_frontage",
+        "dish_return_opening",
+        "accessible_routes",
+        "scale",
+        "coordinate_origin"
+      ],
+      "purpose": "Current menu category mapping and dish return position"
+    },
+    {
+      "id": "R04",
+      "name": "Menu role review and dish-choice observations",
+      "prospective_holder": "Worcester culinary team / students",
+      "access": "Staff review and consent-based survey or aggregated consumption data",
+      "fields": [
+        "menu_date",
+        "meal_period",
+        "item_id",
+        "recipe_id",
+        "station_id",
+        "portion_definition",
+        "staff_verified_role",
+        "availability_start_end",
+        "servings_taken",
+        "stockout_intervals",
+        "pairwise_choice_question",
+        "respondent_sampling_method",
+        "survey_sample_size"
+      ],
+      "purpose": "Validate classification and estimate item demand while accounting for availability"
+    },
+    {
+      "id": "R05",
+      "name": "Diet and visit-motive survey",
+      "prospective_holder": "Student research survey / UMass Dining research team",
+      "access": "No representative Worcester dinner data found",
+      "fields": [
+        "survey_date",
+        "location_and_meal_sampling_frame",
+        "sample_size",
+        "response_rate",
+        "survey_weight_if_any",
+        "self_reported_halal_requirement",
+        "self_reported_activity_and_meal_goal",
+        "time_budget",
+        "social_dining_intent",
+        "dietary_constraints",
+        "portion_preference",
+        "question_wording",
+        "overlap_between_attributes"
+      ],
+      "purpose": "Estimate visitor-specific shares without nationality or activity proxies"
+    },
+    {
+      "id": "R06",
+      "name": "Planned and actual kitchen production",
+      "prospective_holder": "UMass Dining production-system / Metafoodx administrator",
+      "access": "No private export or authorization established",
+      "fields": [
+        "service_date",
+        "meal_period",
+        "station_id",
+        "recipe_id",
+        "item_name",
+        "planned_portions",
+        "portion_weight_g",
+        "batch_id",
+        "batch_start",
+        "ready_time",
+        "portions_produced",
+        "portions_sent_to_line",
+        "leftover_weight_g",
+        "reuse_weight_g",
+        "donation_weight_g",
+        "discard_weight_g",
+        "measurement_method"
+      ],
+      "purpose": "Compare a real baseline plan with actual production and line leftovers"
+    },
+    {
+      "id": "R07",
+      "name": "Batch rules and time study",
+      "prospective_holder": "Worcester chefs / shift supervisors",
+      "access": "Staff estimates or timed observations needed",
+      "fields": [
+        "item_or_recipe_id",
+        "batch_size",
+        "equipment",
+        "prep_minutes",
+        "active_cook_minutes",
+        "elapsed_ready_minutes",
+        "replenishment_lead_minutes",
+        "quality_hold_minutes",
+        "last_batch_decision",
+        "stockout_policy",
+        "actual_order_time",
+        "actual_ready_time"
+      ],
+      "purpose": "Estimate recipe- and resource-dependent cook, hold and reorder behavior"
+    },
+    {
+      "id": "R08",
+      "name": "Matched event-night counts",
+      "prospective_holder": "UMass Dining",
+      "access": "Not found publicly",
+      "fields": [
+        "service_date",
+        "event_id",
+        "event_location",
+        "event_start_end",
+        "Worcester_dinner_entries",
+        "comparison_dates",
+        "menu",
+        "weather",
+        "academic_calendar",
+        "service_hours",
+        "attendance_measure_definition"
+      ],
+      "purpose": "Estimate event effects with comparison nights instead of assigning an unmeasured lift"
+    }
+  ]
+}

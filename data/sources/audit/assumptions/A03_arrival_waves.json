@@ -1,0 +1,76 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S01",
+    "S04"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A03",
+    "category": "Arrival waves",
+    "user_provided_assumption": {
+      "peak_times": [
+        "17:20",
+        "18:15",
+        "19:30"
+      ],
+      "uniform_component_share": 0.15
+    },
+    "evidence_status": "not_found",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Observed Worcester dinner admissions by time bin",
+    "evidence_fact_ids": [
+      "F15"
+    ],
+    "why_evidence_does_not_replace_assumption": "Traffic indicators and livestream images do not yield a verified historical arrival distribution. Queue length, occupancy and entries are different measures.",
+    "missing_fields": [
+      "bin_counts",
+      "peak_times",
+      "uniform_component_share",
+      "date_specific_distribution"
+    ],
+    "data_request_ids": [
+      "R01"
+    ],
+    "user_referenced_paths": [
+      "sources/ecosystem/tools/meal_swipes.json"
+    ],
+    "notes": []
+  },
+  "facts": [
+    {
+      "id": "F15",
+      "finding": "Public traffic information exists",
+      "value": "UMass advertises live traffic reporting in its app and links Worcester livestreams.",
+      "source_ids": [
+        "S04",
+        "S01"
+      ],
+      "applicability": "Does not provide a reviewed historical numeric admissions dataset"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R01",
+      "name": "Attendance and arrival export",
+      "prospective_holder": "UMass Dining / UCard / meal-plan system administrator",
+      "access": "Not obtained; request aggregated counts, no student identifiers",
+      "fields": [
+        "service_date",
+        "location_id",
+        "local_timezone",
+        "meal_period_definition",
+        "bin_start",
+        "bin_end",
+        "accepted_entry_count",
+        "unique_diners_if_available",
+        "reentry_count_if_available",
+        "guest_and_staff_count_if_available",
+        "closures_or_reader_outages"
+      ],
+      "purpose": "Dinner expected counts and empirically observed arrival distributions"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S18"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A01",
+    "category": "Expected students",
+    "user_provided_assumption": {
+      "value": 1800,
+      "unit": "students/dinner"
+    },
+    "evidence_status": "context_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Worcester distinct student dinner visitors by date",
+    "evidence_fact_ids": [
+      "F04"
+    ],
+    "why_evidence_does_not_replace_assumption": "A daily meal total does not identify meal-period shares, unique people, or student-only visitors. Neither 1,800 nor 3,000–4,000 is established by the source.",
+    "missing_fields": [
+      "dinner_entries_by_date",
+      "distinct_student_diners_by_date",
+      "observed_dinner_share"
+    ],
+    "data_request_ids": [
+      "R01"
+    ],
+    "user_referenced_paths": [
+      "sources/attendance/missing_and_data_request.json"
+    ],
+    "notes": []
+  },
+  "facts": [
+    {
+      "id": "F04",
+      "finding": "Historical approximate Worcester throughput",
+      "value": 12000,
+      "unit": "meals/day",
+      "approximate": true,
+      "reference_year": 2023,
+      "source_ids": [
+        "S18"
+      ],
+      "applicability": "Context only; not dinner headcount"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R01",
+      "name": "Attendance and arrival export",
+      "prospective_holder": "UMass Dining / UCard / meal-plan system administrator",
+      "access": "Not obtained; request aggregated counts, no student identifiers",
+      "fields": [
+        "service_date",
+        "location_id",
+        "local_timezone",
+        "meal_period_definition",
+        "bin_start",
+        "bin_end",
+        "accepted_entry_count",
+        "unique_diners_if_available",
+        "reentry_count_if_available",
+        "guest_and_staff_count_if_available",
+        "closures_or_reader_outages"
+      ],
+      "purpose": "Dinner expected counts and empirically observed arrival distributions"
+    }
+  ]
+}

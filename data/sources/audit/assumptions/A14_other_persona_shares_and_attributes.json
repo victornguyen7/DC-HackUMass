@@ -1,0 +1,83 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S15"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A14",
+    "category": "Other persona shares and attributes",
+    "user_provided_assumption": {
+      "personas": [
+        "rushed",
+        "social"
+      ],
+      "shares": "hand-written; numeric values not supplied"
+    },
+    "evidence_status": "context_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Representative visit-motive frequencies and joint attributes",
+    "evidence_fact_ids": [
+      "F12"
+    ],
+    "why_evidence_does_not_replace_assumption": "One student narrative supports possible motives, not their frequency, time-budget distribution, or joint probabilities.",
+    "missing_fields": [
+      "rushed_share",
+      "social_share",
+      "time_budget_distribution",
+      "group_size_distribution",
+      "joint_attribute_distribution"
+    ],
+    "data_request_ids": [
+      "R05"
+    ],
+    "user_referenced_paths": [],
+    "notes": [
+      "LLM-generated personas are synthetic scenario inputs, not real observations or an empirical replacement for a survey.",
+      "Rushed and social are not necessarily mutually exclusive; do not force shares to sum to one without a justified definition."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F12",
+      "finding": "Student decision factors described in an individual account",
+      "value": [
+        "Time before class",
+        "Avoiding crowds",
+        "Checking livestream",
+        "Residence and bus proximity",
+        "Meeting other students"
+      ],
+      "source_ids": [
+        "S15"
+      ],
+      "applicability": "Qualitative examples; no population shares or distribution"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R05",
+      "name": "Diet and visit-motive survey",
+      "prospective_holder": "Student research survey / UMass Dining research team",
+      "access": "No representative Worcester dinner data found",
+      "fields": [
+        "survey_date",
+        "location_and_meal_sampling_frame",
+        "sample_size",
+        "response_rate",
+        "survey_weight_if_any",
+        "self_reported_halal_requirement",
+        "self_reported_activity_and_meal_goal",
+        "time_budget",
+        "social_dining_intent",
+        "dietary_constraints",
+        "portion_preference",
+        "question_wording",
+        "overlap_between_attributes"
+      ],
+      "purpose": "Estimate visitor-specific shares without nationality or activity proxies"
+    }
+  ]
+}

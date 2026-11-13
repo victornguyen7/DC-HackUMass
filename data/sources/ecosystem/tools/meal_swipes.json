@@ -1,0 +1,50 @@
+{
+  "_from": "raw/research/umass_dining_current_tools_ecosystem.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "faq"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "scope": "UMass Amherst, not other UMass campuses",
+  "tool": {
+    "tool_id": "meal_swipes",
+    "name": "UCard meal transactions / CBORD GET",
+    "ecosystem_role": "Meal-plan balance and usage records; candidate demand signal",
+    "current_use_evidence": {
+      "status": "current_student_facing_service_confirmed",
+      "evidence": "UMass FAQ links meal-plan balances and usage to get.cbord.com/umass.",
+      "public_operational_entry_feed": false,
+      "time_bin_export_availability": null
+    },
+    "assumption_for_the_build": "Use anonymized time-binned admission counts supplied by Dining. Treat timestamp resolution, location coverage and all-entry coverage as requirements to verify.",
+    "proposed_input_fields": [
+      "location_id",
+      "interval_start",
+      "interval_end",
+      "meal_period",
+      "admissions_count",
+      "transaction_type",
+      "coverage_note"
+    ],
+    "proposed_output_fields": [
+      "arrival_forecast",
+      "meal_period_headcount_forecast",
+      "special_event_demand_indicator"
+    ],
+    "limitations": [
+      "GET access for students does not prove a public bulk API or administrator export.",
+      "Meal transactions are not dish choices.",
+      "Repeat entries are not unique students; admissions are not simultaneous occupancy.",
+      "Cash, credit, guests and retail transactions may be represented differently.",
+      "No individual student identifiers are required for the proposed forecasting layer.",
+      "No swipe-system-specific waste-reduction effect was found."
+    ],
+    "source_ids": [
+      "faq"
+    ],
+    "verified_live_integration_for_this_project": false,
+    "verified_public_export_schema": false,
+    "data_access_obtained": false,
+    "tool_specific_campus_waste_reduction_pct": null
+  }
+}

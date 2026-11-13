@@ -1,0 +1,81 @@
+{
+  "_note": "Worcester dinner service. Layout points and seating zones come from layout/floor_plan.json; students reach the back seating room through one of its doors. close_min 1260 (9:00 pm) is sourced; open_min 990 (4:30 pm) is team-confirmed. expected_students 3000 and the peak windows (6:00-6:45, 7:00-8:00, 8:00-9:00 pm) come from team observation (2026-11-12); wave widths and shares are guesses. See ASSUMPTIONS.md. favorite_patience_mult 3.0: students wait up to 3x longer in a line for their first-choice dish (team: 'wait if I really want that dish'); 3x is a guess. retry_balked_favorite: a student who leaves their favorite's line eats elsewhere, then tries it once more (team, 2026-11-12).",
+  "dc": "worcester",
+  "meal": "dinner",
+  "open_min": 990,
+  "close_min": 1260,
+  "arrival_cap_per_min": 60,
+  "layout": {
+    "entrance": [
+      38.0,
+      9.4
+    ],
+    "seating": [
+      38.0,
+      17.3
+    ],
+    "dish_return": [
+      10.9,
+      26.4
+    ],
+    "walk_speed_m_per_min": 72.0,
+    "seating_zones": [
+      {
+        "id": "main",
+        "pos": [
+          24.4,
+          12.1
+        ],
+        "seats": 284,
+        "via": []
+      },
+      {
+        "id": "back",
+        "pos": [
+          47.0,
+          2.6
+        ],
+        "seats": 120,
+        "via": [
+          [
+            32.7,
+            6.5
+          ],
+          [
+            56.8,
+            6.5
+          ],
+          [
+            61.4,
+            6.5
+          ]
+        ]
+      }
+    ]
+  },
+  "crowd": {
+    "expected_students": 3000,
+    "multiplier": 1.0,
+    "shift_min": 0.0,
+    "base_share": 0.15,
+    "waves": [
+      {
+        "peak_min": 1100,
+        "sd_min": 15,
+        "share": 0.25
+      },
+      {
+        "peak_min": 1170,
+        "sd_min": 20,
+        "share": 0.35
+      },
+      {
+        "peak_min": 1230,
+        "sd_min": 15,
+        "share": 0.25
+      }
+    ]
+  },
+  "favorite_patience_mult": 3.0,
+  "retry_balked_favorite": true
+}

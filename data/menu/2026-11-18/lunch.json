@@ -1,0 +1,2454 @@
+{
+  "_from": "raw/menu/worcester_menus_2026-11-13_to_2026-11-20.json",
+  "location": {
+    "name": "Worcester Dining Commons",
+    "site_location_id": "1"
+  },
+  "date": "2026-11-18",
+  "meal": "lunch",
+  "source_url": "https://www.umassdining.com/foodpro-menu-ajax?tid=1&date=11%2F18%2F2026",
+  "retrieved_at": "2026-11-12T01:39:49.899525+00:00",
+  "stations": [
+    {
+      "name": "Soups",
+      "items": [
+        {
+          "name": "Chana Masala Cauliflower Soup",
+          "serving_size": "5 oz",
+          "ingredients": "Chana Masala Cauliflower Soup (Water, Butternut Squash, Sweet Potato, Cauliflower, Coconut Milk (Coconut Milk, Water, Xanthan Gum), Onion, Garbanzo Beans, Peas, Cornstarch, Salt, Garlic (Garlic, Water, Citric Acid), Extra Virgin Olive Oil, Curry Powder, Jalapeno Pepper, Fenugreek, Coriander, Cumin, Mustard Powder, Cayenne Pepper)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "94",
+            "calories_from_fat": "34",
+            "total_fat": "3.7g",
+            "total_fat_dv": "5",
+            "sat_fat": "3.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "387.2mg",
+            "sodium_dv": "17",
+            "total_carb": "13.7g",
+            "total_carb_dv": "11",
+            "dietary_fiber": "2.5g",
+            "dietary_fiber_dv": "7",
+            "sugars": "2.5g",
+            "sugars_dv": null,
+            "protein": "1.9g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        },
+        {
+          "name": "Santa Fe Tortilla Soup",
+          "serving_size": "5 oz",
+          "ingredients": "Santa Fe Tortilla Soup (Vegetarian Stock (Water, Natural Vegetarian Flavor [Water, Onion, Carrot, Celery, Salt]), Black Beans, Corn, Onion, Celery, Carrot, Fire Roasted Tomatoes (Fire Roasted Tomatoes, Tomato Juice, Sea Salt, Calcium Chloride and Citric Acid), Poblano Pepper, Green Bell Pepper, Corn Tortilla (Corn, Water and Lime [Calcium Hydroxide]), Masa Harina (Ground Corn treated with Lime), Garlic (Garlic, Water, Citric Acid), Hatch Green Chile, Salt, Cilantro, Cumin, Cornstarch, Extra Virgin Olive Oil, Chili Powder, Paprika, Lime Juice)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "56",
+            "calories_from_fat": "8",
+            "total_fat": "0.9g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "449.6mg",
+            "sodium_dv": "20",
+            "total_carb": "11.2g",
+            "total_carb_dv": "9",
+            "dietary_fiber": "1.9g",
+            "dietary_fiber_dv": "6",
+            "sugars": "1.9g",
+            "sugars_dv": null,
+            "protein": "1.9g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Grill Station",
+      "items": [
+        {
+          "name": "Black Bean Burger",
+          "serving_size": "1 each",
+          "ingredients": "Black Bean Burger (Water, Cooked Black Beans, Expeller Pressed Canola Oil, Cooked Brown Rice, Roasted Yellow Corn, Onion, Tomato Paste, Soy Protein Concentrate, Roasted Red & Green Peppers, Organic Cane Sugar, Potato Starch, Modified Vegetable Gum, Sea Salt, Yeast Extract, Onion Powder, Spices, Garlic Powder, Paprika, Black Bean Powder, Natural Flavors (From Plant Sources), Tomato Powder, Citric Acid, Lactic Acid, Instant Coffee, Molasses)",
+          "allergens": [
+            "Soy",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "160",
+            "calories_from_fat": "63",
+            "total_fat": "7g",
+            "total_fat_dv": "9",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "470mg",
+            "sodium_dv": "20",
+            "total_carb": "19g",
+            "total_carb_dv": "15",
+            "dietary_fiber": "4g",
+            "dietary_fiber_dv": "12",
+            "sugars": "3g",
+            "sugars_dv": null,
+            "protein": "7g",
+            "protein_dv": "13"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGN H5 CR2"
+        },
+        {
+          "name": "Halal Burger Patty",
+          "serving_size": "1 each",
+          "ingredients": "Halal Grass Fed Burger Patty (Ground Beef), Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal"
+          ],
+          "nutrition": {
+            "calories": "144",
+            "calories_from_fat": "92",
+            "total_fat": "10.2g",
+            "total_fat_dv": "13",
+            "sat_fat": "3.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.6g",
+            "cholesterol": "45mg",
+            "cholesterol_dv": null,
+            "sodium": "94.1mg",
+            "sodium_dv": "4",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "12.6g",
+            "protein_dv": "23"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "E",
+          "recipe_webcode": "H H2 CR5"
+        },
+        {
+          "name": "Halal French Fries",
+          "serving_size": "3 OZ",
+          "ingredients": "ROMA French Fries (Potatoes, Vegetable Oil (Canola Oil, Soybean Oil, Palm Oil, Hydrogenated Cottonseed Oil), Modified Potato Starch, Rice Flour, Corn Starch, Tapioca Dextrin, Potato Dextrin, Salt, Leavening (Sodium Acid Pyrophosphate, Sodium Bicarbonate, Monocalcium Phosphate), Dextrose, Xanthan Gum, Disodium Dihydrogen Pyrophosphate), Deep Frying Canola Oil   (Canola Oil, TBHQ and Citric Acid, Dimethylpolysiloxane. Dairy, Egg, Soy, Sesame, Corn and/or Wheat Products may be fried in this oil), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "193",
+            "calories_from_fat": "119",
+            "total_fat": "13.2g",
+            "total_fat_dv": "17",
+            "sat_fat": "1.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "467.7mg",
+            "sodium_dv": "20",
+            "total_carb": "17.7g",
+            "total_carb_dv": "14",
+            "dietary_fiber": "1.8g",
+            "dietary_fiber_dv": "5",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "1.8g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H1 CR1"
+        },
+        {
+          "name": "Hand Cut Sweet Potato Fries",
+          "serving_size": "3 oz",
+          "ingredients": "Sweet Potato French Fries (Sweet Potatoes, Vegetable Oil (contains one or more of the following: Canola Oil, Soybean Oil), Modified Potato Starch, Rice Flour, Corn Dextrin, Sea Salt, Spices, Corn Starch, Onion Powder, Paprika (color), Leavening (Sodium Acid Pyrophosphate, Sodium Bicarbonate), Extractive of Paprika (color), Garlic Powder, Xanthan Gum), Deep Frying Canola Oil   (Canola Oil, TBHQ and Citric Acid, Dimethylpolysiloxane. Dairy, Egg, Soy, Sesame, Corn and/or Wheat Products may be fried in this oil), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "178",
+            "calories_from_fat": "106",
+            "total_fat": "11.7g",
+            "total_fat_dv": "15",
+            "sat_fat": "1.5g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "200.5mg",
+            "sodium_dv": "9",
+            "total_carb": "17.3g",
+            "total_carb_dv": "13",
+            "dietary_fiber": "1.8g",
+            "dietary_fiber_dv": "5",
+            "sugars": "8.2g",
+            "sugars_dv": null,
+            "protein": "0.9g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "A",
+          "recipe_webcode": "VGT H2 CR1"
+        },
+        {
+          "name": "Lemon Pepper Chicken Thigh",
+          "serving_size": "1 EACH",
+          "ingredients": "Antibiotic Free Halal Chicken Thigh     (Boneless, Skinless Chicken Thighs, Containing up to 2% solution of Water, Vinegar. SUB (Farm Smart): Halal Antibiotic Free Chicken), Lemon Pepper Seasoning (Salt, Spices [Including Black Pepper, Corn, Celery], Citric Acid, Onion, Sugar, Garlic, Calcium Stearate, Silicon Dioxide, Calcium Silicate, Lemon Oil, And Riboflavin), Pan Spray (Canola Oil, Caprylic/Capric Triglycerides, Phosphated Mono and Diglycerides [Corn], Silicon Dioxide, Calcium Stearate, Propellant)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal"
+          ],
+          "nutrition": {
+            "calories": "82",
+            "calories_from_fat": "26",
+            "total_fat": "2.8g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "63.2mg",
+            "cholesterol_dv": null,
+            "sodium": "334.2mg",
+            "sodium_dv": "15",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "13.3g",
+            "protein_dv": "24"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "C",
+          "recipe_webcode": "H H3 CR3"
+        },
+        {
+          "name": "Local Roasted Sweet Potatoes",
+          "serving_size": "4 oz",
+          "ingredients": "Local Sweet Potatoes, Canola Oil  , Ground Black Pepper, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "164",
+            "calories_from_fat": "72",
+            "total_fat": "8g",
+            "total_fat_dv": "10",
+            "sat_fat": "0.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "96.8mg",
+            "sodium_dv": "4",
+            "total_carb": "22g",
+            "total_carb_dv": "17",
+            "dietary_fiber": "3.3g",
+            "dietary_fiber_dv": "10",
+            "sugars": "4.6g",
+            "sugars_dv": null,
+            "protein": "1.7g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Roasted Cauliflower",
+          "serving_size": "3 oz",
+          "ingredients": "Fresh Cauliflower Florets, Extra Virgin Olive Oil, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "34",
+            "calories_from_fat": "16",
+            "total_fat": "1.8g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "124.2mg",
+            "sodium_dv": "5",
+            "total_carb": "4.1g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "1.7g",
+            "dietary_fiber_dv": "5",
+            "sugars": "1.6g",
+            "sugars_dv": null,
+            "protein": "1.6g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN VGT H5 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Desserts",
+      "items": [
+        {
+          "name": "Pumpkin Cookie",
+          "serving_size": "1 each",
+          "ingredients": "Pumpkin Cookie  (Enriched Wheat Flour (Unbleached and Bleached Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, And Folic Acid), Sugar, Brown Sugar, Pumpkin, 0 Trans Fat Palm Soy Blend Margarine (Soybean Oil and/or Palm Oil, Water, Salt, Mono And Diglycerides, Soy Lecithin, Natural Flavor, Annatto Color, Vitamin A Palmitate), Butter, Whey Protein, Molasses, Modified Food Starch, Eggs (Pasteurized), N & A Flavoring, Salt, Spices, Artificial Color (Water, Fd&c Yellow #6, Citric Acid, Fd&c Yellow #5, and Sodium Benzoate), Baking Soda, Guar Gum)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "100",
+            "calories_from_fat": "27",
+            "total_fat": "3g",
+            "total_fat_dv": "4",
+            "sat_fat": "1.5g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "5mg",
+            "cholesterol_dv": null,
+            "sodium": "105mg",
+            "sodium_dv": "5",
+            "total_carb": "17g",
+            "total_carb_dv": "13",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "10g",
+            "sugars_dv": null,
+            "protein": "1g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGT H0 CR1"
+        },
+        {
+          "name": "Yellow Cake w/Choc Icing",
+          "serving_size": "1 piece",
+          "ingredients": "Yellow Cake with Choc Icing (PILLSBURY Yellow Cake Mix (Sugar, Enriched Flour Bleached (Wheat Flour, Niacin, Iron, Thiamin Mononitrate, Riboflavin, Folic Acid), Soybean Oil, Palm Oil, Eggs With Sodium Silicoaluminate, Egg White, Nonfat Milk, Leavening (Baking Soda, Sodium Aluminum Phosphate, Monocalcium Phosphate), Dextrose, Salt, Propylene Glycol, Mono and Diesters, Sorbitan Monostearate, Modified Corn Starch, Tetrasodium Pyrophosphate, Xanthan Gum, Sodium Stearoyl Lactylate, Polysorbate 60, Mono and Diglycerides, Calcium Acetate, Guar Gum, Cellulose Gum, Artificial Flavor, Yellow 5 And Red 40, Soy Flour), Chocolate Icing (Confectionary Sugar (Sugar and Cornstarch), Trans Fat Free Vegetable Shortening (Palm Oil), Water, Cocoa Powder (Alkalized Cocoa Powder, May Contain Traces Of Soy), Light Corn Syrup (Corn Syrup, High Fructose Corn Syrup, Water, Salt, Natural and Artificial Vanilla Flavor), Imitation Vanilla Flavouring (CONCORD FOODS: Water, Propylene Glycol, Caramel Color, Artificial Flavor)), Water, Water, Water, Canola Oil, Pan Grease (Cake Flour (Bleached Wheat Flour, Niacin, Iron, Thiamin Mononitrate, Riboflavin, Folic Acid), Canola Oil, CRISCO Shortening (Soybean Oil, Fully Hydrogenated Palm Oil, Mono and Diglycerides [Corn], TBHQ and Citric Acid (Antioxidants)))",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "137",
+            "calories_from_fat": "56",
+            "total_fat": "6.2g",
+            "total_fat_dv": "8",
+            "sat_fat": "2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "10.3mg",
+            "cholesterol_dv": null,
+            "sodium": "128.2mg",
+            "sodium_dv": "6",
+            "total_carb": "18.4g",
+            "total_carb_dv": "14",
+            "dietary_fiber": "0.7g",
+            "dietary_fiber_dv": "2",
+            "sugars": "12.9g",
+            "sugars_dv": null,
+            "protein": "1.6g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "E",
+          "recipe_webcode": "H VGT H0 CR5"
+        }
+      ]
+    },
+    {
+      "name": "Noodle Bowl",
+      "items": [
+        {
+          "name": "Bean Sprouts",
+          "serving_size": "1/2 OZ",
+          "ingredients": "Local Bean Sprouts",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "2",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": null,
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "2.9mg",
+            "sodium_dv": "0",
+            "total_carb": "0.2g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.2g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Chicken Pho Broth (Fish)",
+          "serving_size": "8 oz",
+          "ingredients": "Water, Pho Chicken Base (Fish) (Salt, Sugar, Chicken Fat, Dried Chicken Broth, Maltodextrin, Yeast Extract, Spices, Fish Sauce Powder (Fermented Anchovies, Maltodextrin and Salt), Disodium Inosinate, Disodium Guanylate, Natural Flavoring), Local Yellow Onions, Ginger Root",
+          "allergens": [
+            "Fish",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "24",
+            "calories_from_fat": "13",
+            "total_fat": "1.4g",
+            "total_fat_dv": "2",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "1241.5mg",
+            "sodium_dv": "54",
+            "total_carb": "2.9g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "2.8g",
+            "sugars_dv": null,
+            "protein": "0.9g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "LPR H3 CR1"
+        },
+        {
+          "name": "Chicken for Pho",
+          "serving_size": "1 oz",
+          "ingredients": "Antibiotic Free Halal Chicken Tenderloin, Pan Spray (Canola Oil, Caprylic/Capric Triglycerides, Phosphated Mono and Diglycerides [Corn], Silicon Dioxide, Calcium Stearate, Propellant)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal"
+          ],
+          "nutrition": {
+            "calories": "28",
+            "calories_from_fat": "2",
+            "total_fat": "0.3g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "20.3mg",
+            "cholesterol_dv": null,
+            "sodium": "19.1mg",
+            "sodium_dv": "1",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "6.4g",
+            "protein_dv": "11"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "C",
+          "recipe_webcode": "H H4 CR3"
+        },
+        {
+          "name": "Chopped Cilantro",
+          "serving_size": "1/8 oz",
+          "ingredients": "Fresh Cilantro",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "1",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "1.6mg",
+            "sodium_dv": "0",
+            "total_carb": "0.1g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.1g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Diced Pulmuone Tofu",
+          "serving_size": "1 OZ",
+          "ingredients": "Extra Firm Tofu (Water, Organic Soybeans, Less than 2% of Magnesium Chloride, Calcium Sulfate)",
+          "allergens": [
+            "Soy"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "47",
+            "calories_from_fat": "25",
+            "total_fat": "2.7g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "3.9mg",
+            "sodium_dv": "0",
+            "total_carb": "0.8g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.8g",
+            "dietary_fiber_dv": "2",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "5.1g",
+            "protein_dv": "9"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H4 CR1"
+        },
+        {
+          "name": "Green Curry Pho Broth (Anchovies)",
+          "serving_size": "8 oz",
+          "ingredients": "Green Curry Sauce (Coconut Cream, Water, Cream, Fish Sauce (Anchovy Sauce [Anchovy, Sea Salt], Water, Salt, Cane Sugar), Sugar, Green Curry Paste (Green Chili Peppers, Onion, Ginger, Sea Salt, Lemongrass, Garlic, Vinegar, Spices, Dehydrated Garlic and Onion, Yeast, Flavors, Lime Juice Concentrate), Jalapeno Peppers, Contains less than 2% of: Canola Oil, Cilantro, Modified Food Starch, Onions, Garlic, Salt, Turmeric, Flavoring, Spice), Water",
+          "allergens": [
+            "Milk",
+            "Fish",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal"
+          ],
+          "nutrition": {
+            "calories": "249",
+            "calories_from_fat": "184",
+            "total_fat": "20.4g",
+            "total_fat_dv": "26",
+            "sat_fat": "15.9g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "22.7mg",
+            "cholesterol_dv": null,
+            "sodium": "1292.8mg",
+            "sodium_dv": "56",
+            "total_carb": "13.6g",
+            "total_carb_dv": "10",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "11.3g",
+            "sugars_dv": null,
+            "protein": "2.3g",
+            "protein_dv": "4"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H H1 CR1"
+        },
+        {
+          "name": "Jalapeno Peppers",
+          "serving_size": "1 OZ",
+          "ingredients": "Jalapeno Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "7",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.7mg",
+            "sodium_dv": "0",
+            "total_carb": "1.5g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.5g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.8g",
+            "sugars_dv": null,
+            "protein": "0.2g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Lime Wedge",
+          "serving_size": "1 slice",
+          "ingredients": "Limes",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "1",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.1mg",
+            "sodium_dv": "0",
+            "total_carb": "0.5g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0.1g",
+            "sugars_dv": null,
+            "protein": "0g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Onions",
+          "serving_size": "1 oz",
+          "ingredients": "Local Yellow Onions",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "11",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": null,
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.7mg",
+            "sodium_dv": "0",
+            "total_carb": "2.4g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0.5g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.3g",
+            "protein_dv": "1"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Pho Noodles",
+          "serving_size": "1 1/2 oz",
+          "ingredients": "Rice Noodles (Rice, Potato Starch, Tapioca Starch, Soybean Oil, Critic Acid, Potassium Sorbate, Sodium Bisulfate, Sodium Benzonate)",
+          "allergens": [
+            "Soy"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "11",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "1.7mg",
+            "sodium_dv": "0",
+            "total_carb": "2.7g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.2g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H4 CR1"
+        },
+        {
+          "name": "Scallions",
+          "serving_size": "1/2 OZ",
+          "ingredients": "Scallions",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "5",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": null,
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "2.3mg",
+            "sodium_dv": "0",
+            "total_carb": "1.1g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.3g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Thai Basil",
+          "serving_size": "1/8 oz",
+          "ingredients": "Thai Basil",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "1",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.1mg",
+            "sodium_dv": "0",
+            "total_carb": "0.1g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.1g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Vegetarian Pho Base",
+          "serving_size": "8 oz",
+          "ingredients": "Water, Vegetarian Soup Base (Salt, Sugar, Soybean Oil, Chinese Cabbage Extract, Yeast Extract, Mushroom Extract, Maltodextrin, Tomato, Disodium Inosinate, Disodium Guanylate and Natural Flavoring), Local Yellow Onions, Ginger Root",
+          "allergens": [
+            "Soy",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "24",
+            "calories_from_fat": "13",
+            "total_fat": "1.4g",
+            "total_fat_dv": "2",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "1260.1mg",
+            "sodium_dv": "55",
+            "total_carb": "3.8g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "2.8g",
+            "sugars_dv": null,
+            "protein": "0g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H3 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Display Station",
+      "items": [
+        {
+          "name": "Make Your Own Waffles",
+          "serving_size": "1 EACH",
+          "ingredients": "Water, Carbon's Pancake & Waffle Mix (CARBON:  Enriched Wheat Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Sugar, Leavening (Baking Soda, Sodium Aluminum Phosphate), Soybean Oil, Contains 2% or less of: Salt, Yellow Corn Flour, Malted Barley Flour, Dextrose, Buttermilk, Artificial and Natural Flavors  HEARTLAND FOOD:  Enriched Flour {Wheat Flour, Niacin, Iron, Thiamin Mononitrate, Riboflavin, Folic Acid], Sugar, Soy Flour, Yellow Corn Meal, Contains 2% or less of: Salt, Pam Oil, Leavening [Baking Soda, Sodium Aluminum Phosphate, Monocalcium Phosphate], Dextrose, Egg, Egg White, Dried Corn Syrup, Mono and Diglycerides, Sodium Caseinate, Natural and Artificial Flavors, Malted Barley Extract, Acesulfame Potassium, Soy Lecithin), Pan Spray (Water, Silicone, Polysorbate 80, Propylene Glycol, Ethyl and Propyl Paraben (preservative), Sodium Benzoate (preservative), Sodium Lauryl Sulfate)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "222",
+            "calories_from_fat": "20",
+            "total_fat": "2.2g",
+            "total_fat_dv": "3",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "637.1mg",
+            "sodium_dv": "28",
+            "total_carb": "44.5g",
+            "total_carb_dv": "34",
+            "dietary_fiber": "1.5g",
+            "dietary_fiber_dv": "4",
+            "sugars": "4.4g",
+            "sugars_dv": null,
+            "protein": "4.4g",
+            "protein_dv": "8"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGT H1 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Street Food",
+      "items": [
+        {
+          "name": "Cantonese Beef Stew",
+          "serving_size": "4 OZ",
+          "ingredients": "Water, Fresh Carrots, Korean Radish, Local Yellow Onions, Fresh Potatoes, Ginger Root, Light Soy Sauce (Water, Salt, Soybeans, Sugar, Wheat Flour, Less than 2% of Caramel Color, Lactic Acid, Sodium Benzoate, Disodium 5' - Inosinate and Disodium 5' - Guanylate. Sub (Kikkoman): Water, Soybeans, Wheat, Salt, Lactic Acid, Sodium Benzoate), Dark Soy Sauce Mushroom Flavor  (Soy Sauce (Water, Salt, Soybeans, Wheat Flour), Caramel Color, Sugar, Natural and Artificial Musbroom Flavor (Salt, Natural Flavoring, Artificial Flavoring, Disodium 5'-Inosinate and Disodium 6'-Guanylate), Disodium 6'-Inosinate and Disodiun 5'-Cuanylste, Sodium Banzcate), Canola Oil  , Cinnamon Sticks, Star Anise Spice, Garlic Cloves, Kosher Salt (Sea Salt), Shaoxing Cooking Wine (Water, Rice, Wheat, Salt, Caramel), Whole Bay Leaves",
+          "allergens": [
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "23",
+            "calories_from_fat": "6",
+            "total_fat": "0.7g",
+            "total_fat_dv": "1",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "150.2mg",
+            "sodium_dv": "7",
+            "total_carb": "4g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "0.7g",
+            "dietary_fiber_dv": "2",
+            "sugars": "0.8g",
+            "sugars_dv": null,
+            "protein": "0.6g",
+            "protein_dv": "1"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "LPR H4 CR1"
+        },
+        {
+          "name": "Jasmine Rice",
+          "serving_size": "3 OZ",
+          "ingredients": "Jasmine Rice (ASN PRIDE: White Jasmine Rice)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "93",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0mg",
+            "sodium_dv": "0",
+            "total_carb": "20.8g",
+            "total_carb_dv": "16",
+            "dietary_fiber": "0.6g",
+            "dietary_fiber_dv": "2",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "1.7g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGN H3\n CR2"
+        },
+        {
+          "name": "Spicy Garlic Tofu",
+          "serving_size": "4 oz",
+          "ingredients": "Extra Firm Tofu (Water, Organic Soybeans, Less than 2% of Magnesium Chloride, Calcium Sulfate), Fresh Red Peppers, Shallots, Fresh Green Peppers, Garlic Cloves, Canola Oil  , Scallions, Chili Bean Sauce (Salted Chili Peppers (Chili Peppers, Salt), Water, Fermented Soybean Paste (Water, Salt, Soybeans, Wheat Flour), Fermented Broad Bean Paste (Broad Beans, Water, Salt, Wheat Flour), Sugar, Modified Corn Starch, Chili Pepper Powder, Dehydrated Garlic, Soybean Oil, Lactic Acid, Disodium 5'-Inosinate & Disodium 5-Guanylate (Flavor Enhancers)), Vegetable Stir Fry Sauce (Water, Sugar, Soy Sauce (Water, Salt, Soybeans, Wheat Flour), Salt, Modified Corn Starch, Yeast Extract, Caramel Color, Natural & Artificial Mushroom Flavor (Natural Flavoring, Artificial Flavoring, Salt, Disodium 5'-Inosinate & Disodium 5'-Guanylate)), Corn Starch, Granulated Sugar, Sesame Oil, Szechuan Peppercorn , White Ground Pepper",
+          "allergens": [
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "183",
+            "calories_from_fat": "90",
+            "total_fat": "10g",
+            "total_fat_dv": "13",
+            "sat_fat": "1.8g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.1g",
+            "cholesterol": "0.3mg",
+            "cholesterol_dv": null,
+            "sodium": "740.9mg",
+            "sodium_dv": "32",
+            "total_carb": "11g",
+            "total_carb_dv": "8",
+            "dietary_fiber": "2.5g",
+            "dietary_fiber_dv": "7",
+            "sugars": "4.8g",
+            "sugars_dv": null,
+            "protein": "13.2g",
+            "protein_dv": "24"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Stir Fry Green Vegetables",
+          "serving_size": "3 oz",
+          "ingredients": "Local Chinese Broccoli, Local Bok Choy, Canola Oil  , Sesame Oil, Light Soy Sauce (Water, Salt, Soybeans, Sugar, Wheat Flour, Less than 2% of Caramel Color, Lactic Acid, Sodium Benzoate, Disodium 5' - Inosinate and Disodium 5' - Guanylate. Sub (Kikkoman): Water, Soybeans, Wheat, Salt, Lactic Acid, Sodium Benzoate), Garlic Cloves, Kosher Salt (Sea Salt), Granulated Sugar",
+          "allergens": [
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "34",
+            "calories_from_fat": "17",
+            "total_fat": "1.9g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "186mg",
+            "sodium_dv": "8",
+            "total_carb": "3.4g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "1.4g",
+            "dietary_fiber_dv": "4",
+            "sugars": "1.3g",
+            "sugars_dv": null,
+            "protein": "1.9g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Vegetable Spring Rolls",
+          "serving_size": "2 EACH",
+          "ingredients": "Vegetarian Spring Roll (Cabbage, Onions, Carrots, Salt, Pepper, Sesame Oil, Sugar, All Purpose Flour), Deep Frying Canola Oil   (Canola Oil, TBHQ and Citric Acid, Dimethylpolysiloxane. Dairy, Egg, Soy, Sesame, Corn and/or Wheat Products may be fried in this oil)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "158",
+            "calories_from_fat": "138",
+            "total_fat": "15.3g",
+            "total_fat_dv": "20",
+            "sat_fat": "1.4g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "16.7mg",
+            "sodium_dv": "1",
+            "total_carb": "5.6g",
+            "total_carb_dv": "4",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "1.1g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "B",
+          "recipe_webcode": "VGT H3 CR2"
+        }
+      ]
+    },
+    {
+      "name": "Tandoor",
+      "items": [
+        {
+          "name": "African Peri Peri Chicken",
+          "serving_size": "4 oz",
+          "ingredients": "Antibiotic Free Halal Chicken Thigh     (Boneless, Skinless Chicken Thighs, Containing up to 2% solution of Water, Vinegar. SUB (Farm Smart): Halal Antibiotic Free Chicken), Garlic Cloves, Jalapeno Pepper, Local Yellow Onions, Fresh Red Peppers, Extra Virgin Olive Oil, Canola Oil  , Lemon Juice (Lemons), Fresh Basil, Fresh Oregano, Kosher Salt (Sea Salt), Smoked Paprika (Paprika and Silicon Dioxide), Ground Cayenne Pepper, Ground Black Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "149",
+            "calories_from_fat": "63",
+            "total_fat": "7g",
+            "total_fat_dv": "9",
+            "sat_fat": "1.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "90.3mg",
+            "cholesterol_dv": null,
+            "sodium": "230.5mg",
+            "sodium_dv": "10",
+            "total_carb": "1.4g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.2g",
+            "sugars_dv": null,
+            "protein": "19.2g",
+            "protein_dv": "34"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "C",
+          "recipe_webcode": "H LPR H5 CR3"
+        },
+        {
+          "name": "Chickpea & Cauliflower Palava",
+          "serving_size": "4 oz",
+          "ingredients": "Low Sodium Garbanzo Beans / Chickpeas (Prepared Chickpeas [Garbanzo], Water, Salt, Calcium Chloride and Disodium EDTA. SUB (Zebec): Cooked Dried Chickpeas, Water, Salt, Disodium EDTA), Fresh Cauliflower Florets, Palava (Garlic Spinach) Sauce  (Water, Spinach without Salt, Onion, Tomato Paste [Tomatoes, Spices, Natural Flavors, Citric Acid], Arrowroot /Tapioca Flour, Ginger, Garlic, Turmeric, Salt, Thyme, Canola Oil, Coriander, Chili Flakes, Black Pepper, Cardamom), Canola Oil  , Garlic Cloves, Ginger Root, Kosher Salt (Sea Salt), Ground Turmeric, Ground Black Pepper, Fresh Thyme",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "82",
+            "calories_from_fat": "16",
+            "total_fat": "1.8g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "242.5mg",
+            "sodium_dv": "11",
+            "total_carb": "13.4g",
+            "total_carb_dv": "10",
+            "dietary_fiber": "3.1g",
+            "dietary_fiber_dv": "9",
+            "sugars": "2.4g",
+            "sugars_dv": null,
+            "protein": "4.3g",
+            "protein_dv": "8"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGN H5 CR2"
+        },
+        {
+          "name": "Creamy Cucumber Salad",
+          "serving_size": "2 oz",
+          "ingredients": "Fresh Cucumbers, CABOT Whole Milk Plain Greek Yogurt (Pasteurized Milk, Cream, Whey Protein Concentrate, Milk Protein Concentrate, Live Active Yogurt Cultures (Acidophilus, Bifidus, L. Bulgaricus, and S. Thermophilus), Vitamins A,C,D,E. SUB (CHOBANI Nonfat Plain Greek Yogurt): Cultured Nonfat Milk. Contains Live And Active Cultures: S. Thermophilus, L. Bulgaricus, L. Acidophilus, Bifidus, L. Casei, and L. Rhamnosus), Local Red Onions, Fresh Dill, Extra Virgin Olive Oil, Kosher Salt (Sea Salt), Sumac Spice Blend",
+          "allergens": [
+            "Milk"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "26",
+            "calories_from_fat": "11",
+            "total_fat": "1.2g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.6g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "1.7mg",
+            "cholesterol_dv": null,
+            "sodium": "80mg",
+            "sodium_dv": "3",
+            "total_carb": "2.6g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "1.4g",
+            "sugars_dv": null,
+            "protein": "1.6g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGT H2 CR1"
+        },
+        {
+          "name": "Jollof",
+          "serving_size": "4 OZ",
+          "ingredients": "Water, Greek Bella Rice (AGRINO: 100% Greek Long Grain Parboiled Rice), Local Crushed Tomatoes, Local Yellow Onions, Fresh Red Peppers, Tomato Paste (Tomato Paste, Less than 2% of: Salt, Citric Acid), Jalapeno Pepper, Canola Oil  , Garlic Cloves, Gluten Free Vegetable Broth (Sauteed Vegetable Puree Mix (Carrots, Onions, Celery), Salt, Sugar, Maltodextrin, Vegetable Oil (Corn and/or Canola Oil), 2% or less of Yeast Extract, Water, Potato Starch, Xanthan Gum, Natural Flavors, Carrot Juice Concentrate), Kosher Salt (Sea Salt), Paprika    (Paprika (Dried Ground Red Pepper) and Silicon Dioxide), Curry Powder (Coriander, Fenugreek, Turmeric, Cumin, Black Pepper, Bay Leaves, Celery Seed, Nutmeg, Cloves, Onion, Red Pepper and Ginger), Ground Coriander, Ground Cayenne Pepper, Ground Cumin, Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "101",
+            "calories_from_fat": "16",
+            "total_fat": "1.8g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "204.9mg",
+            "sodium_dv": "9",
+            "total_carb": "18.3g",
+            "total_carb_dv": "14",
+            "dietary_fiber": "1g",
+            "dietary_fiber_dv": "3",
+            "sugars": "1g",
+            "sugars_dv": null,
+            "protein": "1.8g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H4 CR1"
+        },
+        {
+          "name": "Lavash Bread",
+          "serving_size": "1 PIECE",
+          "ingredients": "Lavash Bread (Enriched Wheat Flour (Wheat Flour, Malted Barley Flour, Niacin, Reduced Iron, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Contains less than 2% of: Sugar, Wheat Gluten, Salt, Canola Oil, Yeast, Natural Mold Inhibitor (Cultured Wheat Flour, Vinegar), Microbial Enzymes, Fumaric Acid. Produced in a facility that has Soy and Sesame)",
+          "allergens": [
+            "Gluten",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "50",
+            "calories_from_fat": "4",
+            "total_fat": "0.4g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "88.3mg",
+            "sodium_dv": "4",
+            "total_carb": "9.8g",
+            "total_carb_dv": "8",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.7g",
+            "sugars_dv": null,
+            "protein": "1.7g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        },
+        {
+          "name": "Marinated Cabbage",
+          "serving_size": "1 oz",
+          "ingredients": "Local Red Cabbage, Fresh Local Cabbage, Local Apple Cider Vinegar  , Coriander Seeds, Whole Fennel Seed (Whole Fennel Seed), Granulated Sugar, Kosher Salt (Sea Salt), Sumac Spice Blend, Whole Bay Leaves",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "9",
+            "calories_from_fat": "1",
+            "total_fat": "0.1g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "56mg",
+            "sodium_dv": "2",
+            "total_carb": "2.1g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0.8g",
+            "dietary_fiber_dv": "2",
+            "sugars": "1.1g",
+            "sugars_dv": null,
+            "protein": "0.4g",
+            "protein_dv": "1"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Moraccan Green Garbanzo Bean Salad",
+          "serving_size": "2 oz",
+          "ingredients": "Green Garbanzo Beans, Roasted Red Peppers (Roasted Red Peppers, Water, Salt, Citric Acid), Fresh Cilantro, Extra Virgin Olive Oil, Paprika    (Paprika (Dried Ground Red Pepper) and Silicon Dioxide), Lemon Juice (Lemons), Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "71",
+            "calories_from_fat": "28",
+            "total_fat": "3.1g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.4g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "124.5mg",
+            "sodium_dv": "5",
+            "total_carb": "7.9g",
+            "total_carb_dv": "6",
+            "dietary_fiber": "2.3g",
+            "dietary_fiber_dv": "7",
+            "sugars": "0.3g",
+            "sugars_dv": null,
+            "protein": "2.8g",
+            "protein_dv": "5"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H6 CR1"
+        },
+        {
+          "name": "Sweet Onion Salad",
+          "serving_size": "2 oz",
+          "ingredients": "Local Red Onions, Local Apple Cider Vinegar  , Fresh Cilantro, Granulated Sugar, Kosher Salt (Sea Salt), Ground Cayenne Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "22",
+            "calories_from_fat": "1",
+            "total_fat": "0.1g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "12.6mg",
+            "sodium_dv": "1",
+            "total_carb": "5.2g",
+            "total_carb_dv": "4",
+            "dietary_fiber": "0.9g",
+            "dietary_fiber_dv": "3",
+            "sugars": "2.6g",
+            "sugars_dv": null,
+            "protein": "0.6g",
+            "protein_dv": "1"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Mediterranean",
+      "items": [
+        {
+          "name": "Arrabbiata Sauce",
+          "serving_size": "2 oz",
+          "ingredients": "Local Crushed Tomatoes, Extra Virgin Olive Oil, Garlic Cloves, Kosher Salt (Sea Salt), Crushed Red Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "47",
+            "calories_from_fat": "30",
+            "total_fat": "3.3g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.5g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "181.7mg",
+            "sodium_dv": "8",
+            "total_carb": "3.7g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "1.7g",
+            "sugars_dv": null,
+            "protein": "0.9g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H3 CR1"
+        },
+        {
+          "name": "Cheese Ravioli w/Artichokes & Pesto",
+          "serving_size": "4 oz",
+          "ingredients": "Cheese Ravioli (Filling: Ricotta Cheese (Pasteurized Milk, Whey, Cream, Vinegar, Salt, Xanthan Gum, Locust Bean Gum, Guar Gum), Modified Corn Starch, Romano Cheese (Pasteurized Cow's And Sheep's Milk, Rennet, Salt, Cheese Cultures, Animal Enzymes), Salt, Dried Whole Eggs, Mozzarella Cheese (Pasteurized Whole Milk, Cheese Cultures, Salt, Animal Enzymes), Parsley, Parmesan Cheese (Pasteurized Part Skim Milk, Salt, Cheese Cultures, Animal Enzymes), Black Pepper, Pasta: Enriched Durum Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Water, Dried Whole Egg, Turmeric Sub (Pede): Enriched Durum Flour (Niacin, Ferrous Sulfate, Thiamine Mononitrate, Riboflavin, Folic Acid), Ricotta, Cheese (Pasteurized Whey, Whole Milk, Cream, Vinegar), Water, Modified Food Starch, Romano Cheese (Sheep's Milk, Cheese Cultures, Enzymes) Pasteurized Whole Eggs, Yellow Corn Flour, Vegetable Oil (Soybean Oil), Apo-Carotenal, Beta-carotene, Xantham Gum, Guar Gum, Salt, Spices), Ripe Black Olives (Sliced Black Olives, Water, Salt, Lactic Acid, Ferrous Gluconate), Artichoke Hearts (Artichoke Hearts, Water, Salt and Citric Acid), Tuscan Tomato Pesto (Lemon Juice, Canola/Olive Oil Blend, Sugar, Tomatoes, Garlic Puree (Garlic, Citric Acid), Dijon Mustard (Water, Vinegar, Mustard Seed, Salt, White Wine, Fruit Pectin, Citric Acid, Tartaric Acid, Sugar, Spice), Basil, Cayenne Pepper Sauce (Aged Cayenne Red Peppers, Vinegar, Water, Salt, Garlic Powder), Oregano, Parsley, Shallots, Thyme), Marinara Sauce (Chopped Tomatoes, Olive Oil, Carrot, Sugar, Onion, Garlic, Basil, Mediterranean Sea Salt), Extra Virgin Olive Oil, Fresh Basil",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "272",
+            "calories_from_fat": "135",
+            "total_fat": "15g",
+            "total_fat_dv": "19",
+            "sat_fat": "4.8g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "26.3mg",
+            "cholesterol_dv": null,
+            "sodium": "517.2mg",
+            "sodium_dv": "22",
+            "total_carb": "30g",
+            "total_carb_dv": "23",
+            "dietary_fiber": "1.9g",
+            "dietary_fiber_dv": "6",
+            "sugars": "5.1g",
+            "sugars_dv": null,
+            "protein": "8.1g",
+            "protein_dv": "14"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "B",
+          "recipe_webcode": "VGT H3 CR2"
+        },
+        {
+          "name": "Fresh Grated Parmesan Cheese",
+          "serving_size": "1/4 OZ",
+          "ingredients": "Grated Parmesan Cheese    (Parmesan Cheese (Pasteurized Cow's Milk, Cheese Cultures, Salt, Microbial Enzymes), Hard Grated Cheese Style (Modified Food Starch, Water, Palm Oil Blend, Salt, Disodium Phosphate, Citric Acid, Xanthan Gum, Trisodium Citrate), Powdered Cellulose, and Calcium Propionate)",
+          "allergens": [
+            "Milk",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "28",
+            "calories_from_fat": "15",
+            "total_fat": "1.6g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "5.3mg",
+            "cholesterol_dv": null,
+            "sodium": "5mg",
+            "sodium_dv": "0",
+            "total_carb": "1.3g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "1.1g",
+            "sugars_dv": null,
+            "protein": "1.8g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "E",
+          "recipe_webcode": "H VGT H3 CR5"
+        },
+        {
+          "name": "Hake w/Tomato Confit & Garlic Herb Oil",
+          "serving_size": "1 each",
+          "ingredients": "Local Hake, Tomato Confit (Local Crushed Tomatoes, Extra Virgin Olive Oil, Garlic Cloves, Kosher Salt (Sea Salt), Paprika    (Paprika (Dried Ground Red Pepper) and Silicon Dioxide), Ground Black Pepper), Canola Oil  , Extra Virgin Olive Oil, Garlic Cloves, Canola Oil  , Fresh Parsley, Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [
+            "Fish"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "120",
+            "calories_from_fat": "58",
+            "total_fat": "6.4g",
+            "total_fat_dv": "8",
+            "sat_fat": "0.7g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "31.3mg",
+            "cholesterol_dv": null,
+            "sodium": "145.6mg",
+            "sodium_dv": "6",
+            "total_carb": "1.8g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0.6g",
+            "sugars_dv": null,
+            "protein": "13.4g",
+            "protein_dv": "24"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "E",
+          "recipe_webcode": "H LPR H5 CR5"
+        },
+        {
+          "name": "Italian Rstd Mushrooms & Vegetables",
+          "serving_size": "3 oz",
+          "ingredients": "Local Fresh Mushrooms   , Grape Tomatoes, Fresh Zucchini Squash, Fresh Cauliflower Florets, Extra Virgin Olive Oil, Garlic Cloves, Fresh Chives, Fresh Parsley, Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "44",
+            "calories_from_fat": "29",
+            "total_fat": "3.2g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.5g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "121.3mg",
+            "sodium_dv": "5",
+            "total_carb": "4.8g",
+            "total_carb_dv": "4",
+            "dietary_fiber": "0.8g",
+            "dietary_fiber_dv": "2",
+            "sugars": "1.5g",
+            "sugars_dv": null,
+            "protein": "1.7g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR VGN H4 CR2"
+        },
+        {
+          "name": "Marinara Sauce",
+          "serving_size": "2 OZL",
+          "ingredients": "Marinara Sauce (Chopped Tomatoes, Olive Oil, Carrot, Sugar, Onion, Garlic, Basil, Mediterranean Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "27",
+            "calories_from_fat": "14",
+            "total_fat": "1.6g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "137.5mg",
+            "sodium_dv": "6",
+            "total_carb": "3.2g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0.9g",
+            "dietary_fiber_dv": "3",
+            "sugars": "2.3g",
+            "sugars_dv": null,
+            "protein": "0.9g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Spaghetti",
+          "serving_size": "4 OZ",
+          "ingredients": "Thin Spaghetti   (100% Whole Durum Wheat Semolina, May Contain Soy), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Gluten",
+            "Soy",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "148",
+            "calories_from_fat": "7",
+            "total_fat": "0.8g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "7.9mg",
+            "sodium_dv": "0",
+            "total_carb": "31.2g",
+            "total_carb_dv": "24",
+            "dietary_fiber": "1.6g",
+            "dietary_fiber_dv": "5",
+            "sugars": "0.8g",
+            "sugars_dv": null,
+            "protein": "6.2g",
+            "protein_dv": "11"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGN H3 CR2"
+        },
+        {
+          "name": "Whole Grain Penne",
+          "serving_size": "4 OZ",
+          "ingredients": "Whole Grain Penne Pasta (100% Whole Durum Wheat Semolina. May contain soy), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Gluten",
+            "Soy",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "212",
+            "calories_from_fat": "10",
+            "total_fat": "1.1g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "22.6mg",
+            "sodium_dv": "1",
+            "total_carb": "31.3g",
+            "total_carb_dv": "24",
+            "dietary_fiber": "4.5g",
+            "dietary_fiber_dv": "13",
+            "sugars": "1.1g",
+            "sugars_dv": null,
+            "protein": "8.9g",
+            "protein_dv": "16"
+          },
+          "healthfulness": "70",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGT H7 CR2"
+        }
+      ]
+    },
+    {
+      "name": "Seasons",
+      "items": [
+        {
+          "name": "Baked Pakora",
+          "serving_size": "1 each",
+          "ingredients": "Vegetable Pakora (Onions, Potatoes (Potatoes, Dextrose, Disodium Pyrophosphate, Potassium Sorbate, Chick-Pea Flour, Split Chana Dal Flour), Spinach, Cauliflower, Spices, Jalapeno Peppers, Salt, Modified Food Starch, Corn Starch)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "23",
+            "calories_from_fat": "2",
+            "total_fat": "0.3g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "100.8mg",
+            "sodium_dv": "4",
+            "total_carb": "4g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "1g",
+            "dietary_fiber_dv": "3",
+            "sugars": "0.5g",
+            "sugars_dv": null,
+            "protein": "1g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "70",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN CR1"
+        },
+        {
+          "name": "Chana Masala Rasoi",
+          "serving_size": "4 oz",
+          "ingredients": "Low Sodium Garbanzo Beans / Chickpeas (Prepared Chickpeas [Garbanzo], Water, Salt, Calcium Chloride and Disodium EDTA. SUB (Zebec): Cooked Dried Chickpeas, Water, Salt, Disodium EDTA), Canola Oil  , Jalapeno Pepper, Water, Fresh Cilantro, Canola Oil  , Tomato Onion Masala Base (Onion, Tomato, Refined Sunflower Oil, Garlic, Ginger, Salt, Red Chilli Powder, Cumin Seeds, Turmeric Powder, Dried Fenugreek Leaves, Mix Spices), Garlic Cloves, Mixed Masala Powder (Coriander, Chili Red, Cumin, Turmeric, Salt White, Musk Melon, Dried Fenugreek Leaves, Mustard Seeds, Dried Garlic, Black Pepper, Dried Onion, Dried Ginger, Cardamom Amomum, Cinnamon, Fennel, Cloves, Nutmeg, Mace, Cardamom Green, Asafoetida), Ginger Root, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "232",
+            "calories_from_fat": "135",
+            "total_fat": "15g",
+            "total_fat_dv": "19",
+            "sat_fat": "1.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.1g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "192.8mg",
+            "sodium_dv": "8",
+            "total_carb": "19.6g",
+            "total_carb_dv": "15",
+            "dietary_fiber": "3.8g",
+            "dietary_fiber_dv": "11",
+            "sugars": "3.4g",
+            "sugars_dv": null,
+            "protein": "6.3g",
+            "protein_dv": "11"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGT H6 CR2"
+        },
+        {
+          "name": "Coriander Chutney",
+          "serving_size": "1 oz",
+          "ingredients": "Coriander Chutney (Cilantro, Soy Oil, Jalapeno Peppers, Water, Ginger, Sugar, Lemon Juice, Coconut, Salt, Spice, Coriander, Distilled Vinegar, Citric Acid, Sodium Benzoate, Xanthan Gum, Sodium Meta Bi-Sulfite, FD&C Blue 1, FD&C Yellow 5 Processed in a facility that uses Peanuts, other Tree Nuts,Soy, Milk, Wheat)",
+          "allergens": [
+            "Soy",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "14",
+            "calories_from_fat": "8",
+            "total_fat": "0.9g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "155.5mg",
+            "sodium_dv": "7",
+            "total_carb": "0.9g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        },
+        {
+          "name": "Cucumber & Yogurt Raita Jain",
+          "serving_size": "1 OZ",
+          "ingredients": "Fresh Cucumbers, CABOT Whole Milk Plain Greek Yogurt (Pasteurized Milk, Cream, Whey Protein Concentrate, Milk Protein Concentrate, Live Active Yogurt Cultures (Acidophilus, Bifidus, L. Bulgaricus, and S. Thermophilus), Vitamins A,C,D,E. SUB (CHOBANI Nonfat Plain Greek Yogurt): Cultured Nonfat Milk. Contains Live And Active Cultures: S. Thermophilus, L. Bulgaricus, L. Acidophilus, Bifidus, L. Casei, and L. Rhamnosus), Fresh Tomatoes, Whole Cumin Seed, Fresh Cilantro, Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Milk"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "12",
+            "calories_from_fat": "4",
+            "total_fat": "0.5g",
+            "total_fat_dv": "1",
+            "sat_fat": "0.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "1.1mg",
+            "cholesterol_dv": null,
+            "sodium": "25.9mg",
+            "sodium_dv": "1",
+            "total_carb": "1.1g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0.7g",
+            "sugars_dv": null,
+            "protein": "1g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGT H1 CR1"
+        },
+        {
+          "name": "Cumin Basmati Rice Jain",
+          "serving_size": "3 OZ",
+          "ingredients": "Basmati Rice (White Long Grain Rice), Canola Oil  , Whole Cumin Seed, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "142",
+            "calories_from_fat": "26",
+            "total_fat": "2.9g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "77.2mg",
+            "sodium_dv": "3",
+            "total_carb": "25.2g",
+            "total_carb_dv": "19",
+            "dietary_fiber": "1.3g",
+            "dietary_fiber_dv": "4",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "2.6g",
+            "protein_dv": "5"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR VGN H4 CR2"
+        },
+        {
+          "name": "Cumin Spinach Jain",
+          "serving_size": "3 OZ",
+          "ingredients": "Spinach, Canola Oil  , Jalapeno Pepper, Dry Fenugreek Leaves, Whole Cumin Seed, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "45",
+            "calories_from_fat": "28",
+            "total_fat": "3.2g",
+            "total_fat_dv": "4",
+            "sat_fat": "0.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "210.7mg",
+            "sodium_dv": "9",
+            "total_carb": "3.2g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "1.8g",
+            "dietary_fiber_dv": "5",
+            "sugars": "0.4g",
+            "sugars_dv": null,
+            "protein": "2.4g",
+            "protein_dv": "4"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H4 CR1"
+        },
+        {
+          "name": "Dal Tadka Jain",
+          "serving_size": "3 OZ",
+          "ingredients": "Toor Dal (Pigeon Pea), Canola Oil  , Whole Dried Arbol Chili , Fresh Tomatoes, Lemon Juice (Lemons), Kosher Salt (Sea Salt), Fresh Cilantro, Whole Cumin Seed, Ground Turmeric",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "319",
+            "calories_from_fat": "95",
+            "total_fat": "10.5g",
+            "total_fat_dv": "13",
+            "sat_fat": "0.8g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "574.7mg",
+            "sodium_dv": "25",
+            "total_carb": "39.5g",
+            "total_carb_dv": "30",
+            "dietary_fiber": "7g",
+            "dietary_fiber_dv": "21",
+            "sugars": "1.9g",
+            "sugars_dv": null,
+            "protein": "14.6g",
+            "protein_dv": "26"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H6 CR1"
+        },
+        {
+          "name": "Fresh Red Onions",
+          "serving_size": "1/4 OZ",
+          "ingredients": "Fresh Red Onions",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "4",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.1mg",
+            "sodium_dv": "0",
+            "total_carb": "0.8g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.5g",
+            "sugars_dv": null,
+            "protein": "0.1g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "GF Penne Pasta",
+          "serving_size": "4 OZ",
+          "ingredients": "GF Penne Pasta (Brown Rice Flour, Yellow Corn Flour, White Corn Flour, Rice Flour, Tapioca Starch, Quinoa Flour, Mono- and Diglycerides)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "203",
+            "calories_from_fat": "9",
+            "total_fat": "1g",
+            "total_fat_dv": "1",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0mg",
+            "sodium_dv": "0",
+            "total_carb": "43.5g",
+            "total_carb_dv": "33",
+            "dietary_fiber": "1g",
+            "dietary_fiber_dv": "3",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "4.1g",
+            "protein_dv": "7"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGN H5 CR2"
+        },
+        {
+          "name": "Marinara Jain",
+          "serving_size": "2 oz",
+          "ingredients": "MUTTI Pizza Sauce (Tomatoes, Mediterranean Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "23",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "171mg",
+            "sodium_dv": "7",
+            "total_carb": "3.6g",
+            "total_carb_dv": "3",
+            "dietary_fiber": "0.9g",
+            "dietary_fiber_dv": "3",
+            "sugars": "2.7g",
+            "sugars_dv": null,
+            "protein": "0.9g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Tamarind Date Chutney",
+          "serving_size": "1 oz",
+          "ingredients": "Tamarind and Date Chutney (Water, Sugar, Dates, Tamarind, Salt, Spices, Sodium Metabisulfite, Sodium Benzoates, Potassium Sorbate, Xanthan Gum)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "28",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "160.7mg",
+            "sodium_dv": "7",
+            "total_carb": "7.6g",
+            "total_carb_dv": "6",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "7.6g",
+            "sugars_dv": null,
+            "protein": "0g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Latino 1  WOR",
+      "items": [
+        {
+          "name": "Corn w/Red Peppers",
+          "serving_size": "3 oz",
+          "ingredients": "Corn Kernels (Corn. SUB (Nonpareil): Corn), Fresh Red Peppers, Lemon Juice (Lemons), Canola Oil  , Kosher Salt (Sea Salt), Ground Black Pepper",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "76",
+            "calories_from_fat": "22",
+            "total_fat": "2.4g",
+            "total_fat_dv": "3",
+            "sat_fat": "0.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "37.9mg",
+            "sodium_dv": "2",
+            "total_carb": "13.7g",
+            "total_carb_dv": "11",
+            "dietary_fiber": "1.7g",
+            "dietary_fiber_dv": "5",
+            "sugars": "4.9g",
+            "sugars_dv": null,
+            "protein": "2.4g",
+            "protein_dv": "4"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Homemade Guacamole",
+          "serving_size": "3 OZ",
+          "ingredients": "Avocado Pulp (Hass Avocado), Fresh Red Onions, Fresh Tomatoes, Lime Juice   (Lime Juice), Fresh Cilantro, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "112",
+            "calories_from_fat": "98",
+            "total_fat": "10.9g",
+            "total_fat_dv": "14",
+            "sat_fat": "1.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "278.7mg",
+            "sodium_dv": "12",
+            "total_carb": "5.7g",
+            "total_carb_dv": "4",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.5g",
+            "sugars_dv": null,
+            "protein": "0.1g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        },
+        {
+          "name": "Pinto Beans",
+          "serving_size": "3 OZ",
+          "ingredients": "Pinto Beans (Prepared Pinto Beans, Water, Salt, Calcium Chloride, and Calcium Disodium EDTA), Local Yellow Onions, Garlic Cloves, Canola Oil  , Gluten Free Vegetable Broth (Sauteed Vegetable Puree Mix (Carrots, Onions, Celery), Salt, Sugar, Maltodextrin, Vegetable Oil (Corn and/or Canola Oil), 2% or less of Yeast Extract, Water, Potato Starch, Xanthan Gum, Natural Flavors, Carrot Juice Concentrate), Fresh Red Peppers, Fresh Cilantro, Tomato Paste (Tomato Paste, Less than 2% of: Salt, Citric Acid), Adobo Seasoning (Salt, Granulated Garlic, Tricalcium Phosphate, Oregano, Black Pepper,Turmeric), Sazon Seasoning (Monosodium Glutamate, Salt, Dehydrated Garlic, Cumin, Yellow 5, Tricalcium Phosphate, Annatto, Mexican Saffron, Turmeric, Red 40), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "68",
+            "calories_from_fat": "16",
+            "total_fat": "1.8g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "260.5mg",
+            "sodium_dv": "11",
+            "total_carb": "10.6g",
+            "total_carb_dv": "8",
+            "dietary_fiber": "2g",
+            "dietary_fiber_dv": "6",
+            "sugars": "0.6g",
+            "sugars_dv": null,
+            "protein": "2.8g",
+            "protein_dv": "5"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Shredded Cheddar Cheese",
+          "serving_size": "1 OZ",
+          "ingredients": "Shredded Cheddar Cheese ((Pasteurized Milk, Cheese Cultures, Salt, Microbial Enzymes), Powdered Cellulose, Potassium Sorbate, Natamycin)",
+          "allergens": [
+            "Milk"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "115",
+            "calories_from_fat": "85",
+            "total_fat": "9.4g",
+            "total_fat_dv": "12",
+            "sat_fat": "5.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.3g",
+            "cholesterol": "28.1mg",
+            "cholesterol_dv": null,
+            "sodium": "185.1mg",
+            "sodium_dv": "8",
+            "total_carb": "0.9g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0.1g",
+            "sugars_dv": null,
+            "protein": "6.5g",
+            "protein_dv": "12"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "E",
+          "recipe_webcode": "H VGT H2 CR5"
+        },
+        {
+          "name": "Shredded Lettuce",
+          "serving_size": "1 OZ",
+          "ingredients": "Shredded Iceberg Lettuce",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "4",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "2.8mg",
+            "sodium_dv": "0",
+            "total_carb": "0.8g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.5g",
+            "sugars_dv": null,
+            "protein": "0.3g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Sibley's Pico de Gallo",
+          "serving_size": "1 OZ",
+          "ingredients": "Fresh Tomatoes, Fresh Red Onions, Jalapeno Pepper, Lime Juice   (Lime Juice), Fresh Cilantro, Kosher Salt (Sea Salt)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "6",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "128.8mg",
+            "sodium_dv": "6",
+            "total_carb": "1.4g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.8g",
+            "sugars_dv": null,
+            "protein": "0.2g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Sour Cream",
+          "serving_size": "1 OZ",
+          "ingredients": "CABOT Local Sour Cream (Cultured Milk, Cream, Modified Corn Starch, Guar Gum, Sodiumcitrate, Carrageenan, Locust Bean Gum)",
+          "allergens": [
+            "Milk",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "61",
+            "calories_from_fat": "46",
+            "total_fat": "5.1g",
+            "total_fat_dv": "6",
+            "sat_fat": "3.5g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "15.2mg",
+            "cholesterol_dv": null,
+            "sodium": "15.2mg",
+            "sodium_dv": "1",
+            "total_carb": "1g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "1g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR VGT H0 CR2"
+        },
+        {
+          "name": "Tacos Al Pastor Mi Tierra (Pork)",
+          "serving_size": "1 each",
+          "ingredients": "Sliced Boneless Pork Butt, MI TIERRA Local Corn Tortilla (Corn, Water, Calcium Hydroxide), Limes, Pineapple Chunks (Pineapple), Local Yellow Onions, White Vinegar (White Distilled Vinegar, Water), Orange Juice (Water, Min Maid Orange Juice Concentrate (100% Pure Squeezed Frozen Orange Juice Concentrate)), Ancho Chili Lime Paste (Bell Peppers, Canola/Olive Oil Blend, Onions, Garlic, Paprika, Lime Juice Concentrate, Ancho Chiles, Sugar, Salt, Lime Peel, Chipotle, Oregano, Cumin, Mustard, Black Pepper), Pineapple Juice   (ASCEND: Filtered Water, Pineapple Juice Concentrate, Ascorbic Acid (Vitamin C). DOLE:  Pineapple Juice from Concentrate (Water, Pineapple Juice Concentrate) and Ascorbic Acid (Vitamin C). REJUV: Filtered Water, Pineapple Juice Concentrate, Ascorbic Acid (Vitamin C)), Guajillo Pepper Paste  (Water, Dehydrated Guajillo Chile Peppers, Salt, Contains 2% or less of Modified Food Starch, Spices, Corn Oil, Distilled Vinegar, Dehydrated Garlic, Dehydrated Onion, Citric Acid), Fresh Cilantro, Achiote Paste (Water, Corn Flour, Annatto Seed, Salt, Garlic, Spices, Acetic Acid, Sodium Benzoate), Lime Juice   (Lime Juice), Garlic Cloves, Kosher Salt (Sea Salt), Whole Cumin Seed",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "162",
+            "calories_from_fat": "43",
+            "total_fat": "4.7g",
+            "total_fat_dv": "6",
+            "sat_fat": "1.4g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "29.8mg",
+            "cholesterol_dv": null,
+            "sodium": "135.6mg",
+            "sodium_dv": "6",
+            "total_carb": "18.5g",
+            "total_carb_dv": "14",
+            "dietary_fiber": "1.8g",
+            "dietary_fiber_dv": "5",
+            "sugars": "0.9g",
+            "sugars_dv": null,
+            "protein": "11g",
+            "protein_dv": "20"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "C",
+          "recipe_webcode": "LPR H3 CR3"
+        },
+        {
+          "name": "Yellow Rice",
+          "serving_size": "3 oz",
+          "ingredients": "Greek Bella Rice (AGRINO: 100% Greek Long Grain Parboiled Rice), Local Yellow Onions, Fresh Red Peppers, Canola Oil  , Garlic Cloves, Gluten Free Vegetable Broth (Sauteed Vegetable Puree Mix (Carrots, Onions, Celery), Salt, Sugar, Maltodextrin, Vegetable Oil (Corn and/or Canola Oil), 2% or less of Yeast Extract, Water, Potato Starch, Xanthan Gum, Natural Flavors, Carrot Juice Concentrate), Fresh Cilantro, Sazon Seasoning (Monosodium Glutamate, Salt, Dehydrated Garlic, Cumin, Yellow 5, Tricalcium Phosphate, Annatto, Mexican Saffron, Turmeric, Red 40), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "103",
+            "calories_from_fat": "12",
+            "total_fat": "1.3g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "115.6mg",
+            "sodium_dv": "5",
+            "total_carb": "19.3g",
+            "total_carb_dv": "15",
+            "dietary_fiber": "0.6g",
+            "dietary_fiber_dv": "2",
+            "sugars": "0.2g",
+            "sugars_dv": null,
+            "protein": "1.7g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H4 CR1"
+        }
+      ]
+    }
+  ]
+}

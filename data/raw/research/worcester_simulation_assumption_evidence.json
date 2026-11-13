@@ -1,0 +1,1481 @@
+{
+  "schema_version": "1.0",
+  "title": "Public-source evidence audit for Worcester dining simulation assumptions",
+  "research_as_of": "2026-11-12",
+  "scope": {
+    "campus": "University of Massachusetts Amherst",
+    "location": "Worcester Dining Commons",
+    "meal_period": "dinner",
+    "target_dates": {
+      "start": "2026-11-13",
+      "end": "2026-11-20",
+      "inclusive": true
+    },
+    "timezone": "America/New_York",
+    "category_count": 17
+  },
+  "interpretation": {
+    "missing_value_convention": {
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "meaning": "Not found in the reviewed public sources; not proof the data do not exist."
+    },
+    "evidence_status_definitions": {
+      "not_found": "No reviewed public evidence supplies the requested parameter.",
+      "context_only": "Real related facts exist but do not identify the requested parameter.",
+      "partially_verified": "Some factual components are verified; the requested full replacement remains unavailable.",
+      "historical_evidence_only": "Specific historical operation is documented; current operation has not been confirmed."
+    },
+    "assumptions_are_not_observations": true,
+    "user_repository_accessed": false,
+    "repository_note": "Paths and simulator behavior are taken from the user message. No repository, configuration values, staff review, private export or survey was inspected.",
+    "numeric_replacement_policy": "No invented distribution, event lift, persona prevalence, service duration, or production rule is supplied.",
+    "source_priority": "Official operational pages and primary reports; historical portfolio/tour for design context; vendor claims and individual anecdotes labeled separately.",
+    "scope_limit": "Target dates are future relative to this research. Scheduled events are inputs; realized attendance is not yet observed."
+  },
+  "categories": [
+    {
+      "id": "A01",
+      "category": "Expected students",
+      "user_provided_assumption": {
+        "value": 1800,
+        "unit": "students/dinner"
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Worcester distinct student dinner visitors by date",
+      "evidence_fact_ids": [
+        "F04"
+      ],
+      "why_evidence_does_not_replace_assumption": "A daily meal total does not identify meal-period shares, unique people, or student-only visitors. Neither 1,800 nor 3,000–4,000 is established by the source.",
+      "missing_fields": [
+        "dinner_entries_by_date",
+        "distinct_student_diners_by_date",
+        "observed_dinner_share"
+      ],
+      "data_request_ids": [
+        "R01"
+      ],
+      "user_referenced_paths": [
+        "sources/attendance/missing_and_data_request.json"
+      ],
+      "notes": []
+    },
+    {
+      "id": "A02",
+      "category": "Dinner hours",
+      "user_provided_assumption": {
+        "start": "16:30",
+        "end": "21:00",
+        "timezone": "America/New_York"
+      },
+      "evidence_status": "partially_verified",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Official dinner service start and end, by date",
+      "evidence_fact_ids": [
+        "F01",
+        "F02",
+        "F03"
+      ],
+      "why_evidence_does_not_replace_assumption": "Building hours and a late-night start do not prove a 16:30 dinner start or guarantee identical service at every counter.",
+      "missing_fields": [
+        "dinner_start_time",
+        "dinner_end_time",
+        "station_specific_hours"
+      ],
+      "data_request_ids": [
+        "R02"
+      ],
+      "user_referenced_paths": [],
+      "notes": [
+        "Use verified building hours as a separate field. Do not overwrite the dinner interval with 07:00–24:00.",
+        "An employee shift beginning at 16:30 is not evidence that dinner begins then."
+      ]
+    },
+    {
+      "id": "A03",
+      "category": "Arrival waves",
+      "user_provided_assumption": {
+        "peak_times": [
+          "17:20",
+          "18:15",
+          "19:30"
+        ],
+        "uniform_component_share": 0.15
+      },
+      "evidence_status": "not_found",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Observed Worcester dinner admissions by time bin",
+      "evidence_fact_ids": [
+        "F15"
+      ],
+      "why_evidence_does_not_replace_assumption": "Traffic indicators and livestream images do not yield a verified historical arrival distribution. Queue length, occupancy and entries are different measures.",
+      "missing_fields": [
+        "bin_counts",
+        "peak_times",
+        "uniform_component_share",
+        "date_specific_distribution"
+      ],
+      "data_request_ids": [
+        "R01"
+      ],
+      "user_referenced_paths": [
+        "sources/ecosystem/tools/meal_swipes.json"
+      ],
+      "notes": []
+    },
+    {
+      "id": "A04",
+      "category": "Day-to-day crowd",
+      "user_provided_assumption": {
+        "crowd_distribution": "same on every date"
+      },
+      "evidence_status": "partially_verified",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Date-specific counts and visitor composition",
+      "evidence_fact_ids": [],
+      "why_evidence_does_not_replace_assumption": "The dated calendar supplies event flags, not demand multipliers, attendance, or causal changes in crowd composition. Weekend effects also remain unmeasured.",
+      "missing_fields": [
+        "expected_entries_by_date",
+        "event_demand_lift",
+        "weekend_effect",
+        "visitor_composition_by_date"
+      ],
+      "data_request_ids": [
+        "R01",
+        "R08"
+      ],
+      "user_referenced_paths": [
+        "worcester/calendar.json"
+      ],
+      "notes": [
+        "See target_date_calendar for verified date flags and explicit null demand effects."
+      ]
+    },
+    {
+      "id": "A05",
+      "category": "To-order stations",
+      "user_provided_assumption": {
+        "stations": [
+          "Street Food",
+          "Sushi",
+          "Display"
+        ],
+        "possible_mapping": "stir fry = Street Food"
+      },
+      "evidence_status": "historical_evidence_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Current service mode by counter and item",
+      "evidence_fact_ids": [
+        "F05",
+        "F06",
+        "F07"
+      ],
+      "why_evidence_does_not_replace_assumption": "The 2020 tour supports Wok and Nori made-to-order service and separates Wok from Street Food. It does not verify 2026 operation; a Display category cannot establish a staffed cooking queue.",
+      "missing_fields": [
+        "current_Wok_service_mode",
+        "current_Street_Food_service_mode",
+        "current_Sushi_service_mode",
+        "current_Display_service_mode",
+        "shared_service_resources"
+      ],
+      "data_request_ids": [
+        "R02"
+      ],
+      "user_referenced_paths": [],
+      "notes": [
+        "Do not merge Wok and Street Food solely because one current menu lacks a Wok category.",
+        "Make-your-own wording does not by itself establish every aspect of the service workflow."
+      ]
+    },
+    {
+      "id": "A06",
+      "category": "Station slots",
+      "user_provided_assumption": {
+        "Mediterranean": {
+          "assumed_slot": 4,
+          "drawing_label": "Pizza"
+        },
+        "Seasons": {
+          "assumed_slot": 5,
+          "drawing_label": "Greens"
+        },
+        "Soups": {
+          "assumed_slot": 11,
+          "drawing_label": "Salad-bar frontage"
+        },
+        "Display": {
+          "assumed_slot": 14,
+          "drawing_label": "Teaching kitchen"
+        }
+      },
+      "evidence_status": "partially_verified",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Verified correspondence between current menu categories and physical counters",
+      "evidence_fact_ids": [
+        "F05",
+        "F06",
+        "F07"
+      ],
+      "why_evidence_does_not_replace_assumption": "The drawing labels and historical concept descriptions are useful references, but similarity of names does not verify all current mappings. The numeric slot identifiers are user model IDs, not asserted drawing room numbers.",
+      "missing_fields": [
+        "Mediterranean_counter",
+        "Seasons_counter",
+        "Soups_counter",
+        "Display_counter"
+      ],
+      "data_request_ids": [
+        "R03"
+      ],
+      "user_referenced_paths": [
+        "layout/floor_plan.json"
+      ],
+      "notes": [
+        "Do not call this a 2017 drawing: the reviewed PDF has 2021 metadata, and its original design date was not verified.",
+        "The tour associates Acqua E Terra with Mediterranean foods including pizza; this is historical semantic support, not current coordinates."
+      ]
+    },
+    {
+      "id": "A07",
+      "category": "Dish return",
+      "user_provided_assumption": {
+        "location": "west end by Dishroom 230"
+      },
+      "evidence_status": "partially_verified",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Customer dish-return opening and approach coordinates",
+      "evidence_fact_ids": [
+        "F06"
+      ],
+      "why_evidence_does_not_replace_assumption": "Dishroom 230 is labeled, but an internal dishroom location is insufficient to identify the public return opening or routing.",
+      "missing_fields": [
+        "opening_coordinates",
+        "approach_route",
+        "return_capacity"
+      ],
+      "data_request_ids": [
+        "R03"
+      ],
+      "user_referenced_paths": [
+        "layout/floor_plan.json"
+      ],
+      "notes": []
+    },
+    {
+      "id": "A08",
+      "category": "Servers and service time",
+      "user_provided_assumption": {
+        "source": "stations.json",
+        "numeric_values_provided_in_message": false
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Servers per station by time and measured service-time distributions",
+      "evidence_fact_ids": [
+        "F08"
+      ],
+      "why_evidence_does_not_replace_assumption": "Job responsibilities establish staff deployment and queue monitoring, not employee counts, seconds per customer, parallel capacity, or arrival rates.",
+      "missing_fields": [
+        "active_servers_by_time",
+        "service_time_distribution",
+        "batch_and_parallel_capacity"
+      ],
+      "data_request_ids": [
+        "R02"
+      ],
+      "user_referenced_paths": [
+        "stations.json"
+      ],
+      "notes": [
+        "Scanner processing time in a technology vendor description is not diner service time."
+      ]
+    },
+    {
+      "id": "A09",
+      "category": "Item roles",
+      "user_provided_assumption": {
+        "method": "rule-based classifier plus overrides"
+      },
+      "evidence_status": "not_found",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Culinary-reviewed item-role labels",
+      "evidence_fact_ids": [
+        "F07"
+      ],
+      "why_evidence_does_not_replace_assumption": "Menu categories, ingredients, allergens and nutrients do not validate simulator labels such as main, side, dessert, or how diners assemble a meal.",
+      "missing_fields": [
+        "staff_reviewed_role_by_item",
+        "multi_role_rules",
+        "review_date"
+      ],
+      "data_request_ids": [
+        "R04"
+      ],
+      "user_referenced_paths": [
+        "overrides.json",
+        "dcsim menu"
+      ],
+      "notes": []
+    },
+    {
+      "id": "A10",
+      "category": "Popularity",
+      "user_provided_assumption": {
+        "formula": "role prior / sqrt(same-role items at station) * staff multiplier"
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Item-level choice or consumption conditional on the offered menu",
+      "evidence_fact_ids": [
+        "F09"
+      ],
+      "why_evidence_does_not_replace_assumption": "Cuisine-level historical preference scores do not identify dish probabilities, a square-root dilution rule, portion demand, or the effect of queues and stockouts.",
+      "missing_fields": [
+        "item_choice_probabilities",
+        "served_portions",
+        "substitution_effects",
+        "portion_repeats",
+        "availability_adjustment"
+      ],
+      "data_request_ids": [
+        "R04",
+        "R06"
+      ],
+      "user_referenced_paths": [],
+      "notes": [
+        "Bradley–Terry parameters require actual pairwise-choice observations; no such Worcester dataset was found.",
+        "A campus sushi production total would not establish a probability of choosing a Worcester dinner item."
+      ]
+    },
+    {
+      "id": "A11",
+      "category": "Staff popularity multipliers",
+      "user_provided_assumption": {
+        "source": "overrides.json → popularity",
+        "entries": "empty according to user"
+      },
+      "evidence_status": "not_found",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Staff-reviewed or empirically fitted item multipliers",
+      "evidence_fact_ids": [],
+      "why_evidence_does_not_replace_assumption": "No published staff item multipliers were found; an empty override is not evidence for any particular multiplier.",
+      "missing_fields": [
+        "multiplier_by_item",
+        "baseline_definition",
+        "reviewer_or_fit_method",
+        "effective_dates"
+      ],
+      "data_request_ids": [
+        "R04"
+      ],
+      "user_referenced_paths": [
+        "overrides.json → popularity"
+      ],
+      "notes": []
+    },
+    {
+      "id": "A12",
+      "category": "Halal share",
+      "user_provided_assumption": {
+        "value": 0.07,
+        "denominator": "simulated diners"
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Share of Worcester dinner visitors who require halal food",
+      "evidence_fact_ids": [
+        "F10"
+      ],
+      "why_evidence_does_not_replace_assumption": "Food accommodation availability does not measure the fraction requiring it. Campus demographic composition cannot establish a dining-specific requirement.",
+      "missing_fields": [
+        "halal_requirement_share",
+        "survey_denominator",
+        "sampling_uncertainty"
+      ],
+      "data_request_ids": [
+        "R05"
+      ],
+      "user_referenced_paths": [],
+      "notes": [
+        "Do not infer halal requirement from nationality or presumed religion.",
+        "Requirements may overlap other dietary and social attributes."
+      ]
+    },
+    {
+      "id": "A13",
+      "category": "Athlete share",
+      "user_provided_assumption": {
+        "value": 0.1,
+        "denominator": "simulated diners"
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Defined activity or meal-goal attribute among Worcester dinner visitors",
+      "evidence_fact_ids": [
+        "F11"
+      ],
+      "why_evidence_does_not_replace_assumption": "Intramural participation, varsity or club membership and high-protein meal preference are distinct constructs. Their populations may overlap and differ from Worcester dinner visitors.",
+      "missing_fields": [
+        "athlete_definition",
+        "visitor_share",
+        "self_reported_protein_goal",
+        "overlap_with_other_personas"
+      ],
+      "data_request_ids": [
+        "R05"
+      ],
+      "user_referenced_paths": [],
+      "notes": []
+    },
+    {
+      "id": "A14",
+      "category": "Other persona shares and attributes",
+      "user_provided_assumption": {
+        "personas": [
+          "rushed",
+          "social"
+        ],
+        "shares": "hand-written; numeric values not supplied"
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Representative visit-motive frequencies and joint attributes",
+      "evidence_fact_ids": [
+        "F12"
+      ],
+      "why_evidence_does_not_replace_assumption": "One student narrative supports possible motives, not their frequency, time-budget distribution, or joint probabilities.",
+      "missing_fields": [
+        "rushed_share",
+        "social_share",
+        "time_budget_distribution",
+        "group_size_distribution",
+        "joint_attribute_distribution"
+      ],
+      "data_request_ids": [
+        "R05"
+      ],
+      "user_referenced_paths": [],
+      "notes": [
+        "LLM-generated personas are synthetic scenario inputs, not real observations or an empirical replacement for a survey.",
+        "Rushed and social are not necessarily mutually exclusive; do not force shares to sum to one without a justified definition."
+      ]
+    },
+    {
+      "id": "A15",
+      "category": "Baseline kitchen plan",
+      "user_provided_assumption": {
+        "source": "kitchen/<date>_dinner.json generated by dcsim prepare"
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Actual planned production and actual batch outputs for Worcester dinners",
+      "evidence_fact_ids": [
+        "F08",
+        "F13"
+      ],
+      "why_evidence_does_not_replace_assumption": "Aggregate tracked production and prep-sheet responsibilities do not disclose recipe-level planned portions, batch times, or exports.",
+      "missing_fields": [
+        "planned_portions_by_item",
+        "actual_batches",
+        "portion_weights",
+        "initial_stock",
+        "production_export"
+      ],
+      "data_request_ids": [
+        "R06"
+      ],
+      "user_referenced_paths": [
+        "kitchen/<date>_dinner.json",
+        "dcsim prepare"
+      ],
+      "notes": [
+        "No public FoodPro production sheet or Metafoodx raw Worcester dinner export was found.",
+        "This report does not assert private data access, API availability, or the exact current Worcester planning software from an old product reference."
+      ]
+    },
+    {
+      "id": "A16",
+      "category": "Planner rules",
+      "user_provided_assumption": {
+        "batch": "approximately demand in one hold time",
+        "reorder": "0.8 * peak rate * cook time",
+        "last_batch_minutes_before_close": 20
+      },
+      "evidence_status": "context_only",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Actual batch, replenishment and end-of-service decisions",
+      "evidence_fact_ids": [
+        "F08",
+        "F14"
+      ],
+      "why_evidence_does_not_replace_assumption": "Public aggregate waste intensity does not identify these decision rules. A campus average is not a bound on a specific dining hall, meal period, or waste stream.",
+      "missing_fields": [
+        "batch_rule",
+        "reorder_threshold",
+        "last_batch_policy",
+        "Worcester_line_waste_by_item"
+      ],
+      "data_request_ids": [
+        "R06",
+        "R07"
+      ],
+      "user_referenced_paths": [],
+      "notes": [
+        "Remove the proposed 7.19 oz/swipe upper-bound interpretation. Keep the figure only as an external campus benchmark.",
+        "Convert portion leftovers with measured item-specific weights, then compare only after aligning location, dates, waste streams and denominator.",
+        "The observed year-to-year aggregate difference does not measure the causal effect of a particular tool."
+      ]
+    },
+    {
+      "id": "A17",
+      "category": "Cook and hold times by role",
+      "user_provided_assumption": {
+        "source": "kitchen_defaults.json",
+        "numeric_values_provided_in_message": false
+      },
+      "evidence_status": "not_found",
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "required_measure": "Actual recipe, batch-size and equipment-specific production and quality-hold times",
+      "evidence_fact_ids": [
+        "F08"
+      ],
+      "why_evidence_does_not_replace_assumption": "Published job duties contain no usable duration table. A generic role or food-safety ceiling is not an observed Worcester cooking or quality-holding time.",
+      "missing_fields": [
+        "prep_minutes",
+        "cook_minutes",
+        "ready_lead_minutes",
+        "quality_hold_minutes",
+        "batch_size",
+        "equipment_constraints"
+      ],
+      "data_request_ids": [
+        "R07"
+      ],
+      "user_referenced_paths": [
+        "kitchen_defaults.json"
+      ],
+      "notes": []
+    }
+  ],
+  "verified_context": [
+    {
+      "id": "F01",
+      "finding": "Regular Worcester building operating schedule",
+      "value": {
+        "open": "07:00",
+        "close": "24:00",
+        "days": "Monday–Sunday",
+        "timezone": "America/New_York"
+      },
+      "source_ids": [
+        "S01"
+      ],
+      "applicability": "Building availability, not verified dinner service interval"
+    },
+    {
+      "id": "F02",
+      "finding": "Date-specific Worcester building hours",
+      "value": {
+        "2026-11-13": {
+          "open": "07:00",
+          "close": "24:00"
+        },
+        "2026-11-14": {
+          "open": "07:00",
+          "close": "24:00"
+        },
+        "2026-11-15": {
+          "open": "07:00",
+          "close": "24:00"
+        }
+      },
+      "source_ids": [
+        "S02"
+      ],
+      "applicability": "Dates actually present in the reviewed table"
+    },
+    {
+      "id": "F03",
+      "finding": "Advertised late-night interval",
+      "value": {
+        "start": "21:00",
+        "end": "24:00",
+        "heading_days": "Sunday–Saturday",
+        "prose_days": "Sunday–Thursday",
+        "day_schedule_conflict": true
+      },
+      "source_ids": [
+        "S01"
+      ],
+      "applicability": "21:00 boundary is supported; the exact days need confirmation"
+    },
+    {
+      "id": "F04",
+      "finding": "Historical approximate Worcester throughput",
+      "value": 12000,
+      "unit": "meals/day",
+      "approximate": true,
+      "reference_year": 2023,
+      "source_ids": [
+        "S18"
+      ],
+      "applicability": "Context only; not dinner headcount"
+    },
+    {
+      "id": "F05",
+      "finding": "Historical station service descriptions",
+      "value": {
+        "Wok": "made-to-order stir-fry",
+        "Nori": "individual sushi rolls made to order",
+        "Street Food": "separate concept from Wok",
+        "Teaching Kitchen": "instruction, recipe testing and guest chefs"
+      },
+      "reference_year": 2020,
+      "source_ids": [
+        "S07"
+      ],
+      "applicability": "Historical service concepts, not confirmed current modes"
+    },
+    {
+      "id": "F06",
+      "finding": "Labels in published second-floor design drawing",
+      "value": [
+        "Dishroom 230",
+        "Pizza",
+        "Greens",
+        "Wok",
+        "Street Food",
+        "Latin",
+        "Grill",
+        "Naan",
+        "Salad Bar",
+        "Sushi",
+        "Noodles",
+        "Teaching Kitchen"
+      ],
+      "source_ids": [
+        "S08",
+        "S08_PDF"
+      ],
+      "applicability": "Physical design reference; current category-to-counter correspondence remains unverified"
+    },
+    {
+      "id": "F07",
+      "finding": "Current menu-category examples",
+      "value": [
+        "Mediterranean",
+        "Seasons",
+        "Soups",
+        "Display",
+        "Street Food",
+        "Sushi",
+        "Tandoor"
+      ],
+      "source_ids": [
+        "S10"
+      ],
+      "applicability": "Names only; Display includes a make-your-own-waffles listing and does not prove staffed made-to-order service"
+    },
+    {
+      "id": "F08",
+      "finding": "Worcester cook responsibilities",
+      "value": [
+        "Prep sheets and ingredient par levels",
+        "Recipe-based production and portioning",
+        "Staff allocation within a station",
+        "Queue monitoring and requests for extra help"
+      ],
+      "source_ids": [
+        "S11",
+        "S11B"
+      ],
+      "applicability": "Qualitative practices documented in indexed job descriptions; no numeric rules"
+    },
+    {
+      "id": "F09",
+      "finding": "Cuisine preference percentages printed in 2023 slide text",
+      "value": {
+        "Chinese": 37.0,
+        "Mediterranean": 32.8,
+        "American Southern": 32.2,
+        "Latino": 29.9,
+        "Indian": 24.4,
+        "Korean": 23.2
+      },
+      "unit": "percent as presented",
+      "source_ids": [
+        "S12"
+      ],
+      "applicability": "Historical campus preference context, not exclusive dish or station meal shares",
+      "limitations": [
+        "The accompanying Mediterranean chart appears to round differently (32.9).",
+        "The listed percentages exceed 100 when summed; response design is not specified.",
+        "Do not label these as verified liked or multi-select answers without the questionnaire."
+      ]
+    },
+    {
+      "id": "F10",
+      "finding": "Halal accommodation",
+      "value": "Official dietary guidance lists halal availability; historical Worcester tour identifies certified halal offerings at Tandoor.",
+      "source_ids": [
+        "S13",
+        "S07"
+      ],
+      "applicability": "Availability; no prevalence rate"
+    },
+    {
+      "id": "F11",
+      "finding": "Intramural participation reported for 2025",
+      "value": {
+        "participants_lower_bound_exclusive": 5700,
+        "article_description": "almost one quarter of undergraduates"
+      },
+      "source_ids": [
+        "S14"
+      ],
+      "applicability": "Campus participation only; not athlete diet prevalence"
+    },
+    {
+      "id": "F12",
+      "finding": "Student decision factors described in an individual account",
+      "value": [
+        "Time before class",
+        "Avoiding crowds",
+        "Checking livestream",
+        "Residence and bus proximity",
+        "Meeting other students"
+      ],
+      "source_ids": [
+        "S15"
+      ],
+      "applicability": "Qualitative examples; no population shares or distribution"
+    },
+    {
+      "id": "F13",
+      "finding": "FY2026 tracking summary",
+      "value": {
+        "production_tracked_lb_rounded": 1790000,
+        "systems": 16,
+        "locations": 6
+      },
+      "source_ids": [
+        "S16"
+      ],
+      "applicability": "Aggregate tracked production, not public per-dish plans"
+    },
+    {
+      "id": "F14",
+      "finding": "Reported waste intensity",
+      "value": {
+        "FY2025": 7.33,
+        "FY2026": 7.19
+      },
+      "unit": "oz/meal swipe",
+      "source_ids": [
+        "S16"
+      ],
+      "applicability": "Campus report benchmark only; no Worcester dinner line-waste bound"
+    },
+    {
+      "id": "F15",
+      "finding": "Public traffic information exists",
+      "value": "UMass advertises live traffic reporting in its app and links Worcester livestreams.",
+      "source_ids": [
+        "S04",
+        "S01"
+      ],
+      "applicability": "Does not provide a reviewed historical numeric admissions dataset"
+    }
+  ],
+  "target_date_calendar": [
+    {
+      "date": "2026-11-13",
+      "weekday": "Friday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-14",
+      "weekday": "Saturday",
+      "weekend": true,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "VSA Food Fair",
+          "location": "Hampshire Dining Commons",
+          "meal_period": null,
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-15",
+      "weekday": "Sunday",
+      "weekend": true,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-16",
+      "weekday": "Monday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-17",
+      "weekday": "Tuesday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-18",
+      "weekday": "Wednesday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "Friendsgiving Dinner",
+          "location": "All dining commons, including Worcester",
+          "meal_period": "dinner",
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        },
+        {
+          "name": "UMass home football vs Akron",
+          "location": "McGuirk Alumni Stadium",
+          "meal_period": null,
+          "source_ids": [
+            "S06"
+          ],
+          "kickoff_time": null,
+          "kickoff_status": "not announced in reviewed October 29 notice"
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-19",
+      "weekday": "Thursday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "African Student Dinner",
+          "location": "Berkshire Dining Commons",
+          "meal_period": "late night",
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-20",
+      "weekday": "Friday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "TCSA Dinner",
+          "location": "Worcester Dining Commons",
+          "meal_period": "dinner",
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    }
+  ],
+  "corrections_to_proposed_interpretations": [
+    {
+      "claim": "1,800 dinner visitors may be low because dinner should be one quarter to one third of daily meals",
+      "assessment": "not established",
+      "reason": "The dinner share is itself assumed; daily meal throughput cannot validate a different dinner count."
+    },
+    {
+      "claim": "The drawing is from 2017",
+      "assessment": "not verified",
+      "reason": "Reviewed PDF metadata gives July 14, 2021. Neither metadata nor a portfolio page proves original drawing date or current as-built condition.",
+      "source_ids": [
+        "S08_PDF"
+      ]
+    },
+    {
+      "claim": "Street Food is the same station as the made-to-order Wok",
+      "assessment": "historical evidence distinguishes them",
+      "source_ids": [
+        "S07",
+        "S08_PDF"
+      ]
+    },
+    {
+      "claim": "The cuisine scores are known liked percentages and can be normalized into meal shares",
+      "assessment": "unsupported",
+      "reason": "The questionnaire and response design are not established on the reviewed slide; cuisine preference is not item consumption.",
+      "source_ids": [
+        "S12"
+      ]
+    },
+    {
+      "claim": "7.19 oz/swipe is an upper bound for Worcester dinner line waste",
+      "assessment": "invalid without matched scope",
+      "reason": "An average over a broader population cannot bound a subgroup average or isolate a particular waste stream.",
+      "source_ids": [
+        "S16"
+      ]
+    },
+    {
+      "claim": "LLM-generated personas replace survey data",
+      "assessment": "synthetic only",
+      "reason": "They may support scenario exploration but do not estimate real population prevalence."
+    }
+  ],
+  "next_data_requests": [
+    {
+      "id": "R01",
+      "name": "Attendance and arrival export",
+      "prospective_holder": "UMass Dining / UCard / meal-plan system administrator",
+      "access": "Not obtained; request aggregated counts, no student identifiers",
+      "fields": [
+        "service_date",
+        "location_id",
+        "local_timezone",
+        "meal_period_definition",
+        "bin_start",
+        "bin_end",
+        "accepted_entry_count",
+        "unique_diners_if_available",
+        "reentry_count_if_available",
+        "guest_and_staff_count_if_available",
+        "closures_or_reader_outages"
+      ],
+      "purpose": "Dinner expected counts and empirically observed arrival distributions"
+    },
+    {
+      "id": "R02",
+      "name": "Station operations and staffing",
+      "prospective_holder": "Worcester management",
+      "access": "Staff confirmation or observations needed",
+      "fields": [
+        "service_date",
+        "station_id",
+        "public_counter_name",
+        "physical_counter_id",
+        "mode_by_menu_item",
+        "active_servers_by_time",
+        "queue_join_time",
+        "service_start_time",
+        "handoff_time",
+        "batch_size",
+        "shared_staff_or_equipment"
+      ],
+      "purpose": "Service mode, server counts, service-time distributions and capacity"
+    },
+    {
+      "id": "R03",
+      "name": "Current location verification",
+      "prospective_holder": "Worcester facilities / management",
+      "access": "Current plan or authorized photo walk",
+      "fields": [
+        "as_of_date",
+        "counter_label",
+        "counter_polygon_or_coordinates",
+        "queue_frontage",
+        "dish_return_opening",
+        "accessible_routes",
+        "scale",
+        "coordinate_origin"
+      ],
+      "purpose": "Current menu category mapping and dish return position"
+    },
+    {
+      "id": "R04",
+      "name": "Menu role review and dish-choice observations",
+      "prospective_holder": "Worcester culinary team / students",
+      "access": "Staff review and consent-based survey or aggregated consumption data",
+      "fields": [
+        "menu_date",
+        "meal_period",
+        "item_id",
+        "recipe_id",
+        "station_id",
+        "portion_definition",
+        "staff_verified_role",
+        "availability_start_end",
+        "servings_taken",
+        "stockout_intervals",
+        "pairwise_choice_question",
+        "respondent_sampling_method",
+        "survey_sample_size"
+      ],
+      "purpose": "Validate classification and estimate item demand while accounting for availability"
+    },
+    {
+      "id": "R05",
+      "name": "Diet and visit-motive survey",
+      "prospective_holder": "Student research survey / UMass Dining research team",
+      "access": "No representative Worcester dinner data found",
+      "fields": [
+        "survey_date",
+        "location_and_meal_sampling_frame",
+        "sample_size",
+        "response_rate",
+        "survey_weight_if_any",
+        "self_reported_halal_requirement",
+        "self_reported_activity_and_meal_goal",
+        "time_budget",
+        "social_dining_intent",
+        "dietary_constraints",
+        "portion_preference",
+        "question_wording",
+        "overlap_between_attributes"
+      ],
+      "purpose": "Estimate visitor-specific shares without nationality or activity proxies"
+    },
+    {
+      "id": "R06",
+      "name": "Planned and actual kitchen production",
+      "prospective_holder": "UMass Dining production-system / Metafoodx administrator",
+      "access": "No private export or authorization established",
+      "fields": [
+        "service_date",
+        "meal_period",
+        "station_id",
+        "recipe_id",
+        "item_name",
+        "planned_portions",
+        "portion_weight_g",
+        "batch_id",
+        "batch_start",
+        "ready_time",
+        "portions_produced",
+        "portions_sent_to_line",
+        "leftover_weight_g",
+        "reuse_weight_g",
+        "donation_weight_g",
+        "discard_weight_g",
+        "measurement_method"
+      ],
+      "purpose": "Compare a real baseline plan with actual production and line leftovers"
+    },
+    {
+      "id": "R07",
+      "name": "Batch rules and time study",
+      "prospective_holder": "Worcester chefs / shift supervisors",
+      "access": "Staff estimates or timed observations needed",
+      "fields": [
+        "item_or_recipe_id",
+        "batch_size",
+        "equipment",
+        "prep_minutes",
+        "active_cook_minutes",
+        "elapsed_ready_minutes",
+        "replenishment_lead_minutes",
+        "quality_hold_minutes",
+        "last_batch_decision",
+        "stockout_policy",
+        "actual_order_time",
+        "actual_ready_time"
+      ],
+      "purpose": "Estimate recipe- and resource-dependent cook, hold and reorder behavior"
+    },
+    {
+      "id": "R08",
+      "name": "Matched event-night counts",
+      "prospective_holder": "UMass Dining",
+      "access": "Not found publicly",
+      "fields": [
+        "service_date",
+        "event_id",
+        "event_location",
+        "event_start_end",
+        "Worcester_dinner_entries",
+        "comparison_dates",
+        "menu",
+        "weather",
+        "academic_calendar",
+        "service_hours",
+        "attendance_measure_definition"
+      ],
+      "purpose": "Estimate event effects with comparison nights instead of assigning an unmeasured lift"
+    }
+  ],
+  "excluded_substitutions": [
+    "Generic service-time studies from other universities",
+    "Search snippets with unsourced dinner schedules",
+    "Employee shift hours used as meal-period hours",
+    "Vendor scanner speed used as customer service time",
+    "Nationality or presumed religion used to infer diet",
+    "Sports membership used to infer protein preference",
+    "Food-safety limits used as actual quality-hold times",
+    "Historical station descriptions treated as current confirmation"
+  ],
+  "search_log": [
+    {
+      "topic": "Attendance and arrivals",
+      "queries": [
+        "Worcester dining hourly traffic dinner swipes",
+        "UMass Worcester service counts dinner attendance",
+        "UMass Worcester arrival queue service time study"
+      ],
+      "source_ids": [
+        "S01",
+        "S03",
+        "S04",
+        "S18"
+      ],
+      "result": "No public date/period attendance or numeric time-bin dataset found."
+    },
+    {
+      "topic": "Hours",
+      "queries": [
+        "site.umassdining.com Worcester dinner 4:30 hours"
+      ],
+      "source_ids": [
+        "S01",
+        "S02"
+      ],
+      "result": "Building and advertised late-night hours found; exact dinner start unverified."
+    },
+    {
+      "topic": "Layout and service operation",
+      "queries": [
+        "Worcester dining dish return floor plan",
+        "Worcester Seasons Mediterranean Display station layout",
+        "Worcester Wok Street Food made to order"
+      ],
+      "source_ids": [
+        "S07",
+        "S08",
+        "S08_PDF",
+        "S09",
+        "S10"
+      ],
+      "result": "Historical operation and design labels found; current mapping and dish-return opening unverified."
+    },
+    {
+      "topic": "Staffing and production rules",
+      "queries": [
+        "site.careers.umass.edu Worcester Cook I queue",
+        "site.careers.pageuppeople.com Worcester prep sheets",
+        "Worcester production sheets cook holding time batch reorder"
+      ],
+      "source_ids": [
+        "S11",
+        "S11B"
+      ],
+      "result": "Qualitative prep, par-level, queue and staffing responsibilities; no measured constants."
+    },
+    {
+      "topic": "Visitor attributes and item preferences",
+      "queries": [
+        "UMass halal percent students",
+        "UMass Worcester student cuisine preference survey",
+        "UMass intramural participation 2025 2026"
+      ],
+      "source_ids": [
+        "S12",
+        "S13",
+        "S14",
+        "S15"
+      ],
+      "result": "Context found; no representative Worcester dinner persona shares or item-choice dataset."
+    },
+    {
+      "topic": "Production and leftovers",
+      "queries": [
+        "Metafoodx UMass export production data",
+        "UMass FoodPro production sheet portions",
+        "UMass Dining FY2026 food waste report"
+      ],
+      "source_ids": [
+        "S16",
+        "S17"
+      ],
+      "result": "Aggregate tracking and waste report found; no reviewed public raw plan or leftovers export."
+    },
+    {
+      "topic": "Events",
+      "queries": [
+        "UMass Dining November 2026 calendar Worcester TCSA Friendsgiving",
+        "UMass football November 18 2026 Akron"
+      ],
+      "source_ids": [
+        "S05",
+        "S05_IMAGE",
+        "S06"
+      ],
+      "result": "Scheduled dates verified; attendance effects not found."
+    }
+  ],
+  "sources": [
+    {
+      "id": "S01",
+      "title": "Worcester location and operating hours",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/locations-menus/worcester",
+      "source_type": "official_webpage",
+      "locator": "Regular Hours; Late Night",
+      "access_date": "2026-11-12",
+      "limitation": "Late-night heading and prose disagree about days; building hours do not establish meal-period boundaries."
+    },
+    {
+      "id": "S02",
+      "title": "Hours of Operation",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/hours",
+      "source_type": "official_webpage",
+      "locator": "Worcester row, November 11–15 table",
+      "access_date": "2026-11-12",
+      "limitation": "A changing webpage; the reviewed date-specific table stops at November 15."
+    },
+    {
+      "id": "S03",
+      "title": "Meal-plan FAQ",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/faq",
+      "source_type": "official_webpage",
+      "locator": "Meal-plan usage / GET",
+      "access_date": "2026-11-12",
+      "limitation": "Student account access is not a public bulk swipe export."
+    },
+    {
+      "id": "S04",
+      "title": "UMass Dining app listing",
+      "publisher": "UMass Dining / Google Play",
+      "url": "https://play.google.com/store/apps/details?hl=en_US&id=com.ionicframework.androidumassdining468431",
+      "source_type": "official_app_listing",
+      "locator": null,
+      "access_date": "2026-11-12",
+      "limitation": "Advertised real-time traffic is not a published history of counted arrivals."
+    },
+    {
+      "id": "S05",
+      "title": "November 2026 dining events",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/locations-menus/upcoming-specials",
+      "source_type": "official_calendar",
+      "locator": "November Calendar image linked from page",
+      "access_date": "2026-11-12",
+      "limitation": "Scheduled events, without attendance measurements."
+    },
+    {
+      "id": "S05_IMAGE",
+      "title": "November 2026 calendar image",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/sites/default/files/events/Events%20Calendar%202026%20-%20Web%20Flyer%20%288.5x11%29%20%283%29%20%281%29.png",
+      "source_type": "official_calendar_image",
+      "locator": null,
+      "access_date": "2026-11-12",
+      "limitation": "Image was visually inspected; abbreviations are retained as published."
+    },
+    {
+      "id": "S06",
+      "title": "November 18 home football traffic notice",
+      "publisher": "UMass Amherst",
+      "url": "https://www.umass.edu/news/article/maction-brings-parking-traffic-pattern-changes-umass-football-games-nov-4-and-18",
+      "source_type": "official_news",
+      "locator": "October 29, 2026; final paragraph",
+      "access_date": "2026-11-12",
+      "limitation": "Kickoff was unannounced in this notice; no Worcester attendance effect is measured."
+    },
+    {
+      "id": "S07",
+      "title": "Tour of the new Worcester Commons",
+      "publisher": "UMass Amherst Admissions",
+      "url": "https://www.youtube.com/watch?v=ZICr-SWhVFg",
+      "source_type": "official_video_description_transcript",
+      "locator": "Published December 8, 2020; transcript in public video description",
+      "access_date": "2026-11-12",
+      "limitation": "Transcript reviewed, not a new on-site observation; historical operations may have changed."
+    },
+    {
+      "id": "S08",
+      "title": "Worcester second-floor drawing in project portfolio",
+      "publisher": "Taylor Lawrence / Coroflot",
+      "url": "https://www.coroflot.com/taylorlawrence/UMASS-Amherst-Worcester-Dining-Commons-New-Construction",
+      "source_type": "designer_portfolio",
+      "locator": "Second Floor Plan PDF",
+      "access_date": "2026-11-12",
+      "limitation": "Published design drawing; not a verified 2026 as-built operations map."
+    },
+    {
+      "id": "S08_PDF",
+      "title": "Second Floor Plan PDF",
+      "publisher": "Taylor Lawrence / Coroflot",
+      "url": "https://s3images.coroflot.com/user_files/individual_files/original_pdf_656053_mkothwcfcry2fbjuuxl5dps_j.pdf",
+      "source_type": "designer_portfolio_drawing",
+      "locator": "One-page plan, visually inspected",
+      "access_date": "2026-11-12",
+      "limitation": "PDF metadata is dated July 14, 2021; this does not establish the original design date."
+    },
+    {
+      "id": "S09",
+      "title": "UMass Living Laboratory",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/umass-living-laboratory",
+      "source_type": "official_webpage",
+      "locator": "Worcester teaching kitchen",
+      "access_date": "2026-11-12",
+      "limitation": "No current correspondence between Display menu category and teaching kitchen."
+    },
+    {
+      "id": "S10",
+      "title": "Worcester menu",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/locations-menus/worcester/menu",
+      "source_type": "official_menu",
+      "locator": "Reviewed November 11, 2026 menu",
+      "access_date": "2026-11-12",
+      "limitation": "Menu categories are not validated coordinates or service-mode labels."
+    },
+    {
+      "id": "S11",
+      "title": "Cook I, Worcester, job 509332",
+      "publisher": "UMass Amherst",
+      "url": "https://careers.umass.edu/jobs/cook-i-worcester-dining-common-amherst-massachusetts-united-states?source=circa",
+      "source_type": "official_job_posting_search_index",
+      "locator": "July 30–October 30, 2026 posting; essential functions",
+      "access_date": "2026-11-12",
+      "limitation": "Search index supplied job text; subsequent direct request returned 404. Responsibilities do not establish measured performance."
+    },
+    {
+      "id": "S11B",
+      "title": "Cook I, Worcester, job 509318",
+      "publisher": "UMass Amherst",
+      "url": "https://careers.pageuppeople.com/1232/cw/en-us/job/509318/cook-i-worcester-dining-commons",
+      "source_type": "official_job_posting_search_index",
+      "locator": "September 23, 2026 posting; essential functions",
+      "access_date": "2026-11-12",
+      "limitation": "Indexed job text available; direct link redirected to job-not-found listing. Shift hours are not dining meal-period hours."
+    },
+    {
+      "id": "S12",
+      "title": "Student Global Cuisine Preferences, 2023 conference slides",
+      "publisher": "UMass / Chef Culinary Conference",
+      "url": "https://www.chefculinaryconference.com/files/2023/powerpoint-slides/Sunday/300%20Toong%20Chef%20Conference%202023.pdf",
+      "source_type": "primary_presentation",
+      "locator": "Slide 4",
+      "access_date": "2026-11-12",
+      "limitation": "Cuisine slide does not establish question wording, sample size, sampling frame, survey date, or meal-choice probabilities."
+    },
+    {
+      "id": "S13",
+      "title": "Religious observance and dietary accommodations",
+      "publisher": "UMass Amherst Student Life",
+      "url": "https://www.umass.edu/student-life/religious-spiritual-life/polices-observance-practice",
+      "source_type": "official_webpage",
+      "locator": "Dietary information, identified on page as September 2023",
+      "access_date": "2026-11-12",
+      "limitation": "Provision of halal food does not measure diners requiring it."
+    },
+    {
+      "id": "S14",
+      "title": "Pure Sport",
+      "publisher": "UMass Magazine",
+      "url": "https://www.umass.edu/magazine/pure-sport",
+      "source_type": "official_magazine",
+      "locator": "May 2026 article reporting 2025 intramural participation",
+      "access_date": "2026-11-12",
+      "limitation": "Participation is not a diet measure or a sample of Worcester dinner visitors."
+    },
+    {
+      "id": "S15",
+      "title": "Worcester Commons student account",
+      "publisher": "UMass SBS Pathways",
+      "url": "https://sbspathways.umass.edu/blog/2026/03/17/worcester-commons/",
+      "source_type": "official_hosted_student_blog",
+      "locator": "March 17, 2026",
+      "access_date": "2026-11-12",
+      "limitation": "One student account, not representative survey or measured traffic."
+    },
+    {
+      "id": "S16",
+      "title": "UMass Dining Sustainability Annual Report FY2026",
+      "publisher": "UMass Dining",
+      "url": "https://www.localumass.com/wp-content/uploads/UMDS-Annual-Report-FY26-1-1.pdf",
+      "source_type": "primary_annual_report",
+      "locator": "Printed page 7, PDF page 9; deployment also printed page 4",
+      "access_date": "2026-11-12",
+      "limitation": "Downloaded and extracted directly; no dish-level export supplied. Accounting detail is insufficient to construct a Worcester dinner line-waste bound."
+    },
+    {
+      "id": "S17",
+      "title": "Campus dining tracking and production planning",
+      "publisher": "Metafoodx",
+      "url": "https://www.metafoodx.com/post/campus-dining-food-waste-tracking-production-planning",
+      "source_type": "vendor_article",
+      "locator": null,
+      "access_date": "2026-11-12",
+      "limitation": "Product capability description, not a public UMass operational dataset or independent validation."
+    },
+    {
+      "id": "S18",
+      "title": "Boston Globe report, September 6, 2023",
+      "publisher": "The Boston Globe",
+      "url": "https://www.bostonglobe.com/2023/09/06/arts/everyone-knows-umass-amherst-wins-best-campus-food-year-after-year-few-know-dining-halls-are-open-public/",
+      "source_type": "news_report",
+      "locator": "Daily meals figure",
+      "access_date": "2026-11-12",
+      "limitation": "Historical approximate daily throughput only."
+    }
+  ]
+}

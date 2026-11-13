@@ -1,0 +1,1505 @@
+{
+ "date": "2026-11-13",
+ "meal": "dinner",
+ "dc": "worcester",
+ "source": {
+  "file": "worcester_menus_2026-11-13_to_2026-11-20.json",
+  "url": "https://www.umassdining.com/foodpro-menu-ajax?tid=1&date=11%2F13%2F2026",
+  "retrieved_at": "2026-11-12T01:39:46.469043+00:00"
+ },
+ "dishes": [
+  {
+   "id": "soups.homemade_clam_chowder",
+   "name": "Homemade Clam Chowder",
+   "station": "soups",
+   "station_name": "Soups",
+   "serving_size": "5 2/3 OZL",
+   "dietary_labels": [
+    "Halal",
+    "Local"
+   ],
+   "allergens": [
+    "Milk",
+    "Shellfish",
+    "Gluten",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "10",
+   "recipe_webcode": "H LPR H1 CR2",
+   "role": "soup",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "bowl",
+   "hot": true
+  },
+  {
+   "id": "soups.spicy_lentil_veggie_soup",
+   "name": "Spicy Lentil Veggie Soup",
+   "station": "soups",
+   "station_name": "Soups",
+   "serving_size": "5 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "60",
+   "recipe_webcode": "H VGN H6 CR1",
+   "role": "soup",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "bowl",
+   "hot": true
+  },
+  {
+   "id": "grill.black_bean_burger",
+   "name": "Black Bean Burger",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR2",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.halal_burger_patty",
+   "name": "Halal Burger Patty",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [],
+   "carbon_rating": "E",
+   "healthfulness": "20",
+   "recipe_webcode": "H H2 CR5",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.halal_french_fries",
+   "name": "Halal French Fries",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGN H1 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.hand_cut_sweet_potato_fries",
+   "name": "Hand Cut Sweet Potato Fries",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "20",
+   "recipe_webcode": "VGT H2 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.herb_roasted_mushrooms",
+   "name": "Herb Roasted Mushrooms",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "E",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR5",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.roasted_cauliflower",
+   "name": "Roasted Cauliflower",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based",
+    "Vegetarian"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN VGT H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.savory_baked_chicken_thigh",
+   "name": "Savory Baked Chicken Thigh",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [],
+   "carbon_rating": "C",
+   "healthfulness": "30",
+   "recipe_webcode": "H H3 CR3",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "desserts.blueberry_crisp",
+   "name": "Blueberry Crisp",
+   "station": "desserts",
+   "station_name": "Desserts",
+   "serving_size": "2 1/2 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "0",
+   "recipe_webcode": "H VGN H0 CR1",
+   "role": "dessert",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "desserts.orange_cake_w_cream_cheese_frosting",
+   "name": "Orange Cake w/Cream Cheese Frosting",
+   "station": "desserts",
+   "station_name": "Desserts",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Local"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "C",
+   "healthfulness": "0",
+   "recipe_webcode": "LPR H0 CR3",
+   "role": "dessert",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "breads.multigrain_bread",
+   "name": "Multigrain Bread",
+   "station": "breads",
+   "station_name": "Breads",
+   "serving_size": "1 Slice",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGN H4\n CR1",
+   "role": "bread",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "noodle_bowl.hot_pot_chicken_beef_pork_fish_shellfish",
+   "name": "Hot Pot (Chicken, Beef, Pork, Fish, Shellfish)",
+   "station": "noodle_bowl",
+   "station_name": "Noodle Bowl",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "None"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Fish",
+    "Shellfish",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "40",
+   "recipe_webcode": "CR5",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "bowl",
+   "hot": true
+  },
+  {
+   "id": "sushi.california_roll",
+   "name": "California Roll",
+   "station": "sushi",
+   "station_name": "Sushi",
+   "serving_size": "1 roll",
+   "dietary_labels": [
+    "None"
+   ],
+   "allergens": [
+    "Eggs",
+    "Fish",
+    "Shellfish",
+    "Soy",
+    "Corn",
+    "Sesame"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "30",
+   "recipe_webcode": "H3 CR2",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "sushi.crispy_shrimp_sushi_roll",
+   "name": "Crispy Shrimp Sushi Roll",
+   "station": "sushi",
+   "station_name": "Sushi",
+   "serving_size": "1 roll",
+   "dietary_labels": [
+    "None"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Shellfish",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "D",
+   "healthfulness": "20",
+   "recipe_webcode": "H2 CR4",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "sushi.purple_sweet_potato_tempura_sushi_roll",
+   "name": "Purple Sweet Potato Tempura Sushi Roll",
+   "station": "sushi",
+   "station_name": "Sushi",
+   "serving_size": "1 roll",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGN H4 CR1",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "sushi.teriyaki_pulmuone_tofu_roll",
+   "name": "Teriyaki Pulmuone Tofu Roll",
+   "station": "sushi",
+   "station_name": "Sushi",
+   "serving_size": "1 roll",
+   "dietary_labels": [
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "VGN H1 CR1",
+   "role": "entree",
+   "diet_tags": [
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "sushi.vegetable_sushi_roll",
+   "name": "Vegetable Sushi Roll",
+   "station": "sushi",
+   "station_name": "Sushi",
+   "serving_size": "1 roll",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Sesame"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGN H3 CR1",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "display.make_your_own_waffles",
+   "name": "Make Your Own Waffles",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "1 EACH",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGT H1 CR1",
+   "role": "dessert",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "street_food.plain_sushi_rice",
+   "name": "Plain Sushi Rice",
+   "station": "street_food",
+   "station_name": "Street Food",
+   "serving_size": "4 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "B",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGN H4 CR2",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "street_food.stir_fry_green_vegetables",
+   "name": "Stir Fry Green Vegetables",
+   "station": "street_food",
+   "station_name": "Street Food",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "street_food.teriyaki_salmon",
+   "name": "Teriyaki Salmon",
+   "station": "street_food",
+   "station_name": "Street Food",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Local"
+   ],
+   "allergens": [
+    "Fish",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "D",
+   "healthfulness": "30",
+   "recipe_webcode": "LPR H3 CR4",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "street_food.teriyaki_tofu_w_sesame_seeds",
+   "name": "Teriyaki Tofu w/Sesame Seeds",
+   "station": "street_food",
+   "station_name": "Street Food",
+   "serving_size": "4 oz",
+   "dietary_labels": [
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "20",
+   "recipe_webcode": "LPR VGT H2 CR1",
+   "role": "entree",
+   "diet_tags": [
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "tandoor.chicken_tikka_masala_rasoi",
+   "name": "Chicken Tikka Masala Rasoi",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "4 oz",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "20",
+   "recipe_webcode": "H H2 CR2",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "bowl",
+   "hot": true
+  },
+  {
+   "id": "tandoor.cumin_basmati_rice",
+   "name": "Cumin Basmati Rice",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "B",
+   "healthfulness": "40",
+   "recipe_webcode": "H LPR VGN H4 CR2",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "tandoor.naan",
+   "name": "Naan",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "1/2 EACH",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Gluten",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGT H3 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "tandoor.paneer_jalfrezi_cheese",
+   "name": "Paneer Jalfrezi (Cheese)",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "4 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "30",
+   "recipe_webcode": "H LPR VGT H3 CR2",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "tandoor.stir_fried_cabbage_w_curry_leaves_tamarind_chutney",
+   "name": "Stir Fried Cabbage w/Curry Leaves & Tamarind Chutney",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "bowl",
+   "hot": true
+  },
+  {
+   "id": "tandoor.vegetable_curry_samosa",
+   "name": "Vegetable Curry Samosa",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "2 each",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "20",
+   "recipe_webcode": "H VGT H2 CR1",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "bowl",
+   "hot": true
+  },
+  {
+   "id": "tandoor.watermelon_curry_salad",
+   "name": "Watermelon Curry Salad",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "2 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Soy",
+    "Sesame"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGN H4 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "bowl",
+   "hot": false
+  },
+  {
+   "id": "mediterranean.beef_bolognese_sauce_w_pancetta_pork",
+   "name": "Beef Bolognese Sauce w/Pancetta (Pork)",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "2 OZ",
+   "dietary_labels": [
+    "Local"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "0",
+   "recipe_webcode": "LPR H0 CR5",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "mediterranean.fish_w_almond_romesco_scallions",
+   "name": "Fish w/Almond Romesco & Scallions",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Local"
+   ],
+   "allergens": [
+    "Fish",
+    "Tree Nuts"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "40",
+   "recipe_webcode": "H LPR H4 CR5",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "mediterranean.linguini_pasta",
+   "name": "Linguini Pasta",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGN H4 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "mediterranean.orecchiette_pasta",
+   "name": "Orecchiette Pasta",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Wheat"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "20",
+   "recipe_webcode": "H VGN H2 CR2",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "mediterranean.orecchiette_w_peas_pancetta_pork",
+   "name": "Orecchiette w/Peas & Pancetta (Pork)",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "4 OZ",
+   "dietary_labels": [
+    "Local"
+   ],
+   "allergens": [
+    "Milk",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "30",
+   "recipe_webcode": "LPR H3\n CR2",
+   "role": "starch",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "mediterranean.roasted_root_vegetables_w_balsamic",
+   "name": "Roasted Root Vegetables w/Balsamic",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "seasons.agrodolce_honeynut_squash",
+   "name": "Agrodolce Honeynut Squash",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "LPR VGT H4 CR1",
+   "role": "side",
+   "diet_tags": [
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "seasons.eggplant_parmesan",
+   "name": "Eggplant Parmesan",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "4 oz",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGT H4 CR1",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "seasons.gf_garlic_bread",
+   "name": "GF Garlic Bread",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "0",
+   "recipe_webcode": "H LPR VGT H0 CR2",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "seasons.gf_penne_pasta",
+   "name": "GF Penne Pasta",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR2",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "seasons.plant_based_gnocchi_mushrooms",
+   "name": "Plant Based Gnocchi & Mushrooms",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "20",
+   "recipe_webcode": "H LPR VGN H2 CR2",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "seasons.sauteed_broccoli",
+   "name": "Sauteed Broccoli",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "2 1/2 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "B",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR2",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "latino.chicken_taco_filling",
+   "name": "Chicken Taco Filling",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "C",
+   "healthfulness": "40",
+   "recipe_webcode": "H H4\n CR3",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "latino.corn_w_red_peppers",
+   "name": "Corn w/Red Peppers",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "latino.filling_for_beef_tacos",
+   "name": "Filling for Beef Tacos",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "2 OZ",
+   "dietary_labels": [
+    "Local"
+   ],
+   "allergens": [
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "30",
+   "recipe_webcode": "LPR H3 CR5",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "latino.pinto_beans",
+   "name": "Pinto Beans",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "latino.quinoa_mango_salad",
+   "name": "Quinoa & Mango Salad",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "2 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "C",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR3",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "bowl",
+   "hot": false
+  },
+  {
+   "id": "latino.yellow_rice",
+   "name": "Yellow Rice",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H LPR VGN H4 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  }
+ ],
+ "addons": [
+  {
+   "id": "street_food.pickled_carrots_cucumbers",
+   "name": "Pickled Carrots & Cucumbers",
+   "station": "street_food",
+   "station_name": "Street Food",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR1"
+  },
+  {
+   "id": "tandoor.coriander_chutney",
+   "name": "Coriander Chutney",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGN H3 CR1"
+  },
+  {
+   "id": "tandoor.tamarind_date_chutney",
+   "name": "Tamarind Date Chutney",
+   "station": "tandoor",
+   "station_name": "Tandoor",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGN H3 CR1"
+  },
+  {
+   "id": "mediterranean.fresh_grated_parmesan_cheese",
+   "name": "Fresh Grated Parmesan Cheese",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "1/4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGT H3 CR5"
+  },
+  {
+   "id": "mediterranean.marinara_sauce",
+   "name": "Marinara Sauce",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "2 OZL",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR1"
+  },
+  {
+   "id": "seasons.alfredo_sauce",
+   "name": "Alfredo Sauce",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "2 oz",
+   "dietary_labels": [
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "0",
+   "recipe_webcode": "VGT H0 CR2"
+  },
+  {
+   "id": "seasons.basil_pesto_sauce",
+   "name": "Basil Pesto Sauce",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "30",
+   "recipe_webcode": "VGT H3 CR2"
+  },
+  {
+   "id": "seasons.marinara_jain",
+   "name": "Marinara Jain",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "2 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR1"
+  },
+  {
+   "id": "seasons.shredded_parmesan_cheese",
+   "name": "Shredded Parmesan Cheese",
+   "station": "seasons",
+   "station_name": "Seasons",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "20",
+   "recipe_webcode": "H VGT H2 CR5"
+  },
+  {
+   "id": "latino.flour_tortilla",
+   "name": "Flour Tortilla",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGN H1 CR1"
+  },
+  {
+   "id": "latino.homemade_guacamole",
+   "name": "Homemade Guacamole",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGN H3 CR1"
+  },
+  {
+   "id": "latino.shredded_cheddar_cheese",
+   "name": "Shredded Cheddar Cheese",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "1 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "20",
+   "recipe_webcode": "H VGT H2 CR5"
+  },
+  {
+   "id": "latino.shredded_lettuce",
+   "name": "Shredded Lettuce",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "1 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR1"
+  },
+  {
+   "id": "latino.sibley_s_pico_de_gallo",
+   "name": "Sibley's Pico de Gallo",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "1 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR1"
+  },
+  {
+   "id": "latino.sour_cream",
+   "name": "Sour Cream",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "1 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "0",
+   "recipe_webcode": "H LPR VGT H0 CR2"
+  },
+  {
+   "id": "latino.taco_shells",
+   "name": "Taco Shells",
+   "station": "latino",
+   "station_name": "Latino 1  WOR",
+   "serving_size": "2 EACH",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H VGN H4 CR1"
+  }
+ ]
+}

@@ -1,0 +1,503 @@
+{
+  "_from": "raw/menu/worcester_menus_2026-11-13_to_2026-11-20.json",
+  "notes": [
+    "Menus are a snapshot of published plans and may change.",
+    "Nutrition is per published serving_size. Portions are serving sizes, not quantities prepared or remaining.",
+    "Nutrition values retain source units and strings. Fields ending in _dv are published percent daily values. Empty nutrition fields are null; original empty strings remain in source_attributes.",
+    "All published data-* attributes are preserved verbatim (after HTML entity decoding) in source_attributes. No nutrients or serving sizes are inferred.",
+    "An empty allergen list means the source allergen field was empty; it is not an independent allergen-free certification.",
+    "Items repeated across stations or meal periods are intentionally retained.",
+    "Grab-and-go is a separate source meal period and is outside the four requested meal periods.",
+    "not_published indicates no source menu for that meal; it does not independently establish that the dining hall is closed.",
+    "Split copies drop source_attributes and icons; see the raw snapshot for those."
+  ],
+  "dates": [
+    {
+      "date": "2026-11-13",
+      "weekday": "Friday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 24,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 55,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 64,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 12,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-14",
+      "weekday": "Saturday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 20,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 59,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 63,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 11,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-15",
+      "weekday": "Sunday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 21,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 66,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 72,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 10,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-16",
+      "weekday": "Monday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 24,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 59,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 72,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 14,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-17",
+      "weekday": "Tuesday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 29,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 59,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 64,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 12,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-18",
+      "weekday": "Wednesday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 27,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 66,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 67,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 13,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-19",
+      "weekday": "Thursday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 30,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 58,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 66,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 16,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    },
+    {
+      "date": "2026-11-20",
+      "weekday": "Friday",
+      "meals": {
+        "breakfast": {
+          "status": "published",
+          "item_count": 24,
+          "stations": [
+            "Breakfast Entrees",
+            "Breakfast Pastries",
+            "Omelet WOR",
+            "Soups",
+            "Display Station",
+            "Latino 2  WOR"
+          ]
+        },
+        "lunch": {
+          "status": "published",
+          "item_count": 59,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Noodle Bowl",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "dinner": {
+          "status": "published",
+          "item_count": 79,
+          "stations": [
+            "Soups",
+            "Grill Station",
+            "Desserts",
+            "Breads",
+            "Noodle Bowl",
+            "Sushi",
+            "Display Station",
+            "Street Food",
+            "Tandoor",
+            "Mediterranean",
+            "Seasons",
+            "Latino 1  WOR"
+          ]
+        },
+        "late_night": {
+          "status": "published",
+          "item_count": 13,
+          "stations": [
+            "Grill Station",
+            "Display Station",
+            "Mediterranean"
+          ]
+        }
+      }
+    }
+  ]
+}

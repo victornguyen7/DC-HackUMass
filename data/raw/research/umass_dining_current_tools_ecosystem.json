@@ -1,0 +1,428 @@
+{
+  "schema_version": "1.0.0",
+  "title": "Current UMass Amherst Dining tools ecosystem",
+  "as_of_date": "2026-11-11",
+  "scope": "UMass Amherst, not other UMass campuses",
+  "inclusion_policy": "Only tools or services with recent affirmative evidence of operational use. Pilot-only or unconfirmed current deployments are omitted. Historical instruments may be named only in the separate ten-year waste report.",
+  "tools": [
+    {
+      "tool_id": "metafoodx",
+      "name": "Metafoodx",
+      "ecosystem_role": "Production, service and remaining-food tracking",
+      "current_use_evidence": {
+        "status": "current_use_confirmed",
+        "latest_reference": "FY2026",
+        "tracking_systems": 16,
+        "locations": 6,
+        "production_tracked": {
+          "value": 1.79,
+          "unit": "million_lb",
+          "metric": "production_observed_not_waste_saved"
+        },
+        "deployment_history": [
+          {
+            "period": "Fall 2024",
+            "event": "Pilot began",
+            "source_id": "meta_pilot"
+          },
+          {
+            "date": "2025-09-03",
+            "systems": 13,
+            "source_id": "meta_expansion"
+          },
+          {
+            "period": "Fall 2025",
+            "event": "Vendor summary reports coverage at all four dining commons and Harvest Market",
+            "source_id": "meta_pilot"
+          }
+        ]
+      },
+      "assumption_for_the_build": "Primary prospective source of item-level production and leftover observations. Use clearly labeled mock files until UMass authorizes exports; do not describe a live connection.",
+      "proposed_input_fields": [
+        "location_id",
+        "station_id",
+        "dish_id",
+        "recipe_version",
+        "scan_time",
+        "service_window_start",
+        "service_window_end",
+        "production_weight_kg",
+        "remaining_weight_kg",
+        "unit",
+        "measurement_method",
+        "confidence",
+        "carryover_weight_kg",
+        "donated_weight_kg",
+        "reused_weight_kg",
+        "discarded_weight_kg"
+      ],
+      "proposed_output_fields": [
+        "dish_demand_forecast",
+        "batch_schedule",
+        "expected_remaining_kg",
+        "stockout_risk",
+        "forecast_uncertainty"
+      ],
+      "limitations": [
+        "Serving-line depletion is not directly measured human ingestion.",
+        "A reported produced-minus-leftover balance may estimate food served; it does not measure plate waste.",
+        "Portions require documented serving weights; weights should remain the primary unit.",
+        "Any device API, export format or real-time feed remains unverified.",
+        "Coverage is not necessarily identical across every station or service period.",
+        "No campus-wide causal percentage can be assigned solely to this tool."
+      ],
+      "source_ids": [
+        "fy26",
+        "waste_current",
+        "meta_expansion",
+        "meta_pilot"
+      ],
+      "verified_live_integration_for_this_project": false,
+      "verified_public_export_schema": false,
+      "data_access_obtained": false,
+      "tool_specific_campus_waste_reduction_pct": null
+    },
+    {
+      "tool_id": "foodpro",
+      "name": "FoodPro / production planning",
+      "ecosystem_role": "Menu, recipe, inventory and production planning",
+      "current_use_evidence": {
+        "status": "recent_use_confirmed",
+        "evidence": [
+          {
+            "period": "2022-2025 account",
+            "detail": "Vendor describes integration with UMass food management software Foodpro",
+            "source_id": "foodpro_integration"
+          },
+          {
+            "date": "2026-07-23",
+            "detail": "UMass Catering job description names FoodPro menu management and inventory implementation",
+            "source_id": "foodpro_job"
+          }
+        ],
+        "all_location_configuration": null
+      },
+      "assumption_for_the_build": "Export a generic production sheet that a manager can review and enter into the planning system. Naming FoodPro as a documented ecosystem component is supported; automated writeback is not.",
+      "proposed_input_fields": [
+        "dish_id",
+        "recipe_id",
+        "location_id",
+        "service_date",
+        "planned_portions",
+        "portion_weight_g",
+        "ingredient_availability",
+        "lead_time_minutes",
+        "batch_size",
+        "unit_food_cost"
+      ],
+      "proposed_output_fields": [
+        "service_date",
+        "meal_period",
+        "station",
+        "dish",
+        "recommended_portions",
+        "batch_release_time",
+        "reorder_trigger",
+        "expected_leftover_kg",
+        "manager_approval_status"
+      ],
+      "limitations": [
+        "Public menu endpoints alone do not establish internal production-system capabilities.",
+        "No current configuration across every dining location was obtained.",
+        "No verified integration between this prototype and FoodPro.",
+        "No FoodPro-only waste-reduction percentage was found."
+      ],
+      "source_ids": [
+        "foodpro_integration",
+        "foodpro_job"
+      ],
+      "verified_live_integration_for_this_project": false,
+      "verified_public_export_schema": false,
+      "data_access_obtained": false,
+      "tool_specific_campus_waste_reduction_pct": null
+    },
+    {
+      "tool_id": "meal_swipes",
+      "name": "UCard meal transactions / CBORD GET",
+      "ecosystem_role": "Meal-plan balance and usage records; candidate demand signal",
+      "current_use_evidence": {
+        "status": "current_student_facing_service_confirmed",
+        "evidence": "UMass FAQ links meal-plan balances and usage to get.cbord.com/umass.",
+        "public_operational_entry_feed": false,
+        "time_bin_export_availability": null
+      },
+      "assumption_for_the_build": "Use anonymized time-binned admission counts supplied by Dining. Treat timestamp resolution, location coverage and all-entry coverage as requirements to verify.",
+      "proposed_input_fields": [
+        "location_id",
+        "interval_start",
+        "interval_end",
+        "meal_period",
+        "admissions_count",
+        "transaction_type",
+        "coverage_note"
+      ],
+      "proposed_output_fields": [
+        "arrival_forecast",
+        "meal_period_headcount_forecast",
+        "special_event_demand_indicator"
+      ],
+      "limitations": [
+        "GET access for students does not prove a public bulk API or administrator export.",
+        "Meal transactions are not dish choices.",
+        "Repeat entries are not unique students; admissions are not simultaneous occupancy.",
+        "Cash, credit, guests and retail transactions may be represented differently.",
+        "No individual student identifiers are required for the proposed forecasting layer.",
+        "No swipe-system-specific waste-reduction effect was found."
+      ],
+      "source_ids": [
+        "faq"
+      ],
+      "verified_live_integration_for_this_project": false,
+      "verified_public_export_schema": false,
+      "data_access_obtained": false,
+      "tool_specific_campus_waste_reduction_pct": null
+    },
+    {
+      "tool_id": "frn",
+      "name": "Food Recovery Network",
+      "ecosystem_role": "Recovery and redistribution of edible surplus",
+      "current_use_evidence": {
+        "status": "current_use_confirmed",
+        "surplus_source": "Franklin Dining Commons",
+        "term": "Fall 2026",
+        "service_start": "2026-10-07",
+        "service_end": "2026-12-10",
+        "no_service": "Thanksgiving break",
+        "service_days": [
+          "Wednesday",
+          "Thursday"
+        ],
+        "service_time_local": "17:00-18:00",
+        "distribution_sites": {
+          "Wednesday": "472 North Pleasant Street, lower level",
+          "Thursday": "University Village Community Center"
+        },
+        "annual_evidence": {
+          "period": "FY2026",
+          "donated_food_lb": 6000,
+          "qualifier": "more_than"
+        }
+      },
+      "assumption_for_the_build": "Produce a manager-reviewed surplus pickup note. Worcester pickup and unscheduled end-of-night collection are proposed extensions, not confirmed current FRN routes.",
+      "proposed_input_fields": [
+        "donating_location",
+        "dish_name",
+        "quantity_kg",
+        "prepared_time",
+        "temperature_log_reference",
+        "allergens",
+        "packaging",
+        "storage_requirements",
+        "proposed_pickup_window",
+        "staff_contact_role"
+      ],
+      "proposed_output_fields": [
+        "surplus_pickup_note",
+        "estimated_available_kg",
+        "confirmed_accepted_kg",
+        "actual_picked_up_kg",
+        "handoff_status"
+      ],
+      "limitations": [
+        "Forecast surplus is not automatically safe or accepted for donation.",
+        "Food safety and pickup eligibility require existing Dining/FRN procedures.",
+        "Redistribution is not the same as preventing overproduction.",
+        "Do not promise a current Worcester pickup service.",
+        "Current schedule supersedes older generic FAQ descriptions."
+      ],
+      "source_ids": [
+        "frn_current",
+        "fy26"
+      ],
+      "verified_live_integration_for_this_project": false,
+      "verified_public_export_schema": false,
+      "data_access_obtained": false,
+      "tool_specific_campus_waste_reduction_pct": null
+    },
+    {
+      "tool_id": "anaerobic",
+      "name": "Vanguard Renewables / Barstow's Farm anaerobic digestion",
+      "ecosystem_role": "Downstream processing of collected food scraps",
+      "current_use_evidence": {
+        "status": "current_use_confirmed",
+        "coverage": "Collected pre- and post-consumer food waste from dining commons, Campus Center and retail locations",
+        "reported_fy2026_diversion": {
+          "value": 1400,
+          "unit": "tons_as_reported",
+          "ton_definition": null
+        }
+      },
+      "assumption_for_the_build": "Keep as downstream context, outside the core food-production optimizer. Distinguish landfill diversion from source reduction.",
+      "proposed_input_fields": [
+        "collection_date",
+        "location_or_route",
+        "scale_ticket_id",
+        "gross_weight",
+        "tare_weight",
+        "net_weight",
+        "weight_unit",
+        "contamination_note",
+        "destination"
+      ],
+      "proposed_output_fields": [
+        "diversion_summary",
+        "scraps_mass_by_reporting_period"
+      ],
+      "limitations": [
+        "Diverted food has already entered a waste stream.",
+        "More diverted tonnage can reflect better capture or greater activity; it does not by itself establish less food waste.",
+        "Tonnage does not identify avoidable edible waste separately from unavoidable scraps.",
+        "Generic composting descriptions are historical or may describe other streams; current Dining sources identify anaerobic digestion."
+      ],
+      "source_ids": [
+        "waste_current",
+        "fy26"
+      ],
+      "verified_live_integration_for_this_project": false,
+      "verified_public_export_schema": false,
+      "data_access_obtained": false,
+      "tool_specific_campus_waste_reduction_pct": null
+    }
+  ],
+  "proposed_data_flow": [
+    {
+      "from": "menu_and_planning_records",
+      "to": "forecasting_prototype",
+      "status": "proposed_file_import"
+    },
+    {
+      "from": "metafoodx_observations",
+      "to": "forecasting_prototype",
+      "status": "requires_authorized_export"
+    },
+    {
+      "from": "aggregate_meal_transactions",
+      "to": "forecasting_prototype",
+      "status": "requires_authorized_export"
+    },
+    {
+      "from": "forecasting_prototype",
+      "to": "manager_reviewed_production_sheet",
+      "status": "proposed_output"
+    },
+    {
+      "from": "forecasting_prototype",
+      "to": "frn_surplus_note",
+      "status": "proposed_extension_subject_to_acceptance"
+    },
+    {
+      "from": "scraps_collection_records",
+      "to": "impact_reporting",
+      "status": "proposed_reporting_only"
+    }
+  ],
+  "measurement_contract": {
+    "mass_unit": "kg",
+    "time_zone": "America/New_York",
+    "distinguish": [
+      "planned",
+      "produced",
+      "put_out_for_service",
+      "estimated_served",
+      "left_on_service_line",
+      "donated",
+      "reused",
+      "discarded_pre_consumer",
+      "discarded_post_consumer"
+    ],
+    "balance_rule": "Opening balance + production + transfers in = estimated served + remaining balance + documented transfers or removals. Avoid counting the same leftover more than once.",
+    "evaluation_metrics": [
+      "pre_consumer_avoidable_waste_kg_per_100_admissions",
+      "total_food_waste_oz_per_swipe",
+      "stockout_minutes",
+      "meal_availability",
+      "forecast_error_by_dish",
+      "donation_actual_kg",
+      "production_cost"
+    ],
+    "model_output_disclosure": "Simulated savings must be labeled simulated and kept separate from published historical effects."
+  },
+  "sources": [
+    {
+      "source_id": "fy26",
+      "title": "UMass Dining Sustainability Annual Report FY2026",
+      "url": "https://www.localumass.com/wp-content/uploads/UMDS-Annual-Report-FY26-1-1.pdf",
+      "source_type": "university_annual_report",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": [
+        6,
+        9,
+        13
+      ],
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "waste_current",
+      "title": "Waste Reduction",
+      "url": "https://www.localumass.com/initiatives/waste-reduction/",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "meta_expansion",
+      "title": "UMass Amherst expansion announcement",
+      "url": "https://www.metafoodx.com/post/umass-amherst-doubles-down-on-investment-in-metafoodx-to-cut-food-waste-across-campus-dining",
+      "source_type": "vendor_claim",
+      "publication_date": "2025-09-03",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "meta_pilot",
+      "title": "Metafoodx MassLive feature summary",
+      "url": "https://www.metafoodx.com/post/metafoodx-recognized-by-masslive-for-work-with-umass-amherst",
+      "source_type": "vendor_summary_of_reporting",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "foodpro_integration",
+      "title": "UMass Dining carbon-rating integration case study",
+      "url": "https://myemissions.co/articles/umass-dining-case-study-carbon-ratings-reduce-emissions/",
+      "source_type": "vendor_implementation_account",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "foodpro_job",
+      "title": "Executive Sous Chef Catering job posting",
+      "url": "https://careers.pageuppeople.com/1232/cw/en-us/job/509531/executive-sous-chef-catering",
+      "source_type": "university_job_description",
+      "publication_date": "2026-07-23",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "faq",
+      "title": "UMass Dining FAQ",
+      "url": "https://www.umassdining.com/faq",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "source_id": "frn_current",
+      "title": "Food Security Initiatives",
+      "url": "https://www.umassdining.com/food-security-initiatives",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11"
+    }
+  ]
+}

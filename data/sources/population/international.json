@@ -1,0 +1,50 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "isss",
+    "vietnam"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "international_community": {
+    "current_webpage_figures": {
+      "international_undergraduates": {
+        "value": 1600,
+        "qualifier": "more_than"
+      },
+      "international_graduates": {
+        "value": 3800,
+        "qualifier": "more_than"
+      },
+      "countries_represented": 120,
+      "reference_term": null,
+      "source_id": "isss",
+      "scope_note": "Countries represented is a community figure; do not treat as a country-by-country student distribution."
+    },
+    "historical_country_context": {
+      "reference_term": "Fall 2024",
+      "total_international_students_approx": 4500,
+      "vietnamese_students": 332,
+      "vietnam_rank_in_international_population": 3,
+      "larger_origin_groups": [
+        "India",
+        "China"
+      ],
+      "source_id": "vietnam",
+      "current_country_counts": null
+    },
+    "food_choice_interpretation": "Cultural familiarity and authentic preparation are plausible influences; no quantified nationality-to-food preference mapping was found.",
+    "recommended_preference_fields": [
+      "self_reported_favorite_cuisines",
+      "self_reported_comfort_foods",
+      "preferred_spice_level",
+      "religious_food_requirements_if_volunteered",
+      "ingredient_avoidances"
+    ],
+    "prohibited_model_shortcuts": [
+      "Assign vegetarian status by nationality.",
+      "Assign halal or kosher status by nationality or ethnicity.",
+      "Assume all international students share the same taste."
+    ]
+  }
+}

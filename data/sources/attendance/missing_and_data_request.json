@@ -1,0 +1,81 @@
+{
+  "_from": "raw/research/worcester_dining_popularity_report.json",
+  "as_of": "2026-11-11",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "metric_definitions": {
+    "daily_meal_volume": "Meals served over a day; the same diner can contribute multiple meals.",
+    "daily_entry_count": "Entries or transactions over a day; entry counts need not equal meals consumed.",
+    "daily_unique_student_count": "Distinct students who entered during a day, counted once per student across meal periods.",
+    "simultaneous_occupancy": "People physically present at one time; requires occupancy data or entries and exits.",
+    "service_capacity": "Stated ability to serve meals; does not establish actual demand.",
+    "popularity_share": "A defined share of comparable campus dining activity; requires matching counts for other locations."
+  },
+  "missing_data": {
+    "average_unique_students_per_day": null,
+    "average_total_entries_per_day": null,
+    "average_meals_by_period": {
+      "breakfast": null,
+      "lunch": null,
+      "dinner": null,
+      "late_night": null
+    },
+    "weekday_weekend_breakdown": null,
+    "hourly_arrivals": null,
+    "peak_simultaneous_occupancy": null,
+    "station_level_meals_served": null,
+    "student_guest_staff_breakdown": null,
+    "share_of_campus_dining_visits": null
+  },
+  "recommended_data_request": {
+    "organization": "UMass Dining",
+    "location": "Worcester Commons",
+    "purpose": "Establish average dining demand and student participation using observed records.",
+    "suggested_period": "A complete recent teaching semester, with breaks, holidays and special events identified.",
+    "request_fields": [
+      {
+        "field": "service_date",
+        "description": "Local calendar date."
+      },
+      {
+        "field": "meal_period",
+        "description": "Breakfast, lunch, dinner or late night, with period start and end times."
+      },
+      {
+        "field": "entry_count",
+        "description": "Aggregate entries or admissions, with the counting method documented."
+      },
+      {
+        "field": "distinct_student_count",
+        "description": "Aggregate daily count of distinct students, deduplicated internally; no student identifiers requested."
+      },
+      {
+        "field": "meal_count",
+        "description": "Meals served if separately tracked, with the definition documented."
+      },
+      {
+        "field": "outlet",
+        "description": "Separate main dining hall, Grab n Go, cafe and restaurant where applicable."
+      },
+      {
+        "field": "interval_start",
+        "description": "Optional 15- or 30-minute aggregate intervals for arrival patterns."
+      },
+      {
+        "field": "guest_or_staff_count",
+        "description": "Aggregate non-student admissions if available."
+      },
+      {
+        "field": "calendar_flags",
+        "description": "Weekday, weekend, holiday, break, special event or partial closure."
+      }
+    ],
+    "aggregation_rules": [
+      "Average daily meals = sum of observed meals divided by included operating days.",
+      "Average unique students = sum of daily distinct student counts divided by included days.",
+      "Do not sum meal-period distinct student counts to obtain daily distinct students; the groups overlap.",
+      "Document whether closed days are included or excluded from each average.",
+      "Compare dining halls only over matching dates and outlet definitions."
+    ]
+  }
+}

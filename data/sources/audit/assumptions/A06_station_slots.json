@@ -1,0 +1,135 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S07",
+    "S08",
+    "S08_PDF",
+    "S10"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A06",
+    "category": "Station slots",
+    "user_provided_assumption": {
+      "Mediterranean": {
+        "assumed_slot": 4,
+        "drawing_label": "Pizza"
+      },
+      "Seasons": {
+        "assumed_slot": 5,
+        "drawing_label": "Greens"
+      },
+      "Soups": {
+        "assumed_slot": 11,
+        "drawing_label": "Salad-bar frontage"
+      },
+      "Display": {
+        "assumed_slot": 14,
+        "drawing_label": "Teaching kitchen"
+      }
+    },
+    "evidence_status": "partially_verified",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Verified correspondence between current menu categories and physical counters",
+    "evidence_fact_ids": [
+      "F05",
+      "F06",
+      "F07"
+    ],
+    "why_evidence_does_not_replace_assumption": "The drawing labels and historical concept descriptions are useful references, but similarity of names does not verify all current mappings. The numeric slot identifiers are user model IDs, not asserted drawing room numbers.",
+    "missing_fields": [
+      "Mediterranean_counter",
+      "Seasons_counter",
+      "Soups_counter",
+      "Display_counter"
+    ],
+    "data_request_ids": [
+      "R03"
+    ],
+    "user_referenced_paths": [
+      "layout/floor_plan.json"
+    ],
+    "notes": [
+      "Do not call this a 2017 drawing: the reviewed PDF has 2021 metadata, and its original design date was not verified.",
+      "The tour associates Acqua E Terra with Mediterranean foods including pizza; this is historical semantic support, not current coordinates."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F05",
+      "finding": "Historical station service descriptions",
+      "value": {
+        "Wok": "made-to-order stir-fry",
+        "Nori": "individual sushi rolls made to order",
+        "Street Food": "separate concept from Wok",
+        "Teaching Kitchen": "instruction, recipe testing and guest chefs"
+      },
+      "reference_year": 2020,
+      "source_ids": [
+        "S07"
+      ],
+      "applicability": "Historical service concepts, not confirmed current modes"
+    },
+    {
+      "id": "F06",
+      "finding": "Labels in published second-floor design drawing",
+      "value": [
+        "Dishroom 230",
+        "Pizza",
+        "Greens",
+        "Wok",
+        "Street Food",
+        "Latin",
+        "Grill",
+        "Naan",
+        "Salad Bar",
+        "Sushi",
+        "Noodles",
+        "Teaching Kitchen"
+      ],
+      "source_ids": [
+        "S08",
+        "S08_PDF"
+      ],
+      "applicability": "Physical design reference; current category-to-counter correspondence remains unverified"
+    },
+    {
+      "id": "F07",
+      "finding": "Current menu-category examples",
+      "value": [
+        "Mediterranean",
+        "Seasons",
+        "Soups",
+        "Display",
+        "Street Food",
+        "Sushi",
+        "Tandoor"
+      ],
+      "source_ids": [
+        "S10"
+      ],
+      "applicability": "Names only; Display includes a make-your-own-waffles listing and does not prove staffed made-to-order service"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R03",
+      "name": "Current location verification",
+      "prospective_holder": "Worcester facilities / management",
+      "access": "Current plan or authorized photo walk",
+      "fields": [
+        "as_of_date",
+        "counter_label",
+        "counter_polygon_or_coordinates",
+        "queue_frontage",
+        "dish_return_opening",
+        "accessible_routes",
+        "scale",
+        "coordinate_origin"
+      ],
+      "purpose": "Current menu category mapping and dish return position"
+    }
+  ]
+}

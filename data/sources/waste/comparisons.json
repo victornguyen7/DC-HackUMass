@@ -1,0 +1,84 @@
+{
+  "_from": "raw/research/umass_food_waste_FY2017_FY2026.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "fy25",
+    "fy26",
+    "owm",
+    "race2023",
+    "undated_diversion"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "valid_comparisons": [
+    {
+      "comparison_id": "intensity_fy25_fy26",
+      "metric": "food_waste_oz_per_swipe",
+      "baseline_period": "FY2025",
+      "baseline": 7.33,
+      "comparison_period": "FY2026",
+      "comparison": 7.19,
+      "absolute_change": -0.14,
+      "calculated_pct_change": -1.91,
+      "reported_pct_reduction": 2,
+      "source_ids": [
+        "fy26"
+      ],
+      "attribution": "Observed operational trend; not isolated causal effect of Metafoodx or any single tool."
+    },
+    {
+      "comparison_id": "intensity_fy24_fy25",
+      "metric": "food_waste_oz_per_swipe",
+      "absolute_change": -0.13,
+      "baseline_period": "FY2024",
+      "comparison_period": "FY2025",
+      "baseline_value_in_source_text": null,
+      "pct_change": null,
+      "source_ids": [
+        "fy25"
+      ],
+      "attribution": "Program-level improvement. Exact FY2024 aggregate is not filled from an unlabeled graphic."
+    }
+  ],
+  "nonannual_or_undated_observations": [
+    {
+      "observation_id": "calendar2019_organics",
+      "period_type": "calendar_year_description",
+      "year": 2019,
+      "value": 1600,
+      "qualifier": "approximately",
+      "unit": "tons_as_reported",
+      "metric": "food_waste_and_other_compostable_material_shipped_for_on_farm_composting",
+      "source_id": "owm",
+      "not_comparable_to_food_only_totals": true,
+      "note": "Source also approximates this as 3 million lb; no exact unit conversion is imposed."
+    },
+    {
+      "observation_id": "campaign2023_ad",
+      "period_type": "eight_week_competition",
+      "year": 2023,
+      "value": 435000,
+      "unit": "lb",
+      "metric": "food_waste_to_biofuel",
+      "source_id": "race2023"
+    },
+    {
+      "observation_id": "campaign2023_compost",
+      "period_type": "eight_week_competition",
+      "year": 2023,
+      "value": 109000,
+      "unit": "lb",
+      "metric": "food_waste_to_compost",
+      "source_id": "race2023"
+    },
+    {
+      "observation_id": "generic_annual_diversion",
+      "period_type": "undated_annual_description",
+      "year": null,
+      "value": 1200,
+      "unit": "tons_as_reported",
+      "metric": "food_waste_diverted_to_compost_or_digestion",
+      "source_id": "undated_diversion",
+      "note": "Not repeated across the ten annual rows; reference year and scope are undefined."
+    }
+  ]
+}

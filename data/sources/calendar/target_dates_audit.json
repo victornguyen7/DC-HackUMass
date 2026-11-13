@@ -1,0 +1,150 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S05",
+    "S05_IMAGE",
+    "S06"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "target_date_calendar": [
+    {
+      "date": "2026-11-13",
+      "weekday": "Friday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-14",
+      "weekday": "Saturday",
+      "weekend": true,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "VSA Food Fair",
+          "location": "Hampshire Dining Commons",
+          "meal_period": null,
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-15",
+      "weekday": "Sunday",
+      "weekend": true,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-16",
+      "weekday": "Monday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-17",
+      "weekday": "Tuesday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-18",
+      "weekday": "Wednesday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "Friendsgiving Dinner",
+          "location": "All dining commons, including Worcester",
+          "meal_period": "dinner",
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        },
+        {
+          "name": "UMass home football vs Akron",
+          "location": "McGuirk Alumni Stadium",
+          "meal_period": null,
+          "source_ids": [
+            "S06"
+          ],
+          "kickoff_time": null,
+          "kickoff_status": "not announced in reviewed October 29 notice"
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-19",
+      "weekday": "Thursday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "African Student Dinner",
+          "location": "Berkshire Dining Commons",
+          "meal_period": "late night",
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    },
+    {
+      "date": "2026-11-20",
+      "weekday": "Friday",
+      "weekend": false,
+      "weekday_method": "calendar arithmetic",
+      "events": [
+        {
+          "name": "TCSA Dinner",
+          "location": "Worcester Dining Commons",
+          "meal_period": "dinner",
+          "source_ids": [
+            "S05",
+            "S05_IMAGE"
+          ]
+        }
+      ],
+      "event_list_scope": "Only the reviewed dining calendar and football notice; empty list does not prove absence of other events",
+      "expected_dinner_students": null,
+      "event_demand_multiplier": null,
+      "demand_data_status": "not_found"
+    }
+  ]
+}

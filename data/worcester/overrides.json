@@ -1,0 +1,29 @@
+{
+  "_note": "Hand corrections, keyed by the exact item name on the menu. roles: fix an automatic classification (entree | starch | side | soup | dessert | bread | addon); re-run `dcsim prepare` after editing. popularity: multiplier on the role prior from staff experience (e.g. 1.8 = runs out, 0.5 = left over); applies at load time, and the baseline kitchen plan deliberately does NOT know about it. station_popularity: multiplier on every dish at a station; unlike item-level popularity, the baseline kitchen plan knows it (team member 2026-11-12: Street Food, Noodle Bowl, Grill, Latino are about 2x an ordinary station).",
+  "roles": {
+    "10": "addon",
+    "Herb Dressing": "starch",
+    "Make Your Own Waffles": "dessert",
+    "Mediterranean Tomato Pie": "entree",
+    "Plant Based Spinach Pie": "entree",
+    "Banh Mi Bo Kho (Vietnamese Beef Stew)": "entree",
+    "Stir Fried Cabbage w/Curry Leaves & Tamarind Chutney": "side",
+    "Lasagna Rollette w/Pesto, Tomatoes, and Artichokes": "entree",
+    "Seafood Gnocchi w/Campbells Lobster Sauce": "entree",
+    "Plant Based Chorizo Crumbles": "entree",
+    "Cilantro Lime Zucchini": "side",
+    "Sauteed Spinach w/Sesame Seeds": "side",
+    "Grilled Carrots": "side",
+    "Chole Chickpea Curry": "entree",
+    "Spaghetti": "starch",
+    "Herb Roasted Tomatoes": "side",
+    "Arroz Blanco": "starch"
+  },
+  "popularity": {},
+  "station_popularity": {
+    "street_food": 2.0,
+    "noodle_bowl": 2.0,
+    "grill": 2.0,
+    "latino": 2.0
+  }
+}

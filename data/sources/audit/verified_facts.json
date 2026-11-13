@@ -1,0 +1,252 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S01",
+    "S02",
+    "S04",
+    "S07",
+    "S08",
+    "S08_PDF",
+    "S10",
+    "S11",
+    "S11B",
+    "S12",
+    "S13",
+    "S14",
+    "S15",
+    "S16",
+    "S18"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "verified_context": [
+    {
+      "id": "F01",
+      "finding": "Regular Worcester building operating schedule",
+      "value": {
+        "open": "07:00",
+        "close": "24:00",
+        "days": "Monday–Sunday",
+        "timezone": "America/New_York"
+      },
+      "source_ids": [
+        "S01"
+      ],
+      "applicability": "Building availability, not verified dinner service interval"
+    },
+    {
+      "id": "F02",
+      "finding": "Date-specific Worcester building hours",
+      "value": {
+        "2026-11-13": {
+          "open": "07:00",
+          "close": "24:00"
+        },
+        "2026-11-14": {
+          "open": "07:00",
+          "close": "24:00"
+        },
+        "2026-11-15": {
+          "open": "07:00",
+          "close": "24:00"
+        }
+      },
+      "source_ids": [
+        "S02"
+      ],
+      "applicability": "Dates actually present in the reviewed table"
+    },
+    {
+      "id": "F03",
+      "finding": "Advertised late-night interval",
+      "value": {
+        "start": "21:00",
+        "end": "24:00",
+        "heading_days": "Sunday–Saturday",
+        "prose_days": "Sunday–Thursday",
+        "day_schedule_conflict": true
+      },
+      "source_ids": [
+        "S01"
+      ],
+      "applicability": "21:00 boundary is supported; the exact days need confirmation"
+    },
+    {
+      "id": "F04",
+      "finding": "Historical approximate Worcester throughput",
+      "value": 12000,
+      "unit": "meals/day",
+      "approximate": true,
+      "reference_year": 2023,
+      "source_ids": [
+        "S18"
+      ],
+      "applicability": "Context only; not dinner headcount"
+    },
+    {
+      "id": "F05",
+      "finding": "Historical station service descriptions",
+      "value": {
+        "Wok": "made-to-order stir-fry",
+        "Nori": "individual sushi rolls made to order",
+        "Street Food": "separate concept from Wok",
+        "Teaching Kitchen": "instruction, recipe testing and guest chefs"
+      },
+      "reference_year": 2020,
+      "source_ids": [
+        "S07"
+      ],
+      "applicability": "Historical service concepts, not confirmed current modes"
+    },
+    {
+      "id": "F06",
+      "finding": "Labels in published second-floor design drawing",
+      "value": [
+        "Dishroom 230",
+        "Pizza",
+        "Greens",
+        "Wok",
+        "Street Food",
+        "Latin",
+        "Grill",
+        "Naan",
+        "Salad Bar",
+        "Sushi",
+        "Noodles",
+        "Teaching Kitchen"
+      ],
+      "source_ids": [
+        "S08",
+        "S08_PDF"
+      ],
+      "applicability": "Physical design reference; current category-to-counter correspondence remains unverified"
+    },
+    {
+      "id": "F07",
+      "finding": "Current menu-category examples",
+      "value": [
+        "Mediterranean",
+        "Seasons",
+        "Soups",
+        "Display",
+        "Street Food",
+        "Sushi",
+        "Tandoor"
+      ],
+      "source_ids": [
+        "S10"
+      ],
+      "applicability": "Names only; Display includes a make-your-own-waffles listing and does not prove staffed made-to-order service"
+    },
+    {
+      "id": "F08",
+      "finding": "Worcester cook responsibilities",
+      "value": [
+        "Prep sheets and ingredient par levels",
+        "Recipe-based production and portioning",
+        "Staff allocation within a station",
+        "Queue monitoring and requests for extra help"
+      ],
+      "source_ids": [
+        "S11",
+        "S11B"
+      ],
+      "applicability": "Qualitative practices documented in indexed job descriptions; no numeric rules"
+    },
+    {
+      "id": "F09",
+      "finding": "Cuisine preference percentages printed in 2023 slide text",
+      "value": {
+        "Chinese": 37.0,
+        "Mediterranean": 32.8,
+        "American Southern": 32.2,
+        "Latino": 29.9,
+        "Indian": 24.4,
+        "Korean": 23.2
+      },
+      "unit": "percent as presented",
+      "source_ids": [
+        "S12"
+      ],
+      "applicability": "Historical campus preference context, not exclusive dish or station meal shares",
+      "limitations": [
+        "The accompanying Mediterranean chart appears to round differently (32.9).",
+        "The listed percentages exceed 100 when summed; response design is not specified.",
+        "Do not label these as verified liked or multi-select answers without the questionnaire."
+      ]
+    },
+    {
+      "id": "F10",
+      "finding": "Halal accommodation",
+      "value": "Official dietary guidance lists halal availability; historical Worcester tour identifies certified halal offerings at Tandoor.",
+      "source_ids": [
+        "S13",
+        "S07"
+      ],
+      "applicability": "Availability; no prevalence rate"
+    },
+    {
+      "id": "F11",
+      "finding": "Intramural participation reported for 2025",
+      "value": {
+        "participants_lower_bound_exclusive": 5700,
+        "article_description": "almost one quarter of undergraduates"
+      },
+      "source_ids": [
+        "S14"
+      ],
+      "applicability": "Campus participation only; not athlete diet prevalence"
+    },
+    {
+      "id": "F12",
+      "finding": "Student decision factors described in an individual account",
+      "value": [
+        "Time before class",
+        "Avoiding crowds",
+        "Checking livestream",
+        "Residence and bus proximity",
+        "Meeting other students"
+      ],
+      "source_ids": [
+        "S15"
+      ],
+      "applicability": "Qualitative examples; no population shares or distribution"
+    },
+    {
+      "id": "F13",
+      "finding": "FY2026 tracking summary",
+      "value": {
+        "production_tracked_lb_rounded": 1790000,
+        "systems": 16,
+        "locations": 6
+      },
+      "source_ids": [
+        "S16"
+      ],
+      "applicability": "Aggregate tracked production, not public per-dish plans"
+    },
+    {
+      "id": "F14",
+      "finding": "Reported waste intensity",
+      "value": {
+        "FY2025": 7.33,
+        "FY2026": 7.19
+      },
+      "unit": "oz/meal swipe",
+      "source_ids": [
+        "S16"
+      ],
+      "applicability": "Campus report benchmark only; no Worcester dinner line-waste bound"
+    },
+    {
+      "id": "F15",
+      "finding": "Public traffic information exists",
+      "value": "UMass advertises live traffic reporting in its app and links Worcester livestreams.",
+      "source_ids": [
+        "S04",
+        "S01"
+      ],
+      "applicability": "Does not provide a reviewed historical numeric admissions dataset"
+    }
+  ]
+}

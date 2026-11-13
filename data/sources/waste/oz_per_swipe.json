@@ -1,0 +1,18 @@
+{
+  "_from": "raw/research/umass_food_waste_FY2017_FY2026.json",
+  "metric": "total food waste, oz per meal swipe, campus-wide",
+  "source_ids": [
+    "fy25",
+    "fy26"
+  ],
+  "series": [
+    {
+      "fiscal_year": 2025,
+      "oz_per_swipe": 7.33
+    },
+    {
+      "fiscal_year": 2026,
+      "oz_per_swipe": 7.19
+    }
+  ]
+}

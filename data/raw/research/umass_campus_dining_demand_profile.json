@@ -1,0 +1,815 @@
+{
+  "schema_version": "1.0.0",
+  "title": "UMass Amherst campus dining demand factors",
+  "prepared_date": "2026-11-11",
+  "timezone": "America/New_York",
+  "geographic_scope": "University of Massachusetts Amherst, not the other UMass campuses",
+  "purpose": "Evidence for campus dining choice and demand modeling",
+  "sources": [
+    {
+      "id": "uair",
+      "title": "UMass Amherst institutional research enrollment",
+      "url": "https://www.umass.edu/uair/",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "admissions",
+      "title": "Admissions Statistics",
+      "url": "https://www.umass.edu/admissions/apply/admissions-statistics",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "isss",
+      "title": "International Student and Scholar Services",
+      "url": "https://www.umass.edu/global-affairs/international-students-scholars",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "vietnam",
+      "title": "UMass Amherst Joins U.S., Vietnam Higher Ed Partnership Program",
+      "url": "https://www.umass.edu/news/article/umass-amherst-joins-us-vietnam-higher-ed-partnership-program",
+      "type": "university_primary",
+      "publication_date": "2025-06-12",
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "dining2023",
+      "title": "Ken Toong Chef Culinary Conference presentation",
+      "url": "https://www.chefculinaryconference.com/files/2023/powerpoint-slides/Sunday/300%20Toong%20Chef%20Conference%202023.pdf",
+      "type": "umass_dining_primary_presentation",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "sports2025",
+      "title": "Pure Sport",
+      "url": "https://www.umass.edu/magazine/pure-sport",
+      "type": "university_primary",
+      "publication_date": "2026-05",
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "studentlife",
+      "title": "Campus Life and Wellbeing",
+      "url": "https://www.umass.edu/student-life/thrive",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "pie2022",
+      "title": "Culinary, culture, and community at UMass",
+      "url": "https://thepienews.com/culinary-culture-community-umass-amherst/",
+      "type": "interview_reporting",
+      "publication_date": "2022-10-26",
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "allergy",
+      "title": "Food Allergies & Special Diets",
+      "url": "https://www.umassdining.com/nutrition/food-allergies-special-diets",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "faq",
+      "title": "UMass Dining FAQ",
+      "url": "https://www.umassdining.com/faq",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "franklin",
+      "title": "Franklin Dining Commons",
+      "url": "https://www.umassdining.com/locations-menus/franklin",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "halal",
+      "title": "Halal dining guide",
+      "url": "https://umassdining.com/sites/default/files/Halal.pdf",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "calendar",
+      "title": "UMass Dining upcoming specials",
+      "url": "https://www.umassdining.com/locations-menus/upcoming-specials",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "nov2026",
+      "title": "November 2026 dining calendar",
+      "url": "https://www.umassdining.com/sites/default/files/events/Events%20Calendar%202026%20-%20Web%20Flyer%20%288.5x11%29%20%283%29%20%281%29.png",
+      "type": "umass_dining_primary_image",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "football",
+      "title": "November 4 and 18 football traffic notice",
+      "url": "https://www.umass.edu/news/article/maction-brings-parking-traffic-pattern-changes-umass-football-games-nov-4-and-18",
+      "type": "university_primary",
+      "publication_date": "2026-10-29",
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "academic",
+      "title": "Academic Calendar",
+      "url": "https://www.umass.edu/registrar/academic-calendar",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "carbon",
+      "title": "Carbon footprint labeling announcement",
+      "url": "https://www.umass.edu/news/article/umass-amherst-dining-initiates-ground-breaking-program-measure-carbon-footprint",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "mealvolume",
+      "title": "Ken Toong Leadership in Action event description",
+      "url": "https://www.umass.edu/public-policy/events/what-does-it-take-build-1-team-leadership-innovation-ai-and-common-good-ken-toong",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    },
+    {
+      "id": "halloween",
+      "title": "What is it like to have the best dining in the country?",
+      "url": "https://www.umass.edu/admissions/articles/whats-it-have-best-dining-country",
+      "type": "university_student_blog",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11"
+    }
+  ],
+  "evidence_rules": [
+    "Dates, denominators and source scopes must remain attached to values.",
+    "Historical surveys are provisional model inputs, not measured 2026 population shares.",
+    "Preference percentages are not dish sales or meal shares.",
+    "Diet, allergy, nationality and athletics categories overlap; do not add them into disjoint student groups.",
+    "Nationality, ethnicity and country of origin do not determine individual taste or religious diet. Use voluntarily supplied food preferences and restrictions.",
+    "An absent allergen label does not establish absence of cross-contact.",
+    "Event effects on demand remain hypotheses until estimated from observed service counts.",
+    "null means not established, not zero."
+  ],
+  "population": {
+    "enrollment": {
+      "term": "Fall 2026",
+      "total": 30410,
+      "undergraduate": 23630,
+      "graduate": 6780,
+      "source_id": "uair",
+      "metric": "enrolled_student_headcount",
+      "daily_campus_attendance": null,
+      "dining_participation_rate": null
+    },
+    "scope_discrepancy": {
+      "admissions_undergraduate_rounded": 22700,
+      "admissions_massachusetts_pct": 72,
+      "admissions_international_plus_other_states_pct": 28,
+      "source_id": "admissions",
+      "note": "Admissions and UAIR publish different undergraduate totals; definitions or timing were not reconciled. Use UAIR for total enrollment, not as a measured daily dining population."
+    },
+    "on_campus_residents": {
+      "value": 13500,
+      "qualifier": "more_than",
+      "source_id": "studentlife",
+      "reference_period": null,
+      "use": "Residential population is more directly relevant to recurring dining demand than total enrollment."
+    },
+    "campus_meals": {
+      "value": 50000,
+      "qualifier": "more_than",
+      "unit": "meals_per_day",
+      "source_id": "mealvolume",
+      "reference_context": "2026 event description",
+      "unique_diners": null,
+      "venue_coverage_detail": null,
+      "note": "Program-wide descriptive meal volume; not a count of unique students and not limited to the four dining commons."
+    }
+  },
+  "international_community": {
+    "current_webpage_figures": {
+      "international_undergraduates": {
+        "value": 1600,
+        "qualifier": "more_than"
+      },
+      "international_graduates": {
+        "value": 3800,
+        "qualifier": "more_than"
+      },
+      "countries_represented": 120,
+      "reference_term": null,
+      "source_id": "isss",
+      "scope_note": "Countries represented is a community figure; do not treat as a country-by-country student distribution."
+    },
+    "historical_country_context": {
+      "reference_term": "Fall 2024",
+      "total_international_students_approx": 4500,
+      "vietnamese_students": 332,
+      "vietnam_rank_in_international_population": 3,
+      "larger_origin_groups": [
+        "India",
+        "China"
+      ],
+      "source_id": "vietnam",
+      "current_country_counts": null
+    },
+    "food_choice_interpretation": "Cultural familiarity and authentic preparation are plausible influences; no quantified nationality-to-food preference mapping was found.",
+    "recommended_preference_fields": [
+      "self_reported_favorite_cuisines",
+      "self_reported_comfort_foods",
+      "preferred_spice_level",
+      "religious_food_requirements_if_volunteered",
+      "ingredient_avoidances"
+    ],
+    "prohibited_model_shortcuts": [
+      "Assign vegetarian status by nationality.",
+      "Assign halal or kosher status by nationality or ethnicity.",
+      "Assume all international students share the same taste."
+    ]
+  },
+  "diet_patterns": {
+    "source_id": "dining2023",
+    "pdf_page": 7,
+    "study": "UMass Dining Customer Satisfaction and Eating Habits Survey",
+    "period": "Spring 2022",
+    "respondents": 1550,
+    "response_rate_pct": 25.8,
+    "values_pct": {
+      "omnivore": 68.9,
+      "flexitarian": 8.9,
+      "vegetarian": 8.3,
+      "pollotarian": 5.7,
+      "other": 4.0,
+      "pescetarian": 2.0,
+      "vegan": 1.2
+    },
+    "reported_values_sum_pct": 99.0,
+    "normalization_applied": false,
+    "unexplained_remainder_pct": 1.0,
+    "limitations": [
+      "Source values sum to 99.0%; retain them as published.",
+      "Sampling frame, weighting and representativeness for all current students are not established.",
+      "Dietary identity does not specify the contents of each meal.",
+      "Omnivores can choose vegetarian dishes; plant-based meal demand is not limited to vegans or vegetarians."
+    ]
+  },
+  "allergies_and_intolerances": {
+    "source_id": "dining2023",
+    "pdf_page": 13,
+    "period": "2022-2023",
+    "source_total_label": "Total Allergy",
+    "source_total_pct": 10.04,
+    "category_values_pct": {
+      "gluten": 1.32,
+      "peanuts": 2.3,
+      "tree_nuts": 2.73,
+      "fish": 0.43,
+      "shellfish": 1.0,
+      "milk": 0.93,
+      "egg": 0.38,
+      "soy": 0.23,
+      "sesame": 0.3,
+      "corn": 0.04,
+      "fruits": 0.27,
+      "vegetables": 0.11
+    },
+    "sample_size": null,
+    "denominator_definition": null,
+    "unique_person_deduplication_method": null,
+    "current_2026_prevalence": null,
+    "limitations": [
+      "Slide discusses both allergy and intolerance. Do not interpret as clinically confirmed allergy prevalence.",
+      "Multiple restrictions can coexist; the displayed category values add to the displayed total, but a person-level deduplication method is not provided.",
+      "Do not add this total to vegetarian or other diet shares."
+    ],
+    "operational_guidance_source_id": "allergy",
+    "choice_fields": [
+      "ingredient_list",
+      "allergen_labels",
+      "cross_contact_information",
+      "staff_accommodation_availability"
+    ]
+  },
+  "cuisine_preferences": {
+    "source_id": "dining2023",
+    "pdf_page": 4,
+    "presentation_year": 2023,
+    "survey_period": null,
+    "sample_size": null,
+    "question_wording": null,
+    "multiple_response_method": null,
+    "ranked_text_list": [
+      {
+        "rank": 1,
+        "cuisine": "Chinese",
+        "reported_pct": 37.0
+      },
+      {
+        "rank": 2,
+        "cuisine": "Mediterranean",
+        "reported_pct": 32.8
+      },
+      {
+        "rank": 3,
+        "cuisine": "American Southern",
+        "reported_pct": 32.2
+      },
+      {
+        "rank": 4,
+        "cuisine": "Latino",
+        "reported_pct": 29.9
+      },
+      {
+        "rank": 5,
+        "cuisine": "Indian",
+        "reported_pct": 24.4
+      },
+      {
+        "rank": 6,
+        "cuisine": "Korean",
+        "reported_pct": 23.2
+      },
+      {
+        "rank": 7,
+        "cuisine": "Middle Eastern",
+        "reported_pct": 21.1
+      },
+      {
+        "rank": 8,
+        "cuisine": "Caribbean",
+        "reported_pct": 17.6
+      },
+      {
+        "rank": 9,
+        "cuisine": "Vietnamese",
+        "reported_pct": 16.0
+      },
+      {
+        "rank": 10,
+        "cuisine": "African",
+        "reported_pct": 13.6
+      },
+      {
+        "rank": 11,
+        "cuisine": "Other",
+        "reported_pct": 10.9
+      }
+    ],
+    "source_discrepancies": [
+      {
+        "field": "Mediterranean",
+        "text_list_pct": 32.8,
+        "chart_pct": 32.9
+      },
+      {
+        "field": "Southeast Asian",
+        "chart_pct": 13.9,
+        "present_in_text_list": false
+      }
+    ],
+    "current_2026_ranking": null,
+    "actual_meal_share": null,
+    "interpretation": "Chinese leads the published text list. Percentages exceed 100% in total; do not normalize into exclusive meal-choice probabilities or assume 37% of meals are Chinese."
+  },
+  "popular_dish": {
+    "name": "Sushi",
+    "source_id": "pie2022",
+    "report_year": 2022,
+    "reported_daily_volume": {
+      "value": 5000,
+      "qualifier": "more_than",
+      "unit": "rolls_per_day"
+    },
+    "description": "Interview report identifies sushi as a favorite.",
+    "current_daily_volume": null,
+    "worcester_only": false,
+    "scope_note": "Campus-level reporting; do not assign the total to Worcester or equate rolls with diners."
+  },
+  "athletics_and_fitness": {
+    "intramurals": {
+      "source_id": "sports2025",
+      "reference_year": 2025,
+      "participants": 5700,
+      "qualifier": "more_than",
+      "publication": "May 2026",
+      "reported_context": "Approximately one quarter of undergraduates"
+    },
+    "club_sports": {
+      "source_id": "studentlife",
+      "participants": 1600,
+      "reference_period": null
+    },
+    "recreation_visits": {
+      "source_id": "studentlife",
+      "value": 3600,
+      "qualifier": "more_than",
+      "unit": "students_visiting_per_day_as_reported",
+      "reference_period": null
+    },
+    "share_who_like_sports": null,
+    "share_who_dislike_sports": null,
+    "high_protein_diet_share": null,
+    "limitations": [
+      "Participation does not measure spectator interest or food preference.",
+      "Intramural, club-sport and recreation populations overlap.",
+      "Do not infer a high-protein or meat preference from sports participation."
+    ],
+    "testable_features": [
+      "practice_end_times",
+      "home_game_date",
+      "home_game_start_time",
+      "home_game_end_time",
+      "walking_distance_from_venue",
+      "voluntarily_reported_nutrition_goals"
+    ]
+  },
+  "religious_and_special_diets": {
+    "campus_prevalence": null,
+    "supported_needs": [
+      "halal",
+      "kosher",
+      "vegan",
+      "vegetarian",
+      "food_allergies",
+      "food_intolerances"
+    ],
+    "source_ids": [
+      "allergy",
+      "faq"
+    ],
+    "kosher_location": {
+      "location": "Franklin Dining Commons",
+      "source_id": "faq"
+    },
+    "franklin_reputation": {
+      "description": "UMass Dining describes Franklin as known for vegan and vegetarian cuisine.",
+      "source_id": "franklin"
+    },
+    "ramadan": {
+      "note": "The published halal guide describes pre-dawn Suhoor service at Worcester and Berkshire. Verify each year before scheduling.",
+      "source_id": "halal",
+      "evidence_access": "Indexed source excerpt; guide download was not inspected in this run."
+    },
+    "modeling_features": [
+      "diet_eligibility_per_dish",
+      "location_of_appropriate_service",
+      "religious_observance_date",
+      "fasting_meal_window_if_user_supplied",
+      "service_hours"
+    ]
+  },
+  "stated_choice_drivers": [
+    {
+      "drivers": [
+        "quality",
+        "variety",
+        "convenience",
+        "authenticity",
+        "familiar_food",
+        "community"
+      ],
+      "evidence": "Dining leadership interviews and student testimony",
+      "source_id": "pie2022",
+      "population_shares": null
+    },
+    {
+      "drivers": [
+        "sustainability",
+        "carbon_impact"
+      ],
+      "evidence": "Fall survey of more than 800 people reported by UMass",
+      "reference_period": "Fall 2021",
+      "climate_crisis_informs_decisions_at_least_sometimes_pct": 88,
+      "food_specific_causal_effect": null,
+      "source_id": "carbon"
+    }
+  ],
+  "calendar_events": [
+    {
+      "date": "2026-11-04",
+      "name": "Peet's sampling",
+      "locations": [
+        "ILC"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-05",
+      "name": "Diwali special",
+      "locations": [
+        "Blue Wall"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-06",
+      "name": "Diwali dinner",
+      "locations": [
+        "Worcester",
+        "Berkshire"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-11",
+      "name": "Veterans Day holiday",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "academic",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-12",
+      "name": "Cantonese dinner",
+      "locations": [
+        "Berkshire"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-14",
+      "name": "VSA food fair",
+      "locations": [
+        "Hampshire"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-18",
+      "name": "Friendsgiving dinner",
+      "locations": [
+        "All dining commons"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-18",
+      "name": "UMass vs Akron home football",
+      "locations": [
+        "McGuirk Alumni Stadium"
+      ],
+      "meal_period": null,
+      "source_id": "football",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-19",
+      "name": "African Student Dinner",
+      "locations": [
+        "Berkshire"
+      ],
+      "meal_period": "late_night",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-20",
+      "name": "TCSA dinner",
+      "locations": [
+        "Worcester"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-24",
+      "name": "Thanksgiving recess begins after last class",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "academic",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-26",
+      "name": "Thanksgiving",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-30",
+      "name": "Classes resume",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "academic",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    }
+  ],
+  "multi_day_events": [
+    {
+      "name": "Apple Week",
+      "start_date": "2026-11-02",
+      "end_date": "2026-11-06",
+      "source_id": "nov2026",
+      "venue_coverage": null
+    }
+  ],
+  "event_interpretation": [
+    "November dining events were transcribed from the current November 2026 image, not from the archived November 2025 calendar.",
+    "VSA and TCSA are retained as calendar abbreviations; their expanded organization names were not independently verified here.",
+    "The calendar places African Student Dinner in the Berkshire late-night period despite the event title containing Dinner.",
+    "A cultural event may redistribute visitors between dining halls rather than increase campus-wide meals.",
+    "No fixed weekly cuisine-day recurrence was verified; dated events should not be converted into recurring schedules.",
+    "Apple Week dates follow the graphic span; confirm with dining staff for operational use."
+  ],
+  "recurring_or_historical_event_types": [
+    {
+      "name": "Halloween steak and lobster dinner",
+      "source_id": "halloween",
+      "future_year_date_confirmed": false,
+      "demand_effect": null
+    },
+    {
+      "name": "Guest-chef dinners and cultural menus",
+      "source_id": "pie2022",
+      "future_schedule_confirmed": false,
+      "demand_effect": null
+    }
+  ],
+  "candidate_model_features": [
+    {
+      "group": "eligibility",
+      "fields": [
+        "allergens",
+        "ingredients",
+        "religious_requirements",
+        "vegetarian_vegan_status",
+        "cross_contact"
+      ],
+      "priority": "first",
+      "treatment": "Filter by explicitly supplied restrictions before ranking dishes."
+    },
+    {
+      "group": "menu_and_supply",
+      "fields": [
+        "dish_id",
+        "cuisine_tags",
+        "protein_source",
+        "portion",
+        "nutrition",
+        "station",
+        "meal_period",
+        "stockout",
+        "substitute_dishes"
+      ],
+      "priority": "high",
+      "treatment": "Use actual menus and availability; cuisine categories may overlap."
+    },
+    {
+      "group": "convenience",
+      "fields": [
+        "distance_from_dorm_or_class",
+        "walking_time",
+        "queue_length",
+        "hours",
+        "time_until_next_class",
+        "takeaway_availability"
+      ],
+      "priority": "high",
+      "treatment": "Plausible decision factors; campus-specific coefficients must be measured."
+    },
+    {
+      "group": "access_and_cost",
+      "fields": [
+        "meal_plan_type",
+        "remaining_swipes",
+        "dining_dollars",
+        "retail_meal_exchange",
+        "door_price"
+      ],
+      "priority": "high",
+      "treatment": "Plans determine which alternatives are affordable and convenient; do not treat menu price as the only cost."
+    },
+    {
+      "group": "preferences",
+      "fields": [
+        "taste_rating",
+        "preferred_cuisine",
+        "spice_tolerance",
+        "texture",
+        "comfort_food",
+        "novelty",
+        "recently_eaten_dishes",
+        "friend_group_choice"
+      ],
+      "priority": "high",
+      "treatment": "Collect voluntarily or estimate from consented feedback and aggregate observations."
+    },
+    {
+      "group": "nutrition_and_values",
+      "fields": [
+        "protein_goal",
+        "calorie_goal",
+        "plant_forward_preference",
+        "carbon_rating",
+        "local_sourcing"
+      ],
+      "priority": "candidate",
+      "treatment": "Self-reported preferences rather than demographic assumptions."
+    },
+    {
+      "group": "time_and_context",
+      "fields": [
+        "weekday",
+        "meal_period",
+        "class_day",
+        "holiday",
+        "exam_period",
+        "weather",
+        "home_game",
+        "cultural_dinner",
+        "family_weekend",
+        "residence_hall_open"
+      ],
+      "priority": "high",
+      "treatment": "Estimate effects using dated service records and avoid invented percentage lifts."
+    }
+  ],
+  "missing_measurements": [
+    "Current representative dietary survey",
+    "Current allergy and restriction prevalence with a defined denominator",
+    "Cuisine preferences by dining hall and meal period",
+    "Actual dish selections and portions served",
+    "Country-level current counts with consistent enrollment definitions",
+    "Sports interest survey",
+    "Individual nutrition-goal prevalence",
+    "Wait-time sensitivity",
+    "Price and meal-plan sensitivity",
+    "Dated event uplift estimates",
+    "Current representative food preference ranking"
+  ],
+  "recommended_next_data": [
+    "Aggregate admissions and meals by hall, date and period",
+    "Dish-level servings, production, leftovers and stockouts",
+    "Optional student preference survey covering cuisines, restrictions and convenience",
+    "Event calendar with venue, service period and actual attendance",
+    "Residence and class-location patterns aggregated without personal identities"
+  ]
+}

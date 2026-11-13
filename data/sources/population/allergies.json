@@ -1,0 +1,46 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "allergy",
+    "dining2023"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "allergies_and_intolerances": {
+    "source_id": "dining2023",
+    "pdf_page": 13,
+    "period": "2022-2023",
+    "source_total_label": "Total Allergy",
+    "source_total_pct": 10.04,
+    "category_values_pct": {
+      "gluten": 1.32,
+      "peanuts": 2.3,
+      "tree_nuts": 2.73,
+      "fish": 0.43,
+      "shellfish": 1.0,
+      "milk": 0.93,
+      "egg": 0.38,
+      "soy": 0.23,
+      "sesame": 0.3,
+      "corn": 0.04,
+      "fruits": 0.27,
+      "vegetables": 0.11
+    },
+    "sample_size": null,
+    "denominator_definition": null,
+    "unique_person_deduplication_method": null,
+    "current_2026_prevalence": null,
+    "limitations": [
+      "Slide discusses both allergy and intolerance. Do not interpret as clinically confirmed allergy prevalence.",
+      "Multiple restrictions can coexist; the displayed category values add to the displayed total, but a person-level deduplication method is not provided.",
+      "Do not add this total to vegetarian or other diet shares."
+    ],
+    "operational_guidance_source_id": "allergy",
+    "choice_fields": [
+      "ingredient_list",
+      "allergen_labels",
+      "cross_contact_information",
+      "staff_accommodation_availability"
+    ]
+  }
+}

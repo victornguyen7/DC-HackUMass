@@ -1,0 +1,69 @@
+{
+  "_from": "raw/research/umass_dining_current_tools_ecosystem.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "foodpro_integration",
+    "foodpro_job"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "scope": "UMass Amherst, not other UMass campuses",
+  "tool": {
+    "tool_id": "foodpro",
+    "name": "FoodPro / production planning",
+    "ecosystem_role": "Menu, recipe, inventory and production planning",
+    "current_use_evidence": {
+      "status": "recent_use_confirmed",
+      "evidence": [
+        {
+          "period": "2022-2025 account",
+          "detail": "Vendor describes integration with UMass food management software Foodpro",
+          "source_id": "foodpro_integration"
+        },
+        {
+          "date": "2026-07-23",
+          "detail": "UMass Catering job description names FoodPro menu management and inventory implementation",
+          "source_id": "foodpro_job"
+        }
+      ],
+      "all_location_configuration": null
+    },
+    "assumption_for_the_build": "Export a generic production sheet that a manager can review and enter into the planning system. Naming FoodPro as a documented ecosystem component is supported; automated writeback is not.",
+    "proposed_input_fields": [
+      "dish_id",
+      "recipe_id",
+      "location_id",
+      "service_date",
+      "planned_portions",
+      "portion_weight_g",
+      "ingredient_availability",
+      "lead_time_minutes",
+      "batch_size",
+      "unit_food_cost"
+    ],
+    "proposed_output_fields": [
+      "service_date",
+      "meal_period",
+      "station",
+      "dish",
+      "recommended_portions",
+      "batch_release_time",
+      "reorder_trigger",
+      "expected_leftover_kg",
+      "manager_approval_status"
+    ],
+    "limitations": [
+      "Public menu endpoints alone do not establish internal production-system capabilities.",
+      "No current configuration across every dining location was obtained.",
+      "No verified integration between this prototype and FoodPro.",
+      "No FoodPro-only waste-reduction percentage was found."
+    ],
+    "source_ids": [
+      "foodpro_integration",
+      "foodpro_job"
+    ],
+    "verified_live_integration_for_this_project": false,
+    "verified_public_export_schema": false,
+    "data_access_obtained": false,
+    "tool_specific_campus_waste_reduction_pct": null
+  }
+}

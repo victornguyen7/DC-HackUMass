@@ -1,0 +1,72 @@
+{
+  "_from": "raw/research/umass_dining_current_tools_ecosystem.json",
+  "as_of": "2026-11-11",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "inclusion_policy": "Only tools or services with recent affirmative evidence of operational use. Pilot-only or unconfirmed current deployments are omitted. Historical instruments may be named only in the separate ten-year waste report.",
+  "tool_ids": [
+    "metafoodx",
+    "foodpro",
+    "meal_swipes",
+    "frn",
+    "anaerobic"
+  ],
+  "proposed_data_flow": [
+    {
+      "from": "menu_and_planning_records",
+      "to": "forecasting_prototype",
+      "status": "proposed_file_import"
+    },
+    {
+      "from": "metafoodx_observations",
+      "to": "forecasting_prototype",
+      "status": "requires_authorized_export"
+    },
+    {
+      "from": "aggregate_meal_transactions",
+      "to": "forecasting_prototype",
+      "status": "requires_authorized_export"
+    },
+    {
+      "from": "forecasting_prototype",
+      "to": "manager_reviewed_production_sheet",
+      "status": "proposed_output"
+    },
+    {
+      "from": "forecasting_prototype",
+      "to": "frn_surplus_note",
+      "status": "proposed_extension_subject_to_acceptance"
+    },
+    {
+      "from": "scraps_collection_records",
+      "to": "impact_reporting",
+      "status": "proposed_reporting_only"
+    }
+  ],
+  "measurement_contract": {
+    "mass_unit": "kg",
+    "time_zone": "America/New_York",
+    "distinguish": [
+      "planned",
+      "produced",
+      "put_out_for_service",
+      "estimated_served",
+      "left_on_service_line",
+      "donated",
+      "reused",
+      "discarded_pre_consumer",
+      "discarded_post_consumer"
+    ],
+    "balance_rule": "Opening balance + production + transfers in = estimated served + remaining balance + documented transfers or removals. Avoid counting the same leftover more than once.",
+    "evaluation_metrics": [
+      "pre_consumer_avoidable_waste_kg_per_100_admissions",
+      "total_food_waste_oz_per_swipe",
+      "stockout_minutes",
+      "meal_availability",
+      "forecast_error_by_dish",
+      "donation_actual_kg",
+      "production_cost"
+    ],
+    "model_output_disclosure": "Simulated savings must be labeled simulated and kept separate from published historical effects."
+  }
+}

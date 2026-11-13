@@ -1,0 +1,54 @@
+{
+  "_from": "raw/research/umass_dining_current_tools_ecosystem.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "fy26",
+    "waste_current"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "scope": "UMass Amherst, not other UMass campuses",
+  "tool": {
+    "tool_id": "anaerobic",
+    "name": "Vanguard Renewables / Barstow's Farm anaerobic digestion",
+    "ecosystem_role": "Downstream processing of collected food scraps",
+    "current_use_evidence": {
+      "status": "current_use_confirmed",
+      "coverage": "Collected pre- and post-consumer food waste from dining commons, Campus Center and retail locations",
+      "reported_fy2026_diversion": {
+        "value": 1400,
+        "unit": "tons_as_reported",
+        "ton_definition": null
+      }
+    },
+    "assumption_for_the_build": "Keep as downstream context, outside the core food-production optimizer. Distinguish landfill diversion from source reduction.",
+    "proposed_input_fields": [
+      "collection_date",
+      "location_or_route",
+      "scale_ticket_id",
+      "gross_weight",
+      "tare_weight",
+      "net_weight",
+      "weight_unit",
+      "contamination_note",
+      "destination"
+    ],
+    "proposed_output_fields": [
+      "diversion_summary",
+      "scraps_mass_by_reporting_period"
+    ],
+    "limitations": [
+      "Diverted food has already entered a waste stream.",
+      "More diverted tonnage can reflect better capture or greater activity; it does not by itself establish less food waste.",
+      "Tonnage does not identify avoidable edible waste separately from unavoidable scraps.",
+      "Generic composting descriptions are historical or may describe other streams; current Dining sources identify anaerobic digestion."
+    ],
+    "source_ids": [
+      "waste_current",
+      "fy26"
+    ],
+    "verified_live_integration_for_this_project": false,
+    "verified_public_export_schema": false,
+    "data_access_obtained": false,
+    "tool_specific_campus_waste_reduction_pct": null
+  }
+}

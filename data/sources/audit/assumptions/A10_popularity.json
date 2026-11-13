@@ -1,0 +1,113 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S12"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A10",
+    "category": "Popularity",
+    "user_provided_assumption": {
+      "formula": "role prior / sqrt(same-role items at station) * staff multiplier"
+    },
+    "evidence_status": "context_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Item-level choice or consumption conditional on the offered menu",
+    "evidence_fact_ids": [
+      "F09"
+    ],
+    "why_evidence_does_not_replace_assumption": "Cuisine-level historical preference scores do not identify dish probabilities, a square-root dilution rule, portion demand, or the effect of queues and stockouts.",
+    "missing_fields": [
+      "item_choice_probabilities",
+      "served_portions",
+      "substitution_effects",
+      "portion_repeats",
+      "availability_adjustment"
+    ],
+    "data_request_ids": [
+      "R04",
+      "R06"
+    ],
+    "user_referenced_paths": [],
+    "notes": [
+      "Bradley–Terry parameters require actual pairwise-choice observations; no such Worcester dataset was found.",
+      "A campus sushi production total would not establish a probability of choosing a Worcester dinner item."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F09",
+      "finding": "Cuisine preference percentages printed in 2023 slide text",
+      "value": {
+        "Chinese": 37.0,
+        "Mediterranean": 32.8,
+        "American Southern": 32.2,
+        "Latino": 29.9,
+        "Indian": 24.4,
+        "Korean": 23.2
+      },
+      "unit": "percent as presented",
+      "source_ids": [
+        "S12"
+      ],
+      "applicability": "Historical campus preference context, not exclusive dish or station meal shares",
+      "limitations": [
+        "The accompanying Mediterranean chart appears to round differently (32.9).",
+        "The listed percentages exceed 100 when summed; response design is not specified.",
+        "Do not label these as verified liked or multi-select answers without the questionnaire."
+      ]
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R04",
+      "name": "Menu role review and dish-choice observations",
+      "prospective_holder": "Worcester culinary team / students",
+      "access": "Staff review and consent-based survey or aggregated consumption data",
+      "fields": [
+        "menu_date",
+        "meal_period",
+        "item_id",
+        "recipe_id",
+        "station_id",
+        "portion_definition",
+        "staff_verified_role",
+        "availability_start_end",
+        "servings_taken",
+        "stockout_intervals",
+        "pairwise_choice_question",
+        "respondent_sampling_method",
+        "survey_sample_size"
+      ],
+      "purpose": "Validate classification and estimate item demand while accounting for availability"
+    },
+    {
+      "id": "R06",
+      "name": "Planned and actual kitchen production",
+      "prospective_holder": "UMass Dining production-system / Metafoodx administrator",
+      "access": "No private export or authorization established",
+      "fields": [
+        "service_date",
+        "meal_period",
+        "station_id",
+        "recipe_id",
+        "item_name",
+        "planned_portions",
+        "portion_weight_g",
+        "batch_id",
+        "batch_start",
+        "ready_time",
+        "portions_produced",
+        "portions_sent_to_line",
+        "leftover_weight_g",
+        "reuse_weight_g",
+        "donation_weight_g",
+        "discard_weight_g",
+        "measurement_method"
+      ],
+      "purpose": "Compare a real baseline plan with actual production and line leftovers"
+    }
+  ]
+}

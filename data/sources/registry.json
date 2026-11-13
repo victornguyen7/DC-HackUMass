@@ -1,0 +1,733 @@
+{
+  "sources": {
+    "S01": {
+      "title": "Worcester location and operating hours",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/locations-menus/worcester",
+      "source_type": "official_webpage",
+      "locator": "Regular Hours; Late Night",
+      "access_date": "2026-11-12",
+      "limitation": "Late-night heading and prose disagree about days; building hours do not establish meal-period boundaries.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S02": {
+      "title": "Hours of Operation",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/hours",
+      "source_type": "official_webpage",
+      "locator": "Worcester row, November 11–15 table",
+      "access_date": "2026-11-12",
+      "limitation": "A changing webpage; the reviewed date-specific table stops at November 15.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S03": {
+      "title": "Meal-plan FAQ",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/faq",
+      "source_type": "official_webpage",
+      "locator": "Meal-plan usage / GET",
+      "access_date": "2026-11-12",
+      "limitation": "Student account access is not a public bulk swipe export.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "faq"
+      ]
+    },
+    "S04": {
+      "title": "UMass Dining app listing",
+      "publisher": "UMass Dining / Google Play",
+      "url": "https://play.google.com/store/apps/details?hl=en_US&id=com.ionicframework.androidumassdining468431",
+      "source_type": "official_app_listing",
+      "locator": null,
+      "access_date": "2026-11-12",
+      "limitation": "Advertised real-time traffic is not a published history of counted arrivals.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S05": {
+      "title": "November 2026 dining events",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/locations-menus/upcoming-specials",
+      "source_type": "official_calendar",
+      "locator": "November Calendar image linked from page",
+      "access_date": "2026-11-12",
+      "limitation": "Scheduled events, without attendance measurements.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "calendar"
+      ]
+    },
+    "S05_IMAGE": {
+      "title": "November 2026 calendar image",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/sites/default/files/events/Events%20Calendar%202026%20-%20Web%20Flyer%20%288.5x11%29%20%283%29%20%281%29.png",
+      "source_type": "official_calendar_image",
+      "locator": null,
+      "access_date": "2026-11-12",
+      "limitation": "Image was visually inspected; abbreviations are retained as published.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "nov2026"
+      ]
+    },
+    "S06": {
+      "title": "November 18 home football traffic notice",
+      "publisher": "UMass Amherst",
+      "url": "https://www.umass.edu/news/article/maction-brings-parking-traffic-pattern-changes-umass-football-games-nov-4-and-18",
+      "source_type": "official_news",
+      "locator": "October 29, 2026; final paragraph",
+      "access_date": "2026-11-12",
+      "limitation": "Kickoff was unannounced in this notice; no Worcester attendance effect is measured.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "football"
+      ]
+    },
+    "S07": {
+      "title": "Tour of the new Worcester Commons",
+      "publisher": "UMass Amherst Admissions",
+      "url": "https://www.youtube.com/watch?v=ZICr-SWhVFg",
+      "source_type": "official_video_description_transcript",
+      "locator": "Published December 8, 2020; transcript in public video description",
+      "access_date": "2026-11-12",
+      "limitation": "Transcript reviewed, not a new on-site observation; historical operations may have changed.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S08": {
+      "title": "Worcester second-floor drawing in project portfolio",
+      "publisher": "Taylor Lawrence / Coroflot",
+      "url": "https://www.coroflot.com/taylorlawrence/UMASS-Amherst-Worcester-Dining-Commons-New-Construction",
+      "source_type": "designer_portfolio",
+      "locator": "Second Floor Plan PDF",
+      "access_date": "2026-11-12",
+      "limitation": "Published design drawing; not a verified 2026 as-built operations map.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S08_PDF": {
+      "title": "Second Floor Plan PDF",
+      "publisher": "Taylor Lawrence / Coroflot",
+      "url": "https://s3images.coroflot.com/user_files/individual_files/original_pdf_656053_mkothwcfcry2fbjuuxl5dps_j.pdf",
+      "source_type": "designer_portfolio_drawing",
+      "locator": "One-page plan, visually inspected",
+      "access_date": "2026-11-12",
+      "limitation": "PDF metadata is dated July 14, 2021; this does not establish the original design date.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S09": {
+      "title": "UMass Living Laboratory",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/umass-living-laboratory",
+      "source_type": "official_webpage",
+      "locator": "Worcester teaching kitchen",
+      "access_date": "2026-11-12",
+      "limitation": "No current correspondence between Display menu category and teaching kitchen.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S10": {
+      "title": "Worcester menu",
+      "publisher": "UMass Dining",
+      "url": "https://www.umassdining.com/locations-menus/worcester/menu",
+      "source_type": "official_menu",
+      "locator": "Reviewed November 11, 2026 menu",
+      "access_date": "2026-11-12",
+      "limitation": "Menu categories are not validated coordinates or service-mode labels.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S11": {
+      "title": "Cook I, Worcester, job 509332",
+      "publisher": "UMass Amherst",
+      "url": "https://careers.umass.edu/jobs/cook-i-worcester-dining-common-amherst-massachusetts-united-states?source=circa",
+      "source_type": "official_job_posting_search_index",
+      "locator": "July 30–October 30, 2026 posting; essential functions",
+      "access_date": "2026-11-12",
+      "limitation": "Search index supplied job text; subsequent direct request returned 404. Responsibilities do not establish measured performance.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S11B": {
+      "title": "Cook I, Worcester, job 509318",
+      "publisher": "UMass Amherst",
+      "url": "https://careers.pageuppeople.com/1232/cw/en-us/job/509318/cook-i-worcester-dining-commons",
+      "source_type": "official_job_posting_search_index",
+      "locator": "September 23, 2026 posting; essential functions",
+      "access_date": "2026-11-12",
+      "limitation": "Indexed job text available; direct link redirected to job-not-found listing. Shift hours are not dining meal-period hours.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S12": {
+      "title": "Student Global Cuisine Preferences, 2023 conference slides",
+      "publisher": "UMass / Chef Culinary Conference",
+      "url": "https://www.chefculinaryconference.com/files/2023/powerpoint-slides/Sunday/300%20Toong%20Chef%20Conference%202023.pdf",
+      "source_type": "primary_presentation",
+      "locator": "Slide 4",
+      "access_date": "2026-11-12",
+      "limitation": "Cuisine slide does not establish question wording, sample size, sampling frame, survey date, or meal-choice probabilities.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "dining2023"
+      ]
+    },
+    "S13": {
+      "title": "Religious observance and dietary accommodations",
+      "publisher": "UMass Amherst Student Life",
+      "url": "https://www.umass.edu/student-life/religious-spiritual-life/polices-observance-practice",
+      "source_type": "official_webpage",
+      "locator": "Dietary information, identified on page as September 2023",
+      "access_date": "2026-11-12",
+      "limitation": "Provision of halal food does not measure diners requiring it.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S14": {
+      "title": "Pure Sport",
+      "publisher": "UMass Magazine",
+      "url": "https://www.umass.edu/magazine/pure-sport",
+      "source_type": "official_magazine",
+      "locator": "May 2026 article reporting 2025 intramural participation",
+      "access_date": "2026-11-12",
+      "limitation": "Participation is not a diet measure or a sample of Worcester dinner visitors.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "sports2025"
+      ]
+    },
+    "S15": {
+      "title": "Worcester Commons student account",
+      "publisher": "UMass SBS Pathways",
+      "url": "https://sbspathways.umass.edu/blog/2026/03/17/worcester-commons/",
+      "source_type": "official_hosted_student_blog",
+      "locator": "March 17, 2026",
+      "access_date": "2026-11-12",
+      "limitation": "One student account, not representative survey or measured traffic.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S16": {
+      "title": "UMass Dining Sustainability Annual Report FY2026",
+      "publisher": "UMass Dining",
+      "url": "https://www.localumass.com/wp-content/uploads/UMDS-Annual-Report-FY26-1-1.pdf",
+      "source_type": "primary_annual_report",
+      "locator": "Printed page 7, PDF page 9; deployment also printed page 4",
+      "access_date": "2026-11-12",
+      "limitation": "Downloaded and extracted directly; no dish-level export supplied. Accounting detail is insufficient to construct a Worcester dinner line-waste bound.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "fy26"
+      ]
+    },
+    "S17": {
+      "title": "Campus dining tracking and production planning",
+      "publisher": "Metafoodx",
+      "url": "https://www.metafoodx.com/post/campus-dining-food-waste-tracking-production-planning",
+      "source_type": "vendor_article",
+      "locator": null,
+      "access_date": "2026-11-12",
+      "limitation": "Product capability description, not a public UMass operational dataset or independent validation.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ]
+    },
+    "S18": {
+      "title": "Boston Globe report, September 6, 2023",
+      "publisher": "The Boston Globe",
+      "url": "https://www.bostonglobe.com/2023/09/06/arts/everyone-knows-umass-amherst-wins-best-campus-food-year-after-year-few-know-dining-halls-are-open-public/",
+      "source_type": "news_report",
+      "locator": "Daily meals figure",
+      "access_date": "2026-11-12",
+      "limitation": "Historical approximate daily throughput only.",
+      "cited_in": [
+        "raw/research/worcester_simulation_assumption_evidence.json"
+      ],
+      "same_as": [
+        "boston_globe_2023"
+      ]
+    },
+    "academic": {
+      "title": "Academic Calendar",
+      "url": "https://www.umass.edu/registrar/academic-calendar",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "admissions": {
+      "title": "Admissions Statistics",
+      "url": "https://www.umass.edu/admissions/apply/admissions-statistics",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "allergy": {
+      "title": "Food Allergies & Special Diets",
+      "url": "https://www.umassdining.com/nutrition/food-allergies-special-diets",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "boston_globe_2023": {
+      "publisher": "The Boston Globe",
+      "author": "Brooke Hauser",
+      "short_reference_label": "Worcester dining report",
+      "publication_date": "2023-09-06",
+      "source_type": "newspaper_reporting",
+      "url": "https://www.bostonglobe.com/2023/09/06/arts/everyone-knows-umass-amherst-wins-best-campus-food-year-after-year-few-know-dining-halls-are-open-public/",
+      "cited_in": [
+        "raw/research/worcester_dining_popularity_report.json"
+      ],
+      "same_as": [
+        "S18"
+      ]
+    },
+    "calendar": {
+      "title": "UMass Dining upcoming specials",
+      "url": "https://www.umassdining.com/locations-menus/upcoming-specials",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ],
+      "same_as": [
+        "S05"
+      ]
+    },
+    "carbon": {
+      "title": "Carbon footprint labeling announcement",
+      "url": "https://www.umass.edu/news/article/umass-amherst-dining-initiates-ground-breaking-program-measure-carbon-footprint",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "dining2023": {
+      "title": "Ken Toong Chef Culinary Conference presentation",
+      "url": "https://www.chefculinaryconference.com/files/2023/powerpoint-slides/Sunday/300%20Toong%20Chef%20Conference%202023.pdf",
+      "type": "umass_dining_primary_presentation",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ],
+      "same_as": [
+        "S12"
+      ]
+    },
+    "faq": {
+      "title": "UMass Dining FAQ",
+      "url": "https://www.umassdining.com/faq",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json",
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ],
+      "source_type": "university_current_webpage",
+      "relevant_pdf_pages_1_based": null,
+      "same_as": [
+        "S03"
+      ]
+    },
+    "fer_2021": {
+      "publisher": "Foodservice Equipment Reports",
+      "author": "Janice Cha",
+      "title": "UMass Amherst Offers a World of Flavors",
+      "publication_date": "2021-03-02",
+      "source_type": "industry_publication_with_dining_leadership_interviews",
+      "url": "https://www.fermag.com/articles/umass-amherst-offers-a-world-of-flavors/",
+      "cited_in": [
+        "raw/research/worcester_dining_popularity_report.json"
+      ]
+    },
+    "foodpro_integration": {
+      "title": "UMass Dining carbon-rating integration case study",
+      "url": "https://myemissions.co/articles/umass-dining-case-study-carbon-ratings-reduce-emissions/",
+      "source_type": "vendor_implementation_account",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ]
+    },
+    "foodpro_job": {
+      "title": "Executive Sous Chef Catering job posting",
+      "url": "https://careers.pageuppeople.com/1232/cw/en-us/job/509531/executive-sous-chef-catering",
+      "source_type": "university_job_description",
+      "publication_date": "2026-07-23",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ]
+    },
+    "football": {
+      "title": "November 4 and 18 football traffic notice",
+      "url": "https://www.umass.edu/news/article/maction-brings-parking-traffic-pattern-changes-umass-football-games-nov-4-and-18",
+      "type": "university_primary",
+      "publication_date": "2026-10-29",
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ],
+      "same_as": [
+        "S06"
+      ]
+    },
+    "franklin": {
+      "title": "Franklin Dining Commons",
+      "url": "https://www.umassdining.com/locations-menus/franklin",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "frn_current": {
+      "title": "Food Security Initiatives",
+      "url": "https://www.umassdining.com/food-security-initiatives",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ]
+    },
+    "fy25": {
+      "title": "UMass Dining Sustainability Annual Report FY2025",
+      "url": "https://www.localumass.com/wp-content/uploads/UMass-Dining-Sustainability-Annual-Report-FY25-2-3.pdf",
+      "source_type": "university_annual_report",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": [
+        5,
+        10,
+        11
+      ],
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "fy26": {
+      "title": "UMass Dining Sustainability Annual Report FY2026",
+      "url": "https://www.localumass.com/wp-content/uploads/UMDS-Annual-Report-FY26-1-1.pdf",
+      "source_type": "university_annual_report",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": [
+        6,
+        9,
+        13
+      ],
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ],
+      "same_as": [
+        "S16"
+      ]
+    },
+    "halal": {
+      "title": "Halal dining guide",
+      "url": "https://umassdining.com/sites/default/files/Halal.pdf",
+      "type": "umass_dining_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "halloween": {
+      "title": "What is it like to have the best dining in the country?",
+      "url": "https://www.umass.edu/admissions/articles/whats-it-have-best-dining-country",
+      "type": "university_student_blog",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "isss": {
+      "title": "International Student and Scholar Services",
+      "url": "https://www.umass.edu/global-affairs/international-students-scholars",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "lean_2014": {
+      "title": "UMass Amherst community spotlight",
+      "url": "https://blog.leanpath.com/blog/profile-university-of-massachusetts-amherst",
+      "source_type": "vendor_interview",
+      "publication_date": "2014-01-10",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "lean_2024": {
+      "title": "My Experience with Leanpath",
+      "url": "https://www.localumass.com/whats-happening/my-experience-with-leanpath/",
+      "source_type": "university_staff_account",
+      "publication_date": "2024-04-30",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "martin2018": {
+      "title": "Martin's Farm",
+      "url": "https://www.localumass.com/whats-happening/martins-farm/",
+      "source_type": "university_news",
+      "publication_date": "2018-04-09",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "mealvolume": {
+      "title": "Ken Toong Leadership in Action event description",
+      "url": "https://www.umass.edu/public-policy/events/what-does-it-take-build-1-team-leadership-innovation-ai-and-common-good-ken-toong",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "meta_case": {
+      "title": "Harvest Market case study",
+      "url": "https://www.metafoodx.com/post/how-umass-amherst-dining-achieved-a-51-reduction-in-overproduction",
+      "source_type": "vendor_claim",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "meta_expansion": {
+      "title": "UMass Amherst expansion announcement",
+      "url": "https://www.metafoodx.com/post/umass-amherst-doubles-down-on-investment-in-metafoodx-to-cut-food-waste-across-campus-dining",
+      "source_type": "vendor_claim",
+      "publication_date": "2025-09-03",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ]
+    },
+    "meta_pilot": {
+      "title": "Metafoodx MassLive feature summary",
+      "url": "https://www.metafoodx.com/post/metafoodx-recognized-by-masslive-for-work-with-umass-amherst",
+      "source_type": "vendor_summary_of_reporting",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ]
+    },
+    "nov2026": {
+      "title": "November 2026 dining calendar",
+      "url": "https://www.umassdining.com/sites/default/files/events/Events%20Calendar%202026%20-%20Web%20Flyer%20%288.5x11%29%20%283%29%20%281%29.png",
+      "type": "umass_dining_primary_image",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ],
+      "same_as": [
+        "S05_IMAGE"
+      ]
+    },
+    "owm": {
+      "title": "Facilities Waste Management",
+      "url": "https://www.umass.edu/facilities/waste-management",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "pie2022": {
+      "title": "Culinary, culture, and community at UMass",
+      "url": "https://thepienews.com/culinary-culture-community-umass-amherst/",
+      "type": "interview_reporting",
+      "publication_date": "2022-10-26",
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "policy2021": {
+      "title": "Waste Not campus guidelines",
+      "url": "https://www.umass.edu/news/article/waste-not-update-campus-guidelines",
+      "source_type": "university_news",
+      "publication_date": "2021-01-22",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "race2023": {
+      "title": "UMass Amherst Among Top Institutions for Waste Diversion",
+      "url": "https://www.umass.edu/news/article/umass-amherst-among-top-institutions-waste-diversion",
+      "source_type": "university_news",
+      "publication_date": "2023-05-15",
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "source_reduction_guide": {
+      "title": "How to Reduce Food Waste",
+      "url": "https://recyclingworksma.com/wp-content/uploads/2015/11/How-to-Reduce-Food-Waste.pdf",
+      "source_type": "massachusetts_technical_assistance_guide",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "sports2025": {
+      "title": "Pure Sport",
+      "url": "https://www.umass.edu/magazine/pure-sport",
+      "type": "university_primary",
+      "publication_date": "2026-05",
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ],
+      "same_as": [
+        "S14"
+      ]
+    },
+    "studentlife": {
+      "title": "Campus Life and Wellbeing",
+      "url": "https://www.umass.edu/student-life/thrive",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "stv_2021": {
+      "publisher": "STV",
+      "title": "Food for Thought: Creative Solutions for Campus Dining",
+      "publication_date": "2021-05-28",
+      "source_type": "project_consultant_first_party_project_description",
+      "url": "https://stvinc.com/insight/food-for-thought-creative-solutions-for-campus-dining/",
+      "cited_in": [
+        "raw/research/worcester_dining_popularity_report.json"
+      ]
+    },
+    "uair": {
+      "title": "UMass Amherst institutional research enrollment",
+      "url": "https://www.umass.edu/uair/",
+      "type": "university_primary",
+      "publication_date": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "undated_diversion": {
+      "title": "Waste Reduction and Recycling",
+      "url": "https://www.umass.edu/sustainability/operations-and-infrastructure/waste-reduction-recycling",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json"
+      ]
+    },
+    "vietnam": {
+      "title": "UMass Amherst Joins U.S., Vietnam Higher Ed Partnership Program",
+      "url": "https://www.umass.edu/news/article/umass-amherst-joins-us-vietnam-higher-ed-partnership-program",
+      "type": "university_primary",
+      "publication_date": "2025-06-12",
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_campus_dining_demand_profile.json"
+      ]
+    },
+    "waste_current": {
+      "title": "Waste Reduction",
+      "url": "https://www.localumass.com/initiatives/waste-reduction/",
+      "source_type": "university_current_webpage",
+      "publication_date": null,
+      "relevant_pdf_pages_1_based": null,
+      "reviewed_date": "2026-11-11",
+      "cited_in": [
+        "raw/research/umass_food_waste_FY2017_FY2026.json",
+        "raw/research/umass_dining_current_tools_ecosystem.json"
+      ]
+    }
+  },
+  "conflicts": []
+}

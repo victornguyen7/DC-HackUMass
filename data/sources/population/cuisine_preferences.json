@@ -1,0 +1,104 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "dining2023",
+    "pie2022"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "cuisine_preferences": {
+    "source_id": "dining2023",
+    "pdf_page": 4,
+    "presentation_year": 2023,
+    "survey_period": null,
+    "sample_size": null,
+    "question_wording": null,
+    "multiple_response_method": null,
+    "ranked_text_list": [
+      {
+        "rank": 1,
+        "cuisine": "Chinese",
+        "reported_pct": 37.0
+      },
+      {
+        "rank": 2,
+        "cuisine": "Mediterranean",
+        "reported_pct": 32.8
+      },
+      {
+        "rank": 3,
+        "cuisine": "American Southern",
+        "reported_pct": 32.2
+      },
+      {
+        "rank": 4,
+        "cuisine": "Latino",
+        "reported_pct": 29.9
+      },
+      {
+        "rank": 5,
+        "cuisine": "Indian",
+        "reported_pct": 24.4
+      },
+      {
+        "rank": 6,
+        "cuisine": "Korean",
+        "reported_pct": 23.2
+      },
+      {
+        "rank": 7,
+        "cuisine": "Middle Eastern",
+        "reported_pct": 21.1
+      },
+      {
+        "rank": 8,
+        "cuisine": "Caribbean",
+        "reported_pct": 17.6
+      },
+      {
+        "rank": 9,
+        "cuisine": "Vietnamese",
+        "reported_pct": 16.0
+      },
+      {
+        "rank": 10,
+        "cuisine": "African",
+        "reported_pct": 13.6
+      },
+      {
+        "rank": 11,
+        "cuisine": "Other",
+        "reported_pct": 10.9
+      }
+    ],
+    "source_discrepancies": [
+      {
+        "field": "Mediterranean",
+        "text_list_pct": 32.8,
+        "chart_pct": 32.9
+      },
+      {
+        "field": "Southeast Asian",
+        "chart_pct": 13.9,
+        "present_in_text_list": false
+      }
+    ],
+    "current_2026_ranking": null,
+    "actual_meal_share": null,
+    "interpretation": "Chinese leads the published text list. Percentages exceed 100% in total; do not normalize into exclusive meal-choice probabilities or assume 37% of meals are Chinese."
+  },
+  "popular_dish": {
+    "name": "Sushi",
+    "source_id": "pie2022",
+    "report_year": 2022,
+    "reported_daily_volume": {
+      "value": 5000,
+      "qualifier": "more_than",
+      "unit": "rolls_per_day"
+    },
+    "description": "Interview report identifies sushi as a favorite.",
+    "current_daily_volume": null,
+    "worcester_only": false,
+    "scope_note": "Campus-level reporting; do not assign the total to Worcester or equate rolls with diners."
+  }
+}

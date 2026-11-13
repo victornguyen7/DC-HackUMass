@@ -1,0 +1,157 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S01",
+    "S02",
+    "S03",
+    "S04",
+    "S05",
+    "S05_IMAGE",
+    "S06",
+    "S07",
+    "S08",
+    "S08_PDF",
+    "S09",
+    "S10",
+    "S11",
+    "S11B",
+    "S12",
+    "S13",
+    "S14",
+    "S15",
+    "S16",
+    "S17",
+    "S18"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "scope": {
+    "campus": "University of Massachusetts Amherst",
+    "location": "Worcester Dining Commons",
+    "meal_period": "dinner",
+    "target_dates": {
+      "start": "2026-11-13",
+      "end": "2026-11-20",
+      "inclusive": true
+    },
+    "timezone": "America/New_York",
+    "category_count": 17
+  },
+  "interpretation": {
+    "missing_value_convention": {
+      "replacement_value": null,
+      "missing_value_status": "not_found",
+      "meaning": "Not found in the reviewed public sources; not proof the data do not exist."
+    },
+    "evidence_status_definitions": {
+      "not_found": "No reviewed public evidence supplies the requested parameter.",
+      "context_only": "Real related facts exist but do not identify the requested parameter.",
+      "partially_verified": "Some factual components are verified; the requested full replacement remains unavailable.",
+      "historical_evidence_only": "Specific historical operation is documented; current operation has not been confirmed."
+    },
+    "assumptions_are_not_observations": true,
+    "user_repository_accessed": false,
+    "repository_note": "Paths and simulator behavior are taken from the user message. No repository, configuration values, staff review, private export or survey was inspected.",
+    "numeric_replacement_policy": "No invented distribution, event lift, persona prevalence, service duration, or production rule is supplied.",
+    "source_priority": "Official operational pages and primary reports; historical portfolio/tour for design context; vendor claims and individual anecdotes labeled separately.",
+    "scope_limit": "Target dates are future relative to this research. Scheduled events are inputs; realized attendance is not yet observed."
+  },
+  "search_log": [
+    {
+      "topic": "Attendance and arrivals",
+      "queries": [
+        "Worcester dining hourly traffic dinner swipes",
+        "UMass Worcester service counts dinner attendance",
+        "UMass Worcester arrival queue service time study"
+      ],
+      "source_ids": [
+        "S01",
+        "S03",
+        "S04",
+        "S18"
+      ],
+      "result": "No public date/period attendance or numeric time-bin dataset found."
+    },
+    {
+      "topic": "Hours",
+      "queries": [
+        "site.umassdining.com Worcester dinner 4:30 hours"
+      ],
+      "source_ids": [
+        "S01",
+        "S02"
+      ],
+      "result": "Building and advertised late-night hours found; exact dinner start unverified."
+    },
+    {
+      "topic": "Layout and service operation",
+      "queries": [
+        "Worcester dining dish return floor plan",
+        "Worcester Seasons Mediterranean Display station layout",
+        "Worcester Wok Street Food made to order"
+      ],
+      "source_ids": [
+        "S07",
+        "S08",
+        "S08_PDF",
+        "S09",
+        "S10"
+      ],
+      "result": "Historical operation and design labels found; current mapping and dish-return opening unverified."
+    },
+    {
+      "topic": "Staffing and production rules",
+      "queries": [
+        "site.careers.umass.edu Worcester Cook I queue",
+        "site.careers.pageuppeople.com Worcester prep sheets",
+        "Worcester production sheets cook holding time batch reorder"
+      ],
+      "source_ids": [
+        "S11",
+        "S11B"
+      ],
+      "result": "Qualitative prep, par-level, queue and staffing responsibilities; no measured constants."
+    },
+    {
+      "topic": "Visitor attributes and item preferences",
+      "queries": [
+        "UMass halal percent students",
+        "UMass Worcester student cuisine preference survey",
+        "UMass intramural participation 2025 2026"
+      ],
+      "source_ids": [
+        "S12",
+        "S13",
+        "S14",
+        "S15"
+      ],
+      "result": "Context found; no representative Worcester dinner persona shares or item-choice dataset."
+    },
+    {
+      "topic": "Production and leftovers",
+      "queries": [
+        "Metafoodx UMass export production data",
+        "UMass FoodPro production sheet portions",
+        "UMass Dining FY2026 food waste report"
+      ],
+      "source_ids": [
+        "S16",
+        "S17"
+      ],
+      "result": "Aggregate tracking and waste report found; no reviewed public raw plan or leftovers export."
+    },
+    {
+      "topic": "Events",
+      "queries": [
+        "UMass Dining November 2026 calendar Worcester TCSA Friendsgiving",
+        "UMass football November 18 2026 Akron"
+      ],
+      "source_ids": [
+        "S05",
+        "S05_IMAGE",
+        "S06"
+      ],
+      "result": "Scheduled dates verified; attendance effects not found."
+    }
+  ]
+}

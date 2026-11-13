@@ -1,0 +1,175 @@
+{
+  "_note": "Real Worcester dinner station names (from the umassdining.com menu). pos (m) from layout/floor_plan.json (published design drawing; slots for mediterranean, seasons and soups confirmed by a team member 2026-11-12, display slot assumed; tandoor = east frontage of the center island, team member 2026-11-13). Servers and service times are PLACEHOLDERS. to_order = cooked per order (only Sushi, team-confirmed).",
+  "stations": [
+    {
+      "id": "grill",
+      "names": [
+        "Grill Station"
+      ],
+      "pos": [
+        26.2,
+        19.5
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5
+    },
+    {
+      "id": "tandoor",
+      "names": [
+        "Tandoor"
+      ],
+      "pos": [
+        33.8,
+        18.2
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5
+    },
+    {
+      "id": "mediterranean",
+      "names": [
+        "Mediterranean"
+      ],
+      "pos": [
+        25.7,
+        25.7
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5
+    },
+    {
+      "id": "seasons",
+      "names": [
+        "Seasons"
+      ],
+      "pos": [
+        36.0,
+        26.5
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5
+    },
+    {
+      "id": "latino",
+      "names": [
+        "Latino 1  WOR",
+        "Latino 2  WOR"
+      ],
+      "pos": [
+        9.6,
+        17.5
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5,
+      "display_name": "Latino"
+    },
+    {
+      "id": "street_food",
+      "names": [
+        "Street Food"
+      ],
+      "pos": [
+        48.7,
+        26.5
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5
+    },
+    {
+      "id": "noodle_bowl",
+      "names": [
+        "Noodle Bowl"
+      ],
+      "pos": [
+        52.9,
+        20.3
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.6
+    },
+    {
+      "id": "sushi",
+      "names": [
+        "Sushi"
+      ],
+      "pos": [
+        49.4,
+        17.5
+      ],
+      "servers": 3,
+      "self_serve": false,
+      "to_order": true,
+      "service_median_min": 2.5
+    },
+    {
+      "id": "display",
+      "names": [
+        "Display Station"
+      ],
+      "pos": [
+        55.5,
+        15.1
+      ],
+      "servers": 4,
+      "self_serve": true,
+      "to_order": false,
+      "service_median_min": 0.3
+    },
+    {
+      "id": "soups",
+      "names": [
+        "Soups"
+      ],
+      "pos": [
+        28.6,
+        14.7
+      ],
+      "servers": 2,
+      "self_serve": true,
+      "to_order": false,
+      "service_median_min": 0.25
+    },
+    {
+      "id": "breads",
+      "names": [
+        "Breads"
+      ],
+      "pos": [
+        20.5,
+        24.8
+      ],
+      "servers": 2,
+      "self_serve": true,
+      "to_order": false,
+      "service_median_min": 0.15
+    },
+    {
+      "id": "desserts",
+      "names": [
+        "Desserts"
+      ],
+      "pos": [
+        16.1,
+        24.9
+      ],
+      "servers": 3,
+      "self_serve": true,
+      "to_order": false,
+      "service_median_min": 0.2
+    }
+  ]
+}

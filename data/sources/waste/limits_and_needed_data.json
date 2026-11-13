@@ -1,0 +1,30 @@
+{
+  "_from": "raw/research/umass_food_waste_FY2017_FY2026.json",
+  "as_of": "2026-11-11",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "ten_year_total_reduction_pct": null,
+  "comparability_and_attribution_limits": [
+    "No continuous ten-year campus food-waste generation series was located in reviewed sources.",
+    "FY2025 is described as the first dedicated Dining Sustainability annual report; FY2026 is the second. This does not establish that older waste records do not exist.",
+    "Annual diversion, food generation, tracked consumption, production and donated meals are different metrics.",
+    "The FY2026 tonnage unit is not explicitly defined as short tons or metric tonnes.",
+    "FY2025 and FY2026 digestion quantities are close numerically if short tons are assumed, but rounding and scope do not support a precise annual percent change.",
+    "A decline in diverted tonnage can reflect attendance, capture coverage, contamination or operations rather than prevention.",
+    "Pandemic operations and changes excluding packaging break naive pre/post comparisons.",
+    "No annual tool-by-tool counterfactual or controlled attribution analysis was found.",
+    "Do not add tool claims, multiply a site percentage by campus waste, or annualize a 12-week pilot without an explicit model.",
+    "Other UMass campuses and state-wide waste figures were excluded."
+  ],
+  "data_needed_for_full_history": [
+    "Office of Waste Management annual scale-ticket totals by material, site and FY2017-FY2026",
+    "Comparable pre-consumer and plate-waste weights with collection coverage",
+    "Annual admissions and meal counts matching the waste numerator",
+    "Metafoodx site/item exports with scan coverage and deployment dates",
+    "Historical weighing logs with instrument and category changes",
+    "FoodPro planned versus actual production sheets",
+    "Donation weights and pickup records",
+    "Control or matched comparison sites and interventions timeline"
+  ],
+  "null_policy": "Missing values remain null; no interpolation, modeled replacement values or fabricated annual reductions are supplied."
+}

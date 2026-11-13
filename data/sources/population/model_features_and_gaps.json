@@ -1,0 +1,135 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "evidence_rules": [
+    "Dates, denominators and source scopes must remain attached to values.",
+    "Historical surveys are provisional model inputs, not measured 2026 population shares.",
+    "Preference percentages are not dish sales or meal shares.",
+    "Diet, allergy, nationality and athletics categories overlap; do not add them into disjoint student groups.",
+    "Nationality, ethnicity and country of origin do not determine individual taste or religious diet. Use voluntarily supplied food preferences and restrictions.",
+    "An absent allergen label does not establish absence of cross-contact.",
+    "Event effects on demand remain hypotheses until estimated from observed service counts.",
+    "null means not established, not zero."
+  ],
+  "candidate_model_features": [
+    {
+      "group": "eligibility",
+      "fields": [
+        "allergens",
+        "ingredients",
+        "religious_requirements",
+        "vegetarian_vegan_status",
+        "cross_contact"
+      ],
+      "priority": "first",
+      "treatment": "Filter by explicitly supplied restrictions before ranking dishes."
+    },
+    {
+      "group": "menu_and_supply",
+      "fields": [
+        "dish_id",
+        "cuisine_tags",
+        "protein_source",
+        "portion",
+        "nutrition",
+        "station",
+        "meal_period",
+        "stockout",
+        "substitute_dishes"
+      ],
+      "priority": "high",
+      "treatment": "Use actual menus and availability; cuisine categories may overlap."
+    },
+    {
+      "group": "convenience",
+      "fields": [
+        "distance_from_dorm_or_class",
+        "walking_time",
+        "queue_length",
+        "hours",
+        "time_until_next_class",
+        "takeaway_availability"
+      ],
+      "priority": "high",
+      "treatment": "Plausible decision factors; campus-specific coefficients must be measured."
+    },
+    {
+      "group": "access_and_cost",
+      "fields": [
+        "meal_plan_type",
+        "remaining_swipes",
+        "dining_dollars",
+        "retail_meal_exchange",
+        "door_price"
+      ],
+      "priority": "high",
+      "treatment": "Plans determine which alternatives are affordable and convenient; do not treat menu price as the only cost."
+    },
+    {
+      "group": "preferences",
+      "fields": [
+        "taste_rating",
+        "preferred_cuisine",
+        "spice_tolerance",
+        "texture",
+        "comfort_food",
+        "novelty",
+        "recently_eaten_dishes",
+        "friend_group_choice"
+      ],
+      "priority": "high",
+      "treatment": "Collect voluntarily or estimate from consented feedback and aggregate observations."
+    },
+    {
+      "group": "nutrition_and_values",
+      "fields": [
+        "protein_goal",
+        "calorie_goal",
+        "plant_forward_preference",
+        "carbon_rating",
+        "local_sourcing"
+      ],
+      "priority": "candidate",
+      "treatment": "Self-reported preferences rather than demographic assumptions."
+    },
+    {
+      "group": "time_and_context",
+      "fields": [
+        "weekday",
+        "meal_period",
+        "class_day",
+        "holiday",
+        "exam_period",
+        "weather",
+        "home_game",
+        "cultural_dinner",
+        "family_weekend",
+        "residence_hall_open"
+      ],
+      "priority": "high",
+      "treatment": "Estimate effects using dated service records and avoid invented percentage lifts."
+    }
+  ],
+  "missing_measurements": [
+    "Current representative dietary survey",
+    "Current allergy and restriction prevalence with a defined denominator",
+    "Cuisine preferences by dining hall and meal period",
+    "Actual dish selections and portions served",
+    "Country-level current counts with consistent enrollment definitions",
+    "Sports interest survey",
+    "Individual nutrition-goal prevalence",
+    "Wait-time sensitivity",
+    "Price and meal-plan sensitivity",
+    "Dated event uplift estimates",
+    "Current representative food preference ranking"
+  ],
+  "recommended_next_data": [
+    "Aggregate admissions and meals by hall, date and period",
+    "Dish-level servings, production, leftovers and stockouts",
+    "Optional student preference survey covering cuisines, restrictions and convenience",
+    "Event calendar with venue, service period and actual attendance",
+    "Residence and class-location patterns aggregated without personal identities"
+  ]
+}

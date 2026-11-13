@@ -1,0 +1,22 @@
+{
+  "_note": "PLACEHOLDERS for the synthetic waste history and back-test (SPEC §5). oz_by_role is used when a menu serving size is not in ounces ('1 each', '1 roll', '1 Slice'). cost_per_portion_usd is an estimate for showing $ next to lb; it is not UMass data. Replace with recipe yields and FoodPro unit costs.",
+  "oz_by_role": {
+    "entree": 5.0,
+    "starch": 4.0,
+    "side": 3.0,
+    "soup": 8.0,
+    "dessert": 3.0,
+    "bread": 2.0
+  },
+  "oz_by_station": {
+    "sushi": 6.0
+  },
+  "cost_per_portion_usd": {
+    "entree": 1.6,
+    "starch": 0.35,
+    "side": 0.45,
+    "soup": 0.55,
+    "dessert": 0.6,
+    "bread": 0.2
+  }
+}

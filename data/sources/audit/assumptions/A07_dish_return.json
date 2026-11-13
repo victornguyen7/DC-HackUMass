@@ -1,0 +1,80 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S08",
+    "S08_PDF"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A07",
+    "category": "Dish return",
+    "user_provided_assumption": {
+      "location": "west end by Dishroom 230"
+    },
+    "evidence_status": "partially_verified",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Customer dish-return opening and approach coordinates",
+    "evidence_fact_ids": [
+      "F06"
+    ],
+    "why_evidence_does_not_replace_assumption": "Dishroom 230 is labeled, but an internal dishroom location is insufficient to identify the public return opening or routing.",
+    "missing_fields": [
+      "opening_coordinates",
+      "approach_route",
+      "return_capacity"
+    ],
+    "data_request_ids": [
+      "R03"
+    ],
+    "user_referenced_paths": [
+      "layout/floor_plan.json"
+    ],
+    "notes": []
+  },
+  "facts": [
+    {
+      "id": "F06",
+      "finding": "Labels in published second-floor design drawing",
+      "value": [
+        "Dishroom 230",
+        "Pizza",
+        "Greens",
+        "Wok",
+        "Street Food",
+        "Latin",
+        "Grill",
+        "Naan",
+        "Salad Bar",
+        "Sushi",
+        "Noodles",
+        "Teaching Kitchen"
+      ],
+      "source_ids": [
+        "S08",
+        "S08_PDF"
+      ],
+      "applicability": "Physical design reference; current category-to-counter correspondence remains unverified"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R03",
+      "name": "Current location verification",
+      "prospective_holder": "Worcester facilities / management",
+      "access": "Current plan or authorized photo walk",
+      "fields": [
+        "as_of_date",
+        "counter_label",
+        "counter_polygon_or_coordinates",
+        "queue_frontage",
+        "dish_return_opening",
+        "accessible_routes",
+        "scale",
+        "coordinate_origin"
+      ],
+      "purpose": "Current menu category mapping and dish return position"
+    }
+  ]
+}

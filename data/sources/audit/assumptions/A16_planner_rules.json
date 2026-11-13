@@ -1,0 +1,123 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S11",
+    "S11B",
+    "S16"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A16",
+    "category": "Planner rules",
+    "user_provided_assumption": {
+      "batch": "approximately demand in one hold time",
+      "reorder": "0.8 * peak rate * cook time",
+      "last_batch_minutes_before_close": 20
+    },
+    "evidence_status": "context_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Actual batch, replenishment and end-of-service decisions",
+    "evidence_fact_ids": [
+      "F08",
+      "F14"
+    ],
+    "why_evidence_does_not_replace_assumption": "Public aggregate waste intensity does not identify these decision rules. A campus average is not a bound on a specific dining hall, meal period, or waste stream.",
+    "missing_fields": [
+      "batch_rule",
+      "reorder_threshold",
+      "last_batch_policy",
+      "Worcester_line_waste_by_item"
+    ],
+    "data_request_ids": [
+      "R06",
+      "R07"
+    ],
+    "user_referenced_paths": [],
+    "notes": [
+      "Remove the proposed 7.19 oz/swipe upper-bound interpretation. Keep the figure only as an external campus benchmark.",
+      "Convert portion leftovers with measured item-specific weights, then compare only after aligning location, dates, waste streams and denominator.",
+      "The observed year-to-year aggregate difference does not measure the causal effect of a particular tool."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F08",
+      "finding": "Worcester cook responsibilities",
+      "value": [
+        "Prep sheets and ingredient par levels",
+        "Recipe-based production and portioning",
+        "Staff allocation within a station",
+        "Queue monitoring and requests for extra help"
+      ],
+      "source_ids": [
+        "S11",
+        "S11B"
+      ],
+      "applicability": "Qualitative practices documented in indexed job descriptions; no numeric rules"
+    },
+    {
+      "id": "F14",
+      "finding": "Reported waste intensity",
+      "value": {
+        "FY2025": 7.33,
+        "FY2026": 7.19
+      },
+      "unit": "oz/meal swipe",
+      "source_ids": [
+        "S16"
+      ],
+      "applicability": "Campus report benchmark only; no Worcester dinner line-waste bound"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R06",
+      "name": "Planned and actual kitchen production",
+      "prospective_holder": "UMass Dining production-system / Metafoodx administrator",
+      "access": "No private export or authorization established",
+      "fields": [
+        "service_date",
+        "meal_period",
+        "station_id",
+        "recipe_id",
+        "item_name",
+        "planned_portions",
+        "portion_weight_g",
+        "batch_id",
+        "batch_start",
+        "ready_time",
+        "portions_produced",
+        "portions_sent_to_line",
+        "leftover_weight_g",
+        "reuse_weight_g",
+        "donation_weight_g",
+        "discard_weight_g",
+        "measurement_method"
+      ],
+      "purpose": "Compare a real baseline plan with actual production and line leftovers"
+    },
+    {
+      "id": "R07",
+      "name": "Batch rules and time study",
+      "prospective_holder": "Worcester chefs / shift supervisors",
+      "access": "Staff estimates or timed observations needed",
+      "fields": [
+        "item_or_recipe_id",
+        "batch_size",
+        "equipment",
+        "prep_minutes",
+        "active_cook_minutes",
+        "elapsed_ready_minutes",
+        "replenishment_lead_minutes",
+        "quality_hold_minutes",
+        "last_batch_decision",
+        "stockout_policy",
+        "actual_order_time",
+        "actual_ready_time"
+      ],
+      "purpose": "Estimate recipe- and resource-dependent cook, hold and reorder behavior"
+    }
+  ]
+}

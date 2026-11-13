@@ -1,0 +1,65 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S07",
+    "S08_PDF",
+    "S12",
+    "S16"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "corrections_to_proposed_interpretations": [
+    {
+      "claim": "1,800 dinner visitors may be low because dinner should be one quarter to one third of daily meals",
+      "assessment": "not established",
+      "reason": "The dinner share is itself assumed; daily meal throughput cannot validate a different dinner count."
+    },
+    {
+      "claim": "The drawing is from 2017",
+      "assessment": "not verified",
+      "reason": "Reviewed PDF metadata gives July 14, 2021. Neither metadata nor a portfolio page proves original drawing date or current as-built condition.",
+      "source_ids": [
+        "S08_PDF"
+      ]
+    },
+    {
+      "claim": "Street Food is the same station as the made-to-order Wok",
+      "assessment": "historical evidence distinguishes them",
+      "source_ids": [
+        "S07",
+        "S08_PDF"
+      ]
+    },
+    {
+      "claim": "The cuisine scores are known liked percentages and can be normalized into meal shares",
+      "assessment": "unsupported",
+      "reason": "The questionnaire and response design are not established on the reviewed slide; cuisine preference is not item consumption.",
+      "source_ids": [
+        "S12"
+      ]
+    },
+    {
+      "claim": "7.19 oz/swipe is an upper bound for Worcester dinner line waste",
+      "assessment": "invalid without matched scope",
+      "reason": "An average over a broader population cannot bound a subgroup average or isolate a particular waste stream.",
+      "source_ids": [
+        "S16"
+      ]
+    },
+    {
+      "claim": "LLM-generated personas replace survey data",
+      "assessment": "synthetic only",
+      "reason": "They may support scenario exploration but do not estimate real population prevalence."
+    }
+  ],
+  "excluded_substitutions": [
+    "Generic service-time studies from other universities",
+    "Search snippets with unsourced dinner schedules",
+    "Employee shift hours used as meal-period hours",
+    "Vendor scanner speed used as customer service time",
+    "Nationality or presumed religion used to infer diet",
+    "Sports membership used to infer protein preference",
+    "Food-safety limits used as actual quality-hold times",
+    "Historical station descriptions treated as current confirmation"
+  ]
+}

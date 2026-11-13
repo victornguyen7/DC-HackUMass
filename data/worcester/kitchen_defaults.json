@@ -1,0 +1,55 @@
+{
+  "_note": "Role defaults used by `dcsim prepare` to size the baseline production plan from simulated demand at typical (neutral) popularity. station_dilution: each item's popularity is divided by (same-role items at its station)^dilution, so a station with 5 sushi rolls doesn't get 5x the demand of a one-entree station. PLACEHOLDERS until staff estimates. planner.reorder_factor raised 0.8 -> 1.2 on 2026-11-12 so the 3,000-student crowd rarely runs out (team: food rarely runs out late on a normal day).",
+  "roles": {
+    "entree": {
+      "batch_size": 40,
+      "cook_min": 25,
+      "hold_min": 60
+    },
+    "starch": {
+      "batch_size": 50,
+      "cook_min": 20,
+      "hold_min": 75
+    },
+    "side": {
+      "batch_size": 40,
+      "cook_min": 15,
+      "hold_min": 60
+    },
+    "soup": {
+      "batch_size": 60,
+      "cook_min": 30,
+      "hold_min": 150
+    },
+    "dessert": {
+      "batch_size": 48,
+      "cook_min": 30,
+      "hold_min": 180
+    },
+    "bread": {
+      "batch_size": 40,
+      "cook_min": 5,
+      "hold_min": 180
+    }
+  },
+  "popularity_prior": {
+    "entree": 1.0,
+    "starch": 0.7,
+    "side": 0.5,
+    "soup": 0.5,
+    "dessert": 0.6,
+    "bread": 0.25
+  },
+  "planner": {
+    "pilot_nights": 8,
+    "capacity_factor": 1.15,
+    "reorder_factor": 1.2,
+    "opening_window_min": 30,
+    "opening_factor": 1.2,
+    "min_batch": 6,
+    "hold_fill": 1.0,
+    "spare_batches": 2,
+    "last_batch_before_close_min": 20
+  },
+  "station_dilution": 0.5
+}

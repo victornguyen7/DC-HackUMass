@@ -1,0 +1,73 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S14"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A13",
+    "category": "Athlete share",
+    "user_provided_assumption": {
+      "value": 0.1,
+      "denominator": "simulated diners"
+    },
+    "evidence_status": "context_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Defined activity or meal-goal attribute among Worcester dinner visitors",
+    "evidence_fact_ids": [
+      "F11"
+    ],
+    "why_evidence_does_not_replace_assumption": "Intramural participation, varsity or club membership and high-protein meal preference are distinct constructs. Their populations may overlap and differ from Worcester dinner visitors.",
+    "missing_fields": [
+      "athlete_definition",
+      "visitor_share",
+      "self_reported_protein_goal",
+      "overlap_with_other_personas"
+    ],
+    "data_request_ids": [
+      "R05"
+    ],
+    "user_referenced_paths": [],
+    "notes": []
+  },
+  "facts": [
+    {
+      "id": "F11",
+      "finding": "Intramural participation reported for 2025",
+      "value": {
+        "participants_lower_bound_exclusive": 5700,
+        "article_description": "almost one quarter of undergraduates"
+      },
+      "source_ids": [
+        "S14"
+      ],
+      "applicability": "Campus participation only; not athlete diet prevalence"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R05",
+      "name": "Diet and visit-motive survey",
+      "prospective_holder": "Student research survey / UMass Dining research team",
+      "access": "No representative Worcester dinner data found",
+      "fields": [
+        "survey_date",
+        "location_and_meal_sampling_frame",
+        "sample_size",
+        "response_rate",
+        "survey_weight_if_any",
+        "self_reported_halal_requirement",
+        "self_reported_activity_and_meal_goal",
+        "time_budget",
+        "social_dining_intent",
+        "dietary_constraints",
+        "portion_preference",
+        "question_wording",
+        "overlap_between_attributes"
+      ],
+      "purpose": "Estimate visitor-specific shares without nationality or activity proxies"
+    }
+  ]
+}

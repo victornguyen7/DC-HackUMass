@@ -1,0 +1,116 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S01",
+    "S02"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A02",
+    "category": "Dinner hours",
+    "user_provided_assumption": {
+      "start": "16:30",
+      "end": "21:00",
+      "timezone": "America/New_York"
+    },
+    "evidence_status": "partially_verified",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Official dinner service start and end, by date",
+    "evidence_fact_ids": [
+      "F01",
+      "F02",
+      "F03"
+    ],
+    "why_evidence_does_not_replace_assumption": "Building hours and a late-night start do not prove a 16:30 dinner start or guarantee identical service at every counter.",
+    "missing_fields": [
+      "dinner_start_time",
+      "dinner_end_time",
+      "station_specific_hours"
+    ],
+    "data_request_ids": [
+      "R02"
+    ],
+    "user_referenced_paths": [],
+    "notes": [
+      "Use verified building hours as a separate field. Do not overwrite the dinner interval with 07:00–24:00.",
+      "An employee shift beginning at 16:30 is not evidence that dinner begins then."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F01",
+      "finding": "Regular Worcester building operating schedule",
+      "value": {
+        "open": "07:00",
+        "close": "24:00",
+        "days": "Monday–Sunday",
+        "timezone": "America/New_York"
+      },
+      "source_ids": [
+        "S01"
+      ],
+      "applicability": "Building availability, not verified dinner service interval"
+    },
+    {
+      "id": "F02",
+      "finding": "Date-specific Worcester building hours",
+      "value": {
+        "2026-11-13": {
+          "open": "07:00",
+          "close": "24:00"
+        },
+        "2026-11-14": {
+          "open": "07:00",
+          "close": "24:00"
+        },
+        "2026-11-15": {
+          "open": "07:00",
+          "close": "24:00"
+        }
+      },
+      "source_ids": [
+        "S02"
+      ],
+      "applicability": "Dates actually present in the reviewed table"
+    },
+    {
+      "id": "F03",
+      "finding": "Advertised late-night interval",
+      "value": {
+        "start": "21:00",
+        "end": "24:00",
+        "heading_days": "Sunday–Saturday",
+        "prose_days": "Sunday–Thursday",
+        "day_schedule_conflict": true
+      },
+      "source_ids": [
+        "S01"
+      ],
+      "applicability": "21:00 boundary is supported; the exact days need confirmation"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R02",
+      "name": "Station operations and staffing",
+      "prospective_holder": "Worcester management",
+      "access": "Staff confirmation or observations needed",
+      "fields": [
+        "service_date",
+        "station_id",
+        "public_counter_name",
+        "physical_counter_id",
+        "mode_by_menu_item",
+        "active_servers_by_time",
+        "queue_join_time",
+        "service_start_time",
+        "handoff_time",
+        "batch_size",
+        "shared_staff_or_equipment"
+      ],
+      "purpose": "Service mode, server counts, service-time distributions and capacity"
+    }
+  ]
+}

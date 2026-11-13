@@ -1,0 +1,47 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "admissions",
+    "mealvolume",
+    "studentlife",
+    "uair"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "population": {
+    "enrollment": {
+      "term": "Fall 2026",
+      "total": 30410,
+      "undergraduate": 23630,
+      "graduate": 6780,
+      "source_id": "uair",
+      "metric": "enrolled_student_headcount",
+      "daily_campus_attendance": null,
+      "dining_participation_rate": null
+    },
+    "scope_discrepancy": {
+      "admissions_undergraduate_rounded": 22700,
+      "admissions_massachusetts_pct": 72,
+      "admissions_international_plus_other_states_pct": 28,
+      "source_id": "admissions",
+      "note": "Admissions and UAIR publish different undergraduate totals; definitions or timing were not reconciled. Use UAIR for total enrollment, not as a measured daily dining population."
+    },
+    "on_campus_residents": {
+      "value": 13500,
+      "qualifier": "more_than",
+      "source_id": "studentlife",
+      "reference_period": null,
+      "use": "Residential population is more directly relevant to recurring dining demand than total enrollment."
+    },
+    "campus_meals": {
+      "value": 50000,
+      "qualifier": "more_than",
+      "unit": "meals_per_day",
+      "source_id": "mealvolume",
+      "reference_context": "2026 event description",
+      "unique_diners": null,
+      "venue_coverage_detail": null,
+      "note": "Program-wide descriptive meal volume; not a count of unique students and not limited to the four dining commons."
+    }
+  }
+}

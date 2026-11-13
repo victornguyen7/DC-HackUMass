@@ -1,0 +1,203 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "academic",
+    "football",
+    "halloween",
+    "nov2026",
+    "pie2022"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "timezone": "America/New_York",
+  "calendar_events": [
+    {
+      "date": "2026-11-04",
+      "name": "Peet's sampling",
+      "locations": [
+        "ILC"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-05",
+      "name": "Diwali special",
+      "locations": [
+        "Blue Wall"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-06",
+      "name": "Diwali dinner",
+      "locations": [
+        "Worcester",
+        "Berkshire"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-11",
+      "name": "Veterans Day holiday",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "academic",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-12",
+      "name": "Cantonese dinner",
+      "locations": [
+        "Berkshire"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-14",
+      "name": "VSA food fair",
+      "locations": [
+        "Hampshire"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-18",
+      "name": "Friendsgiving dinner",
+      "locations": [
+        "All dining commons"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-18",
+      "name": "UMass vs Akron home football",
+      "locations": [
+        "McGuirk Alumni Stadium"
+      ],
+      "meal_period": null,
+      "source_id": "football",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-19",
+      "name": "African Student Dinner",
+      "locations": [
+        "Berkshire"
+      ],
+      "meal_period": "late_night",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-20",
+      "name": "TCSA dinner",
+      "locations": [
+        "Worcester"
+      ],
+      "meal_period": "dinner",
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-24",
+      "name": "Thanksgiving recess begins after last class",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "academic",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-26",
+      "name": "Thanksgiving",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "nov2026",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    },
+    {
+      "date": "2026-11-30",
+      "name": "Classes resume",
+      "locations": [
+        "Campus"
+      ],
+      "meal_period": null,
+      "source_id": "academic",
+      "status_as_of": "2026-11-11",
+      "status": "scheduled_or_published",
+      "measured_demand_lift": null
+    }
+  ],
+  "multi_day_events": [
+    {
+      "name": "Apple Week",
+      "start_date": "2026-11-02",
+      "end_date": "2026-11-06",
+      "source_id": "nov2026",
+      "venue_coverage": null
+    }
+  ],
+  "event_interpretation": [
+    "November dining events were transcribed from the current November 2026 image, not from the archived November 2025 calendar.",
+    "VSA and TCSA are retained as calendar abbreviations; their expanded organization names were not independently verified here.",
+    "The calendar places African Student Dinner in the Berkshire late-night period despite the event title containing Dinner.",
+    "A cultural event may redistribute visitors between dining halls rather than increase campus-wide meals.",
+    "No fixed weekly cuisine-day recurrence was verified; dated events should not be converted into recurring schedules.",
+    "Apple Week dates follow the graphic span; confirm with dining staff for operational use."
+  ],
+  "recurring_or_historical_event_types": [
+    {
+      "name": "Halloween steak and lobster dinner",
+      "source_id": "halloween",
+      "future_year_date_confirmed": false,
+      "demand_effect": null
+    },
+    {
+      "name": "Guest-chef dinners and cultural menus",
+      "source_id": "pie2022",
+      "future_schedule_confirmed": false,
+      "demand_effect": null
+    }
+  ]
+}

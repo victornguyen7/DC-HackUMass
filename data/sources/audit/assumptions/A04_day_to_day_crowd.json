@@ -1,0 +1,78 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A04",
+    "category": "Day-to-day crowd",
+    "user_provided_assumption": {
+      "crowd_distribution": "same on every date"
+    },
+    "evidence_status": "partially_verified",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Date-specific counts and visitor composition",
+    "evidence_fact_ids": [],
+    "why_evidence_does_not_replace_assumption": "The dated calendar supplies event flags, not demand multipliers, attendance, or causal changes in crowd composition. Weekend effects also remain unmeasured.",
+    "missing_fields": [
+      "expected_entries_by_date",
+      "event_demand_lift",
+      "weekend_effect",
+      "visitor_composition_by_date"
+    ],
+    "data_request_ids": [
+      "R01",
+      "R08"
+    ],
+    "user_referenced_paths": [
+      "worcester/calendar.json"
+    ],
+    "notes": [
+      "See target_date_calendar for verified date flags and explicit null demand effects."
+    ]
+  },
+  "facts": [],
+  "data_requests": [
+    {
+      "id": "R01",
+      "name": "Attendance and arrival export",
+      "prospective_holder": "UMass Dining / UCard / meal-plan system administrator",
+      "access": "Not obtained; request aggregated counts, no student identifiers",
+      "fields": [
+        "service_date",
+        "location_id",
+        "local_timezone",
+        "meal_period_definition",
+        "bin_start",
+        "bin_end",
+        "accepted_entry_count",
+        "unique_diners_if_available",
+        "reentry_count_if_available",
+        "guest_and_staff_count_if_available",
+        "closures_or_reader_outages"
+      ],
+      "purpose": "Dinner expected counts and empirically observed arrival distributions"
+    },
+    {
+      "id": "R08",
+      "name": "Matched event-night counts",
+      "prospective_holder": "UMass Dining",
+      "access": "Not found publicly",
+      "fields": [
+        "service_date",
+        "event_id",
+        "event_location",
+        "event_start_end",
+        "Worcester_dinner_entries",
+        "comparison_dates",
+        "menu",
+        "weather",
+        "academic_calendar",
+        "service_hours",
+        "attendance_measure_definition"
+      ],
+      "purpose": "Estimate event effects with comparison nights instead of assigning an unmeasured lift"
+    }
+  ]
+}

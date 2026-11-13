@@ -1,0 +1,127 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S07",
+    "S08",
+    "S08_PDF",
+    "S10"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A05",
+    "category": "To-order stations",
+    "user_provided_assumption": {
+      "stations": [
+        "Street Food",
+        "Sushi",
+        "Display"
+      ],
+      "possible_mapping": "stir fry = Street Food"
+    },
+    "evidence_status": "historical_evidence_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Current service mode by counter and item",
+    "evidence_fact_ids": [
+      "F05",
+      "F06",
+      "F07"
+    ],
+    "why_evidence_does_not_replace_assumption": "The 2020 tour supports Wok and Nori made-to-order service and separates Wok from Street Food. It does not verify 2026 operation; a Display category cannot establish a staffed cooking queue.",
+    "missing_fields": [
+      "current_Wok_service_mode",
+      "current_Street_Food_service_mode",
+      "current_Sushi_service_mode",
+      "current_Display_service_mode",
+      "shared_service_resources"
+    ],
+    "data_request_ids": [
+      "R02"
+    ],
+    "user_referenced_paths": [],
+    "notes": [
+      "Do not merge Wok and Street Food solely because one current menu lacks a Wok category.",
+      "Make-your-own wording does not by itself establish every aspect of the service workflow."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F05",
+      "finding": "Historical station service descriptions",
+      "value": {
+        "Wok": "made-to-order stir-fry",
+        "Nori": "individual sushi rolls made to order",
+        "Street Food": "separate concept from Wok",
+        "Teaching Kitchen": "instruction, recipe testing and guest chefs"
+      },
+      "reference_year": 2020,
+      "source_ids": [
+        "S07"
+      ],
+      "applicability": "Historical service concepts, not confirmed current modes"
+    },
+    {
+      "id": "F06",
+      "finding": "Labels in published second-floor design drawing",
+      "value": [
+        "Dishroom 230",
+        "Pizza",
+        "Greens",
+        "Wok",
+        "Street Food",
+        "Latin",
+        "Grill",
+        "Naan",
+        "Salad Bar",
+        "Sushi",
+        "Noodles",
+        "Teaching Kitchen"
+      ],
+      "source_ids": [
+        "S08",
+        "S08_PDF"
+      ],
+      "applicability": "Physical design reference; current category-to-counter correspondence remains unverified"
+    },
+    {
+      "id": "F07",
+      "finding": "Current menu-category examples",
+      "value": [
+        "Mediterranean",
+        "Seasons",
+        "Soups",
+        "Display",
+        "Street Food",
+        "Sushi",
+        "Tandoor"
+      ],
+      "source_ids": [
+        "S10"
+      ],
+      "applicability": "Names only; Display includes a make-your-own-waffles listing and does not prove staffed made-to-order service"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R02",
+      "name": "Station operations and staffing",
+      "prospective_holder": "Worcester management",
+      "access": "Staff confirmation or observations needed",
+      "fields": [
+        "service_date",
+        "station_id",
+        "public_counter_name",
+        "physical_counter_id",
+        "mode_by_menu_item",
+        "active_servers_by_time",
+        "queue_join_time",
+        "service_start_time",
+        "handoff_time",
+        "batch_size",
+        "shared_staff_or_equipment"
+      ],
+      "purpose": "Service mode, server counts, service-time distributions and capacity"
+    }
+  ]
+}

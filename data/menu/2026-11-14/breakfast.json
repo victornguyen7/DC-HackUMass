@@ -1,0 +1,778 @@
+{
+  "_from": "raw/menu/worcester_menus_2026-11-13_to_2026-11-20.json",
+  "location": {
+    "name": "Worcester Dining Commons",
+    "site_location_id": "1"
+  },
+  "date": "2026-11-14",
+  "meal": "breakfast",
+  "source_url": "https://www.umassdining.com/foodpro-menu-ajax?tid=1&date=11%2F14%2F2026",
+  "retrieved_at": "2026-11-12T01:39:45.742112+00:00",
+  "stations": [
+    {
+      "name": "Breakfast Entrees",
+      "items": [
+        {
+          "name": "GENERAL MILLS Apple Turnover",
+          "serving_size": "1 EACH",
+          "ingredients": "Apple Turnover  (Apple Filling (Water, Sugar, Glucose, Evaporated Apples, Modified Corn Starch, Spice, Citric Acid, Sodium Benzoate and Potassium Sorbate [preservatives]), Enriched Flour (Wheat Flour, Niacin, Iron, Thiamin Mononitrate, Riboflavin, Folic Acid), Water, Palm Oil, Soybean Oil, Salt, Monocalcium Phosphate)",
+          "allergens": [
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "350",
+            "calories_from_fat": "198",
+            "total_fat": "22g",
+            "total_fat_dv": "28",
+            "sat_fat": "11g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "220mg",
+            "sodium_dv": "10",
+            "total_carb": "33g",
+            "total_carb_dv": "25",
+            "dietary_fiber": "1g",
+            "dietary_fiber_dv": "3",
+            "sugars": "8g",
+            "sugars_dv": null,
+            "protein": "4g",
+            "protein_dv": "7"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGT H1 CR2"
+        },
+        {
+          "name": "Hard Boiled Egg",
+          "serving_size": "2 EACH",
+          "ingredients": "Local Cage Free Eggs",
+          "allergens": [
+            "Eggs"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "111",
+            "calories_from_fat": "69",
+            "total_fat": "7.7g",
+            "total_fat_dv": "10",
+            "sat_fat": "2.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "297.7mg",
+            "cholesterol_dv": null,
+            "sodium": "131mg",
+            "sodium_dv": "6",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "10.7g",
+            "protein_dv": "19"
+          },
+          "healthfulness": "20",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR VGT H2 CR2"
+        },
+        {
+          "name": "Omelet Station",
+          "serving_size": "5 oz",
+          "ingredients": "Local Cage Free Eggs, Shredded Cheddar Cheese ((Pasteurized Milk, Cheese Cultures, Salt, Microbial Enzymes), Powdered Cellulose, Potassium Sorbate, Natamycin), Sliced American Cheese (American Cheese (Milk, Cheese Culture, Salt, Animal Enzymes), Water, Cream, Sodium Citrate, Salt, Sorbic Acid, Sunflower Lecithin), HORMEL Smoked Ham (Pork, After cooking contains up to 10% of solution: Water, Salt, Turbinado Sugar, Cultured Celery Powder, Cherry Powder), Hormel Bacon Topping (Pork, Water, Salt, Sugar, Cultured Celery Powder, Sea Salt, Natural Flavoring), Local Yellow Onions, Fresh Green Peppers, Local Fresh Mushrooms   , Fresh Tomatoes, Pan Spray (Canola Oil, Caprylic/Capric Triglycerides, Phosphated Mono and Diglycerides [Corn], Silicon Dioxide, Calcium Stearate, Propellant)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "303",
+            "calories_from_fat": "211",
+            "total_fat": "23.4g",
+            "total_fat_dv": "30",
+            "sat_fat": "11.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.3g",
+            "cholesterol": "299mg",
+            "cholesterol_dv": null,
+            "sodium": "670.7mg",
+            "sodium_dv": "29",
+            "total_carb": "2.3g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.8g",
+            "sugars_dv": null,
+            "protein": "21.7g",
+            "protein_dv": "39"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "C",
+          "recipe_webcode": "LPR H4 CR3"
+        },
+        {
+          "name": "Red Potato Home Fries",
+          "serving_size": "3 OZ",
+          "ingredients": "Diced Red Potatoes, Canola Oil  , Kosher Salt (Sea Salt), Ground Black Pepper, Paprika    (Paprika (Dried Ground Red Pepper) and Silicon Dioxide)",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "65",
+            "calories_from_fat": "7",
+            "total_fat": "0.7g",
+            "total_fat_dv": "1",
+            "sat_fat": "0.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "150.2mg",
+            "sodium_dv": "7",
+            "total_carb": "13.4g",
+            "total_carb_dv": "10",
+            "dietary_fiber": "0.1g",
+            "dietary_fiber_dv": "0",
+            "sugars": "1.1g",
+            "sugars_dv": null,
+            "protein": "1.6g",
+            "protein_dv": "3"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        },
+        {
+          "name": "Rstd Tomato, Bean & Mushroom Breakfast",
+          "serving_size": "8 OZ",
+          "ingredients": "Fresh Local Mushrooms , BUSH Vegetarian Baked Beans (Prepared Navy Beans, Water, Brown Sugar. Contains 2% or less of: Salt, Mustard (Water, Vinegar, Mustard Seed, Salt, Paprika, Turmeric), Modified Corn Starch, Onion Powder, Caramel Color, Spice, Garlic Powder, Natural Flavor), Plum Tomatoes, Local Yellow Onions, ANGELA MIA Diced Tomatoes   (Vine-Ripened Tomatoes, Tomato Juice, Less than 2% of: Calcium Chloride, Citric Acid. SUB (West Creek): Tomatoes. Tomato Juice, Salt, Calcium Chloride, Citric Acid), Canola Oil  , Lemon Juice (Lemons), Canola Oil  , Canola Oil  , Fresh Chives, Ground Black Pepper, Ground Black Pepper, Kosher Salt (Sea Salt), Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "211",
+            "calories_from_fat": "117",
+            "total_fat": "13g",
+            "total_fat_dv": "17",
+            "sat_fat": "1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "389.8mg",
+            "sodium_dv": "17",
+            "total_carb": "20.5g",
+            "total_carb_dv": "16",
+            "dietary_fiber": "4.4g",
+            "dietary_fiber_dv": "13",
+            "sugars": "6.2g",
+            "sugars_dv": null,
+            "protein": "5g",
+            "protein_dv": "9"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR VGN H6 CR2"
+        },
+        {
+          "name": "Scrambled Eggs",
+          "serving_size": "3 OZ",
+          "ingredients": "Local Cage Free Eggs, Canola Oil  ",
+          "allergens": [
+            "Eggs"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "112",
+            "calories_from_fat": "69",
+            "total_fat": "7.7g",
+            "total_fat_dv": "10",
+            "sat_fat": "2.1g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "297.7mg",
+            "cholesterol_dv": null,
+            "sodium": "131mg",
+            "sodium_dv": "6",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "10.7g",
+            "protein_dv": "19"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "B",
+          "recipe_webcode": "H LPR VGT H3 CR2"
+        },
+        {
+          "name": "Sliced Kielbasa",
+          "serving_size": "3 OZ",
+          "ingredients": "Kielbasa Rings (Pork, Beef, Water, Salt, Contains less than 2% of: Corn Syrup, Dextrose, Flavoring, Sodium Phosphate, Garlic Powder, Nonfat Dry Milk, Sodium Phosphate, Sodium Nitrite.)",
+          "allergens": [
+            "Milk",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "None"
+          ],
+          "nutrition": {
+            "calories": "254",
+            "calories_from_fat": "189",
+            "total_fat": "20.9g",
+            "total_fat_dv": "27",
+            "sat_fat": "12g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "44.9mg",
+            "cholesterol_dv": null,
+            "sodium": "792.9mg",
+            "sodium_dv": "34",
+            "total_carb": "3g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "1.5g",
+            "sugars_dv": null,
+            "protein": "12g",
+            "protein_dv": "21"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "E",
+          "recipe_webcode": "H0\n CR5"
+        },
+        {
+          "name": "Tofu Scramble",
+          "serving_size": "3 OZ",
+          "ingredients": "Extra Firm Tofu (Water, Organic Soybeans, Less than 2% of Magnesium Chloride, Calcium Sulfate), Fresh Tomatoes, Pickled Jalapeno Peppers (Jalepeno Peppers, Water, Salt, Acetic Acid, Calcium Chloride, Sodium Benzoate , FD&C Yellow #5. SUB (Roma): Jalepeno Peppers, Water, Salt, Vinegar, Calcium Chloride), SILK Plain Soy Milk   (Soymilk (Filtered Water, Soybeans), Cane Sugar, Vitamin & Mineral Blend (Calcium Carbonate, Vitamin A Palmitate, Vitamin D2, Riboflavin [B2], Vitamin B12), Sea Salt, Gellan Gum, Sodium Ascorbate, Natural Flavor), Canola Oil  , Nutritional Yeast, Kosher Salt (Sea Salt), Whole Cumin Seed, Ground Turmeric",
+          "allergens": [
+            "Soy"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "107",
+            "calories_from_fat": "58",
+            "total_fat": "6.4g",
+            "total_fat_dv": "8",
+            "sat_fat": "1.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "131.6mg",
+            "sodium_dv": "6",
+            "total_carb": "2.3g",
+            "total_carb_dv": "2",
+            "dietary_fiber": "1.9g",
+            "dietary_fiber_dv": "6",
+            "sugars": "0.2g",
+            "sugars_dv": null,
+            "protein": "10.8g",
+            "protein_dv": "19"
+          },
+          "healthfulness": "30",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H3 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Breakfast Pastries",
+      "items": [
+        {
+          "name": "Blueberry Blizzard Coffeecake (Pecans, Walnuts)",
+          "serving_size": "1 PIECE",
+          "ingredients": "Blueberry Blizzard Coffeecake Bundt (Pecan & Walnuts) (Sugar, Bleached Wheat Flour (Wheat Flour, Malted Barley Flour), Sour Cream (Cultured Pasteurized Light Cream, Nonfat Milk, and Enzymes), Blueberries, Eggs, Soybean Oil, Water, Natural Flavor (Milk), Modified Food Starch, Palm Oil, Buttermilk Solids, Leavening (Baking Soda, Sodium Acid Pyrophosphate, Monocalcium Phosphate), Whey Protein (Milk), Mono and Diglycerides, Sea Salt, Corn Syrup, Xanthan Gum, Sorbic Acid, Enzyme, Turmeric added for color, Agar.This product is manufactured on equipment exposed to Pecan, Soy, and Walnut products)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Tree Nuts",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "99",
+            "calories_from_fat": "40",
+            "total_fat": "4.5g",
+            "total_fat_dv": "6",
+            "sat_fat": "1.2g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "14.9mg",
+            "cholesterol_dv": null,
+            "sodium": "67mg",
+            "sodium_dv": "3",
+            "total_carb": "12.9g",
+            "total_carb_dv": "10",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "7.9g",
+            "sugars_dv": null,
+            "protein": "1g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "B",
+          "recipe_webcode": "H VGT H0 CR2"
+        }
+      ]
+    },
+    {
+      "name": "Omelet WOR",
+      "items": [
+        {
+          "name": "American Cheese",
+          "serving_size": "1/2 OZ",
+          "ingredients": "Sliced American Cheese (American Cheese (Milk, Cheese Culture, Salt, Animal Enzymes), Water, Cream, Sodium Citrate, Salt, Sorbic Acid, Sunflower Lecithin)",
+          "allergens": [
+            "Milk"
+          ],
+          "dietary_labels": [
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "46",
+            "calories_from_fat": "37",
+            "total_fat": "4.1g",
+            "total_fat_dv": "5",
+            "sat_fat": "2.5g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "12.7mg",
+            "cholesterol_dv": null,
+            "sodium": "253.1mg",
+            "sodium_dv": "11",
+            "total_carb": "0.5g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0.5g",
+            "sugars_dv": null,
+            "protein": "2.5g",
+            "protein_dv": "5"
+          },
+          "healthfulness": "0",
+          "carbon_rating": "E",
+          "recipe_webcode": "VGT H0 CR5"
+        },
+        {
+          "name": "Diced Tomatoes",
+          "serving_size": "1 OZ",
+          "ingredients": "Fresh Tomatoes",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "5",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "3.8mg",
+            "sodium_dv": "0",
+            "total_carb": "1g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.6g",
+            "sugars_dv": null,
+            "protein": "0.2g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Fresh Green Peppers",
+          "serving_size": "1/2 OZ",
+          "ingredients": "Fresh Green Peppers",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "3",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.4mg",
+            "sodium_dv": "0",
+            "total_carb": "0.7g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.4g",
+            "sugars_dv": null,
+            "protein": "0.1g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H5 CR1"
+        },
+        {
+          "name": "Omelet Bar",
+          "serving_size": "5 oz",
+          "ingredients": "Local Cage Free Eggs, Pan Spray (Canola Oil, Caprylic/Capric Triglycerides, Phosphated Mono and Diglycerides [Corn], Silicon Dioxide, Calcium Stearate, Propellant)",
+          "allergens": [
+            "Eggs",
+            "Corn"
+          ],
+          "dietary_labels": [
+            "Local"
+          ],
+          "nutrition": {
+            "calories": "91",
+            "calories_from_fat": "56",
+            "total_fat": "6.3g",
+            "total_fat_dv": "8",
+            "sat_fat": "1.8g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "243.3mg",
+            "cholesterol_dv": null,
+            "sodium": "107mg",
+            "sodium_dv": "5",
+            "total_carb": "0g",
+            "total_carb_dv": "0",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "8.8g",
+            "protein_dv": "16"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "B",
+          "recipe_webcode": "LPR H4 CR2"
+        },
+        {
+          "name": "Onions",
+          "serving_size": "1/2 oz",
+          "ingredients": "Local Yellow Onions",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Local",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "5",
+            "calories_from_fat": "0",
+            "total_fat": "0g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": null,
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "0.4mg",
+            "sodium_dv": "0",
+            "total_carb": "1.2g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.2g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0g",
+            "sugars_dv": null,
+            "protein": "0.2g",
+            "protein_dv": "0"
+          },
+          "healthfulness": "50",
+          "carbon_rating": "A",
+          "recipe_webcode": "H LPR VGN H5 CR1"
+        },
+        {
+          "name": "Shredded Cheddar Cheese",
+          "serving_size": "1 OZ",
+          "ingredients": "Shredded Cheddar Cheese ((Pasteurized Milk, Cheese Cultures, Salt, Microbial Enzymes), Powdered Cellulose, Potassium Sorbate, Natamycin)",
+          "allergens": [
+            "Milk"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "115",
+            "calories_from_fat": "85",
+            "total_fat": "9.4g",
+            "total_fat_dv": "12",
+            "sat_fat": "5.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.3g",
+            "cholesterol": "28.1mg",
+            "cholesterol_dv": null,
+            "sodium": "185.1mg",
+            "sodium_dv": "8",
+            "total_carb": "0.9g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0g",
+            "dietary_fiber_dv": "0",
+            "sugars": "0.1g",
+            "sugars_dv": null,
+            "protein": "6.5g",
+            "protein_dv": "12"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "E",
+          "recipe_webcode": "H VGT H1 CR5"
+        },
+        {
+          "name": "Sliced Mushrooms",
+          "serving_size": "1 OZ",
+          "ingredients": "Local Fresh Mushrooms   ",
+          "allergens": [],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "6",
+            "calories_from_fat": "1",
+            "total_fat": "0.1g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "1.4mg",
+            "sodium_dv": "0",
+            "total_carb": "0.9g",
+            "total_carb_dv": "1",
+            "dietary_fiber": "0.3g",
+            "dietary_fiber_dv": "1",
+            "sugars": "0.6g",
+            "sugars_dv": null,
+            "protein": "0.9g",
+            "protein_dv": "2"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "E",
+          "recipe_webcode": "H VGN H6 CR5"
+        }
+      ]
+    },
+    {
+      "name": "Soups",
+      "items": [
+        {
+          "name": "Chicken Congee",
+          "serving_size": "3 oz",
+          "ingredients": "Jasmine Rice (ASN PRIDE: White Jasmine Rice), Jasmine Rice (ASN PRIDE: White Jasmine Rice), Halal Antibiotic Free Boneless Skinless Chicken Breast   (Boneless, Skinless Chicken Breast), Ginger Root, Chicken Base        (Chicken Meat, Salt, Chicken Broth, Chicken Fat, Sugar, Canola Oil, Corn Starch, Natural Flavors, Potato Starch, Turmeric), Granulated Sugar, Kosher Salt (Sea Salt)",
+          "allergens": [
+            "Corn"
+          ],
+          "dietary_labels": [
+            "None"
+          ],
+          "nutrition": {
+            "calories": "280",
+            "calories_from_fat": "2",
+            "total_fat": "0.2g",
+            "total_fat_dv": "0",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "4.4mg",
+            "cholesterol_dv": null,
+            "sodium": "96.2mg",
+            "sodium_dv": "4",
+            "total_carb": "61.4g",
+            "total_carb_dv": "47",
+            "dietary_fiber": "1.7g",
+            "dietary_fiber_dv": "5",
+            "sugars": "0.2g",
+            "sugars_dv": null,
+            "protein": "6.5g",
+            "protein_dv": "12"
+          },
+          "healthfulness": "40",
+          "carbon_rating": "B",
+          "recipe_webcode": "H4 CR2"
+        },
+        {
+          "name": "Hot Oatmeal",
+          "serving_size": "4 OZL",
+          "ingredients": "Quick Oats Cereal (100% Whole Grain Rolled Oats)",
+          "allergens": [
+            "Gluten",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Plant Based"
+          ],
+          "nutrition": {
+            "calories": "91",
+            "calories_from_fat": "14",
+            "total_fat": "1.6g",
+            "total_fat_dv": "2",
+            "sat_fat": "0.3g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "1.4mg",
+            "sodium_dv": "0",
+            "total_carb": "16.2g",
+            "total_carb_dv": "12",
+            "dietary_fiber": "2.4g",
+            "dietary_fiber_dv": "7",
+            "sugars": "0.2g",
+            "sugars_dv": null,
+            "protein": "3.2g",
+            "protein_dv": "6"
+          },
+          "healthfulness": "60",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGN H6 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Display Station",
+      "items": [
+        {
+          "name": "Make Your Own Waffles",
+          "serving_size": "1 EACH",
+          "ingredients": "Water, Carbon's Pancake & Waffle Mix (CARBON:  Enriched Wheat Flour (Wheat Flour, Niacin, Reduced Iron, Thiamine Mononitrate, Riboflavin, Folic Acid), Sugar, Leavening (Baking Soda, Sodium Aluminum Phosphate), Soybean Oil, Contains 2% or less of: Salt, Yellow Corn Flour, Malted Barley Flour, Dextrose, Buttermilk, Artificial and Natural Flavors  HEARTLAND FOOD:  Enriched Flour {Wheat Flour, Niacin, Iron, Thiamin Mononitrate, Riboflavin, Folic Acid], Sugar, Soy Flour, Yellow Corn Meal, Contains 2% or less of: Salt, Pam Oil, Leavening [Baking Soda, Sodium Aluminum Phosphate, Monocalcium Phosphate], Dextrose, Egg, Egg White, Dried Corn Syrup, Mono and Diglycerides, Sodium Caseinate, Natural and Artificial Flavors, Malted Barley Extract, Acesulfame Potassium, Soy Lecithin), Pan Spray (Water, Silicone, Polysorbate 80, Propylene Glycol, Ethyl and Propyl Paraben (preservative), Sodium Benzoate (preservative), Sodium Lauryl Sulfate)",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Halal",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "222",
+            "calories_from_fat": "20",
+            "total_fat": "2.2g",
+            "total_fat_dv": "3",
+            "sat_fat": "0g",
+            "sat_fat_dv": null,
+            "trans_fat": "0g",
+            "cholesterol": "0mg",
+            "cholesterol_dv": null,
+            "sodium": "637.1mg",
+            "sodium_dv": "28",
+            "total_carb": "44.5g",
+            "total_carb_dv": "34",
+            "dietary_fiber": "1.5g",
+            "dietary_fiber_dv": "4",
+            "sugars": "4.4g",
+            "sugars_dv": null,
+            "protein": "4.4g",
+            "protein_dv": "8"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "A",
+          "recipe_webcode": "H VGT H1 CR1"
+        }
+      ]
+    },
+    {
+      "name": "Latino 2  WOR",
+      "items": [
+        {
+          "name": "Chilaquiles Bar",
+          "serving_size": "1 each",
+          "ingredients": "Local Cage Free Eggs, Unfried Tortilla Chips   (Whole Grain Corn, Water, contains 2% or less of: Cellulose Gum, Guar Gum, Microbial Enzymes, and Propionic Acid, Benzoic Acid and Phosphoric Acid), Refried Beans (Pinto Beans (Prepared Pinto Beans, Water, Salt, Calcium Chloride, and Calcium Disodium EDTA), Water, Local Yellow Onions, Extra Virgin Olive Oil, Garlic Cloves, Kosher Salt (Sea Salt), Ground Black Pepper, Ground Cumin), Water, Shredded Cheddar Cheese ((Pasteurized Milk, Cheese Cultures, Salt, Microbial Enzymes), Powdered Cellulose, Potassium Sorbate, Natamycin), Tomato Paste (Tomato Paste, Less than 2% of: Salt, Citric Acid), CABOT Local Sour Cream (Cultured Milk, Cream, Modified Corn Starch, Guar Gum, Sodiumcitrate, Carrageenan, Locust Bean Gum), Fresh Tomatoes, Queso Fresco (Pasteurized Grade A Whole Cow’s Milk, Salt, Microbial Enzymes and Culture), Local Yellow Onions, Deep Frying Canola Oil   (Canola Oil, TBHQ and Citric Acid, Dimethylpolysiloxane. Dairy, Egg, Soy, Sesame, Corn and/or Wheat Products may be fried in this oil), Chipotle Peppers (Red Jalapeno Peppers, Water, Vinegar, Sugar, Salt, Xanthan Gum, Natural Smoke Essence, Garlic), Canola Oil  , Homemade Guacamole (Avocado Pulp (Hass Avocado), Fresh Red Onions, Fresh Tomatoes, Lime Juice   (Lime Juice), Fresh Cilantro, Kosher Salt (Sea Salt)), Gluten Free Vegetable Broth (Sauteed Vegetable Puree Mix (Carrots, Onions, Celery), Salt, Sugar, Maltodextrin, Vegetable Oil (Corn and/or Canola Oil), 2% or less of Yeast Extract, Water, Potato Starch, Xanthan Gum, Natural Flavors, Carrot Juice Concentrate), Garlic Cloves, Kosher Salt (Sea Salt), Ground Cumin",
+          "allergens": [
+            "Milk",
+            "Eggs",
+            "Gluten",
+            "Soy",
+            "Corn",
+            "Sesame",
+            "Wheat"
+          ],
+          "dietary_labels": [
+            "Local",
+            "Vegetarian"
+          ],
+          "nutrition": {
+            "calories": "361",
+            "calories_from_fat": "188",
+            "total_fat": "20.8g",
+            "total_fat_dv": "27",
+            "sat_fat": "8.7g",
+            "sat_fat_dv": null,
+            "trans_fat": "0.2g",
+            "cholesterol": "182.7mg",
+            "cholesterol_dv": null,
+            "sodium": "478.7mg",
+            "sodium_dv": "21",
+            "total_carb": "28.8g",
+            "total_carb_dv": "22",
+            "dietary_fiber": "4.2g",
+            "dietary_fiber_dv": "13",
+            "sugars": "2.8g",
+            "sugars_dv": null,
+            "protein": "17.1g",
+            "protein_dv": "31"
+          },
+          "healthfulness": "10",
+          "carbon_rating": "B",
+          "recipe_webcode": "LPR VGT H1 CR2"
+        }
+      ]
+    }
+  ]
+}

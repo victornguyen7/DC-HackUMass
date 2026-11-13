@@ -1,0 +1,58 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A11",
+    "category": "Staff popularity multipliers",
+    "user_provided_assumption": {
+      "source": "overrides.json → popularity",
+      "entries": "empty according to user"
+    },
+    "evidence_status": "not_found",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Staff-reviewed or empirically fitted item multipliers",
+    "evidence_fact_ids": [],
+    "why_evidence_does_not_replace_assumption": "No published staff item multipliers were found; an empty override is not evidence for any particular multiplier.",
+    "missing_fields": [
+      "multiplier_by_item",
+      "baseline_definition",
+      "reviewer_or_fit_method",
+      "effective_dates"
+    ],
+    "data_request_ids": [
+      "R04"
+    ],
+    "user_referenced_paths": [
+      "overrides.json → popularity"
+    ],
+    "notes": []
+  },
+  "facts": [],
+  "data_requests": [
+    {
+      "id": "R04",
+      "name": "Menu role review and dish-choice observations",
+      "prospective_holder": "Worcester culinary team / students",
+      "access": "Staff review and consent-based survey or aggregated consumption data",
+      "fields": [
+        "menu_date",
+        "meal_period",
+        "item_id",
+        "recipe_id",
+        "station_id",
+        "portion_definition",
+        "staff_verified_role",
+        "availability_start_end",
+        "servings_taken",
+        "stockout_intervals",
+        "pairwise_choice_question",
+        "respondent_sampling_method",
+        "survey_sample_size"
+      ],
+      "purpose": "Validate classification and estimate item demand while accounting for availability"
+    }
+  ]
+}

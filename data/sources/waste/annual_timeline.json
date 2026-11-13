@@ -1,0 +1,191 @@
+{
+  "_from": "raw/research/umass_food_waste_FY2017_FY2026.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "fy25",
+    "fy26",
+    "lean_2024",
+    "martin2018",
+    "policy2021",
+    "race2023"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "coverage": {
+    "start_fiscal_year": 2017,
+    "end_fiscal_year": 2026,
+    "inclusive_year_count": 10,
+    "calendar_2026_is_incomplete": true,
+    "note": "The comparable annual series uses fiscal-year labels. Calendar-year and short campaign measurements are separate observations and are not converted into fiscal-year totals."
+  },
+  "annual_series_complete": false,
+  "metric_definitions": {
+    "source_reduction": "Food waste prevented before disposal or redistribution.",
+    "overproduction": "Prepared food exceeding a defined consumption or service requirement; source definitions may vary.",
+    "plate_waste": "Food discarded after service to diners.",
+    "pre_consumer_waste": "Waste occurring before diners consume it; may include prep scraps and unserved food.",
+    "anaerobic_diversion": "Food scraps collected for energy/nutrient recovery; not food-waste prevention.",
+    "donation": "Edible surplus redistributed; not necessarily avoided production.",
+    "tracked_production": "Food production measured by a system, not food wasted or saved.",
+    "tracked_consumption": "Consumption quantity recorded or estimated by a system, not waste avoided.",
+    "waste_per_swipe": "Food-waste mass normalized by meal transactions; distinct from annual mass or unique diners.",
+    "cost_savings": "Monetary result; cannot be converted into kilograms without additional data."
+  },
+  "annual_timeline": [
+    {
+      "fiscal_year": 2017,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2018,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [
+        "An April 2018 university account describes compost processing at Martin's Farm. No UMass annual quantity is established by that account."
+      ],
+      "source_ids": [
+        "martin2018"
+      ]
+    },
+    {
+      "fiscal_year": 2019,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2020,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2021,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [
+        "January 2021 university guidance documents pandemic takeout operations and changes excluding packaging from food-waste collection. These are comparability breaks, not numerical reductions."
+      ],
+      "source_ids": [
+        "policy2021"
+      ]
+    },
+    {
+      "fiscal_year": 2022,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [],
+      "source_ids": []
+    },
+    {
+      "fiscal_year": 2023,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "no_comparable_numeric_value_found",
+      "observations": [
+        "FY2025 report plots FY2023 dining-hall intensity values without point labels. No exact values were digitized.",
+        "Separate eight-week calendar-2023 competition figures are stored below, not annualized."
+      ],
+      "source_ids": [
+        "fy25",
+        "race2023"
+      ]
+    },
+    {
+      "fiscal_year": 2024,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": null,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "qualitative_and_graphic_evidence",
+      "observations": [
+        "FY2025 report says consolidated campus waste-stream compilation began in FY2024.",
+        "April 2024 staff account documents Leanpath weighing, classification audits and weekly reporting.",
+        "Graphic shows Worcester intensity rising from FY2023 to FY2024; exact underlying values are unavailable."
+      ],
+      "source_ids": [
+        "fy25",
+        "lean_2024"
+      ]
+    },
+    {
+      "fiscal_year": 2025,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": 7.33,
+      "annual_anaerobic_diversion_lb": 2810800,
+      "annual_anaerobic_diversion_tons_as_reported": null,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": null,
+      "evidence_status": "reported_metrics_available",
+      "observations": [
+        "FY2025 report gives 0.13 oz less waste per swipe than FY2024.",
+        "224399 lb of pre-consumer waste was tracked by Leanpath. This is tracked waste, not avoided waste.",
+        "347809 lb of consumption was tracked with Metafoodx. This is not total production or waste saved.",
+        "Food Recovery Network served over 2100 meals after the fall-2024 relaunch."
+      ],
+      "source_ids": [
+        "fy25",
+        "fy26"
+      ]
+    },
+    {
+      "fiscal_year": 2026,
+      "annual_total_food_waste_generated_lb": null,
+      "food_waste_per_swipe_oz": 7.19,
+      "annual_anaerobic_diversion_lb": null,
+      "annual_anaerobic_diversion_tons_as_reported": 1400,
+      "year_over_year_total_generated_change_pct": null,
+      "year_over_year_intensity_change_pct": -1.91,
+      "evidence_status": "reported_metrics_available",
+      "observations": [
+        "University reports rounded 2% less waste per swipe versus FY2025.",
+        "1.79 million lb of food production tracked by Metafoodx across 16 systems and 6 locations.",
+        "More than 6000 lb donated through Food Recovery Network.",
+        "No independent tool-by-tool causal contribution is reported."
+      ],
+      "source_ids": [
+        "fy26"
+      ]
+    }
+  ]
+}

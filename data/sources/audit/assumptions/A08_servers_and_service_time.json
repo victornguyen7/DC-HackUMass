@@ -1,0 +1,78 @@
+{
+  "_from": "raw/research/worcester_simulation_assumption_evidence.json",
+  "as_of": "2026-11-12",
+  "source_ids": [
+    "S11",
+    "S11B"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "assumption": {
+    "id": "A08",
+    "category": "Servers and service time",
+    "user_provided_assumption": {
+      "source": "stations.json",
+      "numeric_values_provided_in_message": false
+    },
+    "evidence_status": "context_only",
+    "replacement_value": null,
+    "missing_value_status": "not_found",
+    "required_measure": "Servers per station by time and measured service-time distributions",
+    "evidence_fact_ids": [
+      "F08"
+    ],
+    "why_evidence_does_not_replace_assumption": "Job responsibilities establish staff deployment and queue monitoring, not employee counts, seconds per customer, parallel capacity, or arrival rates.",
+    "missing_fields": [
+      "active_servers_by_time",
+      "service_time_distribution",
+      "batch_and_parallel_capacity"
+    ],
+    "data_request_ids": [
+      "R02"
+    ],
+    "user_referenced_paths": [
+      "stations.json"
+    ],
+    "notes": [
+      "Scanner processing time in a technology vendor description is not diner service time."
+    ]
+  },
+  "facts": [
+    {
+      "id": "F08",
+      "finding": "Worcester cook responsibilities",
+      "value": [
+        "Prep sheets and ingredient par levels",
+        "Recipe-based production and portioning",
+        "Staff allocation within a station",
+        "Queue monitoring and requests for extra help"
+      ],
+      "source_ids": [
+        "S11",
+        "S11B"
+      ],
+      "applicability": "Qualitative practices documented in indexed job descriptions; no numeric rules"
+    }
+  ],
+  "data_requests": [
+    {
+      "id": "R02",
+      "name": "Station operations and staffing",
+      "prospective_holder": "Worcester management",
+      "access": "Staff confirmation or observations needed",
+      "fields": [
+        "service_date",
+        "station_id",
+        "public_counter_name",
+        "physical_counter_id",
+        "mode_by_menu_item",
+        "active_servers_by_time",
+        "queue_join_time",
+        "service_start_time",
+        "handoff_time",
+        "batch_size",
+        "shared_staff_or_equipment"
+      ],
+      "purpose": "Service mode, server counts, service-time distributions and capacity"
+    }
+  ]
+}

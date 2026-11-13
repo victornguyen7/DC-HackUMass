@@ -1,0 +1,46 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "allergy",
+    "faq",
+    "franklin",
+    "halal"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "religious_and_special_diets": {
+    "campus_prevalence": null,
+    "supported_needs": [
+      "halal",
+      "kosher",
+      "vegan",
+      "vegetarian",
+      "food_allergies",
+      "food_intolerances"
+    ],
+    "source_ids": [
+      "allergy",
+      "faq"
+    ],
+    "kosher_location": {
+      "location": "Franklin Dining Commons",
+      "source_id": "faq"
+    },
+    "franklin_reputation": {
+      "description": "UMass Dining describes Franklin as known for vegan and vegetarian cuisine.",
+      "source_id": "franklin"
+    },
+    "ramadan": {
+      "note": "The published halal guide describes pre-dawn Suhoor service at Worcester and Berkshire. Verify each year before scheduling.",
+      "source_id": "halal",
+      "evidence_access": "Indexed source excerpt; guide download was not inspected in this run."
+    },
+    "modeling_features": [
+      "diet_eligibility_per_dish",
+      "location_of_appropriate_service",
+      "religious_observance_date",
+      "fasting_meal_window_if_user_supplied",
+      "service_hours"
+    ]
+  }
+}

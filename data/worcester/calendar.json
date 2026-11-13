@@ -1,0 +1,131 @@
+{
+  "_note": "Context for each simulated dinner. Not read by the engine yet. crowd_modifier stays null: no event has a measured demand lift. Events elsewhere may pull diners away from Worcester rather than add any. building_hours (07:00-24:00) is the building, not the dinner window; the reviewed table stops at Nov 15. An empty event list does not prove there are no other events.",
+  "_from": [
+    "sources/calendar/events_2026-11.json",
+    "sources/calendar/target_dates_audit.json"
+  ],
+  "dates": [
+    {
+      "date": "2026-11-13",
+      "weekday": "Friday",
+      "weekend": false,
+      "events_at_or_affecting_worcester": [],
+      "events_elsewhere_on_campus": [],
+      "building_hours": {
+        "open": "07:00",
+        "close": "24:00"
+      },
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-14",
+      "weekday": "Saturday",
+      "weekend": true,
+      "events_at_or_affecting_worcester": [],
+      "events_elsewhere_on_campus": [
+        "VSA food fair (Hampshire)"
+      ],
+      "building_hours": {
+        "open": "07:00",
+        "close": "24:00"
+      },
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-15",
+      "weekday": "Sunday",
+      "weekend": true,
+      "events_at_or_affecting_worcester": [],
+      "events_elsewhere_on_campus": [],
+      "building_hours": {
+        "open": "07:00",
+        "close": "24:00"
+      },
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-16",
+      "weekday": "Monday",
+      "weekend": false,
+      "events_at_or_affecting_worcester": [],
+      "events_elsewhere_on_campus": [],
+      "building_hours": null,
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-17",
+      "weekday": "Tuesday",
+      "weekend": false,
+      "events_at_or_affecting_worcester": [],
+      "events_elsewhere_on_campus": [],
+      "building_hours": null,
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-18",
+      "weekday": "Wednesday",
+      "weekend": false,
+      "events_at_or_affecting_worcester": [
+        {
+          "name": "Friendsgiving dinner",
+          "locations": [
+            "All dining commons"
+          ],
+          "meal_period": "dinner",
+          "source_id": "nov2026",
+          "measured_demand_lift": null
+        },
+        {
+          "name": "UMass vs Akron home football",
+          "locations": [
+            "McGuirk Alumni Stadium"
+          ],
+          "meal_period": null,
+          "source_id": "football",
+          "measured_demand_lift": null
+        }
+      ],
+      "events_elsewhere_on_campus": [],
+      "building_hours": null,
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-19",
+      "weekday": "Thursday",
+      "weekend": false,
+      "events_at_or_affecting_worcester": [],
+      "events_elsewhere_on_campus": [
+        "African Student Dinner (Berkshire)"
+      ],
+      "building_hours": null,
+      "football_kickoff": null,
+      "crowd_modifier": null
+    },
+    {
+      "date": "2026-11-20",
+      "weekday": "Friday",
+      "weekend": false,
+      "events_at_or_affecting_worcester": [
+        {
+          "name": "TCSA dinner",
+          "locations": [
+            "Worcester"
+          ],
+          "meal_period": "dinner",
+          "source_id": "nov2026",
+          "measured_demand_lift": null
+        }
+      ],
+      "events_elsewhere_on_campus": [],
+      "building_hours": null,
+      "football_kickoff": null,
+      "crowd_modifier": null
+    }
+  ]
+}

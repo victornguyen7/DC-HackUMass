@@ -1,0 +1,27 @@
+{
+  "_from": "raw/research/umass_food_waste_FY2017_FY2026.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "fy26"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "destination_distribution_fy2026": {
+    "metric": "destinations_of_tracked_overproduction_by_weight",
+    "anaerobic_digestion_pct": 81.3,
+    "donation_pct": 10.1,
+    "reuse_pct": 8.6,
+    "source_id": "fy26",
+    "denominator_mass_lb": null,
+    "note": "Do not apply these shares to all campus food scraps or 1.79M lb of production."
+  },
+  "future_targets": [
+    {
+      "period": "FY2027",
+      "target": "reduce food waste",
+      "target_pct": 10,
+      "baseline_definition": null,
+      "achieved": false,
+      "source_id": "fy26"
+    }
+  ]
+}

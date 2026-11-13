@@ -1,0 +1,146 @@
+{
+  "_from": "raw/research/umass_food_waste_FY2017_FY2026.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "faq",
+    "foodpro_integration",
+    "foodpro_job",
+    "fy25",
+    "fy26",
+    "lean_2014",
+    "lean_2024",
+    "meta_case",
+    "meta_expansion",
+    "meta_pilot"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "causal_tool_attribution_available": false,
+  "tool_impact_claims": [
+    {
+      "tool": "Metafoodx",
+      "claim": "Harvest Market overproduction reduction",
+      "value_pct": 51.7,
+      "comparison_length": "12 weeks / approximately 3 months",
+      "publication_date": "2025-09-03",
+      "observation_dates": null,
+      "site": "Harvest Market",
+      "baseline_mass": null,
+      "followup_mass": null,
+      "control_group": null,
+      "evidence_type": "vendor_reported_before_after",
+      "independent_validation": null,
+      "campus_wide": false,
+      "annual_reduction": false,
+      "source_ids": [
+        "meta_expansion",
+        "meta_case"
+      ]
+    },
+    {
+      "tool": "Metafoodx",
+      "claim": "Leftovers reduction during egg-price spike",
+      "value_pct": 42.5,
+      "site": "Harvest Market",
+      "observation_dates": null,
+      "food_scope_detail": null,
+      "evidence_type": "vendor_reported",
+      "source_ids": [
+        "meta_case"
+      ],
+      "note": "Do not label this as all-campus plate waste or an egg-only reduction; metric detail is limited."
+    },
+    {
+      "tool": "Metafoodx",
+      "claim": "Return on investment",
+      "value_pct": 500,
+      "qualifier": "more_than",
+      "metric": "ROI_food_and_labor_savings",
+      "source_ids": [
+        "meta_case"
+      ],
+      "food_waste_reduction_pct": null
+    },
+    {
+      "tool": "Metafoodx",
+      "claim": "Potential annual purchasing/preparation savings at full capacity",
+      "value_usd": 1000000,
+      "qualifier": "or_more",
+      "status": "projection_not_realized_savings",
+      "source_ids": [
+        "meta_pilot"
+      ]
+    },
+    {
+      "tool": "FoodPro",
+      "waste_reduction_pct": null,
+      "status": "No UMass-specific isolated effect found",
+      "source_ids": [
+        "foodpro_job",
+        "foodpro_integration"
+      ]
+    },
+    {
+      "tool": "Meal-plan transactions",
+      "waste_reduction_pct": null,
+      "status": "Demand input, no isolated effect found",
+      "source_ids": [
+        "faq"
+      ]
+    },
+    {
+      "tool": "Food Recovery Network",
+      "period": "FY2025",
+      "value": 2100,
+      "qualifier": "more_than",
+      "unit": "meals_redistributed",
+      "source_ids": [
+        "fy25"
+      ],
+      "waste_prevention_pct": null
+    },
+    {
+      "tool": "Food Recovery Network",
+      "period": "FY2026",
+      "value": 6000,
+      "qualifier": "more_than",
+      "unit": "lb_donated",
+      "source_ids": [
+        "fy26"
+      ],
+      "waste_prevention_pct": null
+    },
+    {
+      "tool": "Vanguard Renewables / Barstow's Farm",
+      "period": "FY2026",
+      "value": 1400,
+      "unit": "tons_diverted_as_reported",
+      "source_ids": [
+        "fy26"
+      ],
+      "waste_prevention_pct": null
+    }
+  ],
+  "historical_instrument_context": {
+    "not_a_current_tool_recommendation": true,
+    "instruments": [
+      {
+        "name": "Leanpath",
+        "latest_quantified_period_found": "FY2025",
+        "tracked_pre_consumer_waste_lb": 224399,
+        "source_ids": [
+          "fy25",
+          "lean_2024"
+        ],
+        "current_FY2026_deployment": null,
+        "replacement_by_metafoodx_confirmed": false,
+        "note": "Retained solely to explain historical measurements, not included in the active ecosystem report.",
+        "older_out_of_window_claim": {
+          "publication_date": "2014-01-10",
+          "worcester_food_cost_change_pct": -1,
+          "metric": "food_cost_not_waste_mass",
+          "source_id": "lean_2014"
+        }
+      }
+    ]
+  }
+}

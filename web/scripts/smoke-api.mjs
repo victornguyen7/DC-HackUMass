@@ -1,0 +1,125 @@
+// Browser test for the features that need the engine API (`make serve`):
+// plain-English box, menu edits + new dish, API runs, Why?, API replay + narration, adopt.
+// Usage: node scripts/smoke-api.mjs [baseUrl] [outDir]
+import { chromium } from "playwright-core";
+import { mkdirSync } from "node:fs";
+
+const base = process.argv[2] ?? "http://localhost:5173";
+const out = process.argv[3] ?? "smoke-api-out";
+mkdirSync(out, { recursive: true });
+
+const health = await (await fetch(`${base}/api/health`)).json();
+if (!health.ok) {
+  console.log("API not running; start it with `make serve`.");
+  process.exit(2);
+}
+
+const browser = await chromium.launch({ channel: "chrome", headless: true });
+const problems = [];
+const p = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+p.on("console", (m) => m.type() === "error" && problems.push(`[console] ${p.url()} ${m.text()} ${m.location()?.url ?? ""}`));
+p.on("pageerror", (e) => problems.push(`[pageerror] ${p.url()} ${e.message}`));
+p.on("response", (r) => r.status() >= 400 && problems.push(`[http ${r.status()}] ${r.url()}`));
+const step = async (name, fn) => {
+  const t0 = Date.now();
+  try { await fn(); console.log("ok  ", name, `${((Date.now() - t0) / 1000).toFixed(1)}s`); }
+  catch (e) { problems.push(`[step] ${name}: ${e.message.split("\n")[0]}`); console.log("FAIL", name); await p.screenshot({ path: `${out}/fail-${name.replace(/\W+/g, "_")}.png`, fullPage: true }); }
+};
+
+await p.goto(`${base}/lab`);
+await p.evaluate(() => localStorage.clear());
+await p.goto(`${base}/lab`);
+await p.getByText("Results vs. baseline").waitFor({ timeout: 20000 });
+
+await step("ask box → apply → API run", async () => {
+  await p.getByLabel("Ask in plain English").fill("add one more server at the Grill and 10% busier");
+  await p.getByRole("button", { name: "Ask", exact: true }).click();
+  await p.getByRole("button", { name: "Apply and run" }).waitFor({ timeout: 60000 });
+  await p.screenshot({ path: `${out}/lab-ask.png`, fullPage: true });
+  await p.getByRole("button", { name: "Apply and run" }).click();
+  await p.getByText("simulated on the API").waitFor({ timeout: 120000 });
+});
+
+await step("why?", async () => {
+  await p.getByRole("button", { name: "Why?" }).click();
+  await p.getByText(/^Why ·/).waitFor({ timeout: 60000 });
+});
+
+await step("menu: remove + new dish → run → demand shift", async () => {
+  await p.getByRole("button", { name: "Preset" }).click();
+  await p.getByRole("button", { name: "Smaller batches of favorites" }).click();
+  await p.getByText("smaller batches of favorites").first().waitFor();
+  await p.getByRole("button", { name: /^Menu/ }).click();
+  await p.getByLabel("Dish to remove").selectOption({ index: 1 });
+  await p.getByRole("button", { name: "Remove", exact: true }).click();
+  await p.getByRole("button", { name: "Add a new dish…" }).click();
+  await p.getByLabel("Name").fill("Butter Chicken Bowl");
+  await p.locator('[aria-label="New dish"] select').first().selectOption("tandoor");
+  await p.getByRole("button", { name: "suggest" }).click();
+  await p.locator('[aria-label="New dish"] .chip').first().waitFor({ timeout: 30000 });
+  await p.getByRole("button", { name: "AI estimate" }).click();
+  await p.getByText(/Likes it most/).waitFor({ timeout: 60000 });
+  await p.screenshot({ path: `${out}/lab-new-dish.png`, fullPage: true });
+  await p.getByRole("button", { name: "Add to scenario" }).click();
+  await p.getByRole("button", { name: "Run 30 nights" }).click();
+  await p.getByText("Where demand moves").waitFor({ timeout: 180000 });
+  await p.screenshot({ path: `${out}/lab-menu-run.png`, fullPage: true });
+});
+
+await step("adopt API run → dashboard", async () => {
+  await p.getByRole("button", { name: /^Adopt for/ }).click();
+  await p.getByText(/Adopted/).first().waitFor();
+  await p.goto(`${base}/dashboard`);
+  await p.locator(".chip", { hasText: "Adopted" }).first().waitFor({ timeout: 20000 });
+  const chip = await p.locator(".chip", { hasText: "Adopted" }).first().textContent();
+  if (!/Butter Chicken|new dish|add/i.test(chip ?? "")) problems.push(`[check] dashboard chip doesn't name the API run: ${chip}`);
+  await p.screenshot({ path: `${out}/dashboard-adopted-api.png` });
+});
+
+await step("saved list shows API scenarios", async () => {
+  await p.goto(`${base}/lab`);
+  await p.getByText("Results vs. baseline").waitFor({ timeout: 20000 });
+  await p.getByRole("button", { name: "Saved", exact: true }).click();
+  await p.getByText("· API").first().waitFor({ timeout: 10000 });
+});
+
+await step("watch API run in Hall (API replay + narration)", async () => {
+  await p.getByRole("button", { name: "Saved", exact: true }).click();
+  await p.getByText("· API").first().click();
+  await p.getByText("simulated on the API").waitFor({ timeout: 30000 });
+  await p.getByRole("button", { name: "Watch in 3D" }).click();
+  await p.waitForURL(/\/hall/);
+  await p.getByText("Replayed on the API", { exact: false }).waitFor({ timeout: 120000 });
+  await p.locator("g.student").first().waitFor({ timeout: 20000 });
+  await p.locator(".narration").first().waitFor({ timeout: 90000 });
+  await p.screenshot({ path: `${out}/hall-api.png`, fullPage: true });
+});
+
+await step("narrate a non-highlight student", async () => {
+  await p.locator("g.student").nth(5).click({ force: true });
+  const btn = p.getByRole("button", { name: "Narrate this student" });
+  if (await btn.isVisible().catch(() => false)) {
+    await btn.click();
+    await p.locator(".narration").first().waitFor({ timeout: 90000 });
+  }
+});
+
+await step("bundle lever-grid scenario replays from the API", async () => {
+  await p.goto(`${base}/lab`);
+  await p.getByText("Results vs. baseline").waitFor({ timeout: 20000 });
+  await p.getByRole("button", { name: "Baseline", exact: true }).click();
+  await p.getByRole("button", { name: /^Crowd/ }).click();
+  await p.locator('input[type="range"]').first().fill("1.1");
+  await p.getByRole("button", { name: "Run 30 nights" }).click();
+  await p.getByText("from the offline bundle").waitFor();
+  await p.getByRole("button", { name: "Watch in 3D" }).click();
+  await p.waitForURL(/\/hall/);
+  await Promise.race([
+    p.getByText("Replayed on the API", { exact: false }).waitFor({ timeout: 120000 }),
+    p.getByText(/couldn't replay/).waitFor({ timeout: 120000 }).then(() => { throw new Error("API couldn't replay the lever-grid hash"); }),
+  ]);
+});
+
+await browser.close();
+console.log(`\n${problems.length} problem(s)`);
+for (const x of problems) console.log(x);

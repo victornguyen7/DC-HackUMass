@@ -1,0 +1,35 @@
+{
+  "_from": "raw/research/umass_campus_dining_demand_profile.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "carbon",
+    "pie2022"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "stated_choice_drivers": [
+    {
+      "drivers": [
+        "quality",
+        "variety",
+        "convenience",
+        "authenticity",
+        "familiar_food",
+        "community"
+      ],
+      "evidence": "Dining leadership interviews and student testimony",
+      "source_id": "pie2022",
+      "population_shares": null
+    },
+    {
+      "drivers": [
+        "sustainability",
+        "carbon_impact"
+      ],
+      "evidence": "Fall survey of more than 800 people reported by UMass",
+      "reference_period": "Fall 2021",
+      "climate_crisis_informs_decisions_at_least_sometimes_pct": 88,
+      "food_specific_causal_effect": null,
+      "source_id": "carbon"
+    }
+  ]
+}

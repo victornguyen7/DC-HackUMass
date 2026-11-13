@@ -1,0 +1,89 @@
+{
+  "_from": "raw/research/umass_dining_current_tools_ecosystem.json",
+  "as_of": "2026-11-11",
+  "source_ids": [
+    "fy26",
+    "meta_expansion",
+    "meta_pilot",
+    "waste_current"
+  ],
+  "null_means": "not established by the reviewed sources, not zero",
+  "scope": "UMass Amherst, not other UMass campuses",
+  "tool": {
+    "tool_id": "metafoodx",
+    "name": "Metafoodx",
+    "ecosystem_role": "Production, service and remaining-food tracking",
+    "current_use_evidence": {
+      "status": "current_use_confirmed",
+      "latest_reference": "FY2026",
+      "tracking_systems": 16,
+      "locations": 6,
+      "production_tracked": {
+        "value": 1.79,
+        "unit": "million_lb",
+        "metric": "production_observed_not_waste_saved"
+      },
+      "deployment_history": [
+        {
+          "period": "Fall 2024",
+          "event": "Pilot began",
+          "source_id": "meta_pilot"
+        },
+        {
+          "date": "2025-09-03",
+          "systems": 13,
+          "source_id": "meta_expansion"
+        },
+        {
+          "period": "Fall 2025",
+          "event": "Vendor summary reports coverage at all four dining commons and Harvest Market",
+          "source_id": "meta_pilot"
+        }
+      ]
+    },
+    "assumption_for_the_build": "Primary prospective source of item-level production and leftover observations. Use clearly labeled mock files until UMass authorizes exports; do not describe a live connection.",
+    "proposed_input_fields": [
+      "location_id",
+      "station_id",
+      "dish_id",
+      "recipe_version",
+      "scan_time",
+      "service_window_start",
+      "service_window_end",
+      "production_weight_kg",
+      "remaining_weight_kg",
+      "unit",
+      "measurement_method",
+      "confidence",
+      "carryover_weight_kg",
+      "donated_weight_kg",
+      "reused_weight_kg",
+      "discarded_weight_kg"
+    ],
+    "proposed_output_fields": [
+      "dish_demand_forecast",
+      "batch_schedule",
+      "expected_remaining_kg",
+      "stockout_risk",
+      "forecast_uncertainty"
+    ],
+    "limitations": [
+      "Serving-line depletion is not directly measured human ingestion.",
+      "A reported produced-minus-leftover balance may estimate food served; it does not measure plate waste.",
+      "Portions require documented serving weights; weights should remain the primary unit.",
+      "Any device API, export format or real-time feed remains unverified.",
+      "Coverage is not necessarily identical across every station or service period.",
+      "No campus-wide causal percentage can be assigned solely to this tool."
+    ],
+    "source_ids": [
+      "fy26",
+      "waste_current",
+      "meta_expansion",
+      "meta_pilot"
+    ],
+    "verified_live_integration_for_this_project": false,
+    "verified_public_export_schema": false,
+    "data_access_obtained": false,
+    "tool_specific_campus_waste_reduction_pct": null
+  }
+}

@@ -137,6 +137,154 @@ def binomial_range(n: int, p: float = 0.8, mass: float = 0.95) -> tuple[int, int
     return lo, hi
 
 
+# ------------------------------------------------------------------ crowd error by situation (docs/TIGER.md #5)
+# Weather and event flags are known on the day. On the training nights only, fit
+#   log(observed / expected students) = intercept + effect[weather] + effect[event] + noise
+# with each effect shrunk towards 0 as if SITUATION_PRIOR extra nights had shown no effect (2 cold
+# nights shouldn't move a forecast much). It replaces the pooled crowd error only if it scores a
+# lower students CRPS on the held-out nights than the pooled one did ("kept").
+
+SITUATIONS = ("rain", "cold", "snow", "event")  # clear, no event = the intercept
+SITUATION_PRIOR = 4.0
+SCORE_Z = [NormalDist().inv_cdf((i + 0.5) / 25) for i in range(25)]  # crowd quantiles for scoring
+
+
+def situation_row(weather: str | None, event: bool | None) -> list[float]:
+    return [float(weather == "rain"), float(weather == "cold"), float(weather == "snow"), float(bool(event))]
+
+
+def fit_situations(train: list[dict], seed_sd: float, prior: float = SITUATION_PRIOR) -> dict:
+    """Ridge fit of the log crowd ratio on the situation flags (intercept not shrunk).
+    `train` rows need crowd_ratio, weather, event_night."""
+    y = np.log([o["crowd_ratio"] for o in train])
+    x = np.array([situation_row(o["weather"], o["event_night"]) for o in train])
+    n, k = x.shape
+    a = np.hstack([np.ones((n, 1)), x])
+    beta = np.linalg.solve(a.T @ a + np.diag([0.0] + [prior] * k), a.T @ y)
+    resid = y - a @ beta
+    used = int((x.sum(axis=0) > 0).sum())
+    sd_total = float(np.sqrt(np.sum(resid**2) / max(n - 1 - used, 1)))
+    return {
+        "intercept": round(float(beta[0]), 4),
+        "effects": {s: round(float(b), 4) for s, b in zip(SITUATIONS, beta[1:])},
+        "log_sd": round(float(np.sqrt(max(sd_total**2 - seed_sd**2, 0.0))), 4),
+        "log_sd_observed": round(sd_total, 4),
+        "prior_nights": prior,
+        "train_nights": {s: int(c) for s, c in zip(SITUATIONS, x.sum(axis=0))} | {"all": n},
+    }
+
+
+def situational_log_mean(sit: dict, weather: str | None, event: bool | None) -> float:
+    return sit["intercept"] + sum(e * f for e, f in zip((sit["effects"][s] for s in SITUATIONS),
+                                                         situation_row(weather, event)))
+
+
+def score_situations(test: list[dict], naive_students: dict, crowd: dict, sit: dict) -> dict:
+    """Held-out students forecasts, pooled vs situational crowd error: engine seeds x crowd quantiles.
+    `naive_students[(menu_date, adopted)]` = the naive forecast's students per seed."""
+    out = {}
+    for name in ("pooled", "situational"):
+        samples, truth = [], []
+        for o in test:
+            mu = crowd["log_mean"] if name == "pooled" else situational_log_mean(sit, o["weather"], o["event_night"])
+            sd = crowd["log_sd"] if name == "pooled" else sit["log_sd"]
+            base = naive_students[(o["menu_date"], o["adopted"])]
+            samples.append([s * float(np.exp(mu + sd * z)) for s in base for z in SCORE_Z])
+            truth.append(float(o["students"]))
+        sc = score(samples, truth)
+        out[name] = {k: sc[k] for k in ("nights", "inside80", "coverage80", "bias", "mae", "crps")}
+    out["kept"] = out["situational"]["crps"] < out["pooled"]["crps"]
+    return out
+
+
+def with_situations(crowd: dict, train: list[dict], test: list[dict], naive_students: dict, seed_sd: float) -> dict:
+    """Fit on train, score on test, and attach the result to the crowd parameters."""
+    sit = fit_situations(train, seed_sd)
+    held = score_situations(test, naive_students, crowd, sit)
+    sit["kept"] = held.pop("kept")
+    sit["held_out"] = held
+    return crowd | {"situational": sit}
+
+
+def situations_line(sit: dict) -> str:
+    h = sit["held_out"]
+    eff = ", ".join(f"{s} {np.exp(e) - 1:+.1%} ({sit['train_nights'][s]} nights)" for s, e in sit["effects"].items())
+    return (f"crowd by situation (train): {eff}; held-out students CRPS {h['situational']['crps']} vs pooled "
+            f"{h['pooled']['crps']} -> {'kept' if sit['kept'] else 'not kept (pooled stays)'}")
+
+
+def situations_recovery(sit: dict) -> dict:
+    """Synthetic data only: fitted situation effects next to the generator's hidden ones."""
+    from .synthetic import EVENT_CROWD, WEATHER_CROWD
+
+    if not (out_dir() / "_ground_truth.json").exists():
+        return {}
+    true = {"rain": WEATHER_CROWD["rain"], "cold": WEATHER_CROWD["cold"], "event": EVENT_CROWD}
+    return {"situational_effects": {s: {"fitted": sit["effects"][s], "true": round(float(np.log(m)), 4),
+                                        "train_nights": sit["train_nights"][s]} for s, m in true.items()}}
+
+
+def refit_situations(conn, test_from: dt.date = tsdb.TEST_FROM, log=print) -> dict:
+    """The situational crowd fit from what is already in Tiger, without re-simulating: the naive forecast's
+    students per seed (scenario forecast_naive) give each night's expected students. Logs a new
+    calibration that copies the latest one and adds params.crowd.situational, so later forecasts use it."""
+    from psycopg.rows import dict_row
+    from psycopg.types.json import Jsonb
+
+    with conn.cursor(row_factory=dict_row) as cur:
+        latest = cur.execute("SELECT * FROM dcsim.calibrations ORDER BY created_at DESC LIMIT 1").fetchone()
+    if latest is None:
+        raise RuntimeError("no calibration in Tiger yet; run `dcsim calibrate` first")
+    seeds = dict(conn.execute("SELECT night::text, array_agg(students ORDER BY seed) FROM dcsim.nights"
+                              " WHERE scenario = 'forecast_naive' GROUP BY night").fetchall())
+    obs = [o for o in tsdb.observed_nights(conn) if o["night"] in seeds]
+    for o in obs:
+        o["split"] = tsdb.split_of(o["night"], test_from)
+        o["crowd_ratio"] = o["students"] / float(np.median(seeds[o["night"]]))
+    train = [o for o in obs if o["split"] == "train"]
+    test = [o for o in obs if o["split"] == "test"]
+    if len(train) < 7 or not test:
+        raise RuntimeError(f"need >= 7 training and >= 1 held-out nights with naive forecasts ({len(train)} / {len(test)})")
+    seed_sd = float(np.mean([np.std(np.log(v), ddof=1) for v in seeds.values()]))
+    by_night = {o["night"]: seeds[o["night"]] for o in obs}
+    # score_situations looks samples up by (menu_date, adopted); here every night has its own
+    keyed = [o | {"menu_date": o["night"], "adopted": None} for o in test]
+    params = latest["params"]
+    crowd = with_situations(params["crowd"], train, keyed, {(o["night"], None): by_night[o["night"]] for o in test},
+                            seed_sd)
+    log(f"{len(train)} training / {len(test)} held-out nights (from Tiger, no new simulations)")
+    log(situations_line(crowd["situational"]))
+    cal_id = f"cal-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%S}"
+    new_params = params | {"crowd": crowd, "derived_from": latest["calibration_id"]}
+    scores = (latest["scores"] or {}) | {"crowd_situational": crowd["situational"]["held_out"]}
+    recovery = (latest["recovery"] or {}) | situations_recovery(crowd["situational"])
+    conn.execute(
+        "INSERT INTO dcsim.calibrations (calibration_id, train_from, train_to, test_from, test_to, engine_version,"
+        " params, scores, recovery) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        (cal_id, latest["train_from"], latest["train_to"], latest["test_from"], latest["test_to"], ENGINE_VERSION,
+         Jsonb(new_params), Jsonb(scores), Jsonb(recovery)))
+    conn.commit()
+    p = report_path()
+    if p.exists():  # keep the served report in step with the calibration forecasts now use
+        r = json.loads(p.read_text())
+        r["calibration_id"], r["params"] = cal_id, new_params
+        r["scores"] = r.get("scores", {}) | {"crowd_situational": crowd["situational"]["held_out"]}
+        if "situational_effects" in recovery:
+            r["recovery"] = r.get("recovery", {}) | {"situational_effects": recovery["situational_effects"]}
+        p.write_text(json.dumps(r, indent=1))
+    return {"calibration_id": cal_id, "derived_from": latest["calibration_id"], **crowd["situational"]}
+
+
+def situational_draws(params: dict, situation: dict | None) -> list[float] | None:
+    """Crowd draws for a night's weather/event, or None (use the pooled draws): when no situation was
+    given, or the situational fit didn't beat the pooled one on held-out nights."""
+    sit = params.get("crowd", {}).get("situational")
+    if not situation or not sit or not sit.get("kept"):
+        return None
+    mu = situational_log_mean(sit, situation.get("weather"), situation.get("event_night"))
+    return [round(float(np.exp(mu + sit["log_sd"] * NormalDist().inv_cdf(q))), 4) for q in CROWD_Q]
+
+
 # ------------------------------------------------------------------ replay worker (needs trace=True for pans)
 
 SERIES_SEEDS = 1  # replay seeds per night that also write per-minute series (inside + lines)
@@ -224,6 +372,8 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
     crowd = {"log_mean": round(mu, 4), "log_sd": round(sd, 4), "log_sd_observed": round(sd_total, 4),
              "log_sd_engine_seeds": round(seed_sd, 4), "nights": len(train)}
     log(f"crowd: observed/expected median {np.exp(mu):.3f}, sd {sd:.3f} (log; engine seeds add {seed_sd:.3f})")
+    crowd = with_situations(crowd, train, test, {k: [v["students"] for v in vs] for k, vs in naive.items()}, seed_sd)
+    log(situations_line(crowd["situational"]))
 
     # 2b. production ratio, read off each night's pans in SQL (tsdb.PRODUCTION_RATIO). Observable
     # after every night; only non-adopted training nights shape the forecast distribution.
@@ -324,7 +474,7 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
     log(f"replay: {len(obs)} nights x {REPLAY_SEEDS} seeds, {len(pan_rows)} pan windows")
 
     # 6. recovery check against the generator's hidden values (synthetic data only)
-    recovery = recovery_check(train, fit_nights, crowd)
+    recovery = recovery_check(train, fit_nights, crowd) | situations_recovery(crowd["situational"])
 
     # write everything back to Tiger
     for scen in ("forecast_naive", "forecast_calibrated", "replay"):
@@ -336,6 +486,7 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
     cols = {"dish_nights": tsdb.DISH_NIGHT_COLS, "station_hours": tsdb.STATION_HOUR_COLS, "minute_series": tsdb.SERIES_COLS}
     written = {t: tsdb.copy_rows(conn, t, cols[t], rows_) for t, rows_ in detail.items()}
     log("detail rows: " + ", ".join(f"{t} {n}" for t, n in written.items()))
+    tsdb.score_forecasts(conn)  # the new back-test replaces the old one in the track record
     cal_id = f"cal-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%S}"
     params = {"crowd": crowd, "production": production,
               "draws": {"crowd": [round(c, 4) for c in crowd_draws], "production": prod_draws},
@@ -407,7 +558,10 @@ def public_report() -> dict | None:
                      **({"production_per_night": rec["production_per_night"],
                          "production_mean_error": round(rec["production_mean"]["fitted"] - rec["production_mean"]["true"], 4),
                          "crowd_log_sd_error": round(rec["crowd_log_sd"]["fitted"] - rec["crowd_log_sd"]["true"], 4)}
-                        if rec.get("available") else {})}
+                        if rec.get("available") else {}),
+                     **({"situational_effect_error": {s: round(v["fitted"] - v["true"], 4)
+                                                      for s, v in rec["situational_effects"].items()}}
+                        if rec.get("situational_effects") else {})}
     return r
 
 
@@ -418,20 +572,26 @@ def _quantiles(vals: list[dict], key: str) -> dict:
     return {"p10": round(float(p10), 1), "p50": round(float(p50), 1), "p90": round(float(p90), 1)}
 
 
-def forecast_samples(svc: Service, cfg: ScenarioConfig, params: dict) -> dict[str, list[dict]]:
-    """Naive (seeds only) and calibrated (latest fitted crowd and production draws) samples for one night."""
+def forecast_samples(svc: Service, cfg: ScenarioConfig, params: dict,
+                     situation: dict | None = None) -> dict[str, list[dict]]:
+    """Naive (seeds only) and calibrated (latest fitted crowd and production draws) samples for one night.
+    With `situation` ({"weather", "event_night"}), the calibrated crowd draws come from the situational
+    fit when the calibration kept it."""
     oz = dish_oz(cfg)
     naive = [night_values(cfg, m, oz) for m in svc.ensure_nights(cfg, params["seeds"]["naive"])]
+    crowds = situational_draws(params, situation) or params["draws"]["crowd"]
     cal = [night_values(c, m, oz)
-           for crowd in params["draws"]["crowd"] for prod in params["draws"]["production"]
+           for crowd in crowds for prod in params["draws"]["production"]
            for c in [with_inputs(cfg, crowd, prod)]
            for m in svc.ensure_nights(c, params["seeds"]["calibrated"])]
     return {"naive": naive, "calibrated": cal}
 
 
 def issue_forecasts(svc: Service, conn, cfg: ScenarioConfig, label: str | None = None,
-                    scenario_id: str | None = None) -> list[dict]:
-    """Log a naive and a calibrated forecast for cfg's night in the append-only ledger (dcsim.forecasts)."""
+                    scenario_id: str | None = None, situation: dict | None = None) -> list[dict]:
+    """Log a naive and a calibrated forecast for cfg's night in the append-only ledger (dcsim.forecasts).
+    `situation` ({"weather", "event_night"}, known on the day) is recorded with the forecast and, when the
+    latest calibration kept the situational crowd fit, shapes the calibrated crowd draws."""
     from .config import config_hash
 
     cal = tsdb.latest_calibration(conn)
@@ -439,7 +599,8 @@ def issue_forecasts(svc: Service, conn, cfg: ScenarioConfig, label: str | None =
         raise RuntimeError("no calibration in Tiger yet; run `dcsim calibrate` first")
     h = config_hash(cfg)
     out = []
-    for method, vals in forecast_samples(svc, cfg, cal["params"]).items():
+    sit = situation or {}
+    for method, vals in forecast_samples(svc, cfg, cal["params"], situation).items():
         q = {k: _quantiles(vals, k) for k in METRICS}
         row = {"forecast_id": f"fc-{cfg.date}-{method}-{uuid4().hex[:8]}", "for_night": cfg.date, "method": method,
                "label": label or cfg.label, "config_hash": h, "scenario_id": scenario_id,
@@ -447,7 +608,8 @@ def issue_forecasts(svc: Service, conn, cfg: ScenarioConfig, label: str | None =
                **{f"{short}_{p}": q[k][p] for k, short in (("students", "students"), ("waste_lb", "waste"),
                                                             ("stockout_min", "stockout"), ("cooked_portions", "cooked"))
                   for p in ("p10", "p50", "p90")},
-               "samples": {k: [v[k] for v in vals] for k in ("waste_lb", "stockout_min", "students")}}
+               "samples": {k: [v[k] for v in vals] for k in ("waste_lb", "stockout_min", "students")},
+               "weather": sit.get("weather"), "event_night": sit.get("event_night")}
         out.append(tsdb.insert_forecast(conn, row) | {"method": method, "for_night": cfg.date, "waste_lb": q["waste_lb"],
                                                       "stockout_min": q["stockout_min"]})
     conn.commit()

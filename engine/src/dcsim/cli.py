@@ -164,13 +164,15 @@ def main(argv: list[str] | None = None) -> None:
     ex.add_argument("--preset", choices=sorted(PRESETS), required=True)
     ex.add_argument("--nights", type=int, default=30)
     tq = sub.add_parser("tsdb", help="Tiger Data (TimescaleDB): observed nights and simulated runs side by side")
-    tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar", "bench", "refresh"],
+    tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar", "bench", "refresh",
+                                       "track"],
                     help="init: create schema · load: recorded history -> observed rows · query: run a named query or SQL"
                          " · compress: convert older chunks to the columnstore now and report sizes"
                          " · observe: generate + load the SYNTHETIC observation for --date (scores its logged forecasts)"
                          " · similar: past nights most like --date (pgvector) and a held-out check"
                          " · bench: time the same questions on the raw hypertables and on their continuous aggregates"
-                         " · refresh: bring every continuous aggregate up to date now")
+                         " · refresh: bring every continuous aggregate up to date now"
+                         " · track: score every observed night now and show the weekly track record")
     tq.add_argument("--repeat", type=int, default=5, help="`bench`: timed runs per query (median is reported)")
     tq.add_argument("--sql", action="store_true", help="`bench`: also print each pair of queries")
     tq.add_argument("--date", help="night for `observe` / `similar`")
@@ -183,8 +185,14 @@ def main(argv: list[str] | None = None) -> None:
     fc = sub.add_parser("forecast", help="log a naive + calibrated forecast for a night in the append-only Tiger ledger")
     fc.add_argument("--date", required=True)
     fc.add_argument("--preset", choices=sorted(PRESETS))
+    fc.add_argument("--weather", choices=["clear", "rain", "cold", "snow"],
+                    help="the night's weather, known on the day (used if the calibration kept the situational fit)")
+    fc.add_argument("--event", action="store_true", help="the night is an event night")
     ca = sub.add_parser("calibrate", help="fit on the early recorded weeks, score forecasts on held-out weeks (uses Tiger)")
     ca.add_argument("--test-from", default=None, help="first held-out date (default 2026-10-29)")
+    ca.add_argument("--situations-only", action="store_true",
+                    help="refit only the crowd error by weather/event from what is in Tiger (no new simulations) and log "
+                         "it as a new calibration")
     args = ap.parse_args(argv)
 
     if args.cmd in ("tsdb", "calibrate", "forecast"):
@@ -314,7 +322,7 @@ def _tiger(args) -> None:
     from . import tsdb
 
     with tsdb.connect() as conn:
-        if args.cmd == "calibrate" or getattr(args, "action", None) in ("init", "load"):
+        if args.cmd == "calibrate" or getattr(args, "action", None) in ("init", "load", "track"):
             ts = tsdb.init_schema(conn)
             print(f"schema dcsim ready ({'TimescaleDB hypertables + continuous aggregate' if ts else 'plain PostgreSQL'})")
         if args.cmd == "tsdb" and args.action in ("init", "refresh"):
@@ -347,7 +355,8 @@ def _tiger(args) -> None:
             from .store import Store
 
             cfg = _config(args.date, args.preset)
-            for f in issue_forecasts(Service(Store()), conn, cfg):
+            situation = ({"weather": args.weather, "event_night": args.event} if args.weather or args.event else None)
+            for f in issue_forecasts(Service(Store()), conn, cfg, situation=situation):
                 w, so = f["waste_lb"], f["stockout_min"]
                 print(f"{f['forecast_id']}  issued {f['issued_at']}  {f['method']:<10} waste {w['p50']:.0f} lb "
                       f"[{w['p10']:.0f}-{w['p90']:.0f}]  stockout {so['p50']:.0f} min [{so['p10']:.0f}-{so['p90']:.0f}]")
@@ -398,10 +407,33 @@ def _tiger(args) -> None:
             b, a = sum(r["rowstore"].values()), sum(r["columnstore"].values())
             print(f"  {'total':<13} {mb(b):>9} {mb(a):>12} {b / a if a else 0:>5.1f}x   {mb(sum(r['after'].values())):>11}"
                   f"   ({r['chunks']} chunks; the newest week stays row-store until it is a day old)")
+        elif args.cmd == "tsdb" and args.action == "track":
+            from .calibration import binomial_range
+
+            tsdb.score_forecasts(conn)
+            conn.commit()
+            cols, rows = tsdb.run_query(conn, "track")
+            print(f"{tsdb.QUERIES['track'][0]}\n")
+            out = []
+            for r in rows:
+                rec = dict(zip(cols, r))
+                lo, hi = binomial_range(rec["nights"])
+                k = rec["waste_inside"]
+                verdict = "too narrow" if k < lo else "too wide" if k > hi else "as calibrated"
+                out.append([*r, f"{verdict} ({lo}-{hi} expected)"])
+            print(tsdb.format_table([*cols, "waste range"], out))
+            print("\nweeks start Thursday; backtest weeks 2026-10-29 and 2026-11-05 are the held-out split "
+                  "(calibrated is scored only there); ledger = live forecasts issued before the night")
         elif args.cmd == "tsdb" and args.action == "query":
             title = tsdb.QUERIES.get(args.query, ("SQL", ""))[0]
             cols, rows = tsdb.run_query(conn, args.query)
             print(f"{title}\n\n{tsdb.format_table(cols, rows)}" if cols else "ok")
+        elif args.cmd == "calibrate" and args.situations_only:
+            from .calibration import refit_situations
+
+            test_from = dt.date.fromisoformat(args.test_from) if args.test_from else tsdb.TEST_FROM
+            r = refit_situations(conn, test_from)
+            print(f"-> dcsim.calibrations ({r['calibration_id']}, from {r['derived_from']})")
         elif args.cmd == "calibrate":
             import os
             from concurrent.futures import ProcessPoolExecutor

@@ -78,6 +78,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 - Nov 13 baseline: about 131 stockout-minutes and 26% of cooked portions wasted (2,904 portions). The team says food *rarely* runs out late on a normal day. The planner's `reorder_factor` 1.2 ("setting A") was a compromise.
 - Likely tied to E1 and E2: students who tour stations and stay after close drain and "see" pans that real students wouldn't.
 - **Update (0.4.1):** with E1 and E2 fixed and the plans rebuilt, Nov 13 is about 61–96 dinner stockout-minutes per night (was 100–160). Re-check against the team's "rarely runs out" before closing this.
+- **Update (0.5.0):** kitchen capacity makes batches that wait for a cook finish nearer 9 pm, so fewer pans run dry at the very end: Nov 13 dinner+late stockouts ~74 min/night (golden baseline), dinner dishes running out after 8:30 pm 12–16% on Nov 13 but ~21% on Nov 17 (team target ≤ 20%). Checked by `tests/test_calibration_targets.py::test_rarely_runs_out_late`, marked as a known borderline failure.
 - **Fix:** re-tune after E1 and E2 are fixed. Needs R06 (planned vs actual production) to settle.
 
 ### E4 · Fixed (0.4.1) · Made-to-order dishes show "empty pan" events after close
@@ -215,7 +216,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | --- | --- | --- |
 | N1 | Animated 3D Hall (React Three Fiber). The four pages are **built** in `web/` with a top-down 2D replay; remaining UI gaps are in UI_ISSUES.md | SPEC §3–6 |
 | N2 | Nav graph and table-level seats. Seating zones (main / back) and door routes are built (0.3.4) | ENGINE §3 |
-| N3 | Servers by hour (staffing changes during the meal), and a "servers needed for p90 wait < 8 min" output for the Dashboard (UI_ISSUES U5) | SPEC §6.1 |
+| N3 | ✅ **Built (engine 0.5.0):** `Station.shifts` / lever `stations.<id>.shifts` change servers during the night, and results carry `staffing` (servers needed per station and hour for ≤ 85% busy). ~~Servers by hour, and a "servers needed for p90 wait < 8 min" output~~. The Dashboard doesn't show it yet (UI_ISSUES U5) | SPEC §6.1 |
 | N4 | Breakfast and lunch (full-day arrivals) | SPEC §7 |
 | N5 | Survey adjustment of personas and dish popularity, held-out check, `POST /personas/calibrate` | ENGINE §7.3 |
 | N6 | Optimizer ("Optimize plan"); the back-test uses `smaller_batches` until then | SPEC §6.1 |

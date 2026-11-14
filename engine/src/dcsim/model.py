@@ -42,7 +42,7 @@ class Lot:
 class Pan:
     __slots__ = (
         "idx", "plan", "to_order", "last_batch", "lots", "level", "cooking", "batches_started",
-        "cooked", "served", "expired", "leftover", "closed", "last_call", "taper_armed",
+        "cooked", "served", "expired", "leftover", "closed", "last_call", "taper_armed", "waiters",
     )
 
     def __init__(self, idx: int, plan: BatchPlan | None, last_batch: float, not_open_yet: bool):
@@ -61,19 +61,38 @@ class Pan:
         self.closed = not_open_yet  # closed before its period starts and after it ends
         self.last_call = False  # period over: no new students, but the line already formed is served
         self.taper_armed = False  # a re-check is scheduled for when the taper starts
+        self.waiters: list = []  # events of students waiting at the counter for the next batch
 
     @property
     def visibly_empty(self) -> bool:
         return not self.to_order and self.level == 0
 
 
-class StationRt:
-    __slots__ = ("idx", "cfg", "res")
+STUDENT_PRIORITY, OFF_DUTY_PRIORITY = 1, 0  # off-duty tokens go ahead of students
 
-    def __init__(self, idx: int, cfg: Station, res: simpy.Resource):
+
+class StationRt:
+    __slots__ = ("idx", "cfg", "res", "shifted", "off_duty")
+
+    def __init__(self, idx: int, cfg: Station, env: simpy.Environment):
         self.idx = idx
         self.cfg = cfg
-        self.res = res
+        # Staffing by hour: capacity = most servers on any shift; "off duty" tokens (higher
+        # priority than students) hold the servers that aren't working, so a server leaves only
+        # after finishing the current student.
+        self.shifted = bool(cfg.shifts)
+        self.res = (simpy.PriorityResource(env, capacity=cfg.max_servers) if self.shifted
+                    else simpy.Resource(env, capacity=cfg.servers))
+        self.off_duty: list = []
+
+    def line(self) -> int:
+        """Students waiting (off-duty tokens in the queue aren't people)."""
+        if not self.shifted:
+            return len(self.res.queue)
+        return sum(1 for r in self.res.queue if r.priority == STUDENT_PRIORITY)
+
+    def request(self):
+        return self.res.request(priority=STUDENT_PRIORITY) if self.shifted else self.res.request()
 
 
 Proc = Generator[simpy.Event, object, object]
@@ -87,7 +106,7 @@ class Night:
         env = self.env
 
         station_index = {s.id: i for i, s in enumerate(cfg.stations)}
-        self.stations = [StationRt(i, s, simpy.Resource(env, capacity=s.servers)) for i, s in enumerate(cfg.stations)]
+        self.stations = [StationRt(i, s, env) for i, s in enumerate(cfg.stations)]
         self.dish_station = [station_index[d.station] for d in cfg.menu]
         self.dish_vessel = [VESSELS.index(d.vessel) for d in cfg.menu]
         self.dish_hot = [d.hot for d in cfg.menu]
@@ -102,21 +121,54 @@ class Night:
             self.pans.append(Pan(i, plan, last, not_open_yet=start > cfg.open_min))
 
         self.rec = Recorder(len(cfg.menu), len(cfg.stations), trace)
+        # Kitchen capacity (IMPROVEMENTS 1.3): cooks per service period and equipment units.
+        kr = cfg.kitchen_resources
+        self.cooks = {p: simpy.Resource(env, capacity=max(1, n)) for p, n in kr.cooks.items()} if kr else {}
+        self.equipment = {k: simpy.Resource(env, capacity=max(1, n)) for k, n in kr.equipment.items()} if kr else {}
+        self.dish_equipment = [kr.equipment_for(d) if kr else None for d in cfg.menu]
+        self.dish_period = [d.period for d in cfg.menu]
+        self.dish_prep = [kr.prep_for(d, cfg.kitchen[d.id].cook_min) if kr and d.id in cfg.kitchen else 0.0 for d in cfg.menu]
         ids, times = sample_arrivals(cfg, seed)
         self.students: list[Student] = build_students(cfg, seed, ids, times)
         self._speed = cfg.layout.walk_speed_m_per_min
         self._zones = cfg.layout.zones()
         # seat positions in a separate room -> its doors (walks in or out go through one)
         self._doors = {z.pos: z.via for z in self._zones if z.via}
+        # Seats (IMPROVEMENTS 2.4): with seat_limits each zone holds `seats` students; otherwise the
+        # zones are unlimited but still counted, so peak_seated says how many seats the night needs.
+        if cfg.layout.seating_zones:
+            self.seats = [simpy.Resource(env, capacity=z.seats if cfg.seat_limits else 10**6) for z in self._zones]
+        else:
+            self.seats = None
 
     # ------------------------------------------------------------ run
 
     def run(self) -> Night:
         for window in sorted(set(self.dish_window)):
             self.env.process(self._service_hours(*window))
+        for st in self.stations:
+            if st.shifted:
+                self.env.process(self._staffing(st))
         self.env.process(self._arrivals())
         self.env.run(until=self.cfg.service_end + DRAIN_MIN)
         return self
+
+    def _staffing(self, st: StationRt) -> Proc:
+        """Follow the station's shifts by holding or releasing off-duty tokens."""
+        env = self.env
+        steps = [(self.cfg.open_min, st.cfg.servers), *sorted(st.cfg.shifts)]
+        for t, servers in steps:
+            if t > env.now:
+                yield env.timeout(t - env.now)
+            want_off = st.res.capacity - servers
+            while len(st.off_duty) < want_off:  # a server goes off duty after the current student
+                st.off_duty.append(st.res.request(priority=OFF_DUTY_PRIORITY))
+            while len(st.off_duty) > want_off:  # a server comes back
+                tok = st.off_duty.pop()
+                if tok.triggered:
+                    st.res.release(tok)
+                else:
+                    tok.cancel()
 
     def walk(self, a: tuple[float, float], b: tuple[float, float]) -> float:
         da, db = self._doors.get(a), self._doors.get(b)
@@ -151,10 +203,11 @@ class Night:
                 pan.last_call = True
             busy = {self.dish_station[p.idx] for p in pans}
             stop = env.now + LAST_CALL_MAX_MIN
-            while env.now < stop and any(self.stations[i].res.count or self.stations[i].res.queue for i in busy):
+            while env.now < stop and any(self.stations[i].res.count - len(self.stations[i].off_duty) > 0 or self.stations[i].line() for i in busy):
                 yield env.timeout(0.5)
         for pan in pans:
             pan.closed = True
+            self._wake_waiters(pan)  # nobody waits at a closed pan
             if pan.to_order:
                 continue
             pan.leftover += pan.level
@@ -174,6 +227,14 @@ class Night:
         pan.level += portions
         self.rec.pan(self.env.now, pan.idx, pan.level, code)
         self.env.process(self._expire(pan, lot))
+        self._wake_waiters(pan)
+
+    @staticmethod
+    def _wake_waiters(pan: Pan) -> None:
+        for ev in pan.waiters:
+            if not ev.triggered:
+                ev.succeed()
+        pan.waiters.clear()
 
     def _expire(self, pan: Pan, lot: Lot) -> Proc:
         lead = pan.plan.cook_min
@@ -225,7 +286,32 @@ class Night:
         self.env.process(wake())
 
     def _cook(self, pan: Pan, size: int) -> Proc:
-        yield self.env.timeout(pan.plan.cook_min)
+        env, rec, i = self.env, self.rec, pan.idx
+        cooks = self.cooks.get(self.dish_period[i])
+        if cooks is None:  # unlimited kitchen
+            yield env.timeout(pan.plan.cook_min)
+        else:
+            prep = self.dish_prep[i]
+            t0 = env.now
+            with cooks.request() as c:  # hands-on prep needs a cook
+                yield c
+                rec.batch_wait_min += env.now - t0
+                key = f"cooks:{self.dish_period[i]}"
+                rec.equipment_peak[key] = max(rec.equipment_peak.get(key, 0), cooks.count)
+                yield env.timeout(prep)
+            rec.cook_busy_min[self.dish_period[i]] = rec.cook_busy_min.get(self.dish_period[i], 0.0) + prep
+            rest = pan.plan.cook_min - prep
+            name = self.dish_equipment[i]
+            if name is not None and rest > 0:
+                eq = self.equipment[name]
+                t1 = env.now
+                with eq.request() as e:  # then the oven / kettle / fryer for the rest of the cook
+                    yield e
+                    rec.batch_wait_min += env.now - t1
+                    rec.equipment_peak[name] = max(rec.equipment_peak.get(name, 0), eq.count)
+                    yield env.timeout(rest)
+            elif rest > 0:
+                yield env.timeout(rest)
         pan.cooking -= size
         self._add_lot(pan, size, PanEv.BATCH_READY)
 
@@ -297,7 +383,7 @@ class Night:
                     wanted.append(d)
             if not wanted:
                 continue
-            line = len(self.stations[station].res.queue)
+            line = self.stations[station].line()
             fav = bool(s.prefs) and s.prefs[0] in wanted
             patience = s.patience * self.cfg.favorite_patience_mult if fav else s.patience
             if line <= patience:
@@ -340,18 +426,33 @@ class Night:
                 wanted.append(d)
         if not wanted:
             return pos, []
-        queue = st.res.queue
-        rec.ev(env.now, s.id, Ev.QUEUE_JOIN, station, wanted[0], line=len(queue))
-        req = st.res.request()
-        rec.queue(env.now, station, len(queue))
+        rec.ev(env.now, s.id, Ev.QUEUE_JOIN, station, wanted[0], line=st.line())
+        req = st.request()
+        rec.queue(env.now, station, st.line())
         yield req
-        rec.queue(env.now, station, len(queue))
+        rec.queue(env.now, station, st.line())
         got = []
         for d in wanted:
-            if self._take(self.pans[d]):
+            pan = self.pans[d]
+            ok = self._take(pan)
+            if not ok and not pan.closed and pan.cooking > 0 and self.cfg.empty_pan_wait_min > 0:
+                # Empty, but a batch is already cooking: wait at the counter a little (1.2).
+                fav = bool(s.prefs) and s.prefs[0] == d
+                limit = self.cfg.empty_pan_wait_min * (self.cfg.favorite_patience_mult if fav else 1.0)
+                refill = env.event()
+                pan.waiters.append(refill)
+                t0 = env.now
+                yield refill | env.timeout(limit)
+                rec.empty_wait_min += env.now - t0
+                if refill in pan.waiters:
+                    pan.waiters.remove(refill)
+                ok = self._take(pan)
+            if ok:
                 z = s.svc_z[min(n_served + len(got), MAX_SERVICES - 1)]
                 yield env.timeout(st.cfg.service_median_min * math.exp(st.cfg.service_sigma * z))
                 rec.ev(env.now, s.id, Ev.SERVED, station, d, self.dish_vessel[d])
+                hk = (station, int(env.now // 60))
+                rec.served_by_hour[hk] = rec.served_by_hour.get(hk, 0) + 1
                 got.append(d)
             elif self.pans[d].closed:  # service period ended while they waited
                 rec.ev(env.now, s.id, Ev.CLOSED, station, d)
@@ -403,11 +504,25 @@ class Night:
             served.extend(got)
         plate_done = env.now
         first = s.prefs[0] if s.prefs else -1
-        seat = self._zones[layout.seat_zone(s.id)].pos
+        zone = layout.seat_zone(s.id)
+        seat_req = None
+        if self.seats is not None:
+            # Usual zone if it has a free seat, else the zone with the most free seats; if every
+            # zone is full, wait standing in the usual zone for the first free seat there.
+            free = [self.seats[k].capacity - self.seats[k].count for k in range(len(self.seats))]
+            if free[zone] <= 0 and max(free) > 0:
+                zone = max(range(len(free)), key=lambda k: free[k])
+        seat = self._zones[zone].pos
 
         yield env.timeout(self.walk(pos, seat))
         pos = seat
-        rec.ev(env.now, s.id, Ev.SIT)
+        if self.seats is not None:
+            seat_req = self.seats[zone].request()
+            t0 = env.now
+            yield seat_req
+            rec.seat_wait_min += env.now - t0
+            rec.peak_seated = max(rec.peak_seated, sum(r.count for r in self.seats))
+        rec.ev(env.now, s.id, Ev.SIT, line=zone)  # `line` carries the seat zone index for SIT
 
         if s.wants_seconds and s.prefs:
             yield env.timeout(s.dwell / 2)
@@ -427,6 +542,8 @@ class Night:
         else:
             yield env.timeout(s.dwell)
 
+        if seat_req is not None:
+            self.seats[zone].release(seat_req)  # seat kept through seconds trips, freed on the way out
         yield env.timeout(self.walk(pos, layout.dish_return))
         rec.ev(env.now, s.id, Ev.DISH_RETURN)
         yield env.timeout(self.walk(layout.dish_return, layout.entrance))

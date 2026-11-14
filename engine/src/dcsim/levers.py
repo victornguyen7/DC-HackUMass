@@ -39,9 +39,18 @@ class KitchenLever(_Strict):
     last_batch_min: int | None = None  # minutes since midnight
 
 
+class KitchenStaffLever(_Strict):
+    """Kitchen capacity (IMPROVEMENTS 1.3): cooks per service period and equipment units."""
+
+    cooks: dict[Literal["dinner", "late_night"], int] = {}  # period -> cooks (1..60)
+    equipment: dict[str, int] = {}  # equipment type -> units (1..60)
+
+
 class StationLever(_Strict):
     servers: int | None = Field(None, ge=1)
     service_median_min: float | None = Field(None, gt=0)
+    # Staffing by hour (N3): [(from minute since midnight, servers)], e.g. [(1110, 3), (1200, 2)]
+    shifts: list[tuple[int, int]] | None = None
 
 
 class NewDish(_Strict):
@@ -75,6 +84,7 @@ class Levers(_Strict):
     crowd_shift_min: float | None = Field(None, ge=-120, le=120)  # moves every arrival wave
     stations: dict[str, StationLever] = {}
     kitchen: dict[str, KitchenLever] = {}  # keyed by dish id
+    kitchen_staff: KitchenStaffLever | None = None
     popularity: dict[str, float] = {}  # dish id -> multiplier, snapped to 0.1
     remove_dishes: list[str] = []
     add_dishes: list[NewDish] = []
@@ -108,6 +118,19 @@ def apply_levers(cfg: ScenarioConfig, lv: Levers) -> ScenarioConfig:
         if lv.crowd_shift_min is not None:  # dinner class-change waves only
             crowd["shift_min"] = cfg.crowd.shift_min + round(lv.crowd_shift_min / 5) * 5
         changes["crowd"] = crowd
+
+    if lv.kitchen_staff is not None:
+        kr = cfg.kitchen_resources
+        if kr is None:
+            raise ValueError("this scenario has no kitchen_resources to change")
+        bad = set(lv.kitchen_staff.equipment) - set(kr.equipment)
+        if bad:
+            raise ValueError(f"unknown equipment: {sorted(bad)}")
+        clamp = lambda v: max(1, min(60, int(v)))  # noqa: E731
+        changes["kitchen_resources"] = kr.model_dump() | {
+            "cooks": kr.cooks | {k: clamp(v) for k, v in lv.kitchen_staff.cooks.items()},
+            "equipment": kr.equipment | {k: clamp(v) for k, v in lv.kitchen_staff.equipment.items()},
+        }
 
     if lv.stations:
         changes["stations"] = [

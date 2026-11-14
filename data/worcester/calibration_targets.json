@@ -1,0 +1,34 @@
+{
+  "_note": "Team observations as checkable targets (IMPROVEMENTS B, 'calibration targets file'). engine/tests/test_calibration_targets.py checks them on the dates listed; every engine change must keep them green (or update this file with the reason). Sources: team member who eats at Worcester, 2026-11-12/13; late-night target from the team's late-night guesses (2026-11-13).",
+  "dates": [
+    "2026-11-13",
+    "2026-11-17"
+  ],
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "dinner_peak_line": {
+    "min": 30,
+    "max": 45,
+    "why": "Longest dinner line at peak is about 30-40 students (team)."
+  },
+  "busiest_arrivals": {
+    "from": "19:00",
+    "to": "20:00",
+    "why": "Biggest rush 7-8 pm (team); checked on the expected arrival curve."
+  },
+  "late_runouts": {
+    "after": "20:30",
+    "max_share_of_dinner_dishes": 0.2,
+    "known_issue": "E3",
+    "why": "Food rarely runs out late on a normal day (team). 0.4.2: 23-49% of dinner dishes ran out after 8:30 pm (ISSUES E3). 0.5.0 (kitchen capacity): 12-16% on Nov 13, ~21% on Nov 17, so still a known, borderline failure."
+  },
+  "in_hall_at_1130": {
+    "max": 30,
+    "why": "Fewer than 30 students inside at 11:30 pm (team late-night guess)."
+  }
+}

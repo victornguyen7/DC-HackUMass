@@ -154,6 +154,7 @@ def load_baseline(
     to_order = {s["id"] for s in station_rows if s.get("to_order")}
     batch_ids = [x["id"] for x in dishes if x["station"] not in to_order]
 
+    unlimited = kitchen == "unlimited"  # planner pilot runs: no food limits, no kitchen limits either
     files = [d / f for f in _BASE_FILES if (d / f).exists()] + [menu_path] + ([late_path] if late_cfg else [])
     f_dinner, f_late = crowd_factors(date, d, events=events)
     if kitchen is None:
@@ -177,12 +178,16 @@ def load_baseline(
             "late_crowd": (late_cfg["crowd"] | {"multiplier": round(late_cfg["crowd"].get("multiplier", 1.0) * f_late, 4)})
             if late_cfg else None,
             "late_plate_size": late_cfg.get("plate_size") if late_cfg else None,
+            "kitchen_resources": {k: v for k, v in defaults["resources"].items() if not k.startswith("_")}
+            if "resources" in defaults and not unlimited else None,
             "layout": dc["layout"],
             "stations": station_rows,
             "crowd": dc["crowd"] | {"multiplier": round(dc["crowd"].get("multiplier", 1.0) * f_dinner, 4)},
             "arrival_cap_per_min": dc["arrival_cap_per_min"],
             "favorite_patience_mult": dc.get("favorite_patience_mult", 1.0),
             "retry_balked_favorite": dc.get("retry_balked_favorite", False),
+            "empty_pan_wait_min": dc.get("empty_pan_wait_min", 0.0),
+            "seat_limits": dc.get("seat_limits", False),
             "menu": dishes,
             "kitchen": kitchen,
             "personas": personas["personas"],

@@ -58,5 +58,49 @@
       "taper_batch_factor": 0.25,
       "spare_batches": 0
     }
+  },
+  "resources": {
+    "_note": "Kitchen capacity (IMPROVEMENTS 1.3, engine 0.5.0). PLACEHOLDER GUESSES (2026-11-13), not staff numbers: cooks per service period, equipment units (each holds one batch), hands-on prep minutes per batch (inside cook_min), and which equipment each dish uses. Sized so the baseline plan rarely waits; very small or very frequent batches queue for cooks and equipment. Chosen 2026-11-13 from unconstrained peak use (ovens 14-16, steamers 7-8, flat-tops 5-6) and a cook sweep on Nov 13: 12 dinner / 4 late-night cooks are busy ~63% and barely move the baseline (waste -2%); 8/3 cooks make stockouts ~6x worse.",
+    "cooks": {
+      "dinner": 12,
+      "late_night": 4
+    },
+    "equipment": {
+      "oven": 14,
+      "steamer": 8,
+      "kettle": 4,
+      "flat_top": 6,
+      "wok": 5,
+      "fryer": 3,
+      "tandoor": 5
+    },
+    "role_prep_min": {
+      "entree": 10,
+      "starch": 5,
+      "side": 6,
+      "soup": 10,
+      "dessert": 10,
+      "bread": 3
+    },
+    "role_equipment": {
+      "entree": "oven",
+      "starch": "steamer",
+      "side": "steamer",
+      "soup": "kettle",
+      "dessert": "oven",
+      "bread": "oven"
+    },
+    "station_equipment": {
+      "grill": "flat_top",
+      "street_food": "wok",
+      "tandoor": "tandoor"
+    },
+    "keyword_equipment": {
+      "fries": "fryer",
+      "waffle": "none",
+      "salad": "none",
+      "bread": "none",
+      "naan": "tandoor"
+    }
   }
 }

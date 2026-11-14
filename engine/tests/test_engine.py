@@ -332,3 +332,63 @@ def test_late_night_taper_cuts_waste():
         waste += sum(m.dishes[k].waste for k in late)
         cooked += sum(m.dishes[k].cooked for k in late)
     assert waste / cooked < 0.3  # was ~41% before the taper
+
+
+# ---------------------------------------------------------------- 1.3: kitchen capacity
+
+
+def test_kitchen_capacity_binds_and_lever_works(cfg):
+    from dcsim.levers import KitchenStaffLever, Levers, apply_levers
+
+    assert cfg.kitchen_resources is not None
+    few = apply_levers(cfg, Levers(kitchen_staff=KitchenStaffLever(cooks={"dinner": 6, "late_night": 2})))
+    many = apply_levers(cfg, Levers(kitchen_staff=KitchenStaffLever(cooks={"dinner": 40, "late_night": 10})))
+    assert few.kitchen_resources.cooks == {"dinner": 6, "late_night": 2}
+    w_few = run_night(few, 1).metrics.batch_wait_min
+    w_base = run_night(cfg, 1).metrics.batch_wait_min
+    w_many = run_night(many, 1).metrics.batch_wait_min
+    assert w_few > w_base > w_many
+    # without contention a batch takes exactly cook_min: unlimited kitchen = old behavior
+    assert run_night(cfg.updated(kitchen_resources=None), 1).metrics.batch_wait_min == 0
+
+
+def test_smaller_batches_pay_for_kitchen_time(cfg):
+    from dcsim.presets import PRESETS
+
+    base = sum(run_night(cfg, s).metrics.batch_wait_min for s in (1, 2))
+    small = sum(run_night(PRESETS["smaller_batches"](cfg), s).metrics.batch_wait_min for s in (1, 2))
+    assert small > base
+
+
+# ---------------------------------------------------------------- 1.2: wait at an empty pan
+
+
+def test_wait_at_empty_pan(cfg):
+    assert cfg.empty_pan_wait_min > 0
+    waited = sum(run_night(cfg, s).metrics.empty_wait_min for s in (1, 2, 3))
+    assert waited > 0
+    assert run_night(cfg.updated(empty_pan_wait_min=0.0), 1).metrics.empty_wait_min == 0
+
+
+# ---------------------------------------------------------------- N3: staffing by hour, 2.4: seats
+
+
+def test_staffing_shift_lever(cfg):
+    from dcsim.levers import Levers, StationLever, apply_levers
+
+    shifted = apply_levers(cfg, Levers(stations={"grill": StationLever(shifts=[(1110, 4), (1200, 2)])}))
+    assert shifted.station("grill").shifts == ((1110, 4), (1200, 2))
+    base = [run_night(cfg, s).metrics for s in (1, 2, 3)]
+    more = [run_night(shifted, s).metrics for s in (1, 2, 3)]
+    assert sum(m.wait_p90 for m in more) < sum(m.wait_p90 for m in base)
+    # fewer servers than staffed: a 1-server Grill after 6:30 pm makes its line longer
+    fewer = apply_levers(cfg, Levers(stations={"grill": StationLever(shifts=[(1110, 1)])}))
+    assert sum(run_night(fewer, s).metrics.wait_p90 for s in (1, 2, 3)) > sum(m.wait_p90 for m in base)
+
+
+def test_servers_needed_and_seats(cfg):
+    m = run_night(cfg, 1).metrics
+    assert m.servers_needed["grill"]["19"] >= 1
+    assert m.peak_seated > 300 and m.seat_wait_min == 0  # seats unlimited by default, but counted
+    limited = run_night(cfg.updated(seat_limits=True), 1).metrics
+    assert limited.peak_seated <= sum(z.seats for z in cfg.layout.seating_zones) and limited.seat_wait_min > 0

@@ -137,6 +137,13 @@ def student(env, s, hall):
 
 **Crowd by date (0.4.2).** `crowd_by_date.json` scales the dinner and late-night crowds by weekday and date events (placeholders, E5). `overrides.json → station_by_date` moves a dish to another station on one date (Nov 18 carving line, E7).
 
+**Simulation core (0.5.0).**
+- **Kitchen capacity:** `ScenarioConfig.kitchen_resources` (from `kitchen_defaults.json → resources`). `_cook` takes a cook from the period's pool for `prep_min` (role), then one unit of the dish's equipment (role / station / name keyword) for `cook_min − prep_min`. Without contention a batch takes `cook_min`, as before. Records `batch_wait_min`, cook busy minutes and equipment peaks. `kitchen_resources=None` (planner pilot runs) is the old unlimited kitchen.
+- **Empty-pan wait:** in `_visit`, a student whose dish is empty while a batch cooks waits on the pan's refill event or `empty_pan_wait_min` (× favorite multiplier), whichever comes first.
+- **Seats:** one `simpy.Resource` per seating zone; capacity = seats when `seat_limits`, else unlimited but counted (`peak_seated`). SIT events carry the zone actually used.
+- **Staffing by hour:** a station with `shifts` uses a `PriorityResource` sized to its largest shift; `_staffing` holds "off duty" tokens (priority 0, ahead of students) for servers not on shift. A token waits for the current student, so a server leaves after serving them. Visible line lengths ignore tokens. `staffing` in results = servers needed per station and hour for ≤ 85% busy.
+- **Guards:** `tests/test_golden.py` (Nov 13 pinned) and `tests/test_calibration_targets.py` (team observations).
+
 **Kitchen is event-driven, not polled.** `Pan.take()` checks the reorder condition and, if met, triggers the kitchen process. When a lot is added, one expiry event is scheduled at `expires_at` that removes whatever is left of that lot and logs it as *expired*. At close, everything left in pans is logged as *leftover*. Nothing ticks every minute, which keeps the event count low.
 
 ### 3.3 The rest of the day

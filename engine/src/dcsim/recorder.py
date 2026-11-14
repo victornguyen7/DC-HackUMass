@@ -50,7 +50,9 @@ class Outcome(NamedTuple):
 
 
 class Recorder:
-    __slots__ = ("trace", "events", "pan_events", "pan_levels", "queue_lens", "outcomes", "balks", "empty_seen")
+    __slots__ = ("trace", "events", "pan_events", "pan_levels", "queue_lens", "outcomes", "balks", "empty_seen",
+                 "batch_wait_min", "cook_busy_min", "equipment_peak", "empty_wait_min", "seat_wait_min", "peak_seated",
+                 "served_by_hour")
 
     def __init__(self, n_dishes: int, n_stations: int, trace: bool = False):
         self.trace = trace
@@ -61,6 +63,13 @@ class Recorder:
         self.outcomes: list[Outcome] = []
         self.balks = 0
         self.empty_seen = 0
+        self.batch_wait_min = 0.0  # minutes batches waited for a cook or equipment
+        self.cook_busy_min: dict[str, float] = {}  # service period -> hands-on prep minutes
+        self.equipment_peak: dict[str, int] = {}  # equipment type -> most units in use at once
+        self.empty_wait_min = 0.0  # minutes students waited at an empty pan for a batch
+        self.seat_wait_min = 0.0  # minutes students stood waiting for a seat
+        self.peak_seated = 0
+        self.served_by_hour: dict[tuple[int, int], int] = {}  # (station, hour of day) -> items served
 
     def ev(self, t: float, student: int, code: Ev, station: int = -1, dish: int = -1, vessel: int = -1,
            line: int = -1) -> None:

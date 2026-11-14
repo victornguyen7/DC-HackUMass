@@ -1,6 +1,6 @@
 # Possible improvements
 
-Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engine 0.4.2. Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
+Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2 and 0.5.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour). Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
 
 Each item has:
 - **Now:** what the code does today (checked against `engine/src/dcsim/`).
@@ -21,7 +21,7 @@ These fix behavior that every later improvement would otherwise inherit.
 | 0.1 | ✅ **Done (0.4.1).** ~~**Close the hall properly** (ISSUES E2)~~: stop arrivals some minutes before 9:00 pm and send everyone still in the serving area to seating or the exit | 247 students still active after close distort waste, stockouts and the replay | S |
 | 0.2 | ✅ **Done (0.4.1).** ~~**Stop students touring every line** (ISSUES E1)~~: cap stations tried per trip, and let students see lines from a distance and pick one | 33% of students walk away from 10+ lines; every other behavior builds on this | M |
 | 0.3 | ✅ **Done 2026-11-13** (on GitHub). ~~**git init** + `.gitignore`~~ (`cache/`, `.env`, `.venv/`) | Tier 1 rewrites the core; you need a way back | S |
-| 0.4 | ✗ Open. **Golden baseline test**: commit Nov 13 headline numbers; any engine change that moves them must be intentional | Rewrites like 1.1 should change behavior only where intended | S |
+| 0.4 | ✅ **Done (0.5.0):** `engine/tests/test_golden.py` + `tests/golden/nov13.json` (Nov 13, seeds 1–10); rewrite on purpose with `DCSIM_UPDATE_GOLDEN=1`. ~~**Golden baseline test**~~: commit Nov 13 headline numbers; any engine change that moves them must be intentional | Rewrites like 1.1 should change behavior only where intended | S |
 
 ---
 
@@ -42,7 +42,8 @@ These fix behavior that every later improvement would otherwise inherit.
   yield pan.stock.put(batch_size); pan.lots.append(Lot(batch_size, env.now + hold_min))
   ```
 
-### 1.2 Wait a little at an empty pan (reneging)
+### 1.2 ✅ Done (0.5.0) · Wait a little at an empty pan (reneging)
+- **As built:** at the counter, if the dish is empty but a batch is already cooking, the student waits up to `empty_pan_wait_min` (dc.json 2 min, guess; × `favorite_patience_mult` for the first choice) for the refill, holding the server. New metric `empty_wait_min` (Nov 13: ~18 min of waiting per night).
 - **Now:** a pan that is visibly empty is skipped at once; a pan that empties while the student is in line means they substitute immediately. Nobody ever waits for a batch that is 3 minutes away.
 - **Gain:** more realistic, especially for favorites, and a new metric: **minutes spent waiting at empty pans**. That is what students actually complain about, and it is the honest cost of "smaller batches".
 - **Effort:** S with 1.1 (or S without it, using a per-pan "refilled" event).
@@ -55,7 +56,8 @@ These fix behavior that every later improvement would otherwise inherit.
       req.cancel()          # gave up: substitute the next dish
   ```
 
-### 1.3 Cooks and equipment as Resources
+### 1.3 ✅ Done (0.5.0) · Cooks and equipment as Resources
+- **As built:** `kitchen_defaults.json → resources` (placeholders): 12 dinner / 4 late-night cooks, equipment units (oven 14, steamer 8, kettle 4, flat-top 6, wok 5, fryer 3, tandoor 5), hands-on prep minutes per role, equipment by role / station / keyword. A batch needs a cook for its prep (inside `cook_min`), then one unit of equipment for the rest; without contention it still takes `cook_min`. New metrics `batch_wait_min`, `cook_busy_share` (~63%), `equipment_peak`; lever `kitchen_staff` (cooks, equipment). The `smaller_batches` preset now waits longer for the kitchen than the baseline. With 8 dinner cooks stockouts get ~6× worse.
 - **Now:** **cooking capacity is unlimited.** `_cook` is just a timeout, so any number of batches can cook at once. Because of this, "cook smaller batches more often" (the recommended plan) costs nothing in the model.
 - **Gain:** the biggest credibility improvement. Batches compete for cooks and equipment (wok, fryer, oven, grill top), so small batches queue up and the optimizer (2.1) finds a real trade-off.
 - **Effort:** M.
@@ -114,7 +116,8 @@ These fix behavior that every later improvement would otherwise inherit.
   - **Temperature log events** for a HACCP-style record on the Waste page.
 - **Effort:** S per upgrade.
 
-### 2.4 Seating as a Resource
+### 2.4 ◐ Built, off by default (0.5.0) · Seating as a Resource
+- **As built:** each zone is a `simpy.Resource(seats)`; usual zone, else the zone with most free seats, else wait standing; seat kept through seconds. `seat_limits` is **false** in dc.json: the 7:30 pm peak wants 530–680 seats but the layout's 404 are assumed, so seats stay unlimited until someone counts them. Every night reports `peak_seated` (and `seat_wait_min` when limits are on).
 - **Now:** ◐ **partly done (0.3.4):** students sit in seating zones (main / back) reached through door routes, but zones have **no capacity** yet. (Was: one point with no capacity, `seat: "Z1"` stub.)
 - **Gain:** on busy nights seating becomes a second bottleneck. It also enables groups sitting together (social persona) and zones for the 3D view.
 - **Design:** `simpy.Resource(capacity=seats)` per zone, plus a choice of the nearest zone with space. Group arrivals need a group size per student.
@@ -160,7 +163,7 @@ These fix behavior that every later improvement would otherwise inherit.
 ### A. Model realism
 | Improvement | Gain | Effort |
 | --- | --- | --- |
-| **Staffing by hour** (servers change during the meal) | Real staffing levers ("+1 Grill server 6:30–8:00") | M |
+| ✅ **Done (0.5.0):** `Station.shifts`, lever `stations.<id>.shifts`, `staffing` output (servers needed per hour). **Staffing by hour** (servers change during the meal) | Real staffing levers ("+1 Grill server 6:30–8:00") | M |
 | ✅ **Done (0.4.2, placeholder multipliers; needs R01).** **Per-date crowd** from `calendar.json` (weekend, events, exams, weather) (ISSUES E5) | Dates stop looking identical | S (needs R01/R08 for values) |
 | **Item-level popularity boosts** instead of station-wide ones (Noodle Bowl, ISSUES E6) | Matches the team: the line depends on the dish | S |
 | **Entrance swipe queue** (card readers as a Resource) | A real bottleneck at peak; shows in 3D | S |
@@ -173,7 +176,7 @@ These fix behavior that every later improvement would otherwise inherit.
 ### B. Calibration and validation
 | Improvement | Gain | Effort |
 | --- | --- | --- |
-| **Calibration targets file**: the team's observations as tests (longest lines 30–40, rarely runs out late, biggest rush 7–8 pm) | Every engine change is checked against what the team sees | S |
+| ✅ **Done (0.5.0):** `data/worcester/calibration_targets.json` + `tests/test_calibration_targets.py` (late run-outs is a known E3 failure on Nov 17). **Calibration targets file**: the team's observations as tests (longest lines 30–40, rarely runs out late, biggest rush 7–8 pm) | Every engine change is checked against what the team sees | S |
 | **Sensitivity analysis** (tornado or Sobol on the guessed inputs) | Ranks which data requests R01–R08 matter most | M (with 2.2) |
 | **Approximate Bayesian computation** when real counts arrive: find input values that reproduce observed line lengths and waste | Replaces guesses with ranges backed by data | L |
 | ◐ **Protocol built on synthetic data** (`make calibrate`, TIGER.md); waits for real data. **Holdout back-test** once real data exists: fit on weeks 1–4, test on 5–6 | Fixes the circular back-test (ISSUES B1) | M |

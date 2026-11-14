@@ -87,7 +87,15 @@ def summarize(nights: list[NightMetrics]) -> dict:
             "first_choice_demand": _pct([r.first_choice_demand for r in rows]),
         }
     stations = {sid: _pct([m.max_queue[sid] for m in nights]) for sid in nights[0].max_queue}
-    return {"n_nights": n, "headline": headline, "dishes": dishes, "max_queue": stations}
+    # Kitchen capacity, empty-pan waits and seats (engine 0.5.0); servers needed per station and hour (N3)
+    for k in ("batch_wait_min", "cook_busy_share", "empty_wait_min", "seat_wait_min", "peak_seated"):
+        if hasattr(nights[0], k):
+            headline[k] = _pct([getattr(m, k) for m in nights])
+    staffing: dict[str, dict[str, int]] = {}
+    for sid in {sid for m in nights for sid in m.servers_needed}:
+        hours = {h for m in nights for h in m.servers_needed.get(sid, {})}
+        staffing[sid] = {h: int(np.median([m.servers_needed.get(sid, {}).get(h, 0) for m in nights])) for h in sorted(hours, key=int)}
+    return {"n_nights": n, "headline": headline, "dishes": dishes, "max_queue": stations, "staffing": staffing}
 
 
 def compare(baseline: ScenarioResult, scenario: ScenarioResult) -> dict:

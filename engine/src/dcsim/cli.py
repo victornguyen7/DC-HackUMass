@@ -157,17 +157,22 @@ def main(argv: list[str] | None = None) -> None:
     ex.add_argument("--preset", choices=sorted(PRESETS), required=True)
     ex.add_argument("--nights", type=int, default=30)
     tq = sub.add_parser("tsdb", help="Tiger Data (TimescaleDB): observed nights and simulated runs side by side")
-    tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar"],
+    tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar", "bench", "refresh"],
                     help="init: create schema · load: recorded history -> observed rows · query: run a named query or SQL"
                          " · compress: convert older chunks to the columnstore now and report sizes"
                          " · observe: generate + load the SYNTHETIC observation for --date (scores its logged forecasts)"
-                         " · similar: past nights most like --date (pgvector) and a held-out check")
+                         " · similar: past nights most like --date (pgvector) and a held-out check"
+                         " · bench: time the same questions on the raw hypertables and on their continuous aggregates"
+                         " · refresh: bring every continuous aggregate up to date now")
+    tq.add_argument("--repeat", type=int, default=5, help="`bench`: timed runs per query (median is reported)")
+    tq.add_argument("--sql", action="store_true", help="`bench`: also print each pair of queries")
     tq.add_argument("--date", help="night for `observe` / `similar`")
     tq.add_argument("--weather", choices=["clear", "rain", "cold", "snow"], help="forecast weather for `similar`")
     tq.add_argument("--event", action="store_true", help="`similar`: the night is an event night")
     tq.add_argument("-k", type=int, default=5, help="`similar`: how many nights")
     tq.add_argument("query", nargs="?", default="status", help="query name (status, situations, weekdays, pans, "
-                    "dishes, coverage, nights, calibrations) or a SQL string")
+                    "dishes, coverage, nights, calibrations, ledger, production, stack, hypertables, aggregates, "
+                    "waste-daily, waste-dishes, pans-hourly) or a SQL string")
     fc = sub.add_parser("forecast", help="log a naive + calibrated forecast for a night in the append-only Tiger ledger")
     fc.add_argument("--date", required=True)
     fc.add_argument("--preset", choices=sorted(PRESETS))
@@ -305,7 +310,28 @@ def _tiger(args) -> None:
         if args.cmd == "calibrate" or getattr(args, "action", None) in ("init", "load"):
             ts = tsdb.init_schema(conn)
             print(f"schema dcsim ready ({'TimescaleDB hypertables + continuous aggregate' if ts else 'plain PostgreSQL'})")
-        if args.cmd == "tsdb" and args.action == "load":
+        if args.cmd == "tsdb" and args.action in ("init", "refresh"):
+            tsdb.refresh(conn)  # new aggregates are created empty; fill them over the whole history
+            print("continuous aggregates refreshed: dish_nightly, " + ", ".join(tsdb.DASH_CAGGS))
+        elif args.cmd == "tsdb" and args.action == "bench":
+            rows = tsdb.bench(conn, max(1, args.repeat))
+            print(f"Same question, raw hypertable vs continuous aggregate (server-side ms from EXPLAIN ANALYZE, "
+                  f"median of {max(1, args.repeat)} runs)\n")
+            cols = ["#", "raw table", "rows", "raw ms", "aggregate", "rows ", "agg ms", "aggregate vs raw", "same answer"]
+            verdict = lambda x: (f"{x:g}x faster" if x >= 1.5 else f"{round(1 / x, 1):g}x slower" if x <= 0.67  # noqa: E731
+                                 else "about the same")
+            print(tsdb.format_table(cols, [(i, b["raw_table"], f"{b['raw_rows']:,}", b["raw"]["total_ms"],
+                                            b["aggregate"], f"{b['aggregate_rows']:,}", b["agg"]["total_ms"],
+                                            verdict(b["speedup"]), "yes" if b["same_answer"] else "NO")
+                                           for i, b in enumerate(rows, 1)]))
+            print()
+            for i, b in enumerate(rows, 1):
+                print(f"{i}. {b['title']}\n   {b['why']}")
+            if args.sql:
+                for b in rows:
+                    print(f"\n-- {b['title']}\n-- raw ({b['raw']['total_ms']} ms)\n{b['raw_sql']};\n"
+                          f"-- aggregate ({b['agg']['total_ms']} ms)\n{b['agg_sql']};")
+        elif args.cmd == "tsdb" and args.action == "load":
             n = tsdb.load_observed(conn)
             print("observed history loaded: " + ", ".join(f"{v:,} {k}" for k, v in n.items()))
         elif args.cmd == "forecast":
@@ -358,12 +384,12 @@ def _tiger(args) -> None:
             tsdb.init_schema(conn)
             r = tsdb.compress_now(conn)
             mb = lambda b: f"{b / 1e6:.1f} MB"  # noqa: E731
-            print(f"  {'table':<12} {'row data':>9} {'columnstore':>12} {'ratio':>6}   {'on disk now':>11}")
+            print(f"  {'table':<13} {'row data':>9} {'columnstore':>12} {'ratio':>6}   {'on disk now':>11}")
             for t in r["after"]:
                 b, a = r["rowstore"].get(t, 0), r["columnstore"].get(t, 0)
-                print(f"  {t:<12} {mb(b):>9} {mb(a):>12} {b / a if a else 0:>5.1f}x   {mb(r['after'][t]):>11}")
+                print(f"  {t:<13} {mb(b):>9} {mb(a):>12} {b / a if a else 0:>5.1f}x   {mb(r['after'][t]):>11}")
             b, a = sum(r["rowstore"].values()), sum(r["columnstore"].values())
-            print(f"  {'total':<12} {mb(b):>9} {mb(a):>12} {b / a if a else 0:>5.1f}x   {mb(sum(r['after'].values())):>11}"
+            print(f"  {'total':<13} {mb(b):>9} {mb(a):>12} {b / a if a else 0:>5.1f}x   {mb(sum(r['after'].values())):>11}"
                   f"   ({r['chunks']} chunks; the newest week stays row-store until it is a day old)")
         elif args.cmd == "tsdb" and args.action == "query":
             title = tsdb.QUERIES.get(args.query, ("SQL", ""))[0]

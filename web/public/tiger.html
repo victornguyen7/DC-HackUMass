@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Kitchen Data</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="DC What-If on Tiger Data: hypertables, continuous aggregates, columnstore and the forecast ledger, read live. Synthetic recorded history.">
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11, 11, 11, 0.10); --chip: #f0efec;
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;      /* categorical slots 1-3 */
+    --seq-lo: #cde2fb; --seq-hi: #184f95;             /* sequential blue: near zero -> many */
+    --good: #0ca30c; --critical: #d03b3b; --good-text: #006300;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+      --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10); --chip: #2c2c2a;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --seq-lo: #0d366b; --seq-hi: #86b6ef; --good-text: #0ca30c;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10); --chip: #2c2c2a;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --seq-lo: #0d366b; --seq-hi: #86b6ef; --good-text: #0ca30c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 26px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  h2 { font-size: 18px; margin: 0 0 4px; }
+  h3 { font-size: 14px; margin: 20px 0 8px; }
+  header p { color: var(--ink-2); max-width: 70ch; margin: 6px 0 0; }
+  code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--chip); padding: 1px 5px; border-radius: 5px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--ink-2); margin: 0 6px 10px 0; }
+  .live { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-top: 12px; color: var(--ink-2); min-height: 22px; }
+  .live .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+  .live.on .dot { background: var(--good); box-shadow: 0 0 0 0 var(--good); animation: pulse 2s ease-out infinite; }
+  .live .news { color: var(--ink); font-weight: 600; }
+  @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(12, 163, 12, .5); } to { box-shadow: 0 0 0 8px rgba(12, 163, 12, 0); } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-top: 20px; }
+  .sub { color: var(--ink-2); margin: 0 0 16px; font-size: 14px; max-width: 76ch; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 12px; margin-top: 20px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .tile .label { font-size: 13px; color: var(--ink-2); }
+  .tile .value { font-size: 28px; font-weight: 600; line-height: 1.2; letter-spacing: -.01em; margin-top: 2px; }
+  .tile .note { font-size: 12px; color: var(--ink-2); margin-top: 2px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-2); margin: 0 0 8px; padding: 0; list-style: none; }
+  .legend li { display: flex; align-items: center; gap: 6px; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; outline: none; }
+  .chart svg:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; border-radius: 6px; }
+  .tick { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .cap { fill: var(--ink); font-size: 12px; font-weight: 600; }
+  .row-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  button, select { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--axis); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  button:hover { background: var(--chip); }
+  button:focus-visible, select:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+  button[disabled] { opacity: .6; cursor: default; }
+  .filters { display: flex; align-items: center; gap: 8px; margin-top: 24px; font-size: 13px; color: var(--ink-2); }
+  .filters + .card { margin-top: 10px; }
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.src th { border-bottom: 0; padding-bottom: 0; font-weight: 500; color: var(--muted); font-size: 11px; }
+  tr.src th span { display: block; border-bottom: 2px solid var(--grid); padding-bottom: 3px; }
+  .status { display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+  .heat { border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 560px; }
+  .heat th, .heat td { border: 0; padding: 0; }
+  .heat thead th { text-align: center; font-weight: 500; color: var(--muted); font-size: 11px; padding-bottom: 4px; }
+  .heat tbody th { font-weight: 500; color: var(--ink); font-size: 13px; padding-right: 10px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+  .heat tbody th small { color: var(--muted); font-size: 11px; margin-left: 6px; }
+  .heat td { height: 26px; min-width: 44px; border-radius: 4px; text-align: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .heat td.none { background: transparent; }
+  .heat td.empty { background: var(--critical); }
+  .heat td.closed { background: var(--chip); color: var(--ink-2); font-weight: 500; }
+  .scale .sw.closed { background: var(--chip); border: 1px solid var(--axis); }
+  .heat td:not(.none):hover { outline: 2px solid var(--ink); outline-offset: 0; }
+  .scale { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-2); flex-wrap: wrap; margin-top: 10px; }
+  .scale .ramp { width: 120px; height: 10px; border-radius: 3px; background: linear-gradient(to right, var(--seq-lo), var(--seq-hi)); }
+  .scale .sw { margin-left: 10px; background: var(--critical); }
+  .bench { display: grid; gap: 18px; }
+  .bench h3 { margin: 0 0 6px; }
+  .bar-row { display: grid; grid-template-columns: minmax(150px, 230px) 1fr; gap: 10px; align-items: center; font-size: 13px; margin: 4px 0; }
+  .bar-row .who { color: var(--ink-2); }
+  .bar-row .who b { color: var(--ink); font-weight: 600; }
+  .track { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .bar { height: 14px; border-radius: 0 4px 4px 0; min-width: 2px; flex: none; }
+  .bar.raw { background: var(--s2); } .bar.agg { background: var(--s1); }
+  .track span { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  .ranked .bar-row { grid-template-columns: minmax(140px, 240px) 1fr; }
+  .ranked .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+  .ranked .who small { color: var(--muted); margin-left: 6px; }
+  .verdict { font-size: 13px; color: var(--ink-2); margin: 6px 0 0; }
+  .verdict b { color: var(--ink); }
+  .tip { position: fixed; z-index: 10; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 6px 20px rgba(0, 0, 0, .14); padding: 8px 10px; font-size: 12px; max-width: 260px; }
+  .tip .t { color: var(--ink-2); margin-bottom: 4px; }
+  .tip .r { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+  .tip .r i { width: 10px; height: 3px; border-radius: 2px; flex: none; }
+  .tip .r span { color: var(--ink-2); flex: 1; }
+  .tip .r b { font-variant-numeric: tabular-nums; }
+  .stale { opacity: .55; transition: opacity .2s; }
+  .caveats { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+  .caveats li { margin: 4px 0; }
+  .hidden { display: none; }
+  @media (max-width: 560px) { .bar-row { grid-template-columns: 1fr; gap: 2px; } .card { padding: 16px; } }
+  @media (prefers-reduced-motion: reduce) { .live.on .dot { animation: none; } .stale { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="badge">Tiger Data</span><span class="badge" id="version">TimescaleDB</span><span class="badge">Synthetic history</span>
+    <h1>Kitchen data, live from one database</h1>
+    <p>Weigh-ins and pan levels land in hypertables. Continuous aggregates keep the charts below current, and the same Postgres database holds the plan and the forecasts they are scored against.</p>
+    <p class="live" id="live" role="status"><span class="dot" aria-hidden="true"></span><span id="live-text">Connecting to Tiger…</span><span class="news" id="news"></span></p>
+  </header>
+
+  <div class="tiles" id="tiles"></div>
+
+  <section class="card" id="waste-card">
+    <h2>Waste weighed each night</h2>
+    <p class="sub" id="waste-sub">Read from a continuous aggregate over the weigh-in hypertable.</p>
+    <ul class="legend" aria-label="Waste reasons">
+      <li><span class="sw" style="background:var(--s1)"></span>Expired on the line</li>
+      <li><span class="sw" style="background:var(--s2)"></span>Left in pans at close</li>
+      <li><span class="sw" style="background:var(--s3)"></span>Plate waste</li>
+    </ul>
+    <div class="chart" id="waste-chart"></div>
+    <div class="row-actions"><span class="sub" style="margin:0" id="waste-foot"></span><button type="button" id="waste-toggle" aria-expanded="false">Show table</button></div>
+    <div class="scroll hidden" id="waste-table"></div>
+    <h3>Most wasted dishes, all nights</h3>
+    <p class="sub" style="margin-bottom:8px">Expired or left at close, from the same aggregate (it keeps one row per dish, night and reason).</p>
+    <div class="ranked" id="top-waste"></div>
+  </section>
+
+  <div class="filters"><label for="night">Night</label><select id="night"></select></div>
+  <section class="card" id="pans-card">
+    <h2 id="pans-title">Pans by hour</h2>
+    <p class="sub">The 12 dishes whose pans ran lowest, hour by hour. Each cell is the fewest portions on hand in that hour, read from the hourly continuous aggregate over the pan hypertable. Pans are pulled at closing, so a dish's last half hour doesn't count as running empty.</p>
+    <div class="scroll" id="pans"></div>
+    <div class="scale"><span id="scale-lo">0</span><span class="ramp" aria-hidden="true"></span><span id="scale-hi">many</span><span>portions left</span><span class="sw" aria-hidden="true"></span><span>Pan ran empty</span><span class="sw closed" aria-hidden="true"></span><span>Closing (pans pulled)</span></div>
+  </section>
+
+  <section class="card" id="bench-card">
+    <h2>Same question, raw table or aggregate</h2>
+    <p class="sub">Time inside the database (plan + execute, from <code>EXPLAIN ANALYZE</code>), median of repeated runs. Each pair of bars has its own scale. The aggregate isn't always the faster one, and the page shows where it isn't.</p>
+    <ul class="legend" aria-label="Query source">
+      <li><span class="sw" style="background:var(--s2)"></span>Raw hypertable</li>
+      <li><span class="sw" style="background:var(--s1)"></span>Continuous aggregate</li>
+    </ul>
+    <div class="bench" id="bench"><p class="sub" style="margin:0">Timing the queries…</p></div>
+    <div class="row-actions"><span></span><button type="button" id="bench-run">Run again</button></div>
+  </section>
+
+  <section class="card">
+    <h2>One query across the stack</h2>
+    <p class="sub">A single SQL statement joins the two aggregates to the nights hypertable, the production plan, the simulated forecast range and the forecast ledger. Latest 10 nights.</p>
+    <div class="scroll" id="stack"></div>
+  </section>
+
+  <section class="card">
+    <h2>Forecast ledger</h2>
+    <p class="sub">Forecasts are written before the night and can't be edited. Each one is scored in SQL once the night is recorded.</p>
+    <div class="scroll" id="ledger"></div>
+  </section>
+
+  <section class="card">
+    <h2>Storage</h2>
+    <p class="sub">Hypertables are split into weekly chunks. Chunks older than a day move to the columnstore on a policy.</p>
+    <div class="scroll" id="hypertables"></div>
+    <h3>Continuous aggregates</h3>
+    <div class="scroll" id="aggregates"></div>
+  </section>
+
+  <section class="card">
+    <h2>What this shows, and what it doesn't</h2>
+    <ul class="caveats">
+      <li>The recorded nights are synthetic: the engine generated them, shaped like MetaFoodX pan data, LeanPath weigh-ins and meal swipes. Real exports load into the same tables with no code change.</li>
+      <li>The tables are small (six weeks of one dining hall), so the timings show the direction, not what a year of data would do. Where the columnstore or a small table already answers a question quickly, the aggregate adds nothing, and the page says so.</li>
+      <li>Rows newer than the last materialized bucket are read live. A change to an older night appears after the next refresh.</li>
+    </ul>
+  </section>
+</main>
+<div class="tip hidden" id="tip" role="presentation"></div>
+
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const API = (params.get("api") || "").replace(/\/$/, "");   // e.g. ?api=http://127.0.0.1:8000; default: same origin (/api proxy)
+  const SNAPSHOT = "cache/waste/tiger.json";
+  const POLL_MS = 5000;
+  const $ = id => document.getElementById(id);
+  const SVG = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs = {}, text) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const svg = (tag, attrs = {}, text) => {
+    const n = document.createElementNS(SVG, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    return n;
+  };
+  const num = v => v == null ? "—" : Math.round(v).toLocaleString("en-US");
+  const mb = b => (b / 1e6).toFixed(1) + " MB";
+  const asDate = iso => new Date(iso + "T12:00:00");
+  const day = iso => asDate(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const wday = iso => asDate(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const hourLabel = h => `${((h + 11) % 12) + 1} ${h < 12 ? "am" : "pm"}`;
+  const ago = iso => {
+    if (!iso) return "—";
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    return s < 90 ? `${Math.round(s)} s ago` : s < 5400 ? `${Math.round(s / 60)} min ago` : s < 129600 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86400)} d ago`;
+  };
+  const ms = v => v >= 100 ? `${Math.round(v)} ms` : `${v.toFixed(1)} ms`;
+
+  // ---- tooltip (text only: names come from the database)
+  const tip = $("tip");
+  function showTip(x, y, title, rows) {
+    tip.replaceChildren(el("div", { class: "t" }, title));
+    for (const [color, label, value] of rows) {
+      const r = el("div", { class: "r" });
+      if (color) { const i = el("i"); i.style.background = color; r.append(i); }
+      r.append(el("span", {}, label), el("b", {}, value));
+      tip.append(r);
+    }
+    tip.classList.remove("hidden");
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(x + 14, innerWidth - w - 8)) + "px";
+    tip.style.top = Math.max(8, y - h - 12 < 8 ? y + 16 : y - h - 12) + "px";
+  }
+  const hideTip = () => tip.classList.add("hidden");
+  addEventListener("scroll", hideTip, { passive: true });
+
+  function status(kind, short) {
+    const span = el("span", { class: "status" });
+    const c = kind === "inside" ? "var(--good)" : kind === "outside" ? "var(--critical)" : "var(--muted)";
+    const s = svg("svg", { width: 14, height: 14, viewBox: "0 0 16 16", "aria-hidden": "true" });
+    s.append(svg("circle", { cx: 8, cy: 8, r: 7, fill: kind === "awaiting" ? "none" : c, stroke: c, "stroke-width": 1.5 }));
+    const d = kind === "inside" ? "M4.5 8.2l2.3 2.3 4.7-4.9" : kind === "outside" ? "M5.3 5.3l5.4 5.4M10.7 5.3l-5.4 5.4" : "M8 4.5V8l2.2 1.5";
+    s.append(svg("path", { d, fill: "none", stroke: kind === "awaiting" ? c : "#fff", "stroke-width": 1.8, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+    span.append(s, document.createTextNode(kind === "inside" ? (short ? "Inside" : "Inside range") : kind === "outside" ? (short ? "Outside" : "Outside range") : "Awaiting the night"));
+    return span;
+  }
+
+  function table(host, cols, rows, srcRow) {
+    const t = el("table"), thead = el("thead"), tb = el("tbody");
+    if (srcRow) {
+      const tr = el("tr", { class: "src" });
+      for (const [label, span] of srcRow) { const th = el("th", { colspan: span, scope: "colgroup" }); th.append(el("span", {}, label)); tr.append(th); }
+      thead.append(tr);
+    }
+    const hr = el("tr");
+    for (const c of cols) hr.append(el("th", { scope: "col", class: c.num ? "num" : "" }, c.label));
+    thead.append(hr);
+    for (const r of rows) {
+      const tr = el("tr");
+      for (const c of cols) {
+        const v = c.get(r), td = el("td", { class: c.num ? "num" : "" });
+        if (v instanceof Node) td.append(v); else td.textContent = v == null ? "—" : v;
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+    t.append(thead, tb);
+    host.replaceChildren(t);
+  }
+
+  // ---- stat tiles
+  function renderTiles(d) {
+    const rows = Object.fromEntries(d.hypertables.map(h => [h.name, h.rows]));
+    const row = d.hypertables.reduce((a, h) => a + h.rowstore_bytes, 0), col = d.hypertables.reduce((a, h) => a + h.columnstore_bytes, 0);
+    const scored = d.ledger.filter(f => f.waste_result !== "awaiting");
+    const ledgerRows = (d.tables.find(t => t.name === "forecasts") || {}).rows;
+    const tiles = [
+      ["Nights recorded", num(d.waste_by_night.length), d.nights.length ? `${day(d.nights[0])} to ${day(d.nights[d.nights.length - 1])}` : ""],
+      ["Weigh-ins", num(rows.waste_log), "waste_log hypertable"],
+      ["Pan readings", num(rows.pan_windows), "pan_windows hypertable"],
+      ["Columnstore", col ? `${(row / col).toFixed(1)}× smaller` : "—", col ? `${mb(row)} of row data in ${mb(col)}` : "no chunks converted yet"],
+      ["Forecasts in the ledger", num(ledgerRows), scored.length ? `${scored.filter(f => f.waste_result === "inside").length} of the last ${scored.length} scored landed inside` : "none scored yet"],
+    ];
+    $("tiles").replaceChildren(...tiles.map(([label, value, note]) => {
+      const t = el("div", { class: "tile" });
+      t.append(el("div", { class: "label" }, label), el("div", { class: "value" }, value), el("div", { class: "note" }, note));
+      return t;
+    }));
+  }
+
+  // ---- waste by night: stacked columns on a time axis (a missing night leaves a gap)
+  const REASONS = [["expired_lb", "Expired on the line", "var(--s1)"], ["close_lb", "Left in pans at close", "var(--s2)"], ["plate_lb", "Plate waste", "var(--s3)"]];
+  let wasteRows = [], wasteActive = -1;
+  function renderWaste() {
+    const host = $("waste-chart"), rows = wasteRows;
+    if (!rows.length) { host.replaceChildren(el("p", { class: "sub" }, "No weigh-ins yet.")); return; }
+    const W = Math.max(320, host.clientWidth), H = 280, m = { l: 46, r: 14, t: 22, b: 26 };
+    const iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const t0 = asDate(rows[0].night).getTime(), DAY = 86400000;
+    const idx = r => Math.round((asDate(r.night).getTime() - t0) / DAY);
+    const days = idx(rows[rows.length - 1]) + 1, band = iw / days, cw = Math.min(24, Math.max(2, band - 2));
+    const total = r => r.expired_lb + r.close_lb + r.plate_lb;
+    const top = Math.max(...rows.map(total)), step = top > 1200 ? 500 : top > 500 ? 250 : 100, ymax = Math.ceil(top / step) * step;
+    const y = v => m.t + ih - (v / ymax) * ih, cx = r => m.l + (idx(r) + .5) * band;
+    const s = svg("svg", { viewBox: `0 0 ${W} ${H}`, tabindex: 0, role: "img",
+      "aria-label": `Waste weighed on ${rows.length} nights, stacked by reason. Use the arrow keys to read each night; the table below has every value.` });
+    for (let v = 0; v <= ymax; v += step) {
+      s.append(svg("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: v ? "var(--grid)" : "var(--axis)", "stroke-width": 1 }));
+      s.append(svg("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end", class: "tick" }, num(v)));
+    }
+    s.append(svg("text", { x: m.l - 8, y: 10, "text-anchor": "end", class: "tick" }, "lb"));
+    let lastLabel = -1e9;
+    for (let d = 0; d < days; d += 7) {
+      const x = m.l + (d + .5) * band;
+      if (x - lastLabel < 46) continue;
+      lastLabel = x;
+      s.append(svg("text", { x, y: H - 8, "text-anchor": "middle", class: "tick" }, new Date(t0 + d * DAY).toLocaleDateString("en-US", { month: "short", day: "numeric" })));
+    }
+    const hi = svg("rect", { y: m.t, height: ih, width: Math.max(cw + 6, band), fill: "var(--chip)", rx: 3, visibility: "hidden" });
+    s.append(hi);
+    const anchor = [];
+    rows.forEach((r, i) => {
+      const x = cx(r) - cw / 2;
+      let base = 0;
+      const parts = REASONS.filter(([k]) => r[k] > 0);
+      parts.forEach(([k, , color], j) => {
+        const y1 = y(base + r[k]), y0 = y(base) - (j ? 2 : 0), h = Math.max(1, y0 - y1), last = j === parts.length - 1;
+        const rad = last ? Math.min(4, cw / 2, h) : 0;
+        s.append(svg("path", { fill: color, d: `M${x},${y0} V${y1 + rad} Q${x},${y1} ${x + rad},${y1} H${x + cw - rad} Q${x + cw},${y1} ${x + cw},${y1 + rad} V${y0} Z` }));
+        base += r[k];
+      });
+      anchor[i] = { x: cx(r), y: y(total(r)) };
+    });
+    const lastRow = rows[rows.length - 1], lx = cx(lastRow);
+    s.append(svg("text", { x: Math.min(lx, W - m.r), y: y(total(lastRow)) - 6, "text-anchor": lx > W - 60 ? "end" : "middle", class: "cap" }, `${num(total(lastRow))} lb`));
+    const show = i => {
+      wasteActive = i;
+      if (i < 0) { hi.setAttribute("visibility", "hidden"); hideTip(); return; }
+      const r = rows[i], box = s.getBoundingClientRect(), k = box.width / W;
+      hi.setAttribute("x", cx(r) - Math.max(cw + 6, band) / 2);
+      hi.setAttribute("visibility", "visible");
+      showTip(box.left + anchor[i].x * k, box.top + anchor[i].y * k, wday(r.night),
+        [...REASONS.map(([key, label, color]) => [color, label, `${num(r[key])} lb`]).reverse(), [null, "Total", `${num(total(r))} lb`], [null, "Weigh-ins", num(r.weigh_ins)]]);
+    };
+    s.addEventListener("pointermove", e => {
+      const box = s.getBoundingClientRect(), px = (e.clientX - box.left) * (W / box.width);
+      let best = -1, dist = Math.max(band, 14);
+      rows.forEach((r, i) => { const dd = Math.abs(cx(r) - px); if (dd < dist) { dist = dd; best = i; } });
+      show(best);
+    });
+    s.addEventListener("pointerleave", () => show(-1));
+    s.addEventListener("blur", () => show(-1));
+    s.addEventListener("focus", () => { if (wasteActive < 0) show(rows.length - 1); });
+    s.addEventListener("keydown", e => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") return;
+      e.preventDefault();
+      const i = wasteActive < 0 ? rows.length - 1 : wasteActive;
+      show(e.key === "Home" ? 0 : e.key === "End" ? rows.length - 1 : Math.max(0, Math.min(rows.length - 1, i + (e.key === "ArrowLeft" ? -1 : 1))));
+    });
+    host.replaceChildren(s);
+    table($("waste-table"), [
+      { label: "Night", get: r => wday(r.night) },
+      { label: "Expired (lb)", num: 1, get: r => num(r.expired_lb) }, { label: "At close (lb)", num: 1, get: r => num(r.close_lb) },
+      { label: "Plate (lb)", num: 1, get: r => num(r.plate_lb) }, { label: "Total (lb)", num: 1, get: r => num(total(r)) },
+      { label: "Weigh-ins", num: 1, get: r => num(r.weigh_ins) },
+    ], [...rows].reverse());
+  }
+  $("waste-toggle").addEventListener("click", e => {
+    const open = $("waste-table").classList.toggle("hidden") === false;
+    e.currentTarget.setAttribute("aria-expanded", open);
+    e.currentTarget.textContent = open ? "Hide table" : "Show table";
+  });
+
+  // ---- most wasted dishes: ranked bars, one series
+  function renderTopWaste(rows) {
+    const top = Math.max(1, ...rows.map(r => r.waste_lb));
+    $("top-waste").replaceChildren(...rows.slice(0, 8).map(r => {
+      const row = el("div", { class: "bar-row" }), who = el("div", { class: "who", title: r.dish }), track = el("div", { class: "track" }), bar = el("div", { class: "bar agg" });
+      who.append(document.createTextNode(r.dish), el("small", {}, r.station.replace(/_/g, " ")));
+      bar.style.width = `calc(${r.waste_lb / top * 100}% - 80px)`;
+      track.append(bar, el("span", {}, `${num(r.waste_lb)} lb`));
+      row.append(who, track);
+      row.addEventListener("pointermove", e => showTip(e.clientX, e.clientY, r.dish, [[null, "Weighed", `${num(r.waste_lb)} lb`], [null, "Portions", num(r.portions)], [null, "Weigh-ins", num(r.weigh_ins)], [null, "Nights served", num(r.nights)]]));
+      row.addEventListener("pointerleave", hideTip);
+      return row;
+    }));
+  }
+
+  // ---- pans by hour: a shaded table (sequential blue; an empty pan is a status, labelled "Empty")
+  function renderPans(d) {
+    $("pans-title").textContent = d.night ? `Pans by hour · ${wday(d.night)}` : "Pans by hour";
+    const host = $("pans");
+    if (!d.pans.length) { host.replaceChildren(el("p", { class: "sub" }, "No pan readings for this night.")); return; }
+    const dishes = new Map();
+    for (const p of d.pans) {
+      const k = p.dish + "|" + p.station;
+      if (!dishes.has(k)) dishes.set(k, { dish: p.dish, station: p.station, cells: new Map(), empty: 0, low: Infinity });
+      const g = dishes.get(k);
+      // A dish's final hour ends with the close-out window (pans pulled, reads 0): the level there is the one before it.
+      const closed = p.closing && p.windows === 1;
+      const c = { ...p, closed, level: closed ? null : p.closing ? p.max_left : p.min_left, ranOut: closed ? 0 : p.closing ? Math.max(0, p.windows_empty - 1) : p.windows_empty };
+      g.cells.set(p.hour, c); g.empty += c.ranOut;
+      if (c.level != null) g.low = Math.min(g.low, c.level);
+    }
+    const picked = [...dishes.values()].sort((a, b) => b.empty - a.empty || a.low - b.low || a.dish.localeCompare(b.dish)).slice(0, 12);
+    const hours = [...new Set(d.pans.map(p => p.hour))].sort((a, b) => a - b);
+    const vals = picked.flatMap(g => [...g.cells.values()].filter(p => p.level != null).map(p => p.level)).sort((a, b) => a - b);
+    const cap = Math.max(10, Math.ceil(vals[Math.floor(vals.length * .9)] / 10) * 10);
+    $("scale-lo").textContent = "1"; $("scale-hi").textContent = `${cap}+`;
+    const t = el("table", { class: "heat" }), thead = el("thead"), hr = el("tr"), tb = el("tbody");
+    hr.append(el("th", { scope: "col" }));
+    for (const h of hours) hr.append(el("th", { scope: "col" }, hourLabel(h)));
+    thead.append(hr);
+    for (const g of picked) {
+      const tr = el("tr"), th = el("th", { scope: "row", title: g.dish });
+      th.append(document.createTextNode(g.dish), el("small", {}, g.station.replace(/_/g, " ")));
+      tr.append(th);
+      for (const h of hours) {
+        const p = g.cells.get(h), td = el("td");
+        if (!p) { td.className = "none"; td.setAttribute("aria-label", "not served"); }
+        else {
+          const empty = p.ranOut > 0 || p.level === 0;
+          if (p.closed) { td.className = "closed"; td.textContent = "Close"; }
+          else if (empty) { td.className = "empty"; td.textContent = "Empty"; }
+          else td.style.background = `color-mix(in oklab, var(--seq-hi) ${Math.round(Math.min(1, p.level / cap) * 100)}%, var(--seq-lo))`;
+          td.setAttribute("aria-label", p.closed ? "closing: pans pulled" : empty ? "pan ran empty" : `${p.level} portions at the lowest`);
+          td.addEventListener("pointermove", e => showTip(e.clientX, e.clientY, `${g.dish} · ${hourLabel(h)}`, [
+            [null, "Fewest on hand", p.closed ? "Closing: pans pulled" : empty ? "0 (ran empty)" : num(p.level)], [null, "Put out", num(p.portions_out)], [null, "Eaten", num(p.portions_eaten)]]));
+          td.addEventListener("pointerleave", hideTip);
+        }
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+    t.append(thead, tb);
+    host.replaceChildren(t);
+  }
+
+  // ---- raw table vs continuous aggregate
+  function renderBench(rows) {
+    $("bench").replaceChildren(...rows.map(b => {
+      const box = el("div"), scale = Math.max(b.raw.total_ms, b.agg.total_ms);
+      box.append(el("h3", {}, b.title));
+      for (const [cls, who, name, n, t] of [["raw", "Raw hypertable", b.raw_table, b.raw_rows, b.raw.total_ms], ["agg", "Aggregate", b.aggregate, b.aggregate_rows, b.agg.total_ms]]) {
+        const row = el("div", { class: "bar-row" }), label = el("div", { class: "who" }), track = el("div", { class: "track" }), bar = el("div", { class: `bar ${cls}` });
+        label.append(el("b", {}, who), document.createTextNode(` · ${name} · ${num(n)} rows`));
+        bar.style.width = `calc(${Math.max(.4, t / scale * 100)}% - 70px)`;
+        track.append(bar, el("span", {}, ms(t)));
+        row.append(label, track);
+        box.append(row);
+      }
+      const v = el("p", { class: "verdict" }), x = b.speedup, times = n => `${n >= 10 ? Math.round(n) : n.toFixed(1)}×`;
+      if (x >= 1.5) v.append(el("b", {}, `${times(x)} faster on the aggregate.`));
+      else if (x <= 0.67) v.append(el("b", {}, `The raw hypertable is ${times(1 / x)} faster here.`));
+      else v.append(el("b", {}, "About the same."));
+      v.append(document.createTextNode(` ${b.why || ""} ${b.same_answer ? "Both queries return identical rows." : "The two answers differ: refresh the aggregate."}`));
+      box.append(v);
+      return box;
+    }));
+  }
+  async function loadBench() {
+    const btn = $("bench-run");
+    btn.disabled = true; btn.textContent = "Timing…";
+    try {
+      const r = await fetch(`${API}/api/tiger/bench?repeat=3`);
+      if (!r.ok) throw new Error(r.status);
+      renderBench(await r.json());
+    } catch (e) { /* keep whatever is on screen (the snapshot's timings, if any) */ }
+    btn.disabled = false; btn.textContent = "Run again";
+  }
+  $("bench-run").addEventListener("click", loadBench);
+
+  // ---- tables
+  function renderStack(d) {
+    table($("stack"), [
+      { label: "Night", get: r => wday(r.night) }, { label: "Weather", get: r => r.weather }, { label: "Students", num: 1, get: r => num(r.students) },
+      { label: "Weighed (lb)", num: 1, get: r => num(r.weighed_lb) }, { label: "Weigh-ins", num: 1, get: r => num(r.weigh_ins) },
+      { label: "Portions put out", num: 1, get: r => num(r.portions_out) }, { label: "Portions eaten", num: 1, get: r => num(r.portions_eaten) },
+      { label: "Dishes planned", num: 1, get: r => num(r.planned_dishes) },
+      { label: "Forecast 10–90% (lb)", num: 1, get: r => r.sim_p10 == null ? "—" : `${num(r.sim_p10)}–${num(r.sim_p90)}` },
+      { label: "In range?", get: r => r.inside_range == null ? "—" : status(r.inside_range ? "inside" : "outside", true) },
+      { label: "Ledger", num: 1, get: r => r.ledger_forecasts ? num(r.ledger_forecasts) : "—" },
+    ], d.stack.slice(0, 10), [["nights hypertable", 3], ["waste aggregate", 2], ["pan aggregate", 2], ["plan table", 1], ["simulated runs", 2], ["ledger", 1]]);
+  }
+  function renderLedger(d) {
+    if (!d.ledger.length) { $("ledger").replaceChildren(el("p", { class: "sub" }, "No forecasts logged yet.")); return; }
+    table($("ledger"), [
+      { label: "For night", get: f => wday(f.for_night) }, { label: "Method", get: f => f.method },
+      { label: "Written", get: f => new Date(f.issued_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) },
+      { label: "Waste 10–90% (lb)", num: 1, get: f => `${num(f.waste_p10)}–${num(f.waste_p90)}` },
+      { label: "Recorded (lb)", num: 1, get: f => num(f.observed_waste_lb) }, { label: "Result", get: f => status(f.waste_result) },
+    ], [...d.ledger].reverse());
+  }
+  function renderStorage(d) {
+    table($("hypertables"), [
+      { label: "Hypertable", get: h => h.name }, { label: "Rows", num: 1, get: h => num(h.rows) },
+      { label: "Chunks in columnstore", num: 1, get: h => `${h.columnstore_chunks} of ${h.chunks}` },
+      { label: "Row data", num: 1, get: h => h.columnstore_bytes ? mb(h.rowstore_bytes) : "—" },
+      { label: "Columnstore", num: 1, get: h => h.columnstore_bytes ? mb(h.columnstore_bytes) : "—" },
+      { label: "Ratio", num: 1, get: h => h.columnstore_bytes ? `${(h.rowstore_bytes / h.columnstore_bytes).toFixed(1)}×` : "—" },
+      { label: "On disk now", num: 1, get: h => mb(h.bytes) },
+    ], d.hypertables);
+    table($("aggregates"), [
+      { label: "Aggregate", get: a => a.name }, { label: "Over", get: a => a.source },
+      { label: "Rows", num: 1, get: a => `${num(a.rows)} from ${num(a.source_rows)}` },
+      { label: "Newest rows", get: a => a.real_time ? "Read live" : "After a refresh" },
+      { label: "Refresh policy", get: a => a.refresh_every ? `Every ${a.refresh_every.replace(/^0?(\d+):00:00$/, "$1 h").replace(/^00:(\d+):00$/, "$1 min")}, last ${a.looks_back}` : "After each load" },
+      { label: "Last policy run", get: a => a.last_refresh ? ago(a.last_refresh) : "—" },
+    ], d.aggregates);
+  }
+
+  // ---- data: live from the API, with the bundle's snapshot as the fallback
+  let data = null, live = false, lastOk = 0, busy = false, keys = {}, newsUntil = 0, snapshotAt = null, benchLoaded = false;
+  const changed = (name, value) => { const k = JSON.stringify(value); if (keys[name] === k) return false; keys[name] = k; return true; };
+  function render(d) {
+    const before = data;
+    data = d;
+    $("version").textContent = `TimescaleDB ${d.timescaledb} · Postgres ${d.postgres}`;
+    if (changed("tiles", [d.hypertables, d.tables, d.waste_by_night.length, d.ledger.map(f => f.waste_result)])) renderTiles(d);
+    if (changed("waste", d.waste_by_night)) {
+      wasteRows = d.waste_by_night; wasteActive = -1; hideTip(); renderWaste();
+      const agg = d.aggregates.find(a => a.name === "waste_daily_by_dish");
+      $("waste-sub").textContent = agg ? `Read from the continuous aggregate ${agg.name}: ${num(agg.rows)} rows kept current from ${num(agg.source_rows)} weigh-ins.` : "";
+      if (before) {
+        const old = new Map(before.waste_by_night.map(r => [r.night, r.weigh_ins]));
+        const fresh = d.waste_by_night.filter(r => !old.has(r.night)), grown = d.waste_by_night.filter(r => old.has(r.night) && old.get(r.night) !== r.weigh_ins);
+        const r = fresh[fresh.length - 1] || grown[grown.length - 1];
+        if (r) { $("news").textContent = fresh.length ? `New night: ${wday(r.night)}, ${num(r.expired_lb + r.close_lb + r.plate_lb)} lb weighed.` : `${wday(r.night)} changed: now ${num(r.weigh_ins)} weigh-ins.`; newsUntil = Date.now() + 45000; }
+      }
+    }
+    if (changed("top", d.top_waste)) renderTopWaste(d.top_waste);
+    if (changed("nights", d.nights)) {
+      const sel = $("night"), want = sel.value;
+      sel.replaceChildren(...[...d.nights].reverse().map(n => el("option", { value: n }, wday(n))));
+      sel.value = d.nights.includes(want) ? want : d.night;
+    }
+    if (changed("pans", [d.night, d.pans])) renderPans(d);
+    if (changed("stack", d.stack)) renderStack(d);
+    if (changed("ledger", d.ledger)) renderLedger(d);
+    if (changed("storage", [d.hypertables, d.aggregates.map(a => [a.name, a.rows, a.source_rows, a.real_time, a.refresh_every])]) || !live) renderStorage(d);
+  }
+  function tick() {
+    const box = $("live"), text = $("live-text");
+    box.classList.toggle("on", live);
+    if (live && data) {
+      const total = Object.values(data.ms || {}).reduce((a, b) => a + b, 0);
+      text.textContent = `Live · updated ${Math.max(0, Math.round((Date.now() - lastOk) / 1000))} s ago · ${Object.keys(data.ms || {}).length} reads in ${Math.round(total)} ms`;
+    } else if (snapshotAt) text.textContent = `Snapshot from ${new Date(snapshotAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}. The API isn't reachable, so this page isn't updating.`;
+    else text.textContent = "Connecting to Tiger…";
+    if (Date.now() > newsUntil) $("news").textContent = "";
+    document.querySelectorAll("main > section, .tiles").forEach(n => n.classList.toggle("stale", !live && !!data && !snapshotAt));
+  }
+  async function poll() {
+    if (busy || document.hidden) return;
+    busy = true;
+    try {
+      const night = $("night").value;
+      const r = await fetch(`${API}/api/tiger/dashboard${night ? `?night=${encodeURIComponent(night)}` : ""}`);
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      live = true; lastOk = Date.now(); snapshotAt = null;
+      render(d);
+      if (!benchLoaded) { benchLoaded = true; loadBench(); }
+    } catch (e) {
+      live = false;
+      if (!data) {
+        try {
+          const s = await (await fetch(SNAPSHOT)).json();
+          snapshotAt = s.snapshot_at;
+          render(s.dashboard);
+          renderBench(s.bench);
+          $("bench-run").classList.add("hidden");
+          $("night").disabled = true;
+        } catch (e2) { $("live-text").textContent = "Tiger isn't reachable and no snapshot is bundled yet."; busy = false; return; }
+      }
+    }
+    if (live) { $("bench-run").classList.remove("hidden"); $("night").disabled = false; }
+    busy = false;
+    tick();
+  }
+  $("night").addEventListener("change", poll);
+  let resizeTimer;
+  addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { hideTip(); renderWaste(); }, 120); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); });
+  poll();
+  setInterval(poll, POLL_MS);
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>

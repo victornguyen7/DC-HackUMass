@@ -1,5 +1,5 @@
 -- DC What-If: Tiger Data (TimescaleDB + pgvector) schema and categories for the website.
--- Generated 2026-11-13 by `uv run python -m dcsim.tiger_sql` (engine 0.6.2).
+-- Generated 2026-11-14 by `uv run python -m dcsim.tiger_sql` (engine 0.6.2).
 -- Idempotent: safe to run again. Existing rows are kept; new columns start NULL.
 -- Fact tables are filled by `dcsim tsdb load` (observed, categories) and `dcsim calibrate` (simulated
 -- metrics, dish_nights, station_hours, minute_series). Category tables are also filled here.
@@ -254,6 +254,45 @@ SELECT time_bucket('1 day', ts, 'America/New_York') AS day, source, scenario, ru
 FROM dcsim.pan_windows
 GROUP BY 1, source, scenario, run_id, seed, station, dish_id
  WITH NO DATA;
+
+-- Dashboard aggregates: real-time, with refresh policies. They are created empty; fill them once with
+--   CALL refresh_continuous_aggregate('dcsim.waste_daily_by_dish', NULL, NULL);
+--   CALL refresh_continuous_aggregate('dcsim.pan_hourly', NULL, NULL);
+-- (each as its own statement, outside a transaction; `dcsim tsdb refresh` does both).
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM timescaledb_information.continuous_aggregates
+             WHERE view_schema = 'dcsim' AND view_name = 'waste_daily_by_dish')
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                     WHERE table_schema = 'dcsim' AND table_name = 'waste_daily_by_dish' AND column_name = 'night') THEN
+    DROP MATERIALIZED VIEW dcsim.waste_daily_by_dish;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM timescaledb_information.continuous_aggregates
+             WHERE view_schema = 'dcsim' AND view_name = 'pan_hourly')
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                     WHERE table_schema = 'dcsim' AND table_name = 'pan_hourly' AND column_name = 'sum_left') THEN
+    DROP MATERIALIZED VIEW dcsim.pan_hourly;
+  END IF;
+END $$;
+CREATE MATERIALIZED VIEW IF NOT EXISTS dcsim.waste_daily_by_dish WITH (timescaledb.continuous, timescaledb.materialized_only = false) AS
+SELECT time_bucket('1 day', ts, 'America/New_York', TIMESTAMPTZ '2026-01-01 06:00:00-05') AS bucket, night, station, dish_id, dish, reason, period,
+       sum(portions) AS portions, sum(weight_lb) AS weight_lb, count(*) AS events
+FROM dcsim.waste_log
+GROUP BY 1, night, station, dish_id, dish, reason, period
+WITH NO DATA;
+SELECT add_continuous_aggregate_policy('dcsim.waste_daily_by_dish', start_offset => INTERVAL '3 days', end_offset => INTERVAL '1 hour', schedule_interval => INTERVAL '1 hour', if_not_exists => true);
+CREATE MATERIALIZED VIEW IF NOT EXISTS dcsim.pan_hourly WITH (timescaledb.continuous, timescaledb.materialized_only = false) AS
+SELECT time_bucket('1 hour', ts, 'America/New_York') AS bucket, night, source, scenario, station, dish_id, dish, period,
+       sum(portions_out) AS portions_out, sum(portions_eaten) AS portions_eaten,
+       min(portions_left) AS min_left, max(portions_left) AS max_left, sum(portions_left) AS sum_left,
+       count(*) FILTER (WHERE portions_left = 0) AS windows_empty, count(*) AS windows
+FROM dcsim.pan_windows
+GROUP BY 1, night, source, scenario, station, dish_id, dish, period
+WITH NO DATA;
+SELECT add_continuous_aggregate_policy('dcsim.pan_hourly', start_offset => INTERVAL '2 days', end_offset => INTERVAL '1 hour', schedule_interval => INTERVAL '30 minutes', if_not_exists => true);
 
 -- ============ 6. Views (forecast checks + website views) ============
 

@@ -13,8 +13,13 @@ uv run dcsim tsdb query "SELECT ..."              # any SQL
 uv run dcsim forecast --date 2026-11-15 --preset smaller_batches   # log a forecast in the ledger (adopting in the app does this too)
 uv run dcsim tsdb observe --date 2026-11-15       # SYNTHETIC: let that night "happen", then see it scored
 uv run dcsim tsdb similar --date 2026-11-14 --weather rain   # past nights most like this one (pgvector), + held-out check
-uv run dcsim bundle --waste-only                  # refresh calibration + ledger files in the demo bundle (seconds)
+uv run dcsim tsdb bench                           # raw hypertable vs continuous aggregate, server-side ms (§8)
+uv run dcsim tsdb refresh                         # bring every continuous aggregate up to date now
+uv run dcsim tsdb query stack                     # one query across the stack; also: hypertables aggregates waste-daily waste-dishes pans-hourly
+uv run dcsim bundle --waste-only                  # refresh calibration + ledger + dashboard snapshot in the demo bundle (seconds)
 ```
+
+Live dashboard: open `/tiger.html` on the web dev server (§8). API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
 (protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page, table `dcsim.night_embeddings`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
@@ -32,6 +37,7 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 4 | Calibration over time (weekly coverage aggregate + scheduled refresh) | idea | below |
 | 5 | Weather and event flags as crowd-forecast inputs | idea | below |
 | 6 | Tiger MCP server for live questions in the demo | idea (not installed) | below |
+| 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14, **not committed yet** (§8 has the handoff) | `dcsim tsdb bench`, `/api/tiger/*`, `web/public/tiger.html` |
 | 7 | **Similar-night search** with pgvector + a pgvectorscale DiskANN index | built | `dcsim tsdb similar`, `dcsim.night_vectors` (§7); API + web page handoff: [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md) |
 
 ## Schema (`dcsim`)
@@ -44,6 +50,8 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | `planned_batches` | table | 418 | the plan each observed night was meant to follow |
 | `calibrations` | table | 1 per run | fitted parameters, held-out scores, recovery check (JSONB) |
 | `dish_nightly` | **continuous aggregate** over `pan_windows` | | per dish per night per run: cooked, eaten, left at close, empty windows. Bucketed in local time, because dinner crosses midnight UTC |
+| `waste_daily_by_dish` | **continuous aggregate** over `waste_log`, real-time, refreshed hourly | 5,590 from 10,655 | per night, dish and reason: portions, lb, weigh-ins. The "day" starts at 6 am Eastern so a whole night is one bucket; has a `night` column for joins |
+| `pan_hourly` | **continuous aggregate** over `pan_windows`, real-time, refreshed every 30 min | 23,150 from 212,296 | per night, scenario, dish and clock hour: portions out / eaten, lowest and highest level, sum of levels, empty windows, windows |
 | `forecast_check` | view | | per observed night and scenario: simulated p10 / p50 / p90 and whether the observation fell inside |
 | `forecasts` | table, **append-only** | 1 per forecast | the ledger: naive and calibrated p10 / p50 / p90 for students, waste, stockouts, cooked, plus samples (JSONB) |
 | `night_vectors` | table + DiskANN index | 1 per observed night | 76-dim night vector (weekday, weather, event, hashed menu) for `dcsim tsdb similar` |
@@ -158,12 +166,17 @@ recompresses chunks that calibrate rewrote, vacuums, and reports:
 
 | table | row data | columnstore | ratio |
 | --- | --- | --- | --- |
+| minute_series | 29.5 MB | 0.7 MB | 40.0× |
 | pan_windows | 34.5 MB | 4.1 MB | 8.4× |
+| station_hours | 3.8 MB | 0.7 MB | 5.5× |
+| dish_nights | 5.4 MB | 2.2 MB | 2.4× |
 | nights | 1.3 MB | 0.6 MB | 2.2× |
 | waste_log | 1.7 MB | 1.2 MB | 1.4× |
-| total | 37.5 MB | 6.0 MB | **6.3×** |
+| total | 76.3 MB | 9.6 MB | **7.9×** |
 
-On-disk total is 13–16 MB (higher right after a calibrate, until autovacuum catches up), because each chunk keeps fixed index and heap overhead and the newest week stays in
+Measured 2026-11-14 after `dcsim tsdb compress` (36 chunks, all six hypertables; on disk 22.7 MB, down from
+about 87 MB before the three newer tables were converted). The earlier three-table figure was 37.5 MB → 6.0 MB (6.3×).
+On-disk total for those three is 13–16 MB (higher right after a calibrate, until autovacuum catches up), because each chunk keeps fixed index and heap overhead and the newest week stays in
 row-store until it is a day old. Calibrate still runs (33 s) with identical scores on compressed tables.
 
 ## 7. Similar-night search
@@ -195,6 +208,145 @@ It beats the overall average on waste but is no better than "average of the same
 reuses 7 menus, one per weekday, so menu and weekday carry the same information here, and the five Saturdays tie
 at the same distance. Treat it as a lookup ("what happened last time we served this on a Saturday"), not a
 forecast. It earns more with real history, where menus rotate independently of the weekday.
+
+## 8. Live dashboard: aggregates, benchmark, one query across the stack
+
+Built 2026-11-14 from the Tiger track plan (unified stack, hypertables, continuous aggregates, compression,
+show the performance, forecasting pitch). **Status: working and tested, not committed.** The handoff list is at
+the end of this section.
+
+### What the plan asked for, and where it stands
+
+| Plan item | Status | What exists |
+| --- | --- | --- |
+| 1. Unified stack: one query joins metric streams to plans and forecasts | ✅ | `dcsim tsdb query stack` (`tsdb.STACK_SQL`): two continuous aggregates + `nights` hypertable + `planned_batches` + simulated forecast range (`forecast_check`) + ledger (`forecasts`), one statement |
+| 2. Hypertables | ✅ already there | All six fact tables were hypertables before this work (`dcsim tsdb query hypertables`). **Don't run** the plan's `create_hypertable(..., migrate_data => true)` lines; they aren't needed |
+| 3. Continuous aggregates | ✅ | `waste_daily_by_dish` (the plan's, corrected) and `pan_hourly` (the plan's "second one"), both real-time with refresh policies |
+| 4. Compression | ✅ already there | Columnstore on all six hypertables with a 1-day policy (§3). **Don't run** the plan's `ALTER TABLE ... timescaledb.compress` / `add_compression_policy(..., '7 days')`: the columnstore is already on, with a different segment-by |
+| 5. Show the performance | ✅ | `dcsim tsdb bench`, `GET /api/tiger/bench`, and the dashboard's "Same question, raw table or aggregate" card |
+| 6. Pitch: forecasting engine scored in SQL | ✅ data, wording below | Ledger + `forecast_scorecard` (§1), shown on the dashboard |
+| Dashboard refreshing from the aggregate | ✅ | `web/public/tiger.html`, polls `GET /api/tiger/dashboard` every 5 s |
+
+### The two aggregates
+
+Defined in `tsdb.DASH_CAGGS`; `init_schema` creates them, `tsdb.refresh()` fills them, and the console script
+(`engine/sql/tiger_website.sql`) has the same SQL.
+
+- **`waste_daily_by_dish`** over `waste_log`: `bucket, night, station, dish_id, dish, reason, period, portions,
+  weight_lb, events`. Policy: every hour, last 3 days.
+- **`pan_hourly`** over `pan_windows`: `bucket, night, source, scenario, station, dish_id, dish, period,
+  portions_out, portions_eaten, min_left, max_left, sum_left, windows_empty, windows`. Policy: every 30 min, last 2 days.
+  Runs of one scenario (the 10 replay seeds) are pooled; average level = `sum_left / windows`.
+
+Three things differ from the SQL in the plan, each for a reason:
+
+1. **The day starts at 6 am Eastern, not midnight UTC.** Dinner runs 4:30 pm to midnight Eastern and close-out
+   weigh-ins land after midnight, so a UTC day (the plan's `time_bucket('1 day', ts)`) splits every night across
+   two buckets. The bucket is `time_bucket('1 day', ts, 'America/New_York', origin 06:00)`, and `night` is grouped
+   too, so the aggregate joins straight to `nights` and `forecasts`. Checked: 43 nights, 43 buckets, correct on
+   both sides of the Nov 1 clock change.
+2. **Real-time aggregation is on** (`materialized_only = false`): rows newer than the last materialized bucket are
+   read from the hypertable at query time. Checked with a rolled-back insert: a weigh-in for a later night showed in
+   the aggregate with no refresh. A change to an *older* night shows after a refresh (the policy, `dcsim tsdb
+   refresh`, or the loaders, which refresh on every load).
+3. **A dish's last pan window is the close-out** (pans are pulled, so the level reads 0). `pan_hourly` keeps
+   `max_left` so the level before closing is still there, and `PANS_SQL` marks each dish's `closing` hour. Counting
+   those zeros as "ran empty" would be wrong (838 of 882 zero readings in the recorded data are close-outs).
+
+An aggregate's definition can't be changed in place. Each one names a `marker` column of its current shape, and
+`DROP_DRAFT_CAGG` drops an older draft that lacks it. That is how the first `waste_daily_by_dish`, created in the
+Tiger console from the plan's SQL (UTC buckets, 131 rows, one day), was replaced.
+
+### Raw table vs aggregate (`dcsim tsdb bench`)
+
+Server-side time (plan + execute, from `EXPLAIN ANALYZE`), median of 5 runs, after `dcsim tsdb compress`.
+Tiger Cloud, TimescaleDB 2.32, Postgres 18, SYNTHETIC six-week history. Every pair returned identical rows.
+
+| # | Question | Raw hypertable | Aggregate | Result |
+| --- | --- | --- | --- | --- |
+| 1 | Portions eaten and average on hand by hour, every night and scenario | `pan_windows`, 212,296 rows: **557 ms** | `pan_hourly`, 23,150 rows: **82 ms** | aggregate 6.8× faster |
+| 2 | One night's pans by dish and hour (the dashboard's chart) | 3.1 ms | 1.2 ms | aggregate 2.5× faster |
+| 3 | Portions put out and eaten per dish, replays of every night | 5.5 ms | 8.9 ms | raw 1.7× faster |
+| 4 | Waste by night and reason | `waste_log`, 10,655 rows: 3.0 ms | `waste_daily_by_dish`, 5,590 rows: 4.2 ms | about the same |
+
+What to say about it:
+
+- **#1 is the aggregate's case.** The raw query works out a local-time hour for every row; the aggregate has one
+  row per dish and hour.
+- **#3 is the columnstore's case.** It groups by the columns the columnstore is segmented by (`scenario, dish_id`),
+  and the plan shows `VectorAgg` over `ColumnarScan`: compressed batches are summed directly. Before the chunks
+  were re-converted (right after a calibrate reload), the same raw query took 230–360 ms and the aggregate won by
+  about 27×. So: aggregate for fresh data, columnstore once it settles.
+- **#4 is a small table.** About 250 weigh-ins a night, and the aggregate only halves the rows.
+- The tables are small, so these show direction, not what a year of data would do. Say so if asked.
+
+### The dashboard (`web/public/tiger.html`)
+
+Standalone page, same style as the calibration page. Open `http://localhost:5173/tiger.html` with `make web` and
+`make serve` running (or add `?api=http://127.0.0.1:8000`). It polls every 5 s and shows:
+
+- tiles (nights, weigh-ins, pan readings, columnstore ratio, ledger size);
+- **waste by night**, stacked by reason, from `waste_daily_by_dish`, with a table view, and the most wasted dishes;
+- **pans by hour** for a chosen night, from `pan_hourly` (12 dishes whose pans ran lowest);
+- the **raw vs aggregate** timings, with a "Run again" button;
+- the **one-query** table (latest 10 nights) and the **forecast ledger**;
+- **storage**: chunks in the columnstore, row data vs columnstore, aggregate freshness.
+
+When the API isn't reachable it falls back to `web/public/cache/waste/tiger.json` and says it is a snapshot.
+`dcsim bundle` and `dcsim bundle --waste-only` write that file (`bundle.tiger_snapshot`). The current copy was
+written directly from that function, not by a bundle run, so `manifest.json` doesn't list it yet (the page doesn't
+need it to).
+
+The page is not linked from the React app. Reads take about 1.2 s per poll from a laptop (most of it connecting
+to Tiger Cloud).
+
+### Demo script (about 2 minutes)
+
+1. Open `/tiger.html`. "Weigh-ins and pan levels are hypertables. These charts read continuous aggregates."
+2. In a terminal: `cd engine && uv run dcsim tsdb observe --date 2026-11-13`. This writes a SYNTHETIC Nov 13
+   night. Within 5 s the page shows "New night: Fri, Nov 13", a new bar appears in the gap before Nov 14, and the
+   Nov 13 ledger rows change from "Awaiting the night" to inside or outside. **It has not been run yet, on
+   purpose: it only looks new once.** (Running it again rewrites the same night with no visible change.)
+3. Scroll to "Same question, raw table or aggregate", press **Run again**. Point at #1 (aggregate) and #3
+   (columnstore).
+4. "One query across the stack": `uv run dcsim tsdb query stack`, or paste `tsdb.STACK_SQL` in the Tiger console.
+5. Storage card: 76 MB of row data in 9.6 MB.
+
+**Pitch:** "A forecasting engine for dining-hall food waste where every prediction is written down before the
+night and scored against what happened, in plain SQL on Tiger Data." Say that the recorded nights are simulated
+(`source`, `scenario`, `run_id`, `seed` show it) and that the claim is a validated pipeline ready for real kitchen
+exports, not a measured saving. Check the sponsor's submission page for rules such as the Tiger Cloud tier.
+
+### What was changed on the live Tiger service (2026-11-14)
+
+- Dropped the console-made `waste_daily_by_dish` (and its policy job 1007) and recreated it; created `pan_hourly`.
+  Policy jobs 1008 (hourly) and 1010 (every 30 min). Both aggregates refreshed over the whole history.
+- Ran `dcsim tsdb compress`: `dish_nights`, `station_hours` and `minute_series` moved to the columnstore.
+- No fact rows were added, changed or deleted. `tsdb observe` for Nov 13 was **not** run.
+
+### Handoff: what is left
+
+Done and verified: engine code, 9 new tests (`engine/tests/test_tiger_dashboard.py`; full engine suite 160 passed,
+2 skipped on the final code), aggregates live on Tiger, the page checked in a browser at desktop, phone and dark,
+live and offline, with no console errors. The web unit tests and smoke scripts were not re-run (no React code changed).
+
+Still to do:
+
+1. **Commit.** Nothing here is committed. Changed: `Makefile`, `engine/sql/tiger_website.sql`,
+   `engine/src/dcsim/{api,bundle,cli,tiger_sql,tsdb}.py`, `docs/` (this file, STATUS, SPONSORS), READMEs. New:
+   `engine/tests/test_tiger_dashboard.py`, `web/public/tiger.html`, `web/public/cache/waste/tiger.json`.
+   (`tiger_sql.py` also carries one unrelated `# pyright: ignore` line from another session.)
+2. **Restart `make serve`.** An API started before this work answers 404 on `/api/tiger/*`, and the page then
+   shows the snapshot.
+3. **Re-run `dcsim bundle --waste-only` before the demo** so the snapshot and `manifest.json` are current
+   (seconds; it does not rebuild the simulation bundle).
+4. **Link the page** from Insights (next to Waste history) if it should be reachable in the app, and add it to
+   `web/scripts/smoke.mjs`.
+5. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
+   `DELETE` the `run_id = 'observed:live' AND night = '2026-11-13'` rows from `nights` and `pan_windows`, the
+   Nov 13 rows from `waste_log`, then `dcsim tsdb refresh`. Worth a small CLI action if rehearsing more than once.
+6. Ideas not started: a weekly coverage aggregate over the scorecard (#4 below), a longer history (the
+   "500-night" query) so the timings mean more, columnstore on the aggregates themselves, the Tiger MCP server (#6).
 
 ## Not built yet
 

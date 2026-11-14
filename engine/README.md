@@ -16,6 +16,8 @@ uv run dcsim bench
 uv run pytest -q                          # incl. golden Nov 13 baseline + the team's calibration targets
 DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py   # after an intended change to the numbers
 uv run dcsim tsdb similar --date 2026-11-14 --weather rain   # past nights most like this one, on Tiger (docs/TIGER.md §7)
+uv run dcsim tsdb bench                                      # raw hypertable vs continuous aggregate timings (docs/TIGER.md §8)
+uv run dcsim tsdb query stack                                # one SQL query across aggregates, nights, plan, forecasts, ledger
 ```
 
 Presets: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`, `forecast_reorder` (cook to the expected rush, with safety stock).
@@ -39,6 +41,8 @@ uv run dcsim cache stats|prune     # results live in <repo>/cache (DCSIM_CACHE t
 | `GET /api/dates`, `/api/menu/{date}`, `/api/arrivals/{date}`, `/api/layout`, `/api/presets`, `/api/facts/waste` | Reference data for the pages |
 | `GET/POST /api/scenarios`, `POST /api/scenarios/{id}/adopt`, `DELETE /api/scenarios/{id}` | Saved and adopted what-ifs (one adopted per date); DELETE needs the admin token when `DCSIM_ADMIN_TOKEN` is set |
 | `POST /api/warm`, `GET /api/warm` | Admin job: precompute baseline (+ presets) for dates (`{dates?, presets, n_nights}`); GET polls progress |
+| `GET /api/tiger/dashboard` | `?night=` → what `web/public/tiger.html` shows: waste by night and pans by hour from the continuous aggregates, the one-query join, ledger, hypertable and columnstore facts; 503 without Tiger ([docs/TIGER.md §8](../docs/TIGER.md)) |
+| `GET /api/tiger/bench` | `?repeat=` (1–10) → the same questions timed on the raw hypertables and on their aggregates |
 | `GET /api/similar-nights` | `?date=&students=&weather=&event_night=&menu_date=&limit=` → recorded nights before `date` most like it, with their waste and stockouts. Tiger pgvector, else the local synthetic files; 422 on bad input, 503 if Tiger fails after connecting ([docs/SIMILAR_NIGHTS.md](../docs/SIMILAR_NIGHTS.md)) |
 | `POST /api/backtest`, `GET /api/backtest` | Admin job: re-run the back-test (`{plan?, regenerate_history}`) → `backtest.json`; GET polls |
 

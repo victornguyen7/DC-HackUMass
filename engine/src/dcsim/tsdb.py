@@ -26,6 +26,10 @@ Tables (hypertables when TimescaleDB is present, plain tables otherwise):
                   cat_values) and website views (v_nights, v_waste_by_reason, v_menu)
 
 Continuous aggregate `dish_nightly` rolls pan_windows up to one row per dish per night per run.
+Two more feed the live dashboard (DASH_CAGGS, docs/TIGER.md section 8): `waste_daily_by_dish` over
+waste_log and `pan_hourly` over pan_windows, each with a refresh policy and real-time aggregation.
+`bench()` times the same question on the raw hypertable and on its aggregate; `dashboard()` is what
+GET /api/tiger/dashboard serves.
 Columns added since engine 0.4 (NEW_COLUMNS) are added by init_schema; simulated rows fill every
 metric column, observed rows only what a real record has (waste cost, per-period waste, students by
 period). `sql/tiger_website.sql` (dcsim.tiger_sql) is the same schema as one console script.
@@ -330,6 +334,83 @@ PLAIN_VIEW = ("CREATE OR REPLACE VIEW dcsim.dish_nightly AS"
               + DISH_NIGHTLY_SELECT.format(bucket="date_trunc('day', ts AT TIME ZONE 'America/New_York')",
                                            last_left="(array_agg(portions_left ORDER BY ts DESC))[1]"))
 
+# ------------------------------------------------------------------ dashboard aggregates (docs/TIGER.md section 8)
+# A service night runs 4:30 pm to midnight Eastern and its close-out weigh-ins land just after midnight
+# (and dinner crosses midnight UTC), so the "day" is a local day that starts at 6 am: every row of a
+# night lands in one bucket, on both sides of the clock change. `night` is grouped too, so the
+# aggregate joins straight to dcsim.nights and dcsim.forecasts.
+NIGHT_BUCKET = "time_bucket('1 day', ts, 'America/New_York', TIMESTAMPTZ '2026-01-01 06:00:00-05')"
+NIGHT_BUCKET_PLAIN = ("(date_trunc('day', (ts AT TIME ZONE 'America/New_York') - INTERVAL '6 hours') + INTERVAL '6 hours')"
+                      " AT TIME ZONE 'America/New_York'")
+# name -> source hypertable, SELECT (with {bucket}), bucket expressions, refresh policy (start, end, every)
+DASH_CAGGS: dict[str, dict] = {
+    "waste_daily_by_dish": {
+        "source": "waste_log",
+        "select": """
+SELECT {bucket} AS bucket, night, station, dish_id, dish, reason, period,
+       sum(portions) AS portions, sum(weight_lb) AS weight_lb, count(*) AS events
+FROM dcsim.waste_log
+GROUP BY 1, night, station, dish_id, dish, reason, period""",
+        "bucket": NIGHT_BUCKET, "bucket_plain": NIGHT_BUCKET_PLAIN,
+        "policy": ("3 days", "1 hour", "1 hour"), "marker": "night",
+    },
+    # Per dish per clock hour: how much went out, how much was eaten, how low the pan got.
+    # Runs of a scenario (replay seeds) are pooled; `windows` is the number of 30-min windows behind a row.
+    # A dish's last window is the close-out (pans are pulled, so it reads 0): max_left keeps the level
+    # before it, and windows_empty counts it, so readers treat a dish's final hour separately (PANS_SQL).
+    "pan_hourly": {
+        "source": "pan_windows",
+        "select": """
+SELECT {bucket} AS bucket, night, source, scenario, station, dish_id, dish, period,
+       sum(portions_out) AS portions_out, sum(portions_eaten) AS portions_eaten,
+       min(portions_left) AS min_left, max(portions_left) AS max_left, sum(portions_left) AS sum_left,
+       count(*) FILTER (WHERE portions_left = 0) AS windows_empty, count(*) AS windows
+FROM dcsim.pan_windows
+GROUP BY 1, night, source, scenario, station, dish_id, dish, period""",
+        "bucket": "time_bucket('1 hour', ts, 'America/New_York')",
+        "bucket_plain": "date_trunc('hour', ts, 'America/New_York')",
+        "policy": ("2 days", "1 hour", "30 minutes"), "marker": "sum_left",
+    },
+}
+# An aggregate's definition can't be altered in place. Each one names a `marker` column of its current
+# shape; an older draft without it is dropped and recreated (it only holds derived rows). This is how
+# the first waste_daily_by_dish, made in the Tiger console with UTC-day buckets that split every night
+# in two and no `night` column, is replaced.
+DROP_DRAFT_CAGG = "".join(f"""
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM timescaledb_information.continuous_aggregates
+             WHERE view_schema = 'dcsim' AND view_name = '{name}')
+     AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                     WHERE table_schema = 'dcsim' AND table_name = '{name}' AND column_name = '{spec["marker"]}') THEN
+    DROP MATERIALIZED VIEW dcsim.{name};
+  END IF;
+END $$;
+""" for name, spec in DASH_CAGGS.items())
+
+
+def dash_cagg_sql(name: str, plain: bool = False) -> str:
+    """CREATE for one dashboard aggregate: a real-time continuous aggregate, or a plain view without TimescaleDB."""
+    spec = DASH_CAGGS[name]
+    if plain:
+        return f"CREATE OR REPLACE VIEW dcsim.{name} AS" + spec["select"].format(bucket=spec["bucket_plain"])
+    # materialized_only = false: rows newer than the last materialized bucket are read from the
+    # hypertable at query time, so a weigh-in shows up before the next refresh.
+    return (f"CREATE MATERIALIZED VIEW IF NOT EXISTS dcsim.{name}"
+            " WITH (timescaledb.continuous, timescaledb.materialized_only = false) AS"
+            + spec["select"].format(bucket=spec["bucket"]) + "\nWITH NO DATA")
+
+
+def dash_policy_sql(name: str) -> str:
+    start, end, every = DASH_CAGGS[name]["policy"]
+    return (f"SELECT add_continuous_aggregate_policy('dcsim.{name}', start_offset => INTERVAL '{start}',"
+            f" end_offset => INTERVAL '{end}', schedule_interval => INTERVAL '{every}', if_not_exists => true)")
+
+
+def dash_caggs_script() -> str:
+    """The dashboard aggregates as console SQL (dcsim.tiger_sql)."""
+    return DROP_DRAFT_CAGG + "".join(f"{dash_cagg_sql(n)};\n{dash_policy_sql(n)};\n" for n in DASH_CAGGS)
+
+
 # Per observed night: where the observation fell inside each simulated scenario's spread.
 FORECAST_CHECK = """
 CREATE OR REPLACE VIEW dcsim.forecast_check AS
@@ -432,6 +513,10 @@ def init_schema(conn) -> bool:
         conn.execute(HYPERTABLES)
         conn.execute(NEW_HYPERTABLES)
         conn.execute(CAGG)
+        conn.execute(DROP_DRAFT_CAGG)
+        for name in DASH_CAGGS:
+            conn.execute(dash_cagg_sql(name))
+            conn.execute(dash_policy_sql(name))
         enabled = {r[0] for r in conn.execute(
             "SELECT hypertable_name FROM timescaledb_information.hypertables"
             " WHERE hypertable_schema = 'dcsim' AND compression_enabled")}
@@ -443,6 +528,8 @@ def init_schema(conn) -> bool:
                          " if_not_exists => true)")
     else:
         conn.execute(PLAIN_VIEW)
+        for name in DASH_CAGGS:
+            conn.execute(dash_cagg_sql(name, plain=True))
     conn.execute(FORECAST_CHECK)
     conn.execute(SCORECARD)
     conn.execute(WEB_VIEWS)
@@ -467,18 +554,22 @@ def configured() -> bool:
 
 
 def refresh(conn) -> None:
-    """Bring the continuous aggregate up to date (needs a non-transaction connection)."""
+    """Bring every continuous aggregate up to date over its whole history (needs a non-transaction
+    connection). The refresh policies only look back a few days; a reload of older nights needs this."""
     if not has_timescale(conn):
         return
-    if not conn.autocommit:
+    have = {r[0] for r in conn.execute(
+        "SELECT view_name FROM timescaledb_information.continuous_aggregates WHERE view_schema = 'dcsim'")}
+    was = conn.autocommit
+    if not was:
         conn.commit()
         conn.autocommit = True
-        try:
-            conn.execute("CALL refresh_continuous_aggregate('dcsim.dish_nightly', NULL, NULL)")
-        finally:
-            conn.autocommit = False
-    else:
-        conn.execute("CALL refresh_continuous_aggregate('dcsim.dish_nightly', NULL, NULL)")
+    try:
+        for name in ("dish_nightly", *DASH_CAGGS):
+            if name in have:
+                conn.execute(f"CALL refresh_continuous_aggregate('dcsim.{name}', NULL, NULL)")
+    finally:
+        conn.autocommit = was
 
 
 def table_sizes(conn) -> dict[str, int]:
@@ -891,3 +982,251 @@ def format_table(cols: list[str], rows: list[tuple]) -> str:
     w = [max([len(c)] + [len(r[i]) for r in cells]) for i, c in enumerate(cols)]
     line = "  ".join(c.ljust(w[i]) for i, c in enumerate(cols))
     return "\n".join([line, "  ".join("-" * x for x in w)] + ["  ".join(v.ljust(w[i]) for i, v in enumerate(r)) for r in cells])
+
+
+# ------------------------------------------------------------------ the unified stack, the aggregates, the dashboard
+# (docs/TIGER.md section 8)
+
+# One statement across the whole stack: two continuous aggregates (over the weigh-in and pan
+# hypertables), the nights hypertable, the relational plan, the simulated forecast ranges and the ledger.
+STACK_SQL = """
+WITH waste AS (      -- continuous aggregate over the waste_log hypertable (LeanPath-style weigh-ins)
+  SELECT night, sum(weight_lb) FILTER (WHERE reason <> 'plate') AS weighed_lb, sum(events) AS weigh_ins
+  FROM dcsim.waste_daily_by_dish GROUP BY night),
+pans AS (            -- continuous aggregate over the pan_windows hypertable (MetaFoodX-style pan levels)
+  SELECT night, sum(portions_out) AS portions_out, sum(portions_eaten) AS portions_eaten
+  FROM dcsim.pan_hourly WHERE scenario = 'observed' GROUP BY night),
+plan AS (            -- relational: the production plan the night was meant to follow
+  SELECT menu_date, plan, count(*) AS dishes, sum(batch_size * starting_batches) AS opening_portions
+  FROM dcsim.planned_batches GROUP BY menu_date, plan),
+ledger AS (          -- relational, append-only: forecasts written down before the night
+  SELECT for_night, count(*) AS forecasts FROM dcsim.forecasts GROUP BY for_night)
+SELECT n.night, n.weekday, n.weather, n.plan, n.students,
+       round(w.weighed_lb::numeric, 1) AS weighed_lb, w.weigh_ins::int AS weigh_ins,
+       p.portions_out::int AS portions_out, p.portions_eaten::int AS portions_eaten,
+       pl.dishes::int AS planned_dishes, pl.opening_portions::int AS opening_portions,
+       round(f.waste_p10::numeric) AS sim_p10, round(f.waste_p50::numeric) AS sim_p50,
+       round(f.waste_p90::numeric) AS sim_p90, f.waste_inside AS inside_range,
+       coalesce(l.forecasts, 0)::int AS ledger_forecasts
+FROM dcsim.nights n                                          -- hypertable: one row per recorded night
+LEFT JOIN waste w USING (night)
+LEFT JOIN pans p USING (night)
+LEFT JOIN plan pl ON pl.menu_date = n.menu_date AND pl.plan = n.plan
+LEFT JOIN dcsim.forecast_check f ON f.night = n.night AND f.scenario = 'forecast_calibrated'   -- simulated runs
+LEFT JOIN ledger l ON l.for_night = n.night
+WHERE n.scenario = 'observed'
+ORDER BY n.night DESC
+"""
+
+HYPERTABLES_SQL = """
+SELECT h.hypertable_name AS name, h.num_chunks::int AS chunks,
+       (SELECT count(*) FROM timescaledb_information.chunks c
+         WHERE c.hypertable_schema = h.hypertable_schema AND c.hypertable_name = h.hypertable_name
+           AND c.is_compressed)::int AS columnstore_chunks,
+       hypertable_size(format('%I.%I', h.hypertable_schema, h.hypertable_name)::regclass) AS bytes,
+       coalesce(s.before_compression_total_bytes, 0) AS rowstore_bytes,
+       coalesce(s.after_compression_total_bytes, 0) AS columnstore_bytes
+FROM timescaledb_information.hypertables h
+LEFT JOIN LATERAL hypertable_columnstore_stats(format('%I.%I', h.hypertable_schema, h.hypertable_name)::regclass) s ON true
+WHERE h.hypertable_schema = 'dcsim'
+ORDER BY bytes DESC
+"""
+
+AGGREGATES_SQL = """
+SELECT a.view_name AS name, a.hypertable_name AS source, NOT a.materialized_only AS real_time,
+       j.schedule_interval::text AS refresh_every, j.config->>'start_offset' AS looks_back,
+       js.last_successful_finish AS last_refresh, js.next_start AS next_refresh
+FROM timescaledb_information.continuous_aggregates a
+LEFT JOIN timescaledb_information.jobs j
+       ON j.proc_name = 'policy_refresh_continuous_aggregate'
+      AND (j.hypertable_schema, j.hypertable_name) IN ((a.view_schema, a.view_name),
+            (a.materialization_hypertable_schema, a.materialization_hypertable_name))
+LEFT JOIN timescaledb_information.job_stats js ON js.job_id = j.job_id
+WHERE a.view_schema = 'dcsim'
+ORDER BY a.view_name
+"""
+
+WASTE_BY_NIGHT_SQL = """
+SELECT night::text AS night,
+       round(coalesce(sum(weight_lb) FILTER (WHERE reason = 'expired'), 0)::numeric, 1)::float AS expired_lb,
+       round(coalesce(sum(weight_lb) FILTER (WHERE reason = 'close'), 0)::numeric, 1)::float AS close_lb,
+       round(coalesce(sum(weight_lb) FILTER (WHERE reason = 'plate'), 0)::numeric, 1)::float AS plate_lb,
+       sum(events)::int AS weigh_ins
+FROM dcsim.waste_daily_by_dish GROUP BY night ORDER BY night
+"""
+
+TOP_WASTE_SQL = """
+SELECT dish, station, round(sum(weight_lb)::numeric, 1)::float AS waste_lb, sum(portions)::int AS portions,
+       sum(events)::int AS weigh_ins, count(DISTINCT night)::int AS nights
+FROM dcsim.waste_daily_by_dish WHERE reason <> 'plate'
+GROUP BY dish, station ORDER BY sum(weight_lb) DESC LIMIT 10
+"""
+
+# One night's pans by clock hour. `closing` marks a dish's final hour, whose last window is the
+# close-out: there the level is max_left (before the pans were pulled) and one empty window is expected.
+PANS_SQL = """
+SELECT dish, station, period, extract(hour FROM bucket AT TIME ZONE 'America/New_York')::int AS hour,
+       portions_out::int AS portions_out, portions_eaten::int AS portions_eaten, min_left::int AS min_left,
+       max_left::int AS max_left, windows_empty::int AS windows_empty, windows::int AS windows,
+       bucket = max(bucket) OVER (PARTITION BY dish_id) AS closing
+FROM dcsim.pan_hourly
+WHERE scenario = 'observed' AND night = %(night)s
+ORDER BY dish, bucket
+"""
+
+QUERIES.update({
+    "stack": ("One query across the stack: aggregates over two hypertables + nights + plan + forecasts + ledger",
+              STACK_SQL + "LIMIT 20"),
+    "hypertables": ("Hypertables: chunks, how many are in the columnstore, size on disk, row data vs columnstore",
+                    HYPERTABLES_SQL),
+    "aggregates": ("Continuous aggregates: source hypertable, real-time, refresh policy, last and next refresh",
+                   AGGREGATES_SQL),
+    "waste-daily": ("Waste by night and reason, from the waste_daily_by_dish continuous aggregate", WASTE_BY_NIGHT_SQL),
+    "waste-dishes": ("Most wasted dishes (pre-consumer), from the waste_daily_by_dish continuous aggregate", TOP_WASTE_SQL),
+    "pans-hourly": ("Pans by hour of night: portions eaten and average portions on hand, from pan_hourly", """
+        SELECT extract(hour FROM bucket AT TIME ZONE 'America/New_York')::int AS hour, scenario,
+               sum(portions_eaten)::int AS eaten, round(sum(sum_left) / sum(windows), 1) AS avg_on_hand
+        FROM dcsim.pan_hourly GROUP BY 1, 2 ORDER BY 1, 2"""),
+})
+
+# The same question asked of the raw hypertable and of its continuous aggregate (`dcsim tsdb bench`).
+# The four are picked to show where each feature earns its keep, including where the aggregate doesn't:
+# `why` says what to expect, the measured numbers say what happened.
+BENCH: list[dict] = [
+    {"id": "pans_by_hour", "title": "Portions eaten and average portions on hand by hour, every night and scenario",
+     "raw_table": "pan_windows", "aggregate": "pan_hourly",
+     "why": "The raw query works out a local-time hour for every row; the aggregate keeps one row per dish and "
+            "hour, about nine times fewer to read.",
+     "raw": """SELECT extract(hour FROM ts AT TIME ZONE 'America/New_York')::int AS hour, scenario,
+       sum(portions_eaten)::int AS eaten, round(avg(portions_left), 1) AS avg_on_hand
+FROM dcsim.pan_windows GROUP BY 1, 2 ORDER BY 1, 2""",
+     "agg": """SELECT extract(hour FROM bucket AT TIME ZONE 'America/New_York')::int AS hour, scenario,
+       sum(portions_eaten)::int AS eaten, round(sum(sum_left) / sum(windows), 1) AS avg_on_hand
+FROM dcsim.pan_hourly GROUP BY 1, 2 ORDER BY 1, 2"""},
+    {"id": "pans_one_night", "title": "One night's pans by dish and hour (the dashboard's pan chart)",
+     "raw_table": "pan_windows", "aggregate": "pan_hourly",
+     "why": "The dashboard's own read: one night out of the whole table.",
+     "raw": """SELECT dish_id, extract(hour FROM ts AT TIME ZONE 'America/New_York')::int AS hour,
+       sum(portions_out)::int AS put_out, sum(portions_eaten)::int AS eaten, min(portions_left) AS lowest
+FROM dcsim.pan_windows WHERE scenario = 'observed' AND night = '2026-11-07' GROUP BY 1, 2 ORDER BY 1, 2""",
+     "agg": """SELECT dish_id, extract(hour FROM bucket AT TIME ZONE 'America/New_York')::int AS hour,
+       sum(portions_out)::int AS put_out, sum(portions_eaten)::int AS eaten, min(min_left) AS lowest
+FROM dcsim.pan_hourly WHERE scenario = 'observed' AND night = '2026-11-07' GROUP BY 1, 2 ORDER BY 1, 2"""},
+    {"id": "dish_totals", "title": "Portions put out and eaten per dish, replays of every night",
+     "raw_table": "pan_windows", "aggregate": "pan_hourly",
+     "why": "Grouped by the columns the columnstore is segmented by (scenario, dish): fully converted chunks are "
+            "summed batch by batch, so the raw table needs no aggregate here. After a reload leaves chunks in the "
+            "row store, the aggregate is the faster one until they are converted again (dcsim tsdb compress).",
+     "raw": """SELECT dish_id, sum(portions_out)::bigint AS put_out, sum(portions_eaten)::bigint AS eaten,
+       min(portions_left) AS lowest
+FROM dcsim.pan_windows WHERE scenario = 'replay' GROUP BY 1 ORDER BY 1""",
+     "agg": """SELECT dish_id, sum(portions_out)::bigint AS put_out, sum(portions_eaten)::bigint AS eaten,
+       min(min_left) AS lowest
+FROM dcsim.pan_hourly WHERE scenario = 'replay' GROUP BY 1 ORDER BY 1"""},
+    {"id": "waste_by_night", "title": "Waste by night and reason (the dashboard's bars)",
+     "raw_table": "waste_log", "aggregate": "waste_daily_by_dish",
+     "why": "A small table: about 250 weigh-ins a night, and the aggregate keeps one row per dish, night and "
+            "reason, so it only halves the rows.",
+     "raw": """SELECT night, reason, round(sum(weight_lb)::numeric, 1) AS lb, count(*) AS weigh_ins
+FROM dcsim.waste_log GROUP BY 1, 2 ORDER BY 1, 2""",
+     "agg": """SELECT night, reason, round(sum(weight_lb)::numeric, 1) AS lb, sum(events)::bigint AS weigh_ins
+FROM dcsim.waste_daily_by_dish GROUP BY 1, 2 ORDER BY 1, 2"""},
+]
+
+
+def _median(xs: list[float]) -> float:
+    s = sorted(xs)
+    return s[len(s) // 2] if len(s) % 2 else (s[len(s) // 2 - 1] + s[len(s) // 2]) / 2
+
+
+def _timed(conn, sql: str, repeat: int) -> dict:
+    """Server-side time of one statement from EXPLAIN ANALYZE (no network): median of `repeat` runs after a warm-up."""
+    plan, run = [], []
+    for i in range(repeat + 1):
+        doc = conn.execute("EXPLAIN (ANALYZE, FORMAT JSON) " + sql).fetchone()[0]
+        doc = (json.loads(doc) if isinstance(doc, str) else doc)[0]
+        if i:  # the first run warms the cache
+            plan.append(doc["Planning Time"])
+            run.append(doc["Execution Time"])
+    return {"plan_ms": round(_median(plan), 2), "exec_ms": round(_median(run), 2),
+            "total_ms": round(_median([p + r for p, r in zip(plan, run)]), 2)}
+
+
+def bench(conn, repeat: int = 5) -> list[dict]:
+    """Each BENCH question on the raw hypertable and on its continuous aggregate: rows behind each,
+    server-side times, and whether the two answers are identical."""
+    out = []
+    for b in BENCH:
+        raw_rows = conn.execute(f"SELECT count(*) FROM dcsim.{b['raw_table']}").fetchone()[0]
+        agg_rows = conn.execute(f"SELECT count(*) FROM dcsim.{b['aggregate']}").fetchone()[0]
+        same = conn.execute(b["raw"]).fetchall() == conn.execute(b["agg"]).fetchall()
+        raw, agg = _timed(conn, b["raw"], repeat), _timed(conn, b["agg"], repeat)
+        out.append({"id": b["id"], "title": b["title"], "why": b["why"], "raw_table": b["raw_table"],
+                    "aggregate": b["aggregate"],
+                    "raw_rows": raw_rows, "aggregate_rows": agg_rows, "same_answer": same, "raw": raw, "agg": agg,
+                    "speedup": round(raw["total_ms"] / agg["total_ms"], 1) if agg["total_ms"] else None,
+                    "raw_sql": b["raw"], "agg_sql": b["agg"]})
+    return out
+
+
+def _plain(v):
+    if isinstance(v, (dt.date, dt.datetime)):
+        return v.isoformat()
+    if isinstance(v, dt.timedelta):
+        return str(v)
+    if hasattr(v, "is_finite"):  # Decimal
+        return float(v)
+    return v
+
+
+def _dicts(conn, sql: str, args: dict | None = None) -> list[dict]:
+    with conn.cursor() as cur:
+        cur.execute(sql, args)
+        cols = [c.name for c in cur.description]
+        return [{c: _plain(v) for c, v in zip(cols, r)} for r in cur.fetchall()]
+
+
+def dashboard(conn, night: str | None = None) -> dict:
+    """Everything the live Tiger dashboard shows, read from the continuous aggregates and the
+    unified join. `ms` is the wall time of each read as the API saw it (network included)."""
+    import time
+
+    if not has_timescale(conn):
+        raise RuntimeError("the dashboard needs TimescaleDB (hypertables and continuous aggregates)")
+    ms: dict[str, float] = {}
+
+    def read(key: str, sql: str, args: dict | None = None) -> list[dict]:
+        t = time.perf_counter()
+        rows = _dicts(conn, sql, args)
+        ms[key] = round((time.perf_counter() - t) * 1000, 1)
+        return rows
+
+    meta = read("meta", "SELECT now() AS as_of, (SELECT extversion FROM pg_extension WHERE extname = 'timescaledb')"
+                        " AS timescaledb, current_setting('server_version_num')::int / 10000 AS postgres")[0]
+    hypertables = read("hypertables", HYPERTABLES_SQL)
+    counts = read("rows", " UNION ALL ".join(
+        f"SELECT '{t}' AS name, count(*) AS rows FROM dcsim.{t}"
+        for t in [h["name"] for h in hypertables] + ["planned_batches", "forecasts", "calibrations", "dish_nightly",
+                                                      *DASH_CAGGS]))
+    n_rows = {c["name"]: c["rows"] for c in counts}
+    for h in hypertables:
+        h["rows"] = n_rows.get(h["name"])
+    aggregates = [a | {"rows": n_rows.get(a["name"]), "source_rows": n_rows.get(a["source"])}
+                  for a in read("aggregates", AGGREGATES_SQL)]
+    waste = read("waste_by_night", WASTE_BY_NIGHT_SQL)
+    nights = [w["night"] for w in waste]
+    night = night if night in nights else (nights[-1] if nights else None)
+    pans = read("pans", PANS_SQL, {"night": night}) if night else []
+    return {
+        **meta, "synthetic": True, "night": night, "nights": nights,
+        "hypertables": hypertables,
+        "tables": [{"name": t, "rows": n_rows.get(t)} for t in ("planned_batches", "forecasts", "calibrations")],
+        "aggregates": aggregates,
+        "waste_by_night": waste,
+        "top_waste": read("top_waste", TOP_WASTE_SQL),
+        "pans": pans,
+        "stack": read("stack", STACK_SQL),
+        "ledger": scorecard(conn)[-8:],
+        "ms": ms,
+        "note": "Recorded nights are SYNTHETIC (generated by the engine) until UMass Dining shares real exports.",
+    }

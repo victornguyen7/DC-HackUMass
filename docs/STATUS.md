@@ -118,14 +118,14 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | --- | --- | --- |
 | 1 | Gemini API | ◐ Ask box, narration, explain, dish prior, embeddings on Gemini; function calling and menu photo open |
 | 2 | Agentic hack (Sentient) | ✗ Planning agent not built (needs tools + loop; optimizer N6 optional) |
-| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; 500-night demo query and MCP open |
+| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14, not committed yet** (`/tiger.html`, two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; 500-night demo query and MCP open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 
 ## Other docs
 - [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 and Tier 1 all ✅ (1.1 Container pans and 1.4 per-minute series in 0.6.0); 2.4 seats ◐ (built, limits off); model-realism table all ✅ (item-level popularity, swipe queue, groups, pan sizes, forecast-reorder preset, allergens in 0.6.0; staffing by hour, per-date crowd, carving earlier); calibration targets ✅; optimizer, sweep, sensitivity analysis ✗.
 - [LLM.md](LLM.md) §5 and [GEMINI.md](GEMINI.md) §7: their own ~~done~~ lists are current.
-- [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–3 and 7 built; 4–6 ideas; MCP not installed).
+- [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–3, 7 and 8 built; 4–6 ideas; MCP not installed). §8 ends with the handoff list for the dashboard work (uncommitted as of 2026-11-14).
 
 ## How to keep this current
 1. Fix something → mark it in its own doc (strike through + **Fixed** with the engine version or date).

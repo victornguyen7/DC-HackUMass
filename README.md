@@ -39,7 +39,7 @@ A web app in `web/`. It was first built from the Figma file (*DC What-If — Wor
 | **Insights › Waste history** | `/waste` | Recorded waste history (**synthetic**, clearly labeled) vs. what the recommended plan would have done on each past night: reduction with range, $ per week, stockout trade-off, where waste comes from, top waste dishes with "with plan" numbers, station filters, adopted-plan tracker, CSV export. | Synthetic history + back-test |
 | **Insights › Similar nights** | `/similar-nights` | Describe a night (date, expected students, weather, event night, optionally a prepared menu) and get the recorded nights before it with the most similar conditions, most similar first, with the waste and stockouts each one actually had (recorded outcomes, not a forecast). Searches Tiger with pgvector, or the local synthetic files when Tiger isn't set up. | `GET /api/similar-nights` ([`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md)) |
 
-There is also a standalone **calibration page** (`web/public/calibration.html`, open `/calibration.html` on the dev server) that checks the forecasts against held-out nights (see `docs/TIGER.md`).
+There is also a standalone **calibration page** (`web/public/calibration.html`, open `/calibration.html` on the dev server) that checks the forecasts against held-out nights (see `docs/TIGER.md`), and a standalone **live Tiger dashboard** (`web/public/tiger.html`, open `/tiger.html`) that reads waste and pan levels from continuous aggregates and refreshes every 5 s (`docs/TIGER.md` §8).
 
 **Two ways to run it:**
 - **Offline (demo-safe):** the pages read a precomputed **static bundle** in `web/public/cache` (results, replays, narrations, back-test). No backend, no network.

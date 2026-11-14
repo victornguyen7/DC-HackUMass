@@ -544,6 +544,32 @@ def forecasts(date: str | None = None) -> list[dict]:
         raise HTTPException(503, f"Tiger unreachable: {str(e)[:200]}") from e
 
 
+def _tiger_read(fn):
+    """Run one read against Tiger; 503 with a plain reason when it isn't configured or reachable."""
+    from . import tsdb
+
+    if not tsdb.configured():
+        raise HTTPException(503, "Tiger not configured (DCSIM_TSDB_URL or TIGER_SERVICE_ID in engine/.env)")
+    try:
+        with tsdb.connect() as conn:
+            return fn(tsdb, conn)
+    except Exception as e:
+        raise HTTPException(503, f"Tiger unreachable: {str(e)[:200]}") from e
+
+
+@app.get("/api/tiger/dashboard")
+def tiger_dashboard(night: str | None = None) -> dict:
+    """The live Tiger dashboard: waste by night and pans by hour from the continuous aggregates, the
+    unified join (aggregates + nights + plan + forecasts + ledger), hypertable and columnstore facts."""
+    return _tiger_read(lambda tsdb, conn: tsdb.dashboard(conn, night))
+
+
+@app.get("/api/tiger/bench")
+def tiger_bench(repeat: int = 3) -> list[dict]:
+    """The same questions timed on the raw hypertables and on their continuous aggregates (server-side ms)."""
+    return _tiger_read(lambda tsdb, conn: tsdb.bench(conn, min(max(repeat, 1), 10)))
+
+
 @app.get("/api/similar-nights")
 def similar_nights_endpoint(
     date: str, students: int, weather: str = "clear", event_night: bool = False,

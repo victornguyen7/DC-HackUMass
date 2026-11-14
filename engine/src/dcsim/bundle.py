@@ -8,7 +8,8 @@ Writes:
     traces/<config_hash>_s<seed>.json.gz   median-night 3D trace (gzip; use DecompressionStream)
     narration/<config_hash>_s<seed>.json   highlight students on that night: card + narration (every traced entry)
     ref/dates.json, ref/presets.json, ref/layout.json, ref/menu/<date>.json, ref/arrivals/<date>.json
-    waste/history.json, waste/backtest.json, waste/calibration.json, waste/forecasts.json, waste/facts.json
+    waste/history.json, waste/backtest.json, waste/calibration.json, waste/forecasts.json, waste/tiger.json,
+    waste/facts.json
 
 Result key (build the same string in the frontend):
     "<date>|<preset or baseline>|<lever>"   lever is "" or one of
@@ -187,6 +188,9 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
     ledger = forecast_snapshot()
     if ledger is not None:
         size += _write(out / "waste" / "forecasts.json", ledger)
+    tiger = tiger_snapshot()
+    if tiger is not None:
+        size += _write(out / "waste" / "tiger.json", tiger)
 
     manifest = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
@@ -204,7 +208,8 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
                   "history": "waste/history.json" if hist["nights"] else None,
                   "backtest": "waste/backtest.json" if backtest_path().exists() else None,
                   "calibration": "waste/calibration.json" if calib else None,
-                  "forecasts": "waste/forecasts.json" if ledger is not None else None},
+                  "forecasts": "waste/forecasts.json" if ledger is not None else None,
+                  "tiger": "waste/tiger.json" if tiger is not None else None},
     }
     size += _write(out / "manifest.json", manifest)
     log(f"bundle: {len(entries)} results, {sum(1 for e in entries if e['trace'])} traces, {size / 1e6:.1f} MB -> {out}")
@@ -227,8 +232,25 @@ def forecast_snapshot() -> dict | None:
             "_note": "Copy of the append-only Tiger ledger. Observations are SYNTHETIC.", "forecasts": rows}
 
 
+def tiger_snapshot() -> dict | None:
+    """The Tiger dashboard as of now, with the raw-vs-aggregate timings (offline copy of
+    GET /api/tiger/dashboard and /api/tiger/bench for web/public/tiger.html); None without Tiger."""
+    from . import tsdb
+
+    if not tsdb.configured():
+        return None
+    try:
+        with tsdb.connect() as conn:
+            return {"kind": "tiger_dashboard", "snapshot_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+                    "dashboard": tsdb.dashboard(conn), "bench": tsdb.bench(conn, 5)}
+    except Exception as e:
+        print(f"bundle: Tiger dashboard snapshot skipped ({str(e)[:120]})")
+        return None
+
+
 def refresh_waste(out: Path | None = None) -> list[str]:
-    """Rewrite only the calibration report and ledger snapshot in an existing bundle (seconds, not minutes)."""
+    """Rewrite only the calibration report, ledger snapshot and Tiger dashboard snapshot in an existing
+    bundle (seconds, not minutes)."""
     from .calibration import public_report
 
     out = out or default_out()
@@ -237,7 +259,8 @@ def refresh_waste(out: Path | None = None) -> list[str]:
         raise FileNotFoundError(f"no bundle at {out}; run `dcsim bundle` first")
     manifest = json.loads(manifest_path.read_text())
     written = []
-    for name, data in (("calibration", public_report()), ("forecasts", forecast_snapshot())):
+    for name, data in (("calibration", public_report()), ("forecasts", forecast_snapshot()),
+                       ("tiger", tiger_snapshot())):
         if data is not None:
             _write(out / "waste" / f"{name}.json", data)
             manifest.setdefault("waste", {})[name] = f"waste/{name}.json"

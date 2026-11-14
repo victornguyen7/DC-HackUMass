@@ -26,7 +26,7 @@ from .config import ENGINE_VERSION
 from .data import available_dates, crowd_factors, default_data_dir, load_baseline
 from .tsdb import (  # noqa: F401  (NEW_COLUMNS re-exported for tests)
     CAGG, CATEGORY_TABLES, COLUMNSTORE, COLUMNSTORE_AFTER, FORECAST_CHECK, HYPERTABLES, NEW_COLUMNS, NEW_HYPERTABLES,
-    NEW_TABLES, SCORECARD, TABLES, VECTOR_TABLE, WEB_VIEWS, alter_columns_sql,
+    NEW_TABLES, SCORECARD, TABLES, VECTOR_TABLE, WEB_VIEWS, alter_columns_sql, dash_caggs_script,
 )
 
 
@@ -97,7 +97,7 @@ def category_rows() -> str:
                 round(base.crowd.expected_students), "Lines formed at 9 pm are still served (last call)")]
     if base.late_close_min is not None:
         periods.append(("late_night", "Late night", _clock(base.close_min), _clock(base.late_close_min % (24 * 60)),
-                        round(base.late_crowd.expected_students), "Serving stops at midnight; seated students may stay"))
+                        round(base.late_crowd.expected_students), "Serving stops at midnight; seated students may stay")) # pyright: ignore[reportOptionalMemberAccess]
     out.append(_rows("periods", ["period", "label", "opens", "closes", "expected_students", "note"], periods, ["period"]))
 
     st_json = json.loads((default_data_dir() / "stations.json").read_text())["stations"]
@@ -180,6 +180,11 @@ CREATE EXTENSION IF NOT EXISTS vector;
         "\n-- ============ 4. Category tables ============\n", CATEGORY_TABLES,
         "\n-- ============ 5. Hypertables, columnstore, continuous aggregate ============\n",
         HYPERTABLES, NEW_HYPERTABLES, columnstore_sql(COLUMNSTORE), CAGG + ";\n",
+        "\n-- Dashboard aggregates: real-time, with refresh policies. They are created empty; fill them once with\n"
+        "--   CALL refresh_continuous_aggregate('dcsim.waste_daily_by_dish', NULL, NULL);\n"
+        "--   CALL refresh_continuous_aggregate('dcsim.pan_hourly', NULL, NULL);\n"
+        "-- (each as its own statement, outside a transaction; `dcsim tsdb refresh` does both).\n",
+        dash_caggs_script(),
         "\n-- ============ 6. Views (forecast checks + website views) ============\n", FORECAST_CHECK, SCORECARD, WEB_VIEWS,
         "\n-- ============ 7. Category rows (from the current data files) ============\n", category_rows(),
     ]

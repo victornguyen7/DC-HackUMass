@@ -1,7 +1,7 @@
 # Shortcuts from ENGINE.md. Run from the repo root.
 ENGINE := cd engine && uv run
 
-.PHONY: web web-test web-test-api web-build prepare test serve waste backtest tsdb-load calibrate tsdb-compress demo-bundle demo-bundle-quick cache-clean personas personas-adopt narrate
+.PHONY: web web-test web-test-api web-build prepare test serve waste backtest tsdb-load calibrate tsdb-compress tsdb-bench demo-bundle demo-bundle-quick cache-clean personas personas-adopt narrate
 
 prepare:            ## real menus -> per-date menus + baseline kitchen plans
 	$(ENGINE) dcsim prepare
@@ -27,6 +27,9 @@ calibrate: tsdb-load    ## fit on weeks 1-4, forecast + score held-out weeks 5-6
 
 tsdb-compress:      ## convert older chunks to the Tiger columnstore and print sizes
 	$(ENGINE) dcsim tsdb compress
+
+tsdb-bench:         ## time the same questions on the raw hypertables and on their continuous aggregates
+	$(ENGINE) dcsim tsdb bench
 
 demo-bundle: backtest   ## static bundle for an offline demo (~4 min, ~15 MB) -> web/public/cache
 	$(ENGINE) dcsim bundle --grid

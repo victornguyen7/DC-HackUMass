@@ -323,7 +323,7 @@ Consequences:
 | No orbital 3D: the Hall plays on an illustrated isometric view and the top-down plan | U2 / ISSUES N1 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
-| **`.dev.vars` with app tokens is on GitHub** (`e926ea1`): rotate the tokens, stop tracking the file | ISSUES T6 |
+| **`.dev.vars` with app tokens is on GitHub** (`e926ea1`): the file is no longer tracked (2026-11-14), but the tokens are in git history: rotate them | ISSUES T6 |
 | 6 test forecasts for Nov 13 are in the append-only Tiger ledger; read the Nov 13 scorecard without them | ISSUES T8 |
 | The Hall's pan level counts the hot-hold cabinet too, so for the 30 s of a pan swap it shows food in a pan a student just found empty | UI_ISSUES U18 |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |

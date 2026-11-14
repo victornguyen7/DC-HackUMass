@@ -80,6 +80,10 @@ body { font-family: "Avenir Next", Manrope, system-ui, sans-serif; font-size: 14
 .station-queue-chart h4 { margin-bottom: 10px; }
 .station-queue-chart > div:last-child { display: flex; justify-content: space-between; color: var(--text-2); font-size: 10px; }
 .guided-stage { min-width: 0; position: sticky; top: 18px; display: grid; gap: 16px; }
+.replay-unavailable { grid-row: 1 / -1; min-height: 360px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: clamp(24px, 5vw, 64px); }
+.replay-unavailable h2 { font-size: 26px; line-height: 1.3; }
+.replay-unavailable > p:not(.guide-eyebrow) { max-width: 44ch; color: var(--text-2); line-height: 1.7; margin: 14px 0 24px; }
+.replay-unavailable .btn { min-height: 44px; }
 .guided-viewport { background: radial-gradient(ellipse at 50% 50%, #263b47, #12232e 75%); border: 1px solid #3a4d59; border-radius: 13px; overflow: hidden; color: #edf3f5; }
 .hall-scene-heading { padding: 23px 24px 0; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .hall-scene-heading h2 { margin: 0; font-size: 18px; font-weight: 500; letter-spacing: -.3px; }

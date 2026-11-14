@@ -361,7 +361,8 @@ function AskBox({ date, apiUp, onApply }: { date: string; apiUp: boolean; onAppl
             </>
           ) : <><b>Couldn't turn that into settings</b>{reply.error}</>}
           {reply.unsupported.length > 0 && <div className="hint">Not supported: {reply.unsupported.join("; ")}</div>}
-          {reply.source !== "llm" && reply.source !== "cache" && <div className="faint" style={{ fontSize: 11 }}>Keyword matching (no AI key set)</div>}
+          <div className="faint" style={{ fontSize: 11 }}>{reply.method === "function_calling" ? "Read by Gemini function calling"
+            : reply.source === "llm" || reply.source === "cache" ? "Read by AI (JSON settings)" : "Keyword matching (no AI key set)"}</div>
           {reply.ok && reply.request && (reply.settings?.length ?? 0) > 0 && (
             <div className="row" style={{ marginTop: 6 }}>
               <button className="btn primary" onClick={() => onApply(draftFromRequest(reply.request!))}>Apply and run</button>

@@ -11,7 +11,7 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 
 | # | Prize | Our feature | Status | Effort left | Owner |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Best Use of Gemini API | Plain-English what-if box on Gemini; **menu photo → menu JSON** | ◐ box built, photo import not | S–M | |
+| 1 | Best Use of Gemini API | Plain-English what-if box on **Gemini function calling**; Sam's tool loop | ✅ built | — | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
 | 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night search | ◐ mostly built | S (polish + demo) | |
 | 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ✗ not built | S–M | |
@@ -32,37 +32,31 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 
 ## 1. Best Use of Gemini API
 
-**Pitch:** "Type a what-if in plain English and Gemini turns it into simulation settings. Or photograph the menu board and Gemini turns it into tonight's menu."
+**Pitch:** "Type a what-if in plain English and Gemini calls the simulator's own settings functions to set it up. Give Sam a goal and Gemini drives the simulator through function calls until the plan works."
 
 ### What already exists
 Gemini is already the main LLM (`gemini-3.5-flash-lite`, key in `engine/.env`). Full details: [`GEMINI.md`](GEMINI.md), rules: [`LLM.md`](LLM.md).
 
 | Feature | Where | Status |
 | --- | --- | --- |
-| Plain English → settings (`/api/ask`, Lab's "Ask in plain English" box) | `engine/src/dcsim/ai/ask.py` | ✅ built, uses **JSON-schema output** (`AskPlan`), not function calling |
+| Plain English → settings (`/api/ask`, Lab's "Ask in plain English" box) | `engine/src/dcsim/ai/ask.py` | ✅ built: **function calling** with Gemini, JSON-schema and keyword fallbacks |
 | Student stories (Hall → click a student) | `ai/narrate.py`, `/api/narrate/...` | ✅ built, streaming |
 | "Why?" explanations | `ai/explain.py`, `/api/explain` | ✅ built |
 | New-dish AI estimate | `ai/dish_prior.py`, `/api/ai/dish-prior` | ✅ built (`gemini-4-hydrogen`) |
 | Similar dishes (embeddings) | `ai/similar.py`, `/api/ai/similar-dishes` | ✅ built |
-| Function calling | — | tested on our key and works (GEMINI.md §3.3), **not used yet** |
-| Image input (menu photo) | — | tested on our key and works (GEMINI.md §3.3), **not built** |
+| Function calling | `ai/ask.py`, `ai/agent.py` (Sam), `LLM.tool_turn` | ✅ built |
 
-### To build
+### Built: function calling for the what-if box (2026-11-14)
+With a Gemini key, the Lab's "Ask in plain English" box (`/api/ask`, `dcsim ask`) answers through **function calling** (`ai/ask.py`, `ask-fc-v1`):
+- 13 declared functions, one per lever: `apply_preset`, `set_crowd`, `shift_arrivals`, `set_servers`, `set_service_time`, `set_shift`, `set_cooks`, `set_batch`, `scale_batch`, `set_popularity`, `remove_dish`, plus `note_unsupported` and `explain`. Station and dish arguments are enums of that date's real ids, so the model can't invent one.
+- Mode `ANY` (the model must answer with calls; several per turn). The calls are collected into the same `AskPlan` the JSON path uses and checked by building the config. Invalid calls go back as function responses with their errors for one re-ask.
+- Fallbacks: still invalid, or Gemini down → the JSON-schema path → keyword matching. The reply's `method` says which answered (`function_calling`, `json_schema`, `keywords`); the Lab shows it under the answer.
+- Cached per conversation in `llm_cache`. Tests: `engine/tests/test_ask_fc.py` (fake client: request shape and enums, re-ask with the error, fallback to JSON, batch math).
+- Live on `gemini-3.5-flash-lite`, 1.0–1.3 s per question: "one more server at Grill and 10% busier", "cut the hot pot batches in half and add a cook at dinner", "remove the eggplant parmesan and make the black bean burger twice as popular", "one extra Grill server from 6:30 pm to 8 pm only" (two shifts) all mapped exactly; "raise prices and open at 4 pm" went to unsupported.
 
-**A. Function calling for the what-if box** (S). Do this only if we want to say "function calling" on stage. The JSON version already works.
-1. In `ai/ask.py`, declare one function per lever, with arguments matching the `Levers` fields in `engine/src/dcsim/levers.py`:
-   `set_servers(station, servers)`, `scale_batch(dish_id, multiplier)`, `set_crowd(multiplier)`, `shift_arrivals(minutes)`, `set_popularity(dish_id, multiplier)`, `remove_dish(dish_id)`, `apply_preset(preset)`.
-2. Pass them as `tools=` in the Gemini config. Map each returned call onto a `Levers` field, and reject unknown station or dish ids with the same check `ask.py` uses today.
-3. Keep the JSON-schema path as the fallback, and keep the keyword parser for `LLM_PROVIDER=mock`.
-4. Tests: add a fake-client case in `engine/tests/test_ai.py`. Tests never call Google.
+Ask Sam (§2) uses function calling too, for its tools.
 
-**B. Menu photo → menu JSON** (M). This is the "wow" moment, and it solves "UMass Dining has no menu API".
-1. New module `engine/src/dcsim/ai/menu_photo.py`: send the image with `Part.from_bytes(data, mime_type)` and a Pydantic schema shaped like the `dishes` entries in `data/worcester/menus/<date>_dinner.json` (`id`, `name`, `station`, `diet_tags`, …).
-2. **Check before saving:** every station must exist in `data/worcester/stations.json`, and diet tags must come from the known set. Then reuse the classification in `engine/src/dcsim/menu_import.py` to assign roles (entree / side / addon …).
-3. Save as a **draft** (for example `data/llm_drafts/menus/`) for a person to review. Never write straight into `data/worcester/menus/`. LLM.md rule: AI output is a draft until reviewed.
-4. API: `POST /api/ai/menu-from-photo` (multipart upload). CLI: `uv run dcsim menu-photo path/to/photo.jpg --date 2026-11-21`.
-5. UI: an "Import menu from photo" button in the Lab, with the draft shown as a table to approve.
-6. Demo: photograph the actual Worcester menu board on the day of judging.
+Image input (a menu-photo import) is **out of scope** for this project.
 
 **Rules (LLM.md):** never inside the simulation, a fallback for every job, a check before anyone sees the output, cached answers, and AI-made values labeled "AI estimate".
 
@@ -212,12 +206,12 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 
 1. **Domain (§5)** and **Vultr server (§4)** early. DNS and certificates take a while to take effect, and every later demo benefits.
 2. **Agent (§2)**: the biggest new feature, and it enters two prizes. Start with 3 tools and the loop. Add `optimize` only if there's time.
-3. **Gemini extras (§1)**: function calling falls out of the agent work. The menu photo import is separate and quick to demo.
+3. ✅ **Gemini (§1)**: function calling is built for the what-if box and for Sam.
 4. **Tiger polish (§3)**: the 500-night query (track record, situational fit and MCP questions are done).
 5. **Uncertainty sweep on Vultr (§4.6)** if there's time left.
 
 ## One demo story that hits all five
 
-> Open **https://our-domain** (5, served from Vultr: 4). Photograph tonight's menu board → Gemini turns it into the menu (1).
+> Open **https://our-domain** (5, served from Vultr: 4). Type *"one more server at Grill and 10% busier"* → Gemini's function calls set it up and the Lab runs it (1).
 > Type *"cut waste 20% without any vegetarian dish running out"* → the agent runs simulations on the server, shows each try, and hands back a cook sheet (2, 1, 4).
 > Adopt it → the forecast is logged to Tiger; open the calibration page and ask the Tiger MCP *"which dishes ran out on rainy Fridays?"* (3).

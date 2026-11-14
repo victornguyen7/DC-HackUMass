@@ -4,6 +4,13 @@
 a ScenarioRequest. Nothing runs here: the manager sees the settings it chose
 (and what it couldn't express), can edit them, then runs. The request is
 validated by building the config; one re-ask with the error if it fails.
+
+Three ways in, tried in order:
+    1. Gemini function calling (provider gemini): one function per lever (set_servers, scale_batch,
+       set_crowd, ...), with the real station and dish ids as enums; the calls become an AskPlan.
+    2. JSON-schema output (any LLM provider): the model fills AskPlan directly.
+    3. Keyword matching (no key, or both failed): `_mock`.
+The reply's `method` says which one answered.
 """
 
 from __future__ import annotations
@@ -18,9 +25,10 @@ from ..levers import KitchenLever, KitchenStaffLever, Levers, ScenarioRequest, S
 from ..presets import PRESETS
 from ..reports import clock
 from .describe import config_changes
-from .llm import LLM
+from .llm import LLM, LLMError
 
 PROMPT_VERSION = "ask-v3"  # v3 (engine 0.6.0): cooks per period and server shifts
+FC_VERSION = "ask-fc-v1"  # function calling
 
 
 class StationChange(BaseModel):
@@ -195,18 +203,194 @@ def ask(llm: LLM, question: str, date: str) -> dict:
                     "(stations, kitchen, crowd_multiplier, ...) or list the request under unsupported"]
         return []
 
+    fc_error = None
+    if llm.provider == "gemini":
+        try:
+            got = ask_with_functions(llm, question, date, tables, check)
+            if got is not None:
+                plan, src, model = got
+                return _result(question, date, plan, src, model, None, "function_calling")
+            fc_error = "function calls still invalid after one re-ask"
+        except LLMError as e:
+            fc_error = str(e)
+
     reply = llm.structured("ask", PROMPT_VERSION, system=SYSTEM, user=f"{tables}\n\nQuestion: {question}",
                            schema=AskPlan, mock=lambda: _mock(question, date), check=check, effort="low")
     plan = reply.value
+    method = "keywords" if reply.source in ("mock", "fallback") else "json_schema"
     if reply.problems:  # still invalid after the re-ask: keep nothing, say why
         return {"question": question, "ok": False, "error": reply.problems[0], "explanation": plan.explanation,
-                "unsupported": plan.unsupported, "source": reply.source, "model": reply.model}
+                "unsupported": plan.unsupported, "source": reply.source, "model": reply.model, "method": method,
+                "function_calling_error": fc_error}
+    return _result(question, date, plan, reply.source, reply.model, reply.error, method) | {"function_calling_error": fc_error}
+
+
+def _result(question: str, date: str, plan: AskPlan, source: str, model: str, error: str | None, method: str) -> dict:
     req = to_request(date, plan)
     cfg, base = build_config(req), load_baseline(date)
+    settings = ([f"Preset: {req.preset}"] if req.preset else []) + config_changes(base, cfg)
+    # no explanation from the model: the settings list says it (the Lab shows it right above)
+    explanation = plan.explanation or ("" if settings else "Nothing in the question maps to a setting.")
     return {
         "question": question, "ok": True,
         "request": req.model_dump(exclude_none=True),
-        "settings": ([f"Preset: {req.preset}"] if req.preset else []) + config_changes(base, cfg),
-        "explanation": plan.explanation, "unsupported": plan.unsupported,
-        "config_hash": config_hash(cfg), "source": reply.source, "model": reply.model, "error": reply.error,
+        "settings": settings,
+        "explanation": explanation, "unsupported": plan.unsupported,
+        "config_hash": config_hash(cfg), "source": source, "model": model, "error": error, "method": method,
     }
+
+
+# ---------------------------------------------------------------- Gemini function calling
+
+
+FC_SYSTEM = SYSTEM + """
+Answer by calling functions: one call per setting to change (call several in one answer), then explain once.
+Relative changes ("half", "one more", "10% busier") are computed from the current values in the tables.
+Anything no function can express goes to note_unsupported."""
+
+
+def _fn(name: str, description: str, props: dict, required: list[str]) -> dict:
+    return {"name": name, "description": description,
+            "parameters": {"type": "object", "properties": props, "required": required}}
+
+
+def ask_tools(date: str) -> list[dict]:
+    """One function per lever, with this date's real ids as enums."""
+    cfg = load_baseline(date)
+    stations = [s.id for s in cfg.stations]
+    batch = [d.id for d in cfg.menu if d.id in cfg.kitchen]
+    dishes = [d.id for d in cfg.menu]
+    st = {"type": "string", "enum": stations, "description": "station id"}
+    bd = {"type": "string", "enum": batch, "description": "batch-cooked dish id"}
+    dd = {"type": "string", "enum": dishes, "description": "dish id"}
+    num = lambda d: {"type": "number", "description": d}  # noqa: E731
+    integer = lambda d: {"type": "integer", "description": d}  # noqa: E731
+    hhmm = {"type": "string", "description": "24-hour HH:MM"}
+    periods = list(cfg.kitchen_resources.cooks) if cfg.kitchen_resources else ["dinner"]
+    return [
+        _fn("apply_preset", "Start from a preset scenario (applied before the other changes).",
+            {"preset": {"type": "string", "enum": list(PRESETS)}}, ["preset"]),
+        _fn("set_crowd", "Change how many students come, as a multiple of the expected crowd (1.1 = 10% busier).",
+            {"multiplier": num("0.3-3")}, ["multiplier"]),
+        _fn("shift_arrivals", "Move every dinner arrival wave earlier (negative) or later (positive).",
+            {"minutes": num("-120 to 120")}, ["minutes"]),
+        _fn("set_servers", "Total servers at a station for the whole night.",
+            {"station_id": st, "servers": integer("new total, at least 1")}, ["station_id", "servers"]),
+        _fn("set_service_time", "Minutes a server needs per item at a station.",
+            {"station_id": st, "minutes_per_item": num("minutes, > 0")}, ["station_id", "minutes_per_item"]),
+        _fn("set_shift", "Servers at a station from a time of night on (until the next shift for that station). "
+            "One more server 18:30-20:00 = two calls: 18:30 -> current+1, 20:00 -> current.",
+            {"station_id": st, "from_time": hhmm, "servers": integer("servers from that time on")},
+            ["station_id", "from_time", "servers"]),
+        _fn("set_cooks", "Cooks in the kitchen for a service period.",
+            {"period": {"type": "string", "enum": periods}, "cooks": integer("new total cooks")}, ["period", "cooks"]),
+        _fn("set_batch", "Set a batch-cooked dish's plan. Give only the fields to change.",
+            {"dish_id": bd, "batch_size": integer("portions per batch"), "starting_batches": integer("pans ready at opening"),
+             "reorder_point": integer("pan level that starts the next batch"), "max_batches": integer("most extra batches"),
+             "last_batch_time": hhmm}, ["dish_id"]),
+        _fn("scale_batch", "Multiply a dish's batch size (0.5 = half-size batches).",
+            {"dish_id": bd, "multiplier": num("0.1-3")}, ["dish_id", "multiplier"]),
+        _fn("set_popularity", "Make a dish more or less popular, as a multiple of today (0.1-3).",
+            {"dish_id": dd, "multiplier": num("0.1-3")}, ["dish_id", "multiplier"]),
+        _fn("remove_dish", "Take a dish off tonight's menu.", {"dish_id": dd}, ["dish_id"]),
+        _fn("note_unsupported", "A part of the question no function can express (prices, other halls, breakfast, ...).",
+            {"request_part": {"type": "string"}}, ["request_part"]),
+        _fn("explain", "Call once: one or two sentences for the manager on which settings you chose and why.",
+            {"text": {"type": "string"}}, ["text"]),
+    ]
+
+
+def calls_to_plan(calls: list[dict], date: str) -> tuple[AskPlan, list[str | None]]:
+    """Function calls -> AskPlan, plus one problem (or None) per call, in order."""
+    cfg = load_baseline(date)
+    plan, problems = _empty(), []
+    stations = {s.id: s for s in cfg.stations}
+    kitchen: dict[str, KitchenChange] = {}
+    for c in calls:
+        name, a = c.get("name"), c.get("args") or {}
+        err = None
+        try:
+            if name == "apply_preset":
+                if a.get("preset") not in PRESETS:
+                    raise ValueError(f"unknown preset {a.get('preset')!r}")
+                plan.preset = a["preset"]
+            elif name == "set_crowd":
+                plan.crowd_multiplier = float(a["multiplier"])
+            elif name == "shift_arrivals":
+                plan.crowd_shift_min = float(a["minutes"])
+            elif name in ("set_servers", "set_service_time", "set_shift"):
+                if a.get("station_id") not in stations:
+                    raise ValueError(f"unknown station {a.get('station_id')!r}")
+                sid = a["station_id"]
+                if name == "set_shift":
+                    plan.shifts.append(ShiftChange(station_id=sid, from_time=str(a["from_time"]), servers=int(a["servers"])))
+                else:
+                    ch = next((x for x in plan.stations if x.station_id == sid), None) or StationChange(
+                        station_id=sid, servers=None, service_median_min=None)
+                    if ch not in plan.stations:
+                        plan.stations.append(ch)
+                    if name == "set_servers":
+                        ch.servers = int(a["servers"])
+                    else:
+                        ch.service_median_min = float(a["minutes_per_item"])
+            elif name == "set_cooks":
+                plan.cooks.append(CookChange(period=str(a["period"]), cooks=int(a["cooks"])))
+            elif name in ("set_batch", "scale_batch"):
+                did = a.get("dish_id")
+                if did not in cfg.kitchen:
+                    raise ValueError(f"{did!r} is not a batch-cooked dish")
+                k = kitchen.setdefault(did, KitchenChange(dish_id=did, batch_size=None, starting_batches=None,
+                                                          reorder_point=None, max_batches=None, last_batch_time=None))
+                if name == "scale_batch":
+                    k.batch_size = max(1, round(cfg.kitchen[did].batch_size * float(a["multiplier"])))
+                else:
+                    for f in ("batch_size", "starting_batches", "reorder_point", "max_batches"):
+                        if a.get(f) is not None:
+                            setattr(k, f, int(a[f]))
+                    if a.get("last_batch_time"):
+                        k.last_batch_time = str(a["last_batch_time"])
+            elif name == "set_popularity":
+                plan.popularity.append(PopularityChange(dish_id=str(a["dish_id"]), multiplier=float(a["multiplier"])))
+            elif name == "remove_dish":
+                plan.remove_dishes.append(str(a["dish_id"]))
+            elif name == "note_unsupported":
+                plan.unsupported.append(str(a["request_part"]))
+            elif name == "explain":
+                plan.explanation = str(a["text"])
+            else:
+                raise ValueError(f"unknown function {name!r}")
+        except (KeyError, TypeError, ValueError) as e:
+            err = f"{type(e).__name__}: {e}" if not isinstance(e, ValueError) else str(e)
+        problems.append(err)
+    plan.kitchen = list(kitchen.values())
+    return plan, problems
+
+
+def ask_with_functions(llm: LLM, question: str, date: str, tables: str, check) -> tuple[AskPlan, str, str] | None:
+    """Gemini function calling, one re-ask with the errors. None if the calls are still invalid."""
+    tools = ask_tools(date)
+    contents = [{"role": "user", "parts": [{"text": f"{tables}\n\nQuestion: {question}"}]}]
+    sources = set()
+    for attempt in range(2):
+        content, src, model = llm.tool_turn("ask_fc", FC_VERSION, system=FC_SYSTEM, contents=contents, tools=tools,
+                                            effort="low", max_tokens=1500)
+        sources.add(src)
+        calls = [p["function_call"] for p in content.get("parts", []) if p.get("function_call")]
+        plan, problems = calls_to_plan(calls, date)
+        overall = [] if any(problems) else check(plan)
+        if not any(problems) and not overall:
+            return plan, ("cache" if sources == {"cache"} else "llm"), model
+        if attempt == 1:
+            return None
+        replies = []
+        for c, p in zip(calls, problems):
+            fr = {"name": c.get("name"), "response": {"error": p} if p else {"ok": True}}
+            if c.get("id"):
+                fr["id"] = c["id"]
+            replies.append({"function_response": fr})
+        fix = "Some calls failed (see the errors). Call every function again for the complete, corrected answer."
+        if overall:
+            fix += " Problems with the whole answer: " + "; ".join(overall)
+        contents += [content, {"role": "user", "parts": replies + [{"text": fix}]}]
+    return None
+

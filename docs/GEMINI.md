@@ -11,7 +11,7 @@ Status as of 2026-11-13 (engine 0.6.1; nothing Gemini-specific changed since eng
 - **Provider:** Gemini is the main LLM provider. Groq is kept as a fallback provider (`LLM_PROVIDER=groq`), and `mock` is used for tests and when there is no key.
 - **Model:** `gemini-3.5-flash-lite`. It is the only fast text model that was reliably available on the free tier during testing (0.5–2.4 s per call).
 - **Live jobs:** `/ask`, click narration and explain all run on Gemini and pass their checks. Personas stay paused.
-- **Also free on this key and useful:** embeddings, function calling, image input, URL reading, token counting, and `gemini-4-hydrogen` (a slower thinking model).
+- **Also free on this key and used:** function calling (the what-if box and Ask Sam), embeddings and `gemini-4-hydrogen` (a slower thinking model, for Sam and the dish prior). URL reading and token counting work too but aren't used. Image input is out of scope for this project.
 - **Not on the free tier:** Google Search grounding, image generation, `gemini-4-carbon` / `-argon`, `gemini-omni-flash-preview`, context caching and the Batch API.
 
 ---
@@ -80,7 +80,7 @@ Sample embedding check: Teriyaki Salmon vs Teriyaki Tofu similarity 0.70; Teriya
 | JSON-schema output | **OK** | Used by every structured job. |
 | Streaming | **OK** | Used by narration. |
 | Function calling | **OK**, 0.6 s | "Put 3 servers on the grill" → `set_servers(station="grill", servers=3)`. |
-| Image input | **OK**, 2.2 s | Read a tiny test PNG correctly. Photos of menus would work the same way. |
+| Image input | **OK**, 2.2 s | Out of scope for this project; not used. |
 | URL context (`url_context` tool) | **OK**, 1.8 s | Read the public Worcester menu page and summarized it. |
 | Code execution | **OK**, 1.1 s | Runs Python on Google's side. Not needed: the engine does the math. |
 | Token counting (`count_tokens`) | **OK**, 0.1 s, free | Useful for budgeting prompts. |
@@ -122,7 +122,7 @@ Ranked by value to the project. Every idea follows the LLM.md rules: never insid
    - The numbers stay deterministic: the borrowed popularity is still the geometric mean of the chosen dishes.
    - Fallback: same station and same category.
 2. ◐ **Function built** (`similar.near_duplicates`), not wired in while personas are paused. **Embeddings to reject near-duplicate personas.** The paused persona run failed partly on repeats ("Late Hearty Eater" ×4). Whatever produces personas next, a check can embed `label + description` and refuse pairs above a cosine threshold, giving the "reject near-duplicates" rule in LLM.md §5.1 a concrete test. It works for hand-written and survey-derived personas too.
-3. **Function calling for `/ask`.** Each lever (servers, batch size, pans, crowd, popularity, remove/add dish) becomes a declared function with typed arguments. The model's calls map one-to-one onto `Levers` fields, and an unknown station is rejected by the argument check. The JSON-schema version already works, so do this only if `/ask` misreads requests.
+3. ✅ **Built (2026-11-14). Function calling for `/ask`** (`ask-fc-v1`): 13 functions, one per lever, with the date's station and dish ids as enums; invalid calls are re-asked once with their errors; JSON-schema and keyword fallbacks. Details: SPONSORS.md §1.
 4. ✅ **Built for the dish prior** (`DCSIM_LLM_MODEL_STRONG`). **`gemini-4-hydrogen` for offline jobs** (dish prior, explain, any future persona job).
    - It answered on the free tier and gave distinct labels in a 5-persona test.
    - It is 2–3× slower than flash-lite, which is fine for jobs that run before the demo.
@@ -131,10 +131,9 @@ Ranked by value to the project. Every idea follows the LLM.md rules: never insid
 
 ### Medium value
 
-6. **Menu import from a photo or screenshot** (image input). A manager photographs the posted menu, and the model returns dishes as `MenuItem` JSON. The draft is checked against `stations.json` and reviewed before saving to `data/worcester/menus/`. Today the 8 menu files are entered by hand.
-7. **Menu import from the dining website** (`url_context`). Same output and the same review step. The model reading a page is not an exact scraper, so the result is a draft to review, never used directly.
-8. ◐ **Runout windows added** (explain-v3); the full cook sheet is not sent yet. **Long context for explain.** With a 1M-token context, explain can see the full cook sheet and runout windows, so it can say *when* a dish ran out (LLM.md §5.7). Check token counts with `count_tokens` first.
-9. **Token budgeting.** Call `count_tokens` before large prompts, and serve the template instead of a call that would hit the output cap.
+6. **Menu import from the dining website** (`url_context`). Same output and the same review step. The model reading a page is not an exact scraper, so the result is a draft to review, never used directly.
+7. ◐ **Runout windows added** (explain-v3); the full cook sheet is not sent yet. **Long context for explain.** With a 1M-token context, explain can see the full cook sheet and runout windows, so it can say *when* a dish ran out (LLM.md §5.7). Check token counts with `count_tokens` first.
+8. **Token budgeting.** Call `count_tokens` before large prompts, and serve the template instead of a call that would hit the output cap.
 
 ### Needs billing (not on the free tier)
 

@@ -164,6 +164,8 @@ export const saveScenario = (name: string, config_hash: string, status: "saved" 
 export type AskReply = {
   question: string; ok: boolean; error?: string | null; explanation: string; unsupported: string[];
   request?: { date?: string; preset?: string; levers?: ApiLevers }; settings?: string[]; source: string;
+  /** which way answered: Gemini function calling, JSON-schema output, or keyword matching (no key / both failed) */
+  method?: "function_calling" | "json_schema" | "keywords";
 };
 export type ApiLevers = {
   crowd_multiplier?: number | null;

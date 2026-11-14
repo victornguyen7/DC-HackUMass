@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added; later T8 (test forecasts in the Tiger ledger) added with its guard.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: L3, T4 and N4 closed (not needed); T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added; later T8 (test forecasts in the Tiger ledger) added with its guard.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -24,7 +24,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | A3 | ~~Low~~ | API | ~~Trace format differs from the spec (`?include=series` built in 0.6.0; `POST /warm`, `/backtest` job not)~~ **Fixed 2026-11-13 (see STATUS.md)** |
 | L1 | High | LLM | Persona generation is paused (bad output on Qwen 27B) |
 | L2 | ~~Medium~~ | LLM | ~~Groq free-tier limit: 1,000 output tokens per minute~~ **Mitigated:** Gemini is the default provider; load gate + bundle narrations |
-| L3 | Medium | LLM | The Groq key was pasted into a chat |
+| L3 | ~~Medium~~ | LLM | ~~The Groq key was pasted into a chat~~ **Closed 2026-11-14:** not needed (Groq isn't used; Gemini is the provider) |
 | L4 | ~~Low~~ | LLM | ~~Narration check covers names only~~ **Fixed** (`narrate-v3`: names, times, numbers) |
 | L5 | ~~Medium~~ | LLM | ~~`dcsim bundle` narration could hang forever on a stalled Gemini request~~ **Fixed 2026-11-13** (timeout + progress lines) |
 | D1 | ~~Medium~~ | Docs | ~~ASSUMPTIONS.md has stale planner numbers~~ **Fixed 2026-11-13** (engine 0.5.0 numbers; golden test guards them) |
@@ -32,7 +32,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | T1 | ~~Low~~ | Repo | ~~Not a git repository; bundle size undecided~~ **Fixed 2026-11-13** (on GitHub; full bundle committed) |
 | T2 | ~~Low~~ | Tests | ~~Starlette deprecation warning~~ **Fixed** (no warnings in `pytest`, checked 2026-11-13) |
 | T3 | ~~Low~~ | Data | ~~Tiger's copy of the synthetic history is stale~~ **Fixed 2026-11-14** (reloaded; 0 of 42 nights differ) |
-| T4 | Low | Repo | `codex-skills` is a submodule entry with no `.gitmodules`: the folder is empty in every clone |
+| T4 | ~~Low~~ | Repo | ~~`codex-skills` is a submodule entry with no `.gitmodules`~~ **Closed 2026-11-14:** the empty entry was removed from the repo |
 | T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
 | T6 | **High** | Repo | `.dev.vars` with app tokens (`APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`) is committed and pushed (`e926ea1`) |
 | T7 | ~~Low~~ | Repo | ~~A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented~~ **Fixed 2026-11-14** (deleted in `0f87083`) |
@@ -179,9 +179,9 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 - A burst of clicks in a live demo can hit the limit. The narration then falls back to the template, which is correct but less lively.
 - **Fix:** an in-app token-bucket queue, enable a stronger model or the Dev tier, and use pre-built bundle narrations during the demo.
 
-### L3 · Medium · The Groq key was pasted into a chat
+### L3 · Closed · The Groq key was pasted into a chat
 - It is stored only in `engine/.env` (mode 600, in `.gitignore`).
-- **Fix:** rotate it after the hackathon.
+- **Closed 2026-11-14:** no longer needed. Groq isn't used (Gemini is the provider; `LLM_PROVIDER=groq` still works if someone sets a new key).
 
 ### L4 · Fixed (`narrate-v3`) · Narration check covered names only
 - **Fixed:** `check` / `check_facts` in `ai/narrate.py` now also reject clock times that don't match an event (±1 min) and numbers that aren't in the student's events. Paraphrased dish names are still not recognized.
@@ -218,9 +218,9 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 - Found 2026-11-13 while building Similar nights: 24 of the 43 observed nights in Tiger (`dcsim.nights`, `dcsim.pan_windows`) have different students or dishes than `data/synthetic/worcester`, because the history was regenerated after the last upload. The page's ranking is identical on both paths when they read the same data (max difference 0.0), so only the inputs differ.
 - **Fix:** `cd engine && uv run dcsim tsdb load` (loads the current files). `make calibrate` also loads, but regenerates the history first (`waste-gen`).
 
-### T4 · Low · `codex-skills` is an empty submodule
+### T4 · Closed · `codex-skills` was an empty submodule
 - The redesign commit (PR #1) added `codex-skills` as a gitlink (`160000 cd9f49a`) without a `.gitmodules` file, so git can't fetch it and the folder is empty after cloning. `FRONTEND_REDESIGN_PLAN.md` cites `codex-skills/skills/frontend-design/SKILL.md` from it.
-- **Fix (owner of PR #1):** commit the skill files as normal files, or add `.gitmodules` with the repo URL, or remove the entry (`git rm --cached codex-skills`).
+- **Closed 2026-11-14:** not needed; the entry was removed (`git rm --cached codex-skills`).
 
 ### T5 · Low · Two similar-night searches
 - The page and API (`similar_nights.py`, 48-dim, `dcsim.night_embeddings`, exact cosine) and the CLI (`nightsearch.py`, 76-dim, `dcsim.night_vectors`, DiskANN index, held-out check) were built in parallel. Both work; they rank differently and don't share tables.
@@ -273,7 +273,7 @@ Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s
 | N1 | Animated 3D Hall (React Three Fiber). **Partly:** since the redesign (PR #1) the web app plays the full trace on an illustrated isometric view (Canvas) and the top-down plan; orbital 3D is not built. Remaining UI gaps are in UI_ISSUES.md | SPEC §3–6 |
 | N2 | Nav graph and table-level seats. Seating zones (main / back) and door routes are built (0.3.4) | ENGINE §3 |
 | N3 | ✅ **Built (engine 0.5.0):** `Station.shifts` / lever `stations.<id>.shifts` change servers during the night, and results carry `staffing` (servers needed per station and hour for ≤ 85% busy). ~~Servers by hour, and a "servers needed for p90 wait < 8 min" output~~. The Dashboard doesn't show it yet (UI_ISSUES U5) | SPEC §6.1 |
-| N4 | Breakfast and lunch (full-day arrivals): **out of scope for the demo** (decided 2026-11-14); the menu snapshot has both meals if it's picked up later | SPEC §7 |
+| N4 | ~~Breakfast and lunch (full-day arrivals)~~ **Closed 2026-11-14:** not needed (dinner + late night only); the menu snapshot still has both meals | SPEC §7 |
 | N5 | Survey adjustment of personas and dish popularity, held-out check, `POST /personas/calibrate` | ENGINE §7.3 |
 | N6 | Optimizer ("Optimize plan"); the back-test uses `smaller_batches` until then | SPEC §6.1 |
 | N7 | Uncertainty sweep, so ranges widen for guessed inputs and AI-estimated dishes (the Lab's "Holds up if we're wrong?" needs it) | ENGINE §7.3 |

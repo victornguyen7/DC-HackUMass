@@ -148,7 +148,7 @@ For optional synchronized visual comparisons, use the same seed and clock. Curre
 
 These are complementary resources, not an objective ranking or a reason to install every skill.
 
-- **Local frontend-design:** `codex-skills/skills/frontend-design/SKILL.md` supplies an intentional aesthetic, tokens, interaction polish, and accessibility workflow. It already exists in the checkout.
+- **Local frontend-design:** `codex-skills/skills/frontend-design/SKILL.md` supplied an intentional aesthetic, tokens, interaction polish, and accessibility workflow. It is no longer in the repo (the empty `codex-skills` entry was removed on 2026-11-14, ISSUES T4).
 - **Anthropic frontend-design:** https://github.com/anthropics/skills/tree/main/skills/frontend-design — useful for subject-specific art direction and avoiding an interchangeable template.
 - **Vercel web-design-guidelines:** https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines and https://vercel.com/design/guidelines — useful for keyboard behavior, focus, layout, and interaction review.
 - **Vercel React best practices:** https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices — use applicable client-side performance guidance; Next.js/server-specific guidance is not a migration requirement for this Vite app.

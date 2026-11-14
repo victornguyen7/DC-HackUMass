@@ -98,7 +98,7 @@ Also fixed while testing the second pass:
 | --- | --- | --- | --- |
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
 | U2 | Medium | Hall | ~~Only the top-down view is live~~ **Partly fixed (PR #1):** the illustrated isometric view (Canvas) plays the full trace; no orbital 3D |
-| U4 | Medium | Dashboard | ~~Dinner only~~ **Partly fixed:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch still missing |
+| U4 | ~~Medium~~ | Dashboard | ~~Dinner only~~ **Closed 2026-11-14:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch not needed (ISSUES N4) |
 | U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; **verified with data** on the 0.6.2 bundle (8 of 8 staffed stations; e.g. Grill has 2, needs 3 at 6 pm) |
 | U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
 | U15 | Medium | All | Several features need the API; offline they explain why and stay disabled |
@@ -110,7 +110,7 @@ Also fixed while testing the second pass:
 | U14 | Low | Repo | Stack differs from SPEC §9 (no Tailwind, no Recharts) |
 | U19 | ~~Medium~~ | Waste | ~~"Last 8 weeks" never works: it is disabled with only 42 recorded nights and the reason is a hover tooltip~~ **Fixed 2026-11-14:** the period buttons offer only ranges that exist ("Next 8 nights", "Last 4 weeks", "All recorded · 6 weeks") |
 
-Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1), U19 (2026-11-14). Partly fixed: U4, U7.
+Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1), U4 and U19 (2026-11-14). Partly fixed: U7.
 
 ### U1 · High · Figma numbers are placeholders and differ from the real data
 The design mock-ups use made-up values; the built pages show the bundle's real numbers:
@@ -133,7 +133,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - Presets show paired 30-night comparisons on every bundled date, even without an animation. Their own replay loads separately when available; loading or failure never hides comparison results. The current bundle includes preset animations only for Nov 13 and baseline animations for all dates. Advanced controls remain in the Lab. Split-screen comparison (SPEC P2) isn't built.
 - The scene is an illustrated isometric view. Orbital WebGL/React Three Fiber and the serving-line camera remain future work.
 
-### U4 · Partly fixed · Dashboard: dinner only
+### U4 · Closed · Dashboard: dinner only
 - **Partly fixed (engine 0.4.1):** the Dashboard shows dinner + late night (KPI chip, arrivals chart, "late" tags on dishes and in the production plan). Breakfast and lunch below are still open.
 - Breakfast and lunch aren't simulated and `ref/arrivals` holds dinner windows only. The Breakfast and Lunch toggles are disabled; the arrivals chart covers 4:30–9:00 pm.
 - Weather shows "not connected".

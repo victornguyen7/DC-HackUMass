@@ -36,11 +36,11 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 
 ## Summary
 
-| Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
+| Tracker | ✅ Done or closed | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 21 | 2 | 7 | [ISSUES.md](ISSUES.md) |
-| Not built yet (N1–N9) | 2 | 2 | 5 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
-| Web UI issues | 10 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 23 | 2 | 5 | [ISSUES.md](ISSUES.md) |
+| Not built yet (N1–N9) | 3 | 2 | 4 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
+| Web UI issues | 11 | 3 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 2 | 1 | 2 | [SPONSORS.md](SPONSORS.md) |
 
 ---
@@ -65,7 +65,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | A3 | Trace format differs from the spec | ✅ Fixed (`?include=series`, `POST/GET /api/warm`, `POST/GET /api/backtest` background jobs) |
 | L1 | Persona generation paused | ✗ Open |
 | L2 | Groq free-tier output limit | ✅ Mitigated (Gemini default, load gate, bundle narrations) |
-| L3 | Groq key pasted into a chat | ✗ Open — rotate after the hackathon |
+| L3 | Groq key pasted into a chat | ✅ Closed 2026-11-14 (not needed: Groq isn't used) |
 | L4 | Narration check covered names only | ✅ Fixed (`narrate-v3`: times and numbers) |
 | L5 | `dcsim bundle` narration could hang forever | ✅ Fixed 2026-11-13 (timeout + progress lines) |
 | D1 | ASSUMPTIONS.md has stale planner numbers | ✅ Fixed 2026-11-13 (0.5.0 numbers; golden test) |
@@ -73,7 +73,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | T1 | Not a git repo; bundle size undecided | ✅ Fixed 2026-11-13 (GitHub; bundle committed) |
 | T2 | Starlette deprecation warning | ✅ Fixed |
 | T3 | Tiger's copy of the synthetic history was stale | ✅ Fixed 2026-11-14 (0 of 42 nights differ) |
-| T4 | `codex-skills` is an empty submodule (no `.gitmodules`) | ✗ Open (owner of PR #1) |
+| T4 | `codex-skills` was an empty submodule (no `.gitmodules`) | ✅ Closed 2026-11-14 (entry removed) |
 | T5 | Two similar-night searches (page/API and CLI) | ✗ Open (a decision; both work) |
 | T6 | `.dev.vars` with app tokens pushed to GitHub (`e926ea1`) | ✗ Open, **high**: rotate the tokens, `git rm --cached .dev.vars`, ignore it |
 | T7 | `my-app/` (separate deepspace app) committed without docs | ✅ Fixed 2026-11-14 (folder deleted in `0f87083`) |
@@ -98,7 +98,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | N1 | Animated 3D Hall | ◐ (isometric Canvas replay since PR #1; orbital 3D not built) |
 | N2 | Nav graph and table-level seats | ◐ (seating zones and door routes; 0.5.0 seat counts per zone, limits off until real seats are counted) |
 | N3 | Servers by hour; "servers needed" output | ✅ Built 0.5.0 (`shifts`, lever, `staffing` in results; not on the Dashboard yet, U5) |
-| N4 | Breakfast and lunch | ✗ Out of scope for the demo (decided 2026-11-14; late night added in 0.4.1; the menu snapshot has both meals) |
+| N4 | Breakfast and lunch | ✅ Closed 2026-11-14 (not needed: dinner + late night only) |
 | N5 | Survey calibration of personas | ✗ |
 | N6 | Optimizer | ✗ (also the core of the agent prize, SPONSORS §2) |
 | N7 | Uncertainty sweep | ✗ (Vultr prize, SPONSORS §4) |

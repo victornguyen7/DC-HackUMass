@@ -138,7 +138,7 @@ Required: at least one vegetarian and one vegan persona. Their group shares are 
 
 ### Must, before the demo
 1. **Persona replacement.** Plug in the new approach behind the contract in §4. Then review, adopt and re-run `make demo-bundle`. If it is still LLM-based, it needs a model that can produce varied JSON, e.g. enable `openai/gpt-oss-120b` in Groq project settings, and the check should reject near-duplicate labels and ids ending in `_v2`, `_v3`.
-2. **Rotate the Gemini and Groq keys** and keep the new one only in `engine/.env` or the host's secret store.
+2. **Rotate the Gemini key** and keep the new one only in `engine/.env` or the host's secret store. (The Groq key item, ISSUES L3, is closed: Groq isn't used.)
 3. **Frontend wiring.**
    - Student card: render `card` instantly, append `sentence` events, then replace everything with `final.text` (it differs when `replaced: true`).
    - Offline: read `narration/*.json` from the manifest.

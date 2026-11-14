@@ -191,7 +191,6 @@ HackUMass2026/
 ├── docs/                  design docs and issue lists (see §10)
 ├── survey/                student survey draft (feeds persona calibration)
 ├── work/design/           earlier standalone hall concept (dining-simulation.html), not the app
-├── codex-skills           empty: a submodule entry with no .gitmodules (ISSUES T4)
 ├── cache/                 local results cache (SQLite + traces + Sam's history); not committed
 └── cache-test/            copy of the cache for `make server-test` (git-ignored, recreated on each start)
 ```
@@ -322,7 +321,6 @@ Consequences:
 | --- | --- |
 | Figma frames and pitch use placeholder numbers (e.g. "−18% waste") that don't match the data | `docs/UI_ISSUES.md` U1 |
 | No orbital 3D: the Hall plays on an illustrated isometric view and the top-down plan | U2 / ISSUES N1 |
-| No breakfast/lunch | U4 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
 | **`.dev.vars` with app tokens is on GitHub** (`e926ea1`): rotate the tokens, stop tracking the file | ISSUES T6 |

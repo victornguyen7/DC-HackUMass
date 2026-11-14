@@ -98,7 +98,7 @@ export default function SimilarNights() {
               <legend>Weather</legend>
               <div className="similar-choices">
                 {WEATHERS.map((w) => (
-                  <label key={w} className="similar-choice" title={w === "other" ? "Cold, fog, or anything else" : undefined}>
+                  <label key={w} className="similar-choice" title={w === "other" ? "Weather is left out of the match" : undefined}>
                     <input type="radio" name={`${ids}-weather`} value={w} checked={weather === w} onChange={() => setWeather(w)} />
                     <span>{WEATHER_LABELS[w]}</span>
                   </label>

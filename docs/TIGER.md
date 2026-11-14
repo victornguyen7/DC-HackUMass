@@ -25,7 +25,7 @@ uv run dcsim bundle --waste-only                  # refresh calibration + ledger
 Live dashboard: `make server`, then open `http://127.0.0.1:8000/tiger` (§8). It is served by the API only, not by the web app. API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
-(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page, table `dcsim.night_embeddings`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
+(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page; same vectors and table as `nightsearch.py`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
 (`POST /api/scenarios/{id}/adopt`, or `POST /api/scenarios` with `status: "adopted"`) logs its forecast. The What-If
 Lab's **Adopt** button makes that call when the API is up, so adopting in the web app writes to the ledger. Page: `web/public/calibration.html`.
 
@@ -57,7 +57,7 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | `pan_hourly` | **continuous aggregate** over `pan_windows`, real-time, refreshed every 30 min | 23,150 from 212,296 | per night, scenario, dish and clock hour: portions out / eaten, lowest and highest level, sum of levels, empty windows, windows |
 | `forecast_check` | view | | per observed night and scenario: simulated p10 / p50 / p90 and whether the observation fell inside |
 | `forecasts` | table, **append-only** | 1 per forecast | the ledger: naive and calibrated p10 / p50 / p90 for students, waste, stockouts, cooked, plus samples (JSONB) |
-| `night_vectors` | table + DiskANN index | 1 per observed night | 76-dim night vector (weekday, weather, event, hashed menu) for `dcsim tsdb similar` |
+| `night_vectors` | table + DiskANN index | 1 per observed night | 77-dim night vector (weekday, weather, event, hashed menu) for `dcsim tsdb similar` and the Similar nights page |
 | `forecast_scorecard` | view | | each ledger forecast next to the observed night: `issued_before_open`, `inside` / `outside` / `awaiting` |
 | `dish_nights` | hypertable (engine 0.6.2 loader) | ~23k (replays) | per dish per replay night: cooked, served, expired, leftover, waste, stockout min, run-out time, first-choice demand, period |
 | `station_hours` | hypertable | ~31k (replays) | per station and hour: servers planned (shifts), servers needed for ≤ 85% busy, peak line that hour |
@@ -185,29 +185,33 @@ row-store until it is a day old. Calibrate still runs (33 s) with identical scor
 ## 7. Similar-night search
 
 `dcsim tsdb similar --date D [--weather rain] [--event] [-k 5]` lists the observed nights most like D and what
-happened on them, then runs a held-out check. Each observed night is one 76-dim vector in `dcsim.night_vectors`
-(extension `vector`, DiskANN index from `vectorscale`; falls back to an HNSW index without it):
+happened on them, then runs a held-out check. Each observed night is one 77-dim vector in `dcsim.night_vectors`
+(extension `vector`, DiskANN index from `vectorscale`; falls back to an HNSW index without it). The Similar nights
+page and `GET /api/similar-nights` use the same vectors, table and index (ISSUES T5, merged 2026-11-14), and order
+equally similar nights by how close their crowd was to the expected students:
 
 | block | dims | from |
 | --- | --- | --- |
 | weekday | 7 | one-hot |
 | weather | 4 | clear / rain / cold / snow; all zero when not given, so it can't favour any past night |
-| event night | 1 | flag |
+| event night | 2 | one-hot (no / yes), so every recorded night has the same length |
 | menu | 64 | the dishes put out that night (`pan_windows`), feature-hashed; for D, its planned dinner menu |
 
 Blocks are scaled to unit length and weighted, and distance is cosine. It is a hand-built feature vector, not a
 learned embedding, so "similar" means "same kind of night, same menu". The command rebuilds the vectors on each
 run (43 nights, under a second).
 
-**Held-out check (SYNTHETIC history, k = 5, neighbours from the 28 training nights, 14 test nights), mean absolute error:**
+**Held-out check (SYNTHETIC history, k = 5, neighbours from the 28 training nights, 14 test nights), mean absolute error, run 2026-11-14:**
 
 | outcome | similar nights | training mean | same-weekday mean |
 | --- | --- | --- | --- |
-| students | 226.6 | 231.1 | 230.5 |
-| waste lb | 74.3 | 96.7 | **70.1** |
-| stockout min | 25.3 | 26.9 | **25.0** |
+| students | **282.0** | 367.7 | 285.5 |
+| waste lb | 81.8 | 139.2 | **75.2** |
+| stockout min | 19.6 | **18.4** | 19.0 |
 
-It beats the overall average on waste but is no better than "average of the same weekday". The synthetic history
+(The 76-dim vector before T5 gave the same numbers on this history; the earlier 226.6 / 74.3 / 25.3 table was from
+an earlier copy of the history in Tiger, most likely the one before the ISSUES T3 reload.) It beats the overall average clearly on students and waste but is
+no better than "average of the same weekday". The synthetic history
 reuses 7 menus, one per weekday, so menu and weekday carry the same information here, and the five Saturdays tie
 at the same distance. Treat it as a lookup ("what happened last time we served this on a Saturday"), not a
 forecast. It earns more with real history, where menus rotate independently of the weekday.

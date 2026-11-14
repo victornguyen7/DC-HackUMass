@@ -2,11 +2,12 @@
 // The search needs the live engine API; there is no browser-only fallback.
 import { api, ApiError } from "./data";
 
-export const WEATHERS = ["clear", "rain", "snow", "cloudy", "windy", "other"] as const;
+// The vector's weather (engine nightsearch.WEATHER) plus "other": not sure, left out of the match.
+export const WEATHERS = ["clear", "rain", "cold", "snow", "other"] as const;
 export type Weather = (typeof WEATHERS)[number];
 
 export const WEATHER_LABELS: Record<string, string> = {
-  clear: "Clear", rain: "Rain", snow: "Snow", cloudy: "Cloudy", windy: "Windy", other: "Other", cold: "Cold",
+  clear: "Clear", rain: "Rain", cold: "Cold", snow: "Snow", other: "Not sure",
 };
 
 export type SimilarNightsParams = {

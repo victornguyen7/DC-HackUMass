@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: L3, T4 and N4 closed (not needed); T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added; later T8 (test forecasts in the Tiger ledger) added with its guard.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: L3, T4 and N4 closed (not needed); T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added; later T8 (test forecasts in the Tiger ledger) added with its guard; T5 fixed (one similar-night search).
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -33,7 +33,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | T2 | ~~Low~~ | Tests | ~~Starlette deprecation warning~~ **Fixed** (no warnings in `pytest`, checked 2026-11-13) |
 | T3 | ~~Low~~ | Data | ~~Tiger's copy of the synthetic history is stale~~ **Fixed 2026-11-14** (reloaded; 0 of 42 nights differ) |
 | T4 | ~~Low~~ | Repo | ~~`codex-skills` is a submodule entry with no `.gitmodules`~~ **Closed 2026-11-14:** the empty entry was removed from the repo |
-| T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
+| T5 | ~~Low~~ Fixed | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`). **Fixed 2026-11-14:** one search |
 | T6 | **High** | Repo | `.dev.vars` with app tokens (`APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`) was committed and pushed (`e926ea1`). **Partly fixed 2026-11-14:** no longer tracked and in `.gitignore`; the tokens still need rotating and stay in git history |
 | T7 | ~~Low~~ | Repo | ~~A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented~~ **Fixed 2026-11-14** (deleted in `0f87083`) |
 | T8 | Low | Data | 6 test forecasts for 2026-11-13 are in the append-only Tiger ledger (end-to-end test, 2026-11-14 15:24–15:27 UTC) |
@@ -222,9 +222,9 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 - The redesign commit (PR #1) added `codex-skills` as a gitlink (`160000 cd9f49a`) without a `.gitmodules` file, so git can't fetch it and the folder is empty after cloning. `FRONTEND_REDESIGN_PLAN.md` cites `codex-skills/skills/frontend-design/SKILL.md` from it.
 - **Closed 2026-11-14:** not needed; the entry was removed (`git rm --cached codex-skills`).
 
-### T5 · Low · Two similar-night searches
+### T5 · Fixed · Two similar-night searches
 - The page and API (`similar_nights.py`, 48-dim, `dcsim.night_embeddings`, exact cosine) and the CLI (`nightsearch.py`, 76-dim, `dcsim.night_vectors`, DiskANN index, held-out check) were built in parallel. Both work; they rank differently and don't share tables.
-- **Decide:** keep both (page for managers, CLI for the Tiger demo and accuracy check), or point the page at one vector design. See `SIMILAR_NIGHTS.md` and `TIGER.md` §7.
+- **Fixed 2026-11-14:** the page and API now use `nightsearch.py`'s vectors (77 dims: the event flag became a one-hot so every night has the same length), `dcsim.night_vectors` and its DiskANN index. Expected students orders equally similar nights (it stays out of the vector because the held-out check predicts it). `dcsim.night_embeddings` was dropped; weather choices are now clear, rain, cold, snow and "not sure". See `SIMILAR_NIGHTS.md` and `TIGER.md` §7.
 
 ### T6 · High · `.dev.vars` with app tokens is on GitHub (partly fixed)
 - Commit `e926ea1` (2026-11-14) added `.dev.vars` and pushed it to `main`. The file is generated by the deepspace tooling for `my-app/` and holds `APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`, an owner user id and worker URLs. Anyone with access to the repo can read them, and they stay in git history even if the file is deleted.

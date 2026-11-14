@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS dcsim.minute_series (
 CREATE TABLE IF NOT EXISTS dcsim.night_vectors (
   run_id text NOT NULL, night date NOT NULL,
   weekday text, weather text, event_night boolean, n_dishes int,
-  embedding vector(76) NOT NULL,
+  embedding vector(77) NOT NULL,
   PRIMARY KEY (run_id, night)
 );
 

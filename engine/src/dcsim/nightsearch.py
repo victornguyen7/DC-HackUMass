@@ -4,12 +4,17 @@ Each observed night becomes one vector in `dcsim.night_vectors`:
 
     weekday   7  one-hot
     weather   4  one-hot (clear / rain / cold / snow); all zero when unknown
-    event     1  event night flag
+    event     2  one-hot (not an event night / event night)
     menu     64  dish ids feature-hashed into 64 buckets (the dishes put out that night)
 
 Each block is scaled to unit length and weighted (WEIGHTS), so a menu with 40 dishes
-doesn't drown out the weekday. Distance is cosine. This is a hand-built feature vector,
-not a learned embedding: "similar" means same kind of night and same menu, nothing more.
+doesn't drown out the weekday, and every recorded night has the same vector length. A block the
+query doesn't know (weather, menu) is all zero, so it adds nothing to any night's score.
+Distance is cosine. This is a hand-built feature vector, not a learned embedding: "similar"
+means same kind of night and same menu, nothing more.
+
+This is the one similar-night search: `dcsim tsdb similar` and the Similar nights page and API
+(`similar_nights.py`) both rank with it (ISSUES T5).
 
 `similar()` answers "which past nights look most like this one, and what happened on them".
 `backtest()` checks whether that answer is any use: for each held-out night it averages
@@ -28,7 +33,8 @@ WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", 
 WEATHER = ("clear", "rain", "cold", "snow")
 MENU_DIM = 64
 WEIGHTS = {"weekday": 1.0, "weather": 0.6, "event": 0.8, "menu": 1.0}
-DIM = len(WEEKDAYS) + len(WEATHER) + 1 + MENU_DIM
+DIM = len(WEEKDAYS) + len(WEATHER) + 2 + MENU_DIM
+FULL_NORM = float(np.sqrt(sum(w * w for w in WEIGHTS.values())))  # length of a vector with every block known
 OUTCOMES = ("students", "waste_lb", "stockout_min")
 
 SCHEMA = f"""
@@ -58,7 +64,7 @@ def embed(weekday: str | None, weather: str | None, event: bool, dishes) -> np.n
     we = np.zeros(len(WEATHER))
     if weather in WEATHER:
         we[WEATHER.index(weather)] = 1
-    ev = np.array([1.0 if event else 0.0])
+    ev = np.array([0.0, 1.0] if event else [1.0, 0.0])
     menu = np.zeros(MENU_DIM)
     for d in set(dishes):
         menu[_bucket(d)] += 1
@@ -74,6 +80,13 @@ def _vec(v: np.ndarray) -> str:
 def init(conn) -> str:
     """Create the vector extension(s) and table. Returns the index kind used."""
     conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+    # The table is derived (build() rewrites it on every search), so a vector size from an older
+    # version of this file is dropped and rebuilt rather than migrated.
+    old = conn.execute(
+        """SELECT a.atttypmod FROM pg_attribute a
+           WHERE a.attrelid = to_regclass('dcsim.night_vectors') AND a.attname = 'embedding'""").fetchone()
+    if old and old[0] != DIM:
+        conn.execute("DROP TABLE dcsim.night_vectors")
     conn.execute(SCHEMA)
     kind = "none"
     try:
@@ -122,19 +135,45 @@ def query_vector(date: str, weather: str | None = None, event: bool = False) -> 
     return embed(info["weekday"], weather, event, dishes), info
 
 
+def known_similarity(vec: np.ndarray, distance: float) -> float:
+    """Cosine similarity over only the blocks the query knows, from the full cosine distance.
+
+    A recorded night has every block, so its length is FULL_NORM; the query's own length is the
+    length of the blocks it knows. Rescaling keeps the order and makes an exact match 1.0 even
+    when the query leaves weather or the menu out."""
+    q = float(np.linalg.norm(vec))
+    return min(1.0, (1 - float(distance)) * FULL_NORM / q) if q else 0.0
+
+
 def similar(conn, vec: np.ndarray, k: int = 5, exclude: dt.date | None = None,
-            before: dt.date | None = None, run_id: str = "observed") -> list[dict]:
-    """k nearest observed nights by cosine distance, with what happened on each."""
+            before: dt.date | None = None, run_id: str | tuple[str, ...] = "observed",
+            students: int | None = None) -> list[dict]:
+    """k nearest observed nights by cosine distance, with what happened on each.
+
+    The inner query is a plain nearest-neighbour scan (`ORDER BY embedding <=> q`), which the
+    DiskANN index serves. With `students`, nights at the same distance (common: the synthetic
+    history repeats one menu per weekday) are ordered by how close their crowd was to it."""
+    runs = [run_id] if isinstance(run_id, str) else list(run_id)
+    pool = k if students is None else max(4 * k, 20)
     rows = conn.execute(
-        """SELECT v.night, v.weekday, v.weather, v.event_night, v.n_dishes,
-                  v.embedding <=> %s::vector AS distance,
+        """WITH near AS (
+             SELECT v.run_id, v.night, v.weekday, v.weather, v.event_night, v.n_dishes,
+                    v.embedding <=> %(q)s::vector AS distance
+             FROM dcsim.night_vectors v
+             WHERE v.run_id = ANY(%(runs)s) AND v.night IS DISTINCT FROM %(ex)s::date
+               AND (%(before)s::date IS NULL OR v.night < %(before)s::date)
+             ORDER BY v.embedding <=> %(q)s::vector
+             LIMIT %(pool)s)
+           SELECT near.night, near.weekday, near.weather, near.event_night, near.n_dishes, near.distance,
                   n.students, n.waste_lb, n.stockout_min, n.adopted
-           FROM dcsim.night_vectors v
-           JOIN dcsim.nights n ON n.run_id = v.run_id AND n.night = v.night
-           WHERE v.run_id = %s AND v.night IS DISTINCT FROM %s::date AND (%s::date IS NULL OR v.night < %s::date)
-           ORDER BY v.embedding <=> %s::vector
-           LIMIT %s""",
-        (_vec(vec), run_id, exclude, before, before, _vec(vec), k)).fetchall()
+           FROM near JOIN LATERAL (
+             SELECT students, waste_lb, stockout_min, adopted FROM dcsim.nights x
+             WHERE x.run_id = near.run_id AND x.night = near.night ORDER BY x.ts DESC LIMIT 1) n ON true
+           ORDER BY round(near.distance::numeric, 4),
+                    abs(n.students - coalesce(%(students)s::int, n.students)), near.night
+           LIMIT %(k)s""",
+        {"q": _vec(vec), "runs": runs, "ex": exclude, "before": before, "pool": pool,
+         "students": students, "k": k}).fetchall()
     cols = ("night", "weekday", "weather", "event_night", "n_dishes", "distance",
             "students", "waste_lb", "stockout_min", "adopted")
     return [dict(zip(cols, r)) for r in rows]

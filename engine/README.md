@@ -109,8 +109,8 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 | `ai/ask.py` | Plain English → settings: Gemini function calling (`ask_tools`, `calls_to_plan`), JSON-schema and keyword fallbacks |
 | `ai/agent.py` | Ask Sam: goal/what-if/question, the tool loop (`run_simulation`, `finish`, setting functions, Tiger tools), `check_goal` in code, rule-based fallback, hold-out check, history entries |
 | `ai/tiger_mcp.py` | Sam's MCP client of `tiger mcp start` (only `db_schema` / `db_query`), `guard_sql` (one read-only SELECT), schema digest |
-| `similar_nights.py` | Similar nights for the page and API: 48-dim condition vectors, cosine ranking, Tiger `dcsim.night_embeddings` or local files |
-| `nightsearch.py` | `dcsim tsdb similar`: 76-dim night vectors in `dcsim.night_vectors` (DiskANN index), held-out check |
+| `similar_nights.py` | Similar nights for the page and API: input checks, students tie-break and local fallback over `nightsearch.py`'s vectors |
+| `nightsearch.py` | The similar-night search (page, API and `dcsim tsdb similar`): 77-dim night vectors in `dcsim.night_vectors` (DiskANN index), held-out check |
 
 ## Guarantees (tested)
 - **Golden baseline:** Nov 13 headline numbers (seeds 1–10) are pinned in `tests/golden/nov13.json`; any change that moves them fails until the file is rewritten on purpose.

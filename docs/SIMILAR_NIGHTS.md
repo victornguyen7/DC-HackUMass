@@ -32,7 +32,7 @@ Send `GET /api/similar-nights` with query parameters.
 | --- | --- | --- | --- |
 | `date` | ISO date string | Required | Target date, use YYYY-MM-DD |
 | `students` | Integer | Required | Expected attendance, 1–100000 |
-| `weather` | String | Default clear | clear, rain, snow, cloudy, windy, other |
+| `weather` | String | Default clear | clear, rain, cold, snow, other (other = not sure: left out of the match) |
 | `event_night` | Boolean | Default false | Send true or false |
 | `menu_date` | ISO date string | Optional | Prepared menu snapshot date |
 | `limit` | Integer | Default 5 | Maximum matches, 1–20 |
@@ -123,7 +123,7 @@ Only nights strictly earlier than the target date are eligible. Results sort by 
 | HTTP 503 | Historical search failed. Backend detail is Historical search is temporarily unavailable. |
 | Network/proxy failure | Show an API availability error with retry |
 
-The page clears old results on submit, disables the search button while loading (skeleton rows, `aria-busy`), and keeps the inputs on failure so **Try again** repeats the same request. Defaults: the date selected elsewhere in the app (else tomorrow), 4000 students, rain, not an event night, that date's prepared menu when one exists (else Unknown menu; the manager can switch to Unknown), and five results. The weather choice "Other" covers recorded "cold" nights. The 503 detail above is what tells "history failed" apart from "API not running" (the dev proxy also answers 503, with a different detail). User-facing errors never show terminal commands. On tablet and phone widths the page scrolls to the results after a search.
+The page clears old results on submit, disables the search button while loading (skeleton rows, `aria-busy`), and keeps the inputs on failure so **Try again** repeats the same request. Defaults: the date selected elsewhere in the app (else tomorrow), 4000 students, rain, not an event night, that date's prepared menu when one exists (else Unknown menu; the manager can switch to Unknown), and five results. The weather choices are the four the vector knows (clear, rain, cold, snow) plus "Not sure" (`other`), which leaves weather out of the match. The 503 detail above is what tells "history failed" apart from "API not running" (the dev proxy also answers 503, with a different detail). User-facing errors never show terminal commands. On tablet and phone widths the page scrolls to the results after a search.
 
 The summary card shows the median and range of waste, stockouts and students across the matches, captioned as recorded outcomes, not a forecast for the target date.
 
@@ -131,20 +131,20 @@ Keep synthetic provenance visible and describe the percentage as a similarity sc
 
 ## Search implementation
 
-Each night becomes a normalized 48-dimensional vector.
+**One search (ISSUES T5, fixed 2026-11-14).** The page and API use the same vectors, table and index as `dcsim tsdb similar` (`nightsearch.py`, TIGER.md §7); `similar_nights.py` adds input checks, the local fallback and this response shape. Before that, the page had its own 48-dim vector in `dcsim.night_embeddings` (dropped) and ranked nights differently from the CLI.
 
-| Zero-based dimensions | Feature |
-| --- | --- |
-| 0–6 | Weekday one-hot, weight 1.7 |
-| 7–13 | Neighboring weekday slots, each weight 0.25 |
-| 14–19 | Weather one-hot, weight 1.8 |
-| 20–21 | Event false/true one-hot, weight 0.9 |
-| 22–23 | Attendance features, weight 1.7 with clipping |
-| 24–47 | Dish IDs hashed with SHA-256 into 24 buckets |
+Each night becomes a 77-dimensional vector:
 
-Attendance components are 1.7 times clamp(students / 1500, 0, 2.5) and 1.7 times clamp((2600 - students) / 1500, 0, 2.5). Counts at or above 3750 therefore share the same attendance components. Each dish contributes 1 / sqrt(menu size) to its bucket. Hash collisions can affect similarity. Displayed menu overlap uses exact IDs.
+| Block | Dims | Weight | From |
+| --- | --- | --- | --- |
+| Weekday | 7 | 1.0 | one-hot |
+| Weather | 4 | 0.6 | clear / rain / cold / snow; all zero for `other` |
+| Event night | 2 | 0.8 | one-hot (no / yes) |
+| Menu | 64 | 1.0 | dish ids MD5-hashed into 64 buckets; all zero with no menu |
 
-When the query menu is unknown, local scoring omits candidate dishes as well. Tiger compares the first 24 dimensions using pgvector subvector and cosine distance. This prevents candidate menu size from affecting an unknown-menu query.
+Each block is scaled to unit length and then weighted, so every recorded night has the same length and a block the query doesn't know (weather `other`, no menu) adds nothing to any night's score. Distance is cosine. The **similarity** shown is cosine over the blocks the query knows (`nightsearch.known_similarity`, a rescaling of the distance that keeps the order), so a night that matches everything you gave reads 100%. Hash collisions can affect similarity; displayed menu overlap uses exact IDs.
+
+**Expected students is not in the vector.** The crowd is one of the outcomes the CLI's held-out check predicts, so putting it in would let a night's own result pick its neighbours. It orders nights that are equally similar instead, closest crowd first, then earlier date. That matters here: the synthetic history repeats one menu per weekday, so several nights often tie.
 
 Waste and stockout outcomes are attached after ranking. They do not enter the feature vector.
 
@@ -158,7 +158,7 @@ Local input files live in data/synthetic/worcester.
 - consumption.csv supplies historical dish IDs.
 - _ground_truth.json supplies observable weather and event flags.
 
-Tiger reads dcsim.nights and dcsim.pan_windows with both source and scenario equal to observed. Each search creates the vector extension and dcsim.night_embeddings table (`night` primary key, `embedding vector(48)`, `menu_date`, `updated_at`) if needed, upserts current embeddings, and commits. It requires the corresponding database permissions. Search uses exact cosine ordering and filters embeddings against currently observed nights, so stale embeddings are excluded.
+On Tiger, each search runs `nightsearch.init` (vector extension, `dcsim.night_vectors`, the pgvectorscale DiskANN index or HNSW without it; a table with an older vector size is dropped and rebuilt, since it's derived) and `nightsearch.build` (re-embeds the observed nights, runs `observed` and `observed:live`, from `dcsim.nights` and the dishes in `dcsim.pan_windows`), then `nightsearch.similar`: a nearest-neighbour scan the index serves, with the students tie-break on top. It requires the corresponding database permissions.
 
 This implementation refreshes all historical embeddings on each request. Live database search was verified against the configured Tiger service. Concurrency and scale remain verification work. Local fallback still requires the Python API. Similar Nights has no precomputed browser-only search bundle.
 
@@ -181,6 +181,8 @@ cd engine
 ```
 
 Run npm run build from web/ to check TypeScript and production bundling.
+
+Verified on `main`, November 14, 2026, after the T5 merge: `test_similar_nights.py` and `test_nightsearch.py` 30 passed; full engine suite 196 passed, 2 skipped; web 55 passed (9 for Similar Nights), `tsc` clean; live Tiger ranking identical to local.
 
 Verified on `main`, November 13, 2026 (evening):
 
@@ -215,7 +217,7 @@ Comparison baseline is commit 0ba140e, which includes the frontend redesign. The
 | Area | Feature additions relative to the baseline |
 | --- | --- |
 | Backend | New similar_nights.py search module and GET /api/similar-nights route |
-| Search | Deterministic 48-dimensional cosine ranking, past-night filtering, optional menu matching, Tiger search and local synthetic fallback |
+| Search | Deterministic cosine ranking (48 dims at first; since T5 the shared 77-dim `nightsearch` vectors), past-night filtering, optional menu matching, Tiger search and local synthetic fallback |
 | Correctness | Unknown menu excludes dish dimensions and returns null overlap, current observed-night filter excludes stale embeddings |
 | Frontend | New SimilarNights.tsx page, /similar-nights route, top-navigation link, and feature styles |
 | Validation | API regression coverage for selected and unknown menus, invalid inputs, ordering, and empty results |
@@ -231,4 +233,4 @@ The subsequent main-branch update changed local synthetic data and configuration
 
 **Stale Tiger copy (Nov 13):** 24 of the 43 observed nights in Tiger differ from `data/synthetic/worcester` (students or dishes), so Tiger and local results differ slightly; the algorithm itself matches exactly. Reload the history into Tiger (`dcsim tsdb load`, or the team's upload script) when you want them to agree.
 
-**Not the same as `dcsim tsdb similar`:** that CLI command (`nightsearch.py`, TIGER.md §7) is a separate 76-dim search with a held-out accuracy check, stored in `dcsim.night_vectors`. The two don't share tables.
+**Same search as `dcsim tsdb similar`** (since 2026-11-14, ISSUES T5): one vector design, one table (`dcsim.night_vectors`), one DiskANN index. Verified that day: the page's Tiger and local rankings are identical over 3 queries (rain; not sure + event night; rain + the Nov 13 menu).

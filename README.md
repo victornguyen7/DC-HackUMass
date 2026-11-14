@@ -162,8 +162,8 @@ HackUMass2026/
 │   │   ├── calibration.py, tsdb.py        held-out calibration, Tiger Data ledger, aggregates, benchmark
 │   │   ├── tiger_sql.py     generates engine/sql/tiger_website.sql (the whole Tiger schema as one console script)
 │   │   ├── static/tiger.html  live Tiger dashboard, served by the API at /tiger (not part of the web app)
-│   │   ├── similar_nights.py  Similar nights search for the page and API (48-dim vectors; Tiger pgvector or local files)
-│   │   ├── nightsearch.py   `dcsim tsdb similar` (76-dim vectors, DiskANN index, held-out check)
+│   │   ├── similar_nights.py  Similar nights for the page and API (nightsearch's vectors; Tiger DiskANN or local files)
+│   │   ├── nightsearch.py   the similar-night search: 77-dim vectors, DiskANN index, held-out check (`dcsim tsdb similar`)
 │   │   ├── bundle.py        writes the static demo bundle
 │   │   ├── cli.py           the `dcsim` command
 │   │   └── ai/              LLM client (Gemini/Groq/mock), narration, ask (function calling), dish prior, explain,

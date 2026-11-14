@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 
+from dcsim import nightsearch as ns
 from dcsim import similar_nights as sn
 from dcsim.data import available_dates
 
@@ -51,20 +52,25 @@ def _history_dir(tmp_path, nights):
 
 # ---------------------------------------------------------------- vectors
 
-def test_vector_is_unit_length_with_the_documented_layout():
-    v = sn.feature_vector("2026-11-14", 4000, "rain", False, frozenset({"a.x", "b.y"}))  # a Saturday
-    assert v.shape == (48,) and np.isclose(np.linalg.norm(v), 1.0)
-    raw = v / v[5] * 1.7  # undo the unit scaling using the weekday weight
-    assert np.isclose(raw[5], 1.7) and np.isclose(raw[7 + 4], 0.25) and np.isclose(raw[7 + 6], 0.25)
-    assert np.isclose(raw[14 + sn.WEATHERS.index("rain")], 1.8) and np.isclose(raw[20], 0.9)
-    assert np.isclose(raw[22], 1.7 * 2.5) and raw[23] == 0  # >= 3750 students saturate
-    assert np.isclose(raw[24:].sum(), 2 / np.sqrt(2))
+def test_page_uses_the_cli_vectors():
+    """One vector design for the page, the API and `dcsim tsdb similar` (ISSUES T5)."""
+    v = sn.vector("Saturday", "rain", False, frozenset({"a.x", "b.y"}))
+    assert v.shape == (ns.DIM,) == (77,)
+    assert np.allclose(v, ns.embed("Saturday", "rain", False, ["a.x", "b.y"]))
 
 
-def test_unrecorded_weather_scores_as_other():
-    a = sn.feature_vector("2026-11-14", 3000, "cold", False, None)
-    b = sn.feature_vector("2026-11-14", 3000, "other", False, None)
-    assert np.allclose(a, b)
+def test_other_weather_is_left_out():
+    assert sn.weather_known("other") is None and sn.weather_known(" Cold ") == "cold"
+    assert np.allclose(sn.vector("Saturday", "other", False, None), ns.embed("Saturday", None, False, ()))
+
+
+def test_equal_similarity_ties_go_to_the_closest_crowd(tmp_path):
+    hist = sn.load_local_history(_history_dir(tmp_path, [
+        ("2026-10-31", 2000, "rain", False, ["a"]),
+        ("2026-11-07", 3900, "rain", False, ["a"]),
+    ]))
+    r = sn.search_local(sn.validate("2026-11-14", 4000, "rain"), hist)
+    assert [m["date"] for m in r["matches"]] == ["2026-11-07", "2026-10-31"]
 
 
 def test_menu_overlap_is_exact_jaccard_and_null_without_a_menu():
@@ -155,6 +161,7 @@ def test_api_empty_history_before_the_first_night(client):
     {"date": "2026-11-14", "students": 100_001},
     {"date": "2026-11-14", "students": "many"},
     {"date": "2026-11-14", "students": 4000, "weather": "hail"},
+    {"date": "2026-11-14", "students": 4000, "weather": "cloudy"},              # not in the vector's weather
     {"date": "2026-11-14", "students": 4000, "limit": 0},
     {"date": "2026-11-14", "students": 4000, "limit": 21},
     {"date": "2026-11-14", "students": 4000, "menu_date": ""},     # Unknown menu = omit it, not ""

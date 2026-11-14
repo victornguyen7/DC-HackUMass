@@ -170,7 +170,7 @@ SELECT create_hypertable('dcsim.pan_windows', by_range('ts', INTERVAL '7 days'),
 SELECT create_hypertable('dcsim.waste_log', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
 """
 
-VECTOR_DIM = 7 + 4 + 1 + 64  # weekday one-hot + weather one-hot + event flag + 64 menu buckets (nightsearch.DIM)
+VECTOR_DIM = 7 + 4 + 2 + 64  # weekday one-hot + weather one-hot + event one-hot + 64 menu buckets (nightsearch.DIM)
 
 NEW_TABLES = """
 -- Per dish per night per run (NightMetrics.dishes): what the cook sheet and Waste pages show.

@@ -4,32 +4,24 @@
 whether it's an event night, and optionally a prepared menu; the search returns the recorded nights
 before that date with the most similar conditions, plus what happened on them (waste, stockouts).
 
-Each night is one 48-dim feature vector (hand-built, not a learned embedding):
+The vectors and the ranking are `nightsearch.py`'s, the same ones `dcsim tsdb similar` uses (ISSUES T5):
+77 dims (weekday, weather, event night, the menu's dishes hashed into 64 buckets), each block unit length
+and weighted, cosine distance. Weather "other" and no menu leave those blocks at zero, so they can't favour
+any past night. Expected students is not in the vector (the crowd is an outcome, and the CLI's held-out
+check predicts it); it orders nights that are equally similar, closest crowd first. The similarity shown is
+cosine over the blocks the query knows (`nightsearch.known_similarity`), so an exact match reads 1.0.
+Displayed menu overlap uses exact dish ids (Jaccard). Outcomes never enter the vector.
 
-    dims   feature                                  weight
-    0-6    weekday one-hot (Mon..Sun)               1.7
-    7-13   neighbouring weekday slots (day +/- 1)   0.25 each
-    14-19  weather one-hot (WEATHERS)               1.8
-    20-21  event false / true one-hot               0.9
-    22-23  attendance: high / low                   1.7 x clamp(...)
-    24-47  dish ids, SHA-256 hashed into 24 buckets 1/sqrt(menu size) per dish
-
-The vector is scaled to unit length; similarity is cosine. With no query menu, both sides are compared
-on dims 0-23 only, so a candidate's menu size can't move the score. Displayed menu overlap uses exact dish
-ids (Jaccard). Outcomes are attached after ranking; they never enter the vector.
-
-Storage: with Tiger configured, the observed history is read from `dcsim.nights` / `dcsim.pan_windows`,
-embeddings are upserted into `dcsim.night_embeddings` (pgvector) and ranked there by exact cosine distance.
-If Tiger isn't configured or can't be reached, the same ranking runs locally on data/synthetic/worcester.
-A failure *after* connecting raises SearchUnavailable (HTTP 503). The history is SYNTHETIC either way.
+Storage: with Tiger configured, `nightsearch.build` re-embeds the observed nights into `dcsim.night_vectors`
+and the nearest ones come from a pgvectorscale DiskANN index (HNSW without it). If Tiger isn't configured
+or can't be reached, the same vectors are ranked locally on data/synthetic/worcester. A failure *after*
+connecting raises SearchUnavailable (HTTP 503). The history is SYNTHETIC either way.
 """
 
 from __future__ import annotations
 
 import csv
-import hashlib
 import json
-import math
 import os
 from dataclasses import dataclass
 from datetime import date as Date
@@ -38,20 +30,18 @@ from pathlib import Path
 
 import numpy as np
 
+from . import nightsearch as ns
 from .data import available_dates, default_data_dir, repo_root
 
-DIM = 48
-CONTEXT_DIMS = 24  # weekday + weather + event + attendance; dims 24.. are the menu
-MENU_BUCKETS = DIM - CONTEXT_DIMS
-WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-WEATHERS = ("clear", "rain", "snow", "cloudy", "windy", "other")
-W_WEEKDAY, W_NEIGHBOUR, W_WEATHER, W_EVENT, W_ATTEND = 1.7, 0.25, 1.8, 0.9, 1.7
+WEEKDAYS = ns.WEEKDAYS
+WEATHERS = (*ns.WEATHER, "other")  # "other" = not sure: the weather block is left out of the match
 MAX_STUDENTS = 100_000
 MAX_LIMIT = 20
 UNAVAILABLE = "Historical search is temporarily unavailable."
-METHOD = ("Cosine similarity of 48-dim condition vectors: weekday (with neighbouring days), weather, "
-          "event night, attendance, and the menu's dishes hashed into 24 buckets. Without a menu, only "
-          "the first 24 dims are compared.")
+METHOD = (f"Cosine similarity of {ns.DIM}-dim condition vectors (the same ones as `dcsim tsdb similar`): "
+          "weekday, weather, event night, and the menu's dishes hashed into 64 buckets. Weather 'other' and "
+          "no menu are left out of the match. Equally similar nights are ordered by how close their crowd "
+          "was to the expected students.")
 NOTE = ("Recorded nights are SYNTHETIC until UMass Dining shares real history. Waste and stockouts are what "
         "happened on each matched night, not a forecast for the target date.")
 
@@ -64,7 +54,7 @@ class SearchUnavailable(RuntimeError):
 class Night:
     date: str
     students: int
-    weather: str  # as recorded (e.g. "cold"); scored through weather_bucket()
+    weather: str  # as recorded (clear, rain, cold or snow)
     event_night: bool
     waste_lb: float | None
     stockout_min: float | None
@@ -78,42 +68,14 @@ class Night:
 
 # ---------------------------------------------------------------- features
 
-def weather_bucket(weather: str | None) -> str:
+def weather_known(weather: str | None) -> str | None:
+    """The weather as the vector sees it: one of nightsearch.WEATHER, or None (not known, ignored)."""
     w = (weather or "").strip().lower()
-    return w if w in WEATHERS else "other"
+    return w if w in ns.WEATHER else None
 
 
-def _dish_bucket(dish_id: str) -> int:
-    # sha256, not hash(): Python salts str hashes per process, and stored vectors must be stable
-    return int.from_bytes(hashlib.sha256(dish_id.encode()).digest()[:8], "big") % MENU_BUCKETS
-
-
-def _clamp(x: float, lo: float = 0.0, hi: float = 2.5) -> float:
-    return max(lo, min(hi, x))
-
-
-def feature_vector(day: str, students: int, weather: str, event_night: bool,
-                   dishes: frozenset[str] | set[str] | None) -> np.ndarray:
-    """Unit-length 48-dim vector. `dishes=None` or empty leaves the menu dims at zero."""
-    v = np.zeros(DIM)
-    wd = Date.fromisoformat(day).weekday()
-    v[wd] = W_WEEKDAY
-    v[7 + (wd - 1) % 7] = W_NEIGHBOUR
-    v[7 + (wd + 1) % 7] = W_NEIGHBOUR
-    v[14 + WEATHERS.index(weather_bucket(weather))] = W_WEATHER
-    v[20 + int(bool(event_night))] = W_EVENT
-    v[22] = W_ATTEND * _clamp(students / 1500)
-    v[23] = W_ATTEND * _clamp((2600 - students) / 1500)
-    if dishes:
-        share = 1 / math.sqrt(len(dishes))
-        for d in dishes:
-            v[CONTEXT_DIMS + _dish_bucket(d)] += share
-    return v / np.linalg.norm(v)
-
-
-def cosine(a: np.ndarray, b: np.ndarray) -> float:
-    na, nb = float(np.linalg.norm(a)), float(np.linalg.norm(b))
-    return float(a @ b) / (na * nb) if na and nb else 0.0
+def vector(weekday: str, weather: str | None, event_night: bool, dishes) -> np.ndarray:
+    return ns.embed(weekday, weather_known(weather), bool(event_night), dishes or ())
 
 
 def menu_overlap(query: frozenset[str] | None, night: frozenset[str]) -> float | None:
@@ -210,15 +172,15 @@ def load_local_history(directory: Path | None = None) -> tuple[Night, ...]:
 # ---------------------------------------------------------------- ranking
 
 def _rank_local(q: Query, history: tuple[Night, ...], qdishes: frozenset[str] | None) -> list[tuple[Night, float]]:
-    qv = feature_vector(q.date, q.students, q.weather, q.event_night, qdishes)
+    qv = vector(q.weekday, q.weather, q.event_night, qdishes)
     scored = []
     for n in history:
         if n.date >= q.date:
             continue
-        nv = feature_vector(n.date, n.students, n.weather, n.event_night, n.dishes)
-        sim = cosine(qv, nv) if qdishes is not None else cosine(qv[:CONTEXT_DIMS], nv[:CONTEXT_DIMS])
-        scored.append((n, round(sim, 4)))
-    scored.sort(key=lambda t: (-t[1], t[0].date))
+        nv = vector(n.weekday, n.weather, n.event_night, n.dishes)
+        dist = 1 - float(qv @ nv) / (float(np.linalg.norm(qv)) * float(np.linalg.norm(nv)))
+        scored.append((n, round(ns.known_similarity(qv, dist), 4)))
+    scored.sort(key=lambda t: (-t[1], abs(t[0].students - q.students), t[0].date))
     return scored[: q.limit]
 
 
@@ -227,7 +189,7 @@ def _match(q: Query, n: Night, sim: float, qdishes: frozenset[str] | None) -> di
         "date": n.date, "similarity": sim, "students": n.students, "weather": n.weather,
         "event_night": n.event_night, "weekday": n.weekday, "waste_lb": n.waste_lb,
         "stockout_min": n.stockout_min, "menu_overlap": menu_overlap(qdishes, n.dishes),
-        "same_weekday": n.weekday == q.weekday, "same_weather": weather_bucket(n.weather) == q.weather,
+        "same_weekday": n.weekday == q.weekday, "same_weather": n.weather == q.weather,
     }
 
 
@@ -249,66 +211,32 @@ def search_local(q: Query, history: tuple[Night, ...] | None = None) -> dict:
 
 # ---------------------------------------------------------------- Tiger (pgvector)
 
-EMBEDDINGS = f"""
-CREATE EXTENSION IF NOT EXISTS vector;
-CREATE SCHEMA IF NOT EXISTS dcsim;
-CREATE TABLE IF NOT EXISTS dcsim.night_embeddings (
-  night date PRIMARY KEY,
-  embedding vector({DIM}) NOT NULL,
-  menu_date date,
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
-"""
-
-
-def _vec(v: np.ndarray) -> str:
-    return "[" + ",".join(f"{x:.7f}" for x in v) + "]"
-
-
-def tiger_history(conn) -> tuple[Night, ...]:
-    rows = conn.execute(
-        """SELECT DISTINCT ON (night) night, students, weather, event_night, waste_lb, stockout_min, menu_date
-           FROM dcsim.nights WHERE source = 'observed' AND scenario = 'observed'
-           ORDER BY night, ts DESC""").fetchall()
-    dishes = dict(conn.execute(
-        """SELECT night, array_agg(DISTINCT dish_id) FROM dcsim.pan_windows
-           WHERE source = 'observed' AND scenario = 'observed' GROUP BY night""").fetchall())
-    return tuple(
-        Night(d.isoformat(), int(students or 0), weather or "other", bool(event),
-              None if waste is None else round(float(waste), 1),
-              None if stock is None else round(float(stock), 1), frozenset(dishes.get(d) or ()),
-              menu.isoformat() if menu else None)
-        for d, students, weather, event, waste, stock, menu in rows)
+RUNS = ("observed", "observed:live")
 
 
 def search_tiger(conn, q: Query) -> dict:
-    """Refresh every observed night's embedding, then rank by exact cosine distance in Postgres."""
-    history = tiger_history(conn)
-    conn.execute(EMBEDDINGS)
-    with conn.cursor() as cur:
-        cur.executemany(
-            """INSERT INTO dcsim.night_embeddings (night, embedding, menu_date, updated_at)
-               VALUES (%s, %s::vector, %s, now())
-               ON CONFLICT (night) DO UPDATE SET embedding = EXCLUDED.embedding,
-                 menu_date = EXCLUDED.menu_date, updated_at = now()""",
-            [(n.date, _vec(feature_vector(n.date, n.students, n.weather, n.event_night, n.dishes)), n.menu_date)
-             for n in history])
-    conn.commit()
+    """Re-embed the observed nights into dcsim.night_vectors, then take the nearest ones from its index."""
+    ns.init(conn)
+    count = ns.build(conn, RUNS)
     qdishes = menu_dishes(q.menu_date) if q.menu_date else None
-    qv = _vec(feature_vector(q.date, q.students, q.weather, q.event_night, qdishes))
-    # Unknown menu: compare the condition dims only (pgvector subvector is 1-based).
-    dist = ("e.embedding <=> %(q)s::vector" if qdishes is not None
-            else f"subvector(e.embedding, 1, {CONTEXT_DIMS}) <=> subvector(%(q)s::vector, 1, {CONTEXT_DIMS})")
-    observed = [n.date for n in history]
-    rows = conn.execute(
-        f"""SELECT e.night, 1 - ({dist}) AS sim FROM dcsim.night_embeddings e
-            WHERE e.night = ANY(%(observed)s::date[]) AND e.night < %(before)s::date
-            ORDER BY {dist}, e.night LIMIT %(k)s""",
-        {"q": qv, "observed": observed, "before": q.date, "k": q.limit}).fetchall()
-    by_date = {n.date: n for n in history}
-    ranked = [(by_date[d.isoformat()], round(float(s), 4)) for d, s in rows]
-    ranked.sort(key=lambda t: (-t[1], t[0].date))  # equal rounded scores: earlier date first
-    return _response(q, ranked, qdishes, "tiger-pgvector", len(history))
+    qv = vector(q.weekday, q.weather, q.event_night, qdishes)
+    rows = ns.similar(conn, qv, k=q.limit, before=Date.fromisoformat(q.date), run_id=RUNS, students=q.students)
+    nights = [r["night"] for r in rows]
+    dishes = dict(conn.execute(
+        """SELECT night, array_agg(DISTINCT dish_id) FROM dcsim.pan_windows
+           WHERE run_id = ANY(%s) AND night = ANY(%s::date[]) GROUP BY night""",
+        (list(RUNS), nights)).fetchall()) if nights else {}
+    ranked, seen = [], set()
+    for r in rows:
+        if r["night"] in seen:  # the same night under both observed run ids
+            continue
+        seen.add(r["night"])
+        n = Night(r["night"].isoformat(), int(r["students"] or 0), r["weather"] or "other", bool(r["event_night"]),
+                  None if r["waste_lb"] is None else round(float(r["waste_lb"]), 1),
+                  None if r["stockout_min"] is None else round(float(r["stockout_min"]), 1),
+                  frozenset(dishes.get(r["night"]) or ()))
+        ranked.append((n, round(ns.known_similarity(qv, r["distance"]), 4)))
+    return _response(q, ranked, qdishes, "tiger-pgvector", count)
 
 
 def _connect():

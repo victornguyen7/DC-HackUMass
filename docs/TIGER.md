@@ -16,10 +16,13 @@ uv run dcsim tsdb similar --date 2026-11-14 --weather rain   # past nights most 
 uv run dcsim tsdb bench                           # raw hypertable vs continuous aggregate, server-side ms (§8)
 uv run dcsim tsdb refresh                         # bring every continuous aggregate up to date now
 uv run dcsim tsdb query stack                     # one query across the stack; also: hypertables aggregates waste-daily waste-dishes pans-hourly
-uv run dcsim bundle --waste-only                  # refresh calibration + ledger + dashboard snapshot in the demo bundle (seconds)
+uv run dcsim tsdb track                           # score every observed night now, weekly track record with a verdict (§4)
+uv run dcsim calibrate --situations-only          # refit the crowd error by weather/event from Tiger, no new simulations (§5)
+uv run dcsim forecast --date 2026-11-15 --weather rain   # a forecast that records (and, if the fit was kept, uses) the situation
+uv run dcsim bundle --waste-only                  # refresh calibration + ledger files in the demo bundle (seconds)
 ```
 
-Live dashboard: open `/tiger.html` on the web dev server (§8). API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
+Live dashboard: `make serve`, then open `http://127.0.0.1:8000/tiger` (§8). It is served by the API only, not by the web app. API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
 (protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page, table `dcsim.night_embeddings`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
@@ -34,10 +37,10 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 1 | **Forecast ledger**: forecasts written before the night, append-only, scored automatically | built | `dcsim.forecasts`, `forecast_scorecard`, adopt hook |
 | 2 | **Calibration page**: held-out ranges vs observed, ledger table | built | `web/public/calibration.html` |
 | 3 | **Columnstore compression** with an automatic policy | built | `dcsim tsdb compress` |
-| 4 | Calibration over time (weekly coverage aggregate + scheduled refresh) | idea | below |
-| 5 | Weather and event flags as crowd-forecast inputs | idea | below |
-| 6 | Tiger MCP server for live questions in the demo | idea (not installed) | below |
-| 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14 (commit `78d9239`; §8) | `dcsim tsdb bench`, `/api/tiger/*`, `web/public/tiger.html` |
+| 4 | **Calibration over time**: every night scored into a hypertable by a nightly Tiger job, rolled up by week in a real-time continuous aggregate | built 2026-11-14 (§4) | `dcsim tsdb track`, `dcsim.forecast_results`, `dcsim.forecast_weekly`, job `score_forecasts` |
+| 5 | **Weather and event flags** in the crowd error: fitted on training weeks, kept only if held-out CRPS improves | built 2026-11-14; **not kept** on this history (§5) | `dcsim calibrate --situations-only`, `forecast --weather` |
+| 6 | **Tiger MCP** for live questions: schema comments for the assistant, verified question set | built 2026-11-14 (§6) | `COMMENT ON` in `tsdb.COMMENTS`; questions below |
+| 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14 (commit `78d9239`; §8) | `dcsim tsdb bench`, `/api/tiger/*`, API page `/tiger` |
 | 7 | **Similar-night search** with pgvector + a pgvectorscale DiskANN index | built | `dcsim tsdb similar`, `dcsim.night_vectors` (§7); API + web page handoff: [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md) |
 
 ## Schema (`dcsim`)
@@ -212,7 +215,7 @@ forecast. It earns more with real history, where menus rotate independently of t
 ## 8. Live dashboard: aggregates, benchmark, one query across the stack
 
 Built 2026-11-14 from the Tiger track plan (unified stack, hypertables, continuous aggregates, compression,
-show the performance, forecasting pitch). **Status: working, tested and committed (`78d9239`).** What is left is at
+show the performance, forecasting pitch). **Status: working, tested and committed (`78d9239`; the page moved from the web app to the API on 2026-11-14).** What is left is at
 the end of this section.
 
 ### What the plan asked for, and where it stands
@@ -225,7 +228,7 @@ the end of this section.
 | 4. Compression | ✅ already there | Columnstore on all six hypertables with a 1-day policy (§3). **Don't run** the plan's `ALTER TABLE ... timescaledb.compress` / `add_compression_policy(..., '7 days')`: the columnstore is already on, with a different segment-by |
 | 5. Show the performance | ✅ | `dcsim tsdb bench`, `GET /api/tiger/bench`, and the dashboard's "Same question, raw table or aggregate" card |
 | 6. Pitch: forecasting engine scored in SQL | ✅ data, wording below | Ledger + `forecast_scorecard` (§1), shown on the dashboard |
-| Dashboard refreshing from the aggregate | ✅ | `web/public/tiger.html`, polls `GET /api/tiger/dashboard` every 5 s |
+| Dashboard refreshing from the aggregate | ✅ | API page `/tiger` (`engine/src/dcsim/static/tiger.html`), polls `GET /api/tiger/dashboard` every 5 s |
 
 ### The two aggregates
 
@@ -280,10 +283,11 @@ What to say about it:
 - **#4 is a small table.** About 250 weigh-ins a night, and the aggregate only halves the rows.
 - The tables are small, so these show direction, not what a year of data would do. Say so if asked.
 
-### The dashboard (`web/public/tiger.html`)
+### The dashboard (`engine/src/dcsim/static/tiger.html`, served at `/tiger`)
 
-Standalone page, same style as the calibration page. Open `http://localhost:5173/tiger.html` with `make web` and
-`make serve` running (or add `?api=http://127.0.0.1:8000`). It polls every 5 s and shows:
+Standalone page, same style as the calibration page. **It is not part of the web app**: the engine API serves it
+at `GET /tiger` (hidden from the OpenAPI docs), so open `http://127.0.0.1:8000/tiger` with `make serve` running.
+The React app has no link to it and the Vite dev server doesn't serve it. It polls every 5 s and shows:
 
 - tiles (nights, weigh-ins, pan readings, columnstore ratio, ledger size);
 - **waste by night**, stacked by reason, from `waste_daily_by_dish`, with a table view, and the most wasted dishes;
@@ -292,18 +296,14 @@ Standalone page, same style as the calibration page. Open `http://localhost:5173
 - the **one-query** table (latest 10 nights) and the **forecast ledger**;
 - **storage**: chunks in the columnstore, row data vs columnstore, aggregate freshness.
 
-When the API isn't reachable it falls back to `web/public/cache/waste/tiger.json` and says it is a snapshot.
-`dcsim bundle` and `dcsim bundle --waste-only` write that file (`bundle.tiger_snapshot`). The current copy was
-written directly from that function, not by a bundle run, so `manifest.json` doesn't list it yet (the page doesn't
-need it to).
-
-The Insights tabs link to it (**Live data**, next to Waste history and Similar nights), and the page links back.
-`web/scripts/smoke.mjs` opens it at all three widths. Reads take about 1.2 s per poll from a laptop (most of it connecting
-to Tiger Cloud).
+It needs Tiger: without it the status line gives the API's reason (for example "Tiger not configured"). If a poll
+fails after the page has loaded, the last good data stays on screen, dimmed. There is no offline snapshot (an
+earlier version wrote one into the web bundle; it was removed with the page). Reads take about 1.2 s per poll from a
+laptop, most of it connecting to Tiger Cloud.
 
 ### Demo script (about 2 minutes)
 
-1. Open `/tiger.html`. "Weigh-ins and pan levels are hypertables. These charts read continuous aggregates."
+1. Open `http://127.0.0.1:8000/tiger`. "Weigh-ins and pan levels are hypertables. These charts read continuous aggregates."
 2. In a terminal: `cd engine && uv run dcsim tsdb observe --date 2026-11-13`. This writes a SYNTHETIC Nov 13
    night. Within 5 s the page shows "New night: Fri, Nov 13", a new bar appears in the gap before Nov 14, and the
    Nov 13 ledger rows change from "Awaiting the night" to inside or outside. **It has not been run yet, on
@@ -325,41 +325,108 @@ exports, not a measured saving. Check the sponsor's submission page for rules su
 - Ran `dcsim tsdb compress`: `dish_nights`, `station_hours` and `minute_series` moved to the columnstore.
 - No fact rows were added, changed or deleted. `tsdb observe` for Nov 13 was **not** run.
 
+Later on 2026-11-14 (items 4-6, `dcsim tsdb track` and `dcsim calibrate --situations-only`):
+
+- `dcsim tsdb init` objects added: hypertable `forecast_results` (by `night`, 28-day chunks), procedure
+  `score_forecasts`, job 1016 (daily, 6 am Eastern), real-time continuous aggregate `forecast_weekly` with policy
+  job 1015 (hourly), columns `forecasts.weather` / `forecasts.event_night`, comments on the schema, 17 tables and views, and their key columns.
+- New calibration row `cal-20261114T143301` (copy of `cal-20261114T044443` plus `params.crowd.situational`,
+  `kept: false`), and `data/synthetic/worcester/calibration_report.json` updated to match (fields added only).
+- Fact tables unchanged. Nov 13 still not observed; when it is, `load_live_night` scores it into the track record.
+
 ### Handoff: what is left
 
-Done and verified: engine code, 9 new tests (`engine/tests/test_tiger_dashboard.py`; full engine suite 160 passed,
-2 skipped on the final code), aggregates live on Tiger, the page checked in a browser at desktop, phone and dark,
-live and offline, with no console errors. The web unit tests and smoke scripts were not re-run (no React code changed).
+Done and verified: engine code, 10 tests (`engine/tests/test_tiger_dashboard.py`; full engine suite 161 passed,
+2 skipped after the page moved to the API), aggregates live on Tiger, the page checked in a browser at desktop, phone and dark,
+live and offline, with no console errors. Web unit tests pass (46); the page is no longer in the web app or its smoke script.
 
 Still to do:
 
-1. **Restart `make serve`.** An API started before this work answers 404 on `/api/tiger/*`, and the page then
-   shows the snapshot.
-2. **Re-run `dcsim bundle --waste-only` before the demo** so the snapshot and `manifest.json` are current
-   (seconds; it does not rebuild the simulation bundle).
-3. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
+1. **Restart `make serve`.** An API started before this work answers 404 on `/tiger` and `/api/tiger/*`.
+2. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
    `DELETE` the `run_id = 'observed:live' AND night = '2026-11-13'` rows from `nights` and `pan_windows`, the
    Nov 13 rows from `waste_log`, then `dcsim tsdb refresh`. Worth a small CLI action if rehearsing more than once.
-4. Ideas not started: a weekly coverage aggregate over the scorecard (#4 below), a longer history (the
-   "500-night" query) so the timings mean more, columnstore on the aggregates themselves, the Tiger MCP server (#6).
+3. Ideas not started: a longer history (the "500-night" query) so the timings mean more, columnstore on the
+   aggregates themselves, a track-record card on the `/tiger` dashboard (the data is in `forecast_weekly`).
 
-## Not built yet
+## 4. Calibration over time
 
-**4. Calibration over time.** A continuous aggregate of `forecast_scorecard` by week (coverage, bias), refreshed by a
-Tiger job (`add_job`) each night. It turns one score into a track record: "held for six weeks, drifted in week 7".
-Needs a few weeks of ledger entries to be worth showing.
+One score is an anecdote; a score every week is a track record. `dcsim.forecast_results` (a hypertable on `night`)
+holds one scored row per observed night and method, from two origins:
 
-**5. Weather and event flags in the crowd forecast.** They're already on every row. Fit the crowd error by
-situation on the training weeks and keep the change only if held-out CRPS improves. So far, clear held-out nights
-were also about 150 students below forecast, so weather may not explain much.
+- `backtest`: `forecast_check`, naive on all 42 recorded nights, calibrated on the 14 held-out ones;
+- `ledger`: `forecast_scorecard`, the latest forecast per night and method **issued before doors opened**
+  (later ones don't count; 'awaiting' nights aren't scored).
 
-**6. Tiger MCP server.** `tiger mcp install claude-code` adds Tiger's MCP server (it uses the CLI's login), and
-judges' questions ("which dishes ran out on rainy Fridays?") can be answered live with its `db_query` tool against
-these tables. Not installed: it changes your Claude Code config. **There is no read-only switch** (checked:
-`tiger mcp get db_query` marks it destructive): `db_query` runs any SQL as `tsdbadmin`, and the server
-also exposes `service_delete`, `service_resize` and `service_update_password`. For the demo, keep Claude Code's
-per-call approval on and deny the `service_*` tools. Safer still: a read replica (`db_query` on a replica set id is
-read-only) or a `SELECT`-only role. The ledger triggers still block edits to `dcsim.forecasts` either way.
+`dcsim.score_forecasts()` fills it (back-test rows replaced, ledger rows upserted). A Tiger job runs it every
+morning at 6 am Eastern, after the close-out weigh-ins, and the loaders call it after each write (`tsdb load`,
+`calibrate`, `tsdb observe`), so an observed night shows up straight away. `dcsim.forecast_weekly` is a real-time
+continuous aggregate over it by week. Weeks start on Thursday 2026-10-01, so weeks 5 and 6 are exactly the held-out split.
+
+`dcsim tsdb track` prints it with a verdict: a calibrated 80% range should hold on 3-7 of 7 nights 95% of the time
+(`binomial_range`). Result on the SYNTHETIC history (2026-11-14):
+
+| week | naive (waste inside / 7) | calibrated |
+|---|---|---|
+| Oct 1, 8, 15, 22 (training) | 2, 1, 0, 1: **too narrow** every week | not scored (fit on these) |
+| Oct 29 (held out) | 0: too narrow | 3: as calibrated (bias +64 lb, crowd -164) |
+| Nov 5 (held out) | 1: too narrow | 6: as calibrated |
+| Nov 12 (ledger, 1 night) | 0 of 1 | 1 of 1 |
+
+The naive range misses most nights in every week, so its failure isn't a one-week fluke. The calibrated range
+holds in both held-out weeks, but on Oct 29 it only just holds (3 is the low edge), and that week's crowd was
+164 students below forecast. Seven nights a week is a small sample, so the verdict catches drift, not fine shifts.
+
+## 5. Weather and event flags in the crowd error
+
+`calibration.fit_situations`: on the training nights only, log(observed / expected students) = intercept +
+effect[rain, cold, snow] + effect[event], each effect shrunk towards 0 as if 4 more nights had shown none (ridge;
+2 cold nights shouldn't move a forecast much). `score_situations` compares it with the pooled crowd error on the
+held-out nights (students, engine seeds x 25 crowd quantiles) and **keeps it only if CRPS is lower**. `dcsim
+calibrate` does this every run; `dcsim calibrate --situations-only` does it from what is already in Tiger (the
+naive forecast's students per seed give each night's expected crowd) and logs a new calibration row.
+
+When kept, `dcsim forecast --weather rain [--event]` draws the calibrated crowd from that situation's fit. Either
+way the forecast records the weather and event flag it assumed (`forecasts.weather`, `forecasts.event_night`).
+Adopting in the app doesn't pass a situation yet, so those forecasts use the pooled error.
+
+Result (`cal-20261114T143301`, SYNTHETIC):
+
+| situation | training nights | fitted (shrunk) | generator's hidden effect |
+|---|---|---|---|
+| rain | 9 | -3.2% | -6% |
+| cold | 2 | -0.9% | -3% |
+| event | 3 | +3.5% | +15% |
+| snow | 0 | 0 | none |
+
+Held-out students CRPS: **205.8 situational vs 200.0 pooled, so not kept**; forecasts keep the pooled error. The
+fit points the right way, but the held-out weeks don't reward it. Clear held-out nights came in 170 students below
+the median forecast and cold ones 267 above (`forecast_results`, split test), the opposite of what the fit
+expects. With 2 rainy, 3 cold and no event nights held out, the test can't tell a real effect from noise. Re-run
+it with more history; the rule stays the same.
+
+## 6. Live questions through the Tiger MCP
+
+Tiger's MCP server (`tiger mcp install claude-code`, which uses the CLI's login) gives an assistant `db_schema`
+and `db_query` against this service. To answer questions well it needs to know which rows are observed and how
+"ran out" is measured, so `dcsim tsdb init` now writes comments on the main tables, columns and aggregates
+(`tsdb.COMMENTS`); `db_schema` with `comments: true` shows them.
+
+Questions answered live through the MCP on 2026-11-14, as a demo set:
+
+| Question | Answer (SYNTHETIC history) | How |
+|---|---|---|
+| Which dishes ran out on rainy Fridays? | 3 rainy Fridays (Oct 2, 9, 16). Cumin Basmati Rice (tandoor) at 6:00 pm on one, Savory Baked Chicken Thigh (grill) at 11:00 pm on one; nothing ran out on more than one | `pan_windows` observed, `portions_left = 0`, excluding each dish's close-out window |
+| Did forecasts hold on rainy nights? | Held-out rain: calibrated 1 of 2 inside, naive 0 of 2; crowd about 250 below forecast | `forecast_results`, origin backtest, split test |
+| Has the calibration drifted? | No: as calibrated in both held-out weeks (3/7, 6/7); naive too narrow every week | `forecast_weekly` |
+| Does weather explain the crowd? | Partly in training (rain -3%), not on held-out nights, so it isn't used | `calibrations.params->'crowd'->'situational'` |
+
+Safety: the server's read-only mode applies only to services tagged **PROD**. This service is tagged DEV, so
+`db_query` runs any SQL as `tsdbadmin`, and the server also exposes `service_delete`, `service_resize` and
+`service_update_password`. For the demo: keep Claude Code's per-call approval on and deny the `service_*` tools,
+or set the service's environment to PROD in the Tiger console if it allows that. By the MCP server's own
+instructions it then connects read-only and refuses service changes; the engine connects directly, so it isn't
+affected (not tested here). The ledger triggers block edits to `dcsim.forecasts` either way.
 
 **Sam uses the same MCP server (2026-11-14).** The Ask Sam page and `dcsim agent` run `tiger mcp start stdio` and call
 `db_schema` and `db_query` themselves (`engine/src/dcsim/ai/tiger_mcp.py`). Each query is checked in code first

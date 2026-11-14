@@ -133,3 +133,22 @@ def test_tiger_dashboard_endpoint_passes_the_night_through(tmp_path, monkeypatch
     with TestClient(app) as c:
         assert c.get("/api/tiger/dashboard?night=2026-11-07").json() == {"night": "2026-11-07", "conn": "conn"}
         assert c.get("/api/tiger/bench?repeat=99").json() == [{"repeat": 10}]   # capped
+
+
+def test_dashboard_page_is_served_by_the_api_only(tmp_path, monkeypatch):
+    from pathlib import Path
+
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setenv("DCSIM_CACHE", str(tmp_path))
+    monkeypatch.setenv("DCSIM_WORKERS", "1")
+    from dcsim.api import app
+
+    with TestClient(app) as c:
+        r = c.get("/tiger")
+        assert r.status_code == 200 and r.headers["content-type"].startswith("text/html")
+        assert "/api/tiger/dashboard" in r.text and "<title>Live Kitchen Data</title>" in r.text
+        assert "/tiger" not in c.get("/openapi.json").json()["paths"]   # a page, not part of the API contract
+    web = Path(__file__).resolve().parents[2] / "web"
+    assert not (web / "public" / "tiger.html").exists()
+    assert "tiger.html" not in (web / "src" / "components" / "Shell.tsx").read_text()

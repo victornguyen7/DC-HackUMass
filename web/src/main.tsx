@@ -7,9 +7,11 @@ import Dashboard from "./pages/Dashboard";
 import Waste from "./pages/Waste";
 import Lab from "./pages/Lab";
 import SimilarNights from "./pages/SimilarNights";
+import Sam from "./pages/Sam";
 import "./styles.css";
 import "./guided.css";
 import "./similar-nights.css";
+import "./sam.css";
 
 function Layout() {
   return (
@@ -32,6 +34,7 @@ const router = createBrowserRouter([
       { path: "waste", element: <Waste /> },
       { path: "lab", element: <Lab /> },
       { path: "similar-nights", element: <SimilarNights /> },
+      { path: "sam", element: <Sam /> },
       { path: "*", element: <Navigate to="/hall" replace /> },
     ],
   },

@@ -117,7 +117,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | # | Prize | Status |
 | --- | --- | --- |
 | 1 | Gemini API | ◐ Ask box, narration, explain, dish prior, embeddings on Gemini; function calling and menu photo open |
-| 2 | Agentic hack (Sentient) | ✗ Planning agent not built (needs tools + loop; optimizer N6 optional) |
+| 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman planning agent built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, web page `/sam`); optimizer N6 still optional |
 | 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (Insights › Live data, `/tiger.html`, two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; 500-night demo query and MCP open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |

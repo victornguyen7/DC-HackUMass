@@ -35,7 +35,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | T4 | Low | Repo | `codex-skills` is a submodule entry with no `.gitmodules`: the folder is empty in every clone |
 | T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
 | N1–N9 | — | Not built | See §7 |
-| U1–U17 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
+| U1–U18 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
 
 ---
 

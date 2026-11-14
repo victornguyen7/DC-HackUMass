@@ -165,7 +165,7 @@ HackUMass2026/
 │   │                        useReplayClock.ts, similarNights.ts, store.ts, format.ts, types.ts
 │   ├── src/components/      Shell (top navigation, Insights tabs, top bar), HallScene (isometric canvas), DetailDialog, ReplayAlert, Charts
 │   ├── src/*.css            styles.css (tokens), guided.css (redesign), similar-nights.css
-│   ├── public/cache/        STATIC DEMO BUNDLE (committed, ~17 MB)
+│   ├── public/cache/        STATIC DEMO BUNDLE (committed, ~22 MB)
 │   ├── public/plan/         floor-plan SVGs (top-down + static 3D render)
 │   ├── public/calibration.html   standalone forecast-calibration page
 │   └── scripts/             smoke.mjs (API down), smoke-api.mjs (API up)
@@ -246,7 +246,7 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 | --- | --- | --- |
 | Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle, Similar nights search and route; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
 | Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals, Hall playback and walking paths, Similar nights page states (defaults, menu, empty, 422, API down + retry) |
-| Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | Simulation, Kitchen plan, Insights and Lab at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/`. Two Hall steps fail after the redesign (UI_ISSUES U17) |
+| Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | Simulation, Kitchen plan, Insights and Lab at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/` |
 | Browser, API up | `make web-test-api` | ask → run, Why?, new dish + AI estimate, adopt → Dashboard, saved list, API replay + narration |
 
 ---
@@ -268,7 +268,7 @@ Consequences:
 
 ## 9. Current status and known issues
 
-*As of 2026-11-13, engine 0.6.2. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
+*As of 2026-11-13, engine 0.6.2. The demo bundle was rebuilt 2026-11-14 04:05 UTC on engine **0.6.2** (264 results, 14 replays, 168 Gemini narrations, 22 MB), so the web app shows current numbers; rebuild it again only if the engine or data changes. A full test run after the rebuild passed (see `docs/STATUS.md`). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
 **Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; the redesigned web app (Simulation, Kitchen plan, Insights with Waste history and Similar nights) offline and with the API; synthetic history, back-test and Tiger calibration.
 
@@ -285,7 +285,7 @@ Consequences:
 **New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey.
 
 **Headline numbers right now** (they change whenever the engine changes, so check the app):
-- Fri Nov 13 baseline (engine 0.6.1, median of 10 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 38 stockout-minutes per night (dinner 14, late night 20), about 3,360 portions wasted (dinner ~29% of cooked, late night ~24%). The web app still shows 0.4.1 numbers until the bundle is rebuilt.
+- Fri Nov 13 baseline (engine 0.6.2 bundle, median of 30 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 38 stockout-minutes per night (dinner 14, late night 20), about 3,350 portions wasted (28% of cooked). The web app, the CLI and the API show the same numbers.
 - Back-test of *Smaller batches of favorites* over 39 past nights (engine 0.6.1, `data/synthetic/worcester/backtest.json`): **waste about 8.8% lower (5.6–10.4%)**, wins 38 of 39 nights, about 542 lb and $1,821 per week. Stockouts: about 53 min per night under the plan vs 48 for the baseline plan and **41 recorded**, so the plan saves waste at some cost in run-outs.
 
 **Biggest open items:**
@@ -293,12 +293,11 @@ Consequences:
 | --- | --- |
 | Figma frames and pitch use placeholder numbers (e.g. "−18% waste") that don't match the data | `docs/UI_ISSUES.md` U1 |
 | No orbital 3D: the Hall plays on an illustrated isometric view and the top-down plan | U2 / ISSUES N1 |
-| No breakfast/lunch (the Dashboard's "servers needed" column needs the bundle rebuilt to show data) | U4 |
+| No breakfast/lunch | U4 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
-| The committed demo bundle is engine 0.4.1; rebuild once on the final engine (`make demo-bundle`) | `docs/STATUS.md` |
 | Tiger's copy of the synthetic history is stale (24 of 43 nights differ), so Similar nights gives slightly different matches on Tiger and on the local files | ISSUES T3 |
-| Two Hall steps of the browser smoke test fail after the redesign | UI_ISSUES U17 |
+| The Hall's pan level counts the hot-hold cabinet too, so for the 30 s of a pan swap it shows food in a pan a student just found empty | UI_ISSUES U18 |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 
 Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.md`** (web app). Ideas ranked by value: `docs/IMPROVEMENTS.md`.

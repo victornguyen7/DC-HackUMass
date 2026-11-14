@@ -129,7 +129,10 @@ it("loads the selected scenario's trace and retains all station access", async (
   await screen.findByRole("heading", { name: "Results & trade-offs" });
   await waitFor(() => expect((screen.getByLabelText("Replay scenario") as HTMLSelectElement).value).toBe("2026-11-13|extra_server|"));
   fireEvent.click(screen.getByRole("button", { name: "Replay options & legend" }));
-  expect(screen.getByText(/Representative night 25 of 30/)).toBeTruthy();
+  // The representative night changes with every bundle rebuild, so read it from the bundle.
+  const manifest: Manifest = JSON.parse(readFileSync(resolve("public/cache/manifest.json"), "utf8"));
+  const seed = Number(/_s(\d+)\.json\.gz$/.exec(manifest.entries.find((e) => e.key === "2026-11-13|extra_server|")!.trace!)![1]);
+  expect(screen.getByText(new RegExp(`Representative night ${seed} of 30`))).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "1 Watch the hall" }));
   expect(screen.getAllByRole("button", { name: /^Inspect / })).toHaveLength(11);
   fireEvent.click(screen.getByRole("button", { name: "Inspect Latino" }));

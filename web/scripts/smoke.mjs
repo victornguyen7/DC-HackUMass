@@ -41,7 +41,8 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
     await step("hall color by wait", async () => { await p.getByLabel("Color by").selectOption("wait"); });
     await step("hall station click", async () => {
       await p.getByRole("button", { name: /^Grill:/ }).click();
-      await p.getByRole("heading", { name: "Grill" }).waitFor();
+      // the station inspector and the map label are both headings named "Grill"
+      await p.getByRole("heading", { name: "Grill" }).first().waitFor();
     });
     await step("hall camera views", async () => {
       await p.getByRole("button", { name: "Top-down view" }).click();
@@ -98,7 +99,9 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
     });
     await step("hall other date baseline", async () => {
       await p.goto(`${base}/hall`);
-      await p.getByRole("button", { name: "Inspect Latino" }).waitFor({ timeout: 20000 });
+      // Nov 18 (Friendsgiving) has a Carving line instead of Latino
+      await p.getByRole("button", { name: "Inspect Carving" }).waitFor({ timeout: 20000 });
+      await p.getByRole("button", { name: "Inspect Grill" }).waitFor();
     });
   }
   if (tag === "phone") {

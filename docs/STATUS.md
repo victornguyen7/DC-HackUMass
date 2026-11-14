@@ -8,7 +8,9 @@ Last updated: 2026-11-13, engine 0.6.2, after merging PRs #1–#3 and adding Sim
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
 ## Before the demo
-- ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.2, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
+- ✅ **Demo bundle rebuilt on engine 0.6.2** (2026-11-14 04:05 UTC: 264 results, 14 replays, 168 Gemini narrations, 22 MB; about 17 min). Rebuild again only if the engine or data changes: `make demo-bundle`, or `LLM_PROVIDER=mock make demo-bundle` for template text in a few minutes.
+- ✅ **Full test run after the rebuild passed:** engine 149 tests, web 46 tests, browser smoke 23/23 offline and 8/8 with the API, 44 deep offline checks, Similar nights 6/6. Table in [UI_ISSUES.md](UI_ISSUES.md#full-test-run-after-the-062-bundle-2026-11-13).
+- ✗ Restart `make serve` if it was started before the Similar nights commit (`/api/similar-nights` → 404 otherwise).
 
 ## Recently merged (2026-11-13)
 All branches are merged into `main`; details in [README §14](../README.md#14-branches-and-merges).
@@ -25,7 +27,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | --- | --- | --- | --- | --- |
 | Engine, back-test, API, LLM, repo issues | 18 | 2 | 6 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 2 | 5 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
-| Web UI issues | 9 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
+| Web UI issues | 10 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
 
 ---
@@ -102,12 +104,13 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | U4 | Dashboard dinner only | ◐ Late night shown; breakfast and lunch open |
 | U7 | Lab: Optimize and uncertainty sweep | ◐ Ask box, menu edits, new dish, Why? built; Optimize and sweep open |
 | U2 | Only the top-down view is live | ◐ Isometric replay plays the full trace (PR #1); orbital 3D open |
-| U5 | Staffing "needed" not shown | ✅ Fixed 0.6.2 ("Needed at peak" column; data after the bundle rebuild) |
+| U5 | Staffing "needed" not shown | ✅ Fixed 0.6.2 ("Needed at peak" column; verified with data on the 0.6.2 bundle) |
 | U9 | Replay geometry approximate | ✗ (needs N2) |
 | U14 | Stack differs from SPEC §9 | ✗ (a decision, not a bug) |
 | U15 | Several features need the API | ✗ (by design offline; run `make serve` for the demo) |
 | U16 | Per-dish $ doesn't sum to the headline | ✅ Fixed 0.6.2 (same $ basis; rows add up to the average week) |
-| U17 | Two Hall smoke steps fail after the redesign | ✗ Open (smoke selectors; owner of PR #1) |
+| U17 | Two Hall smoke steps fail after the redesign | ✅ Fixed 2026-11-13 (script selectors; the app was fine) |
+| U18 | Hall pan level includes the hot-hold cabinet (wrong for 30 s during a pan swap) | ✗ Open (export the on-line level in the replay) |
 
 ## Sponsor prizes ([SPONSORS.md](SPONSORS.md))
 

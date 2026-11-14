@@ -1,6 +1,6 @@
 # Web UI: test results and known issues
 
-Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.2. The committed demo bundle is engine 0.4.1, so the pages show 0.4.1 numbers until `make demo-bundle` is re-run. New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts). Since then (same day): the redesign (PR #1) and Hall fixes (PR #2) were merged, and **Insights › Similar nights** (`/similar-nights`) was added and tested (9 unit tests; Chrome at 1440 px and 390 px with the live API, no horizontal scroll, no console errors).
+Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.2. The demo bundle was rebuilt on engine 0.6.2 (2026-11-14 04:05 UTC), so the pages show current numbers. A full re-test followed: see [Full test run after the 0.6.2 bundle](#full-test-run-after-the-062-bundle-2026-11-13). New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts). Since then (same day): the redesign (PR #1) and Hall fixes (PR #2) were merged, and **Insights › Similar nights** (`/similar-nights`) was added and tested (9 unit tests; Chrome at 1440 px and 390 px with the live API, no horizontal scroll, no console errors).
 Second pass (same day): the UI now uses the engine API features it ignored before, and the back-test exports per-dish and per-station numbers. See [Second pass](#second-pass-connecting-the-ui-to-the-backend).
 
 Severity: **High** = misleads a viewer or breaks the demo story · **Medium** = a designed feature that is missing or only partly works · **Low** = cleanup.
@@ -88,13 +88,14 @@ Also fixed while testing the second pass:
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
 | U2 | Medium | Hall | ~~Only the top-down view is live~~ **Partly fixed (PR #1):** the illustrated isometric view (Canvas) plays the full trace; no orbital 3D |
 | U4 | Medium | Dashboard | ~~Dinner only~~ **Partly fixed:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch still missing |
-| U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; shows data once the bundle is rebuilt |
+| U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; **verified with data** on the 0.6.2 bundle (8 of 8 staffed stations; e.g. Grill has 2, needs 3 at 6 pm) |
 | U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
 | U15 | Medium | All | Several features need the API; offline they explain why and stay disabled |
 | U9 | Low | Hall | Replay geometry is approximate |
 | U11 | ~~Low~~ | Hall | ~~Engine issues E1/E2 are visible in the replay~~ **Fixed** with E1/E2 in engine 0.4.1 |
 | U16 | ~~Low~~ | Waste | ~~Per-dish "$ / week" doesn't add up exactly to the headline~~ **Fixed (0.6.2):** dish rows use the same $ basis and add up to the average simulated week (shown under the table); the headline is the median week |
-| U17 | Low | Hall | After the frontend redesign (PR #1) two smoke steps fail: "hall station click" (the script's `heading "Grill"` now matches 2 elements) and "hall other date baseline" (times out). Same on the redesign commit itself, so not caused by later engine work |
+| U17 | ~~Low~~ | Hall | ~~After the frontend redesign (PR #1) two smoke steps fail~~ **Fixed 2026-11-13:** both were script selectors, not app bugs; smoke passes 23 of 23 |
+| U18 | Low | Hall | Pan level in the replay is line pan + hot-hold cabinet, so during a pan swap (30 s) it shows food in a pan a student just found empty |
 | U14 | Low | Repo | Stack differs from SPEC §9 (no Tailwind, no Recharts) |
 
 Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1). Partly fixed: U4, U7.
@@ -144,7 +145,7 @@ Offline (bundle only), these are disabled with a message: the plain-English box,
 ### U9 · Low · Hall replay geometry is approximate
 - **Wall/counter crossing fixed 2026-11-13:** both views use cached routes around shared counters, stairs, rooms, walls, and tables. Paths maintain body clearance and use the back-room door openings. Queue interpolation also follows safe paths and no longer jumps between neighboring slots. Recorded event times are preserved.
 - The engine records only the seating zone. The exact seat is picked by the UI from the **assumed** table layout.
-- Pan levels are rebuilt from `served` events. They match the engine's empty-pan events more than 95% of the time.
+- Pan levels are rebuilt from `served` events. Since engine 0.6.0 they include the hot-hold cabinet (U18): on the Nov 13 baseline replay, 21 of 91 empty-pan events show level 0 and 68 more are pan swaps completed within 30 s (98% explained).
 - "Missed 1st choice" coloring infers the first choice from the first line joined (21.2% vs the engine's 21.0%).
 
 ### U11 · Fixed (engine 0.4.1) · Engine issues were visible in the replay
@@ -163,4 +164,31 @@ Offline (bundle only), these are disabled with a message: the plain-English box,
 
 ### U17 · Low · Two Hall smoke steps fail after the redesign
 - `node scripts/smoke.mjs` (2026-11-13, engine 0.6.2 bundle 0.4.1): "hall station click" fails because `getByRole('heading', { name: 'Grill' })` matches two headings in the redesigned Hall; "hall other date baseline" times out waiting for its locator. Both also fail on the redesign merge commit (0ba140e) before any later change.
-- **Fix:** update the smoke script's selectors for the redesigned Hall (owner of PR #1), then check whether the date switch really works in the Hall.
+- **Fixed 2026-11-13:** the first step now takes the first of the two "Grill" headings. The second waited for "Inspect Latino" after switching to Nov 18, but Friendsgiving has a Carving line instead of Latino; it now waits for "Inspect Carving". The Hall's date switch itself works (all 8 dates load 11 stations).
+
+### U18 · Low · Hall pan level includes the hot-hold cabinet
+- Found 2026-11-13 by `bundle.test.ts` on the 0.6.2 bundle. Since engine 0.6.0 a pan event's `portions` is `pan.level` = portions on the line **plus** the hot-hold cabinet (`model.py`). When the line pan runs out and the cabinet has food, staff swap in a full pan after `pan_swap_min` (0.5 min). A student arriving in that window gets an `empty_pan` event while the replay shows, say, 22 portions.
+- **Effect:** for about 30 s per swap the station inspector and the "empty pans" counter disagree with a student's journey. Headline numbers are not affected (swaps are not stockouts by design, ISSUES R5).
+- **Fix:** export the on-line level in trace pan events (`recorder.pan`, `metrics.build_trace`), use it in `playback.panTimelines`, then re-export the replays. The test now checks the real rule (level 0, or a `batch_ready` within the swap time) and can go back to "level 0" after the fix.
+
+---
+
+## Full test run after the 0.6.2 bundle (2026-11-13)
+
+Run on `main` at `a392917` plus the rebuilt bundle, with a fresh API (port 8011) and two extra web servers (one with no API behind it), so the servers already running on :8000 and :5173 were not touched.
+
+| Area | Result |
+| --- | --- |
+| Engine tests (`make test`) | 149 passed, 2 skipped |
+| Bundle build (`make demo-bundle`, Gemini) | exit 0: 264 results (33 per date × 8 dates), 14 replays, 168 narrations all `llm` (no template fallbacks, no timeouts), 22 MB |
+| Bundle data check (script) | all 264 results: engine 0.6.2, 30 nights, p10 ≤ p50 ≤ p90, no negative values, served ≤ prepared, a 30-pair comparison with a verdict on every non-baseline; all 14 replays have a student count inside the result's range |
+| Web unit tests (`make web-test`) | 46 passed (after fixing two tests that hardcoded old-bundle values) |
+| Typecheck + production build | clean |
+| Browser smoke, no API (`scripts/smoke.mjs`) | 23 of 23 steps, 0 problems (desktop, tablet, phone) |
+| Deep offline browser check (44 checks) | 44 passed, 0 console errors: Kitchen plan numbers equal the bundle on all 8 dates; production plan (54 batch-cooked dishes) + CSV; staffing "Needed at peak"; leftovers; alerts; Menu tab; Nov 18 carving; replay on all 8 dates; station inspector; play; top-down view; late night; 12 student stories with narration; three presets whose on-screen changes equal the bundle; Nov 17 comparison without an animation; all 6 Lab presets; Waste history; Similar nights offline message; calibration page; no horizontal scroll on 6 phone pages |
+| Browser smoke with the API (`scripts/smoke-api.mjs`) | 8 of 8: ask → run, Why?, remove + new dish, adopt → Kitchen plan, saved list, API replay + narration, any-student narration, lever-grid replay |
+| Similar nights with the API (browser) | 6 of 6: Tiger pgvector results in order, menu overlap, unknown menu, empty history, form validation, keyboard-only search |
+| API (script) | 28 reference routes 200; a new uncached scenario runs in 2.6 s as a job; cache hit identical; `/compare` equals `vs_baseline`; per-minute series; replay is the median night; highlights; narration; `/ask`; `/explain`; similar dishes; bad requests → 404 / 422 |
+| CLI | `dcsim run`, `compare`, `menu`, `bench` (30 nights in 2.2 s); numbers equal the bundle and the screens |
+
+Findings: U18 (new, low); U17 closed; two brittle tests fixed; `backtest.json` per-dish values can differ by 0.1 lb between runs (rounding; headline identical). The API browser test adopts a scenario, which appends two rows to the Tiger forecast ledger each run (append-only); the saved scenario it created was deleted afterwards.

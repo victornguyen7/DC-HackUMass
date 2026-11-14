@@ -92,18 +92,27 @@ describe("playback", () => {
     }
   });
 
-  it("pan levels never go negative and are 0 when a student finds the pan empty", () => {
+  it("pan levels never go negative; an empty pan a student finds is at 0 or mid-swap", () => {
     const pans = panTimelines(trace);
     for (const tl of pans.values()) for (const p of tl.points) expect(p.level).toBeGreaterThanOrEqual(0);
-    let checked = 0, zero = 0;
+    // Engine 0.6.0+: a pan event's `portions` is the line pan PLUS the hot-hold cabinet. A student can
+    // find the line pan empty while the cabinet has food; staff then swap in a full pan, which shows
+    // up as a `batch_ready` within pan_swap_min (0.5 min). Any other non-zero level is a playback bug.
+    // (The replay can't show the line pan alone until the trace exports it: UI_ISSUES U18.)
+    const SWAP_MIN = 0.5;
+    const refills = new Map<string, number[]>();
+    for (const p of trace.pans) if (p.event === "batch_ready") (refills.get(p.dish) ?? refills.set(p.dish, []).get(p.dish)!).push(p.t);
+    let checked = 0, zero = 0, swap = 0;
     for (const s of trace.students)
       for (const e of s.events)
         if (e.type === "empty_pan" && e.dish && pans.has(e.dish) && e.t < result.close) {
           checked++;
           if (levelAt(pans.get(e.dish)!, e.t) === 0) zero++;
+          else if ((refills.get(e.dish) ?? []).some((t) => t >= e.t && t <= e.t + SWAP_MIN + 1e-6)) swap++;
         }
     expect(checked).toBeGreaterThan(50);
-    expect(zero / checked).toBeGreaterThan(0.95);
+    expect(zero).toBeGreaterThan(0);
+    expect((zero + swap) / checked).toBeGreaterThan(0.95);
   });
 
   it("missed-first-choice colouring is close to the engine's metric", () => {

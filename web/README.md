@@ -62,9 +62,9 @@ The main app is at `http://localhost:5173/hall`. `work/design/dining-simulation.
 Kitchen plan opens on Overview, with one service-hours line. Its Menu tab (`/dashboard?view=menu`) contains the station menu. Production plan, Staffing, and Left at close open in accessible dialogs; the full tables, print, and CSV controls are retained. Expected arrivals includes **View alerts**, with links into the replay at the relevant time. Insights' Top waste dishes table has three columns: Dish, Change, and $ / week.
 ## Engine fields the pages don't show yet
 
-Typed in `src/lib/types.ts` (optional, so the 0.4.1 bundle still works): `headline.batch_wait_min / cook_busy_share / empty_wait_min / seat_wait_min / peak_seated` (engine 0.5.0), `staffing` (servers needed per station and hour, UI_ISSUES U5) and `series` (per-minute bands, only from `GET /api/results/{hash}?include=series`, engine 0.6.0). The preset list includes **Forecast reorder**; it has data in the Lab once the bundle is rebuilt (or with the API).
+Typed in `src/lib/types.ts` (optional, so an older bundle still works): `headline.batch_wait_min / cook_busy_share / empty_wait_min / seat_wait_min / peak_seated` (engine 0.5.0), `staffing` (servers needed per station and hour, UI_ISSUES U5) and `series` (per-minute bands, only from `GET /api/results/{hash}?include=series`, engine 0.6.0). The preset list includes **Forecast reorder**; it has data in the Lab since the 0.6.2 bundle.
 
-The committed bundle in `public/cache` is from engine **0.4.1**; run `make demo-bundle` once on the final engine.
+The bundle in `public/cache` was rebuilt on engine **0.6.2** (2026-11-14 04:05 UTC: 264 results, 14 replays, 168 narrations). Rebuild it with `make demo-bundle` after any engine or data change; two tests read values from it (`bundle.test.ts`, `Hall.test.tsx`) and adapt to a new bundle.
 
 Known gaps and issues found while testing: **[docs/UI_ISSUES.md](../docs/UI_ISSUES.md)**.
 

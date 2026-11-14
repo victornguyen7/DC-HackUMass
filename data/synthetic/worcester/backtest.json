@@ -3,7 +3,7 @@
  "_note": "SYNTHETIC history; simulated savings, not measured. Pre-consumer waste only (expired + left at close).",
  "plan": "smaller_batches",
  "seeds_per_night": 10,
- "generated_at": "2026-11-14T03:06:33+00:00",
+ "generated_at": "2026-11-14T03:48:38+00:00",
  "headline": {
   "nights": 39,
   "plan_wins": 38,
@@ -1206,7 +1206,7 @@
      "plan_lb": 34.2
     },
     "seasons": {
-     "recorded_lb": 64.5,
+     "recorded_lb": 64.4,
      "plan_lb": 57.9
     },
     "soups": {
@@ -1272,7 +1272,7 @@
     },
     "noodle_bowl": {
      "recorded_lb": 183.0,
-     "plan_lb": 194.8
+     "plan_lb": 194.9
     },
     "seasons": {
      "recorded_lb": 73.2,
@@ -1328,7 +1328,7 @@
      "plan_lb": 92.5
     },
     "grill": {
-     "recorded_lb": 140.4,
+     "recorded_lb": 140.3,
      "plan_lb": 153.3
     },
     "latino": {
@@ -1673,7 +1673,7 @@
      "plan_lb": 114.5
     },
     "grill": {
-     "recorded_lb": 170.8,
+     "recorded_lb": 170.7,
      "plan_lb": 169.4
     },
     "latino": {
@@ -1755,7 +1755,7 @@
     },
     "noodle_bowl": {
      "recorded_lb": 194.5,
-     "plan_lb": 194.9
+     "plan_lb": 194.8
     },
     "seasons": {
      "recorded_lb": 72.4,
@@ -1808,7 +1808,7 @@
     },
     "display": {
      "recorded_lb": 83.2,
-     "plan_lb": 84.7
+     "plan_lb": 84.6
     },
     "grill": {
      "recorded_lb": 154.2,
@@ -1827,7 +1827,7 @@
      "plan_lb": 32.6
     },
     "seasons": {
-     "recorded_lb": 83.5,
+     "recorded_lb": 83.4,
      "plan_lb": 62.0
     },
     "soups": {
@@ -1889,7 +1889,7 @@
     },
     "mediterranean": {
      "recorded_lb": 81.2,
-     "plan_lb": 73.9
+     "plan_lb": 74.0
     },
     "noodle_bowl": {
      "recorded_lb": 26.6,
@@ -2169,7 +2169,7 @@
     },
     "noodle_bowl": {
      "recorded_lb": 177.0,
-     "plan_lb": 194.9
+     "plan_lb": 194.8
     },
     "seasons": {
      "recorded_lb": 95.1,
@@ -2380,7 +2380,7 @@
     },
     "seasons": {
      "recorded_lb": 88.2,
-     "plan_lb": 74.4
+     "plan_lb": 74.5
     },
     "soups": {
      "recorded_lb": 29.1,
@@ -2530,7 +2530,7 @@
     },
     "tandoor": {
      "recorded_lb": 95.2,
-     "plan_lb": 89.7
+     "plan_lb": 89.6
     }
    }
   },
@@ -2599,7 +2599,7 @@
     },
     "tandoor": {
      "recorded_lb": 91.9,
-     "plan_lb": 74.1
+     "plan_lb": 74.2
     }
    }
   },
@@ -4627,16 +4627,6 @@
    "usd_saved_per_week": -18.8
   },
   {
-   "dish_id": "street_food.jasmine_rice",
-   "dish": "Jasmine Rice",
-   "station": "street_food",
-   "nights": 5,
-   "recorded_lb_per_night": 11.37,
-   "plan_lb_per_night": 9.6,
-   "change_pct": -15.5,
-   "usd_saved_per_week": 2.9
-  },
-  {
    "dish_id": "mediterranean.sauteed_kale",
    "dish": "Sauteed Kale",
    "station": "mediterranean",
@@ -4645,6 +4635,16 @@
    "plan_lb_per_night": 9.44,
    "change_pct": -16.9,
    "usd_saved_per_week": 4.1
+  },
+  {
+   "dish_id": "street_food.jasmine_rice",
+   "dish": "Jasmine Rice",
+   "station": "street_food",
+   "nights": 5,
+   "recorded_lb_per_night": 11.37,
+   "plan_lb_per_night": 9.6,
+   "change_pct": -15.5,
+   "usd_saved_per_week": 2.9
   },
   {
    "dish_id": "late.display.zesty_orange_tofu",

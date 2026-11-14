@@ -323,7 +323,7 @@ Consequences:
 | No orbital 3D: the Hall plays on an illustrated isometric view and the top-down plan | U2 / ISSUES N1 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
-| **`.dev.vars` with app tokens is on GitHub** (`e926ea1`): the file is no longer tracked (2026-11-14), but the tokens are in git history: rotate them | ISSUES T6 |
+| **`.dev.vars` app tokens were on GitHub** (was `e926ea1`): removed from branch history 2026-11-14, but PRs #4–#6 still expose the old commit until GitHub purges it: rotate the tokens | ISSUES T6 |
 | 6 test forecasts for Nov 13 are in the append-only Tiger ledger; read the Nov 13 scorecard without them | ISSUES T8 |
 | The Hall's pan level counts the hot-hold cabinet too, so for the 30 s of a pan swap it shows food in a pan a student just found empty | UI_ISSUES U18 |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
@@ -442,7 +442,7 @@ Pushed straight to `main` on 2026-11-14:
 | `1ab7e16`, `4a5d6fb`, `094dbc4` | Tiger console script (`engine/sql/tiger_website.sql`), new columns and category tables, loader fills them |
 | `78d9239` | Tiger aggregates, benchmark, `/api/tiger/*`, the dashboard page; also added `my-app/` (ISSUES T7) |
 | `9160ee5` | Dashboard linked from Insights and smoke-tested (undone the same day: the page moved to the API at `/tiger`) |
-| `e926ea1` | `.gitignore` (`node_modules`) and `.dev.vars`, **which holds tokens** (ISSUES T6) |
+| `01e5e6d` | `.gitignore` (`node_modules`); it also added `.dev.vars` with tokens, removed from history 2026-11-14 (was `e926ea1`, ISSUES T6) |
 
 **Working with branches**
 - Branch from an up-to-date `main` (`git pull --rebase` first), open a PR, merge on GitHub.

@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14).
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -31,9 +31,11 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | D2 | ~~Low~~ | Docs | ~~Version numbers disagree~~ **Fixed 2026-11-13** (both 0.5.0; a test keeps them equal) |
 | T1 | ~~Low~~ | Repo | ~~Not a git repository; bundle size undecided~~ **Fixed 2026-11-13** (on GitHub; full bundle committed) |
 | T2 | ~~Low~~ | Tests | ~~Starlette deprecation warning~~ **Fixed** (no warnings in `pytest`, checked 2026-11-13) |
-| T3 | Low | Data | Tiger's copy of the synthetic history is stale, so Similar nights differs between Tiger and the local files |
+| T3 | ~~Low~~ | Data | ~~Tiger's copy of the synthetic history is stale~~ **Fixed 2026-11-14** (reloaded; 0 of 42 nights differ) |
 | T4 | Low | Repo | `codex-skills` is a submodule entry with no `.gitmodules`: the folder is empty in every clone |
 | T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
+| T6 | **High** | Repo | `.dev.vars` with app tokens (`APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`) is committed and pushed (`e926ea1`) |
+| T7 | Low | Repo | A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented |
 | N1–N9 | — | Not built | See §7 |
 | U1–U18 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
 
@@ -210,7 +212,8 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
   - `git init` with a `.gitignore` (already has `.env`, `.venv/`, `__pycache__/`; add `cache/`).
   - Decide whether to commit the full bundle, or default to the presets-only bundle (about 5 MB) and build the grid in CI.
 
-### T3 · Low · Tiger's copy of the synthetic history is stale
+### T3 · Fixed 2026-11-14 · Tiger's copy of the synthetic history was stale
+- **Fixed:** the history was reloaded with the engine 0.6.2 loader (`094dbc4`). Checked 2026-11-14: all 42 nights in `data/synthetic/worcester/nights.csv` match `dcsim.nights` (run `observed`), and `dcsim.night_embeddings` (43 rows) was rebuilt the same day.
 - Found 2026-11-13 while building Similar nights: 24 of the 43 observed nights in Tiger (`dcsim.nights`, `dcsim.pan_windows`) have different students or dishes than `data/synthetic/worcester`, because the history was regenerated after the last upload. The page's ranking is identical on both paths when they read the same data (max difference 0.0), so only the inputs differ.
 - **Fix:** `cd engine && uv run dcsim tsdb load` (loads the current files). `make calibrate` also loads, but regenerates the history first (`waste-gen`).
 
@@ -221,6 +224,17 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 ### T5 · Low · Two similar-night searches
 - The page and API (`similar_nights.py`, 48-dim, `dcsim.night_embeddings`, exact cosine) and the CLI (`nightsearch.py`, 76-dim, `dcsim.night_vectors`, DiskANN index, held-out check) were built in parallel. Both work; they rank differently and don't share tables.
 - **Decide:** keep both (page for managers, CLI for the Tiger demo and accuracy check), or point the page at one vector design. See `SIMILAR_NIGHTS.md` and `TIGER.md` §7.
+
+### T6 · High · `.dev.vars` with app tokens is on GitHub
+- Commit `e926ea1` (2026-11-14) added `.dev.vars` and pushed it to `main`. The file is generated by the deepspace tooling for `my-app/` and holds `APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`, an owner user id and worker URLs. Anyone with access to the repo can read them, and they stay in git history even if the file is deleted.
+- **Fix (owner of the deepspace app):**
+  1. Revoke or rotate the two tokens in deepspace (`npx deepspace secrets ...`); this is the step that matters.
+  2. Stop tracking the file: `git rm --cached .dev.vars`, add `.dev.vars` to `.gitignore`, commit.
+  3. Optional: remove it from history (`git filter-repo` or BFG), then force-push. Everyone must re-clone afterwards, so agree on it as a team first.
+
+### T7 · Low · `my-app/` is undocumented
+- Commit `78d9239` ("commits", 2026-11-14) added a `my-app/` folder: a separate deepspace / Cloudflare Workers app (`worker.ts`, `wrangler.toml`, its own tests and `package.json`). No doc says what it is or whether it belongs to the demo, and nothing in `engine/` or `web/` uses it.
+- **Decide (whoever added it):** describe it in the README repo map, or move it to its own repository.
 
 ### T2 · Fixed · Starlette deprecation warning
 - **Fixed:** `uv run pytest` shows no warnings (checked 2026-11-13).

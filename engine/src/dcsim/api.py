@@ -50,7 +50,7 @@ from typing import Literal
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .ai import LLM, LLMError
@@ -588,6 +588,14 @@ def tiger_dashboard(night: str | None = None) -> dict:
     """The live Tiger dashboard: waste by night and pans by hour from the continuous aggregates, the
     unified join (aggregates + nights + plan + forecasts + ledger), hypertable and columnstore facts."""
     return _tiger_read(lambda tsdb, conn: tsdb.dashboard(conn, night))
+
+
+@app.get("/tiger", include_in_schema=False)
+def tiger_page() -> FileResponse:
+    """The live Tiger dashboard (docs/TIGER.md section 8). Served by the API only; the web app doesn't link to it."""
+    from pathlib import Path
+
+    return FileResponse(Path(__file__).parent / "static" / "tiger.html", media_type="text/html")
 
 
 @app.get("/api/tiger/bench")

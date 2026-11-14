@@ -36,9 +36,6 @@
   h2 { font-size: 18px; margin: 0 0 4px; }
   h3 { font-size: 14px; margin: 20px 0 8px; }
   header p { color: var(--ink-2); max-width: 70ch; margin: 6px 0 0; }
-  header .back { margin: 0 0 14px; font-size: 13px; }
-  header .back a { color: var(--ink-2); text-decoration: none; }
-  header .back a:hover, header .back a:focus-visible { color: var(--ink); text-decoration: underline; }
   code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--chip); padding: 1px 5px; border-radius: 5px; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--ink-2); margin: 0 6px 10px 0; }
   .live { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-top: 12px; color: var(--ink-2); min-height: 22px; }
@@ -121,7 +118,6 @@
 <body>
 <main>
   <header>
-    <p class="back"><a href="/waste">← Insights</a></p>
     <span class="badge">Tiger Data</span><span class="badge" id="version">TimescaleDB</span><span class="badge">Synthetic history</span>
     <h1>Kitchen data, live from one database</h1>
     <p>Weigh-ins and pan levels land in hypertables. Continuous aggregates keep the charts below current, and the same Postgres database holds the plan and the forecasts they are scored against.</p>
@@ -199,8 +195,7 @@
 <script>
 (() => {
   const params = new URLSearchParams(location.search);
-  const API = (params.get("api") || "").replace(/\/$/, "");   // e.g. ?api=http://127.0.0.1:8000; default: same origin (/api proxy)
-  const SNAPSHOT = "cache/waste/tiger.json";
+  const API = (params.get("api") || "").replace(/\/$/, "");   // served by the engine API at /tiger, so same origin by default
   const POLL_MS = 5000;
   const $ = id => document.getElementById(id);
   const SVG = "http://www.w3.org/2000/svg";
@@ -478,7 +473,7 @@
       const r = await fetch(`${API}/api/tiger/bench?repeat=3`);
       if (!r.ok) throw new Error(r.status);
       renderBench(await r.json());
-    } catch (e) { /* keep whatever is on screen (the snapshot's timings, if any) */ }
+    } catch (e) { /* keep whatever is on screen */ }
     btn.disabled = false; btn.textContent = "Run again";
   }
   $("bench-run").addEventListener("click", loadBench);
@@ -522,8 +517,8 @@
     ], d.aggregates);
   }
 
-  // ---- data: live from the API, with the bundle's snapshot as the fallback
-  let data = null, live = false, lastOk = 0, busy = false, keys = {}, newsUntil = 0, snapshotAt = null, benchLoaded = false;
+  // ---- data: live from the API; if a poll fails, the last good render stays on screen, dimmed
+  let data = null, live = false, lastOk = 0, busy = false, keys = {}, newsUntil = 0, benchLoaded = false, failure = "";
   const changed = (name, value) => { const k = JSON.stringify(value); if (keys[name] === k) return false; keys[name] = k; return true; };
   function render(d) {
     const before = data;
@@ -558,10 +553,10 @@
     if (live && data) {
       const total = Object.values(data.ms || {}).reduce((a, b) => a + b, 0);
       text.textContent = `Live · updated ${Math.max(0, Math.round((Date.now() - lastOk) / 1000))} s ago · ${Object.keys(data.ms || {}).length} reads in ${Math.round(total)} ms`;
-    } else if (snapshotAt) text.textContent = `Snapshot from ${new Date(snapshotAt).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}. The API isn't reachable, so this page isn't updating.`;
+    } else if (failure) text.textContent = data ? `Not updating: ${failure}` : failure;
     else text.textContent = "Connecting to Tiger…";
     if (Date.now() > newsUntil) $("news").textContent = "";
-    document.querySelectorAll("main > section, .tiles").forEach(n => n.classList.toggle("stale", !live && !!data && !snapshotAt));
+    document.querySelectorAll("main > section, .tiles").forEach(n => n.classList.toggle("stale", !live && !!data));
   }
   async function poll() {
     if (busy || document.hidden) return;
@@ -569,25 +564,20 @@
     try {
       const night = $("night").value;
       const r = await fetch(`${API}/api/tiger/dashboard${night ? `?night=${encodeURIComponent(night)}` : ""}`);
-      if (!r.ok) throw new Error(r.status);
+      if (!r.ok) {
+        let detail = "";
+        try { detail = (await r.json()).detail || ""; } catch (e2) { /* not JSON */ }
+        throw new Error(detail || `the API answered ${r.status}`);
+      }
       const d = await r.json();
-      live = true; lastOk = Date.now(); snapshotAt = null;
+      live = true; lastOk = Date.now(); failure = "";
       render(d);
       if (!benchLoaded) { benchLoaded = true; loadBench(); }
     } catch (e) {
       live = false;
-      if (!data) {
-        try {
-          const s = await (await fetch(SNAPSHOT)).json();
-          snapshotAt = s.snapshot_at;
-          render(s.dashboard);
-          renderBench(s.bench);
-          $("bench-run").classList.add("hidden");
-          $("night").disabled = true;
-        } catch (e2) { $("live-text").textContent = "Tiger isn't reachable and no snapshot is bundled yet."; busy = false; return; }
-      }
+      failure = e instanceof TypeError ? "the API isn't reachable." : `${e.message}`;
     }
-    if (live) { $("bench-run").classList.remove("hidden"); $("night").disabled = false; }
+    $("bench-run").disabled = !live;
     busy = false;
     tick();
   }

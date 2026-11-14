@@ -303,7 +303,8 @@ SELECT n.night, n.source, sv.label AS source_label, n.scenario, n.run_id, n.seed
        c.dinner_crowd_factor, c.late_night_crowd_factor, c.events, n.engine_version
 FROM dcsim.nights n
 LEFT JOIN dcsim.cat_values sv ON sv.category = 'source' AND sv.code = n.source
-LEFT JOIN dcsim.date_context c ON c.menu_date = n.menu_date;
+-- Context of the night's own date: past nights reuse a same-weekday menu, but not its events.
+LEFT JOIN dcsim.date_context c ON c.menu_date = n.night;
 
 CREATE OR REPLACE VIEW dcsim.v_waste_by_reason AS
 SELECT w.night, w.period, w.station, s.name AS station_name, w.reason, r.label AS reason_label,

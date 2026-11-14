@@ -35,7 +35,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | T4 | Low | Repo | `codex-skills` is a submodule entry with no `.gitmodules`: the folder is empty in every clone |
 | T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
 | T6 | **High** | Repo | `.dev.vars` with app tokens (`APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`) is committed and pushed (`e926ea1`) |
-| T7 | Low | Repo | A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented |
+| T7 | ~~Low~~ | Repo | ~~A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented~~ **Fixed 2026-11-14** (deleted in `0f87083`) |
 | T8 | Low | Data | 6 test forecasts for 2026-11-13 are in the append-only Tiger ledger (end-to-end test, 2026-11-14 15:24–15:27 UTC) |
 | N1–N9 | — | Not built | See §7 |
 | U1–U18 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |

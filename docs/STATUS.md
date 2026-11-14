@@ -3,7 +3,7 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-14, engine 0.6.2: Tiger dashboard work (continuous aggregates, benchmark, API page `/tiger`), T3 fixed, T6–T7 found.
+Last updated: 2026-11-14, engine 0.6.2, `main` at `39f5791`: Ask Sam (5-try cap, Tiger lookups, history), Tiger track record, ledger-safe test stack, and the waste outlook (Insights opens on the next 8 nights).
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
@@ -12,7 +12,8 @@ Last updated: 2026-11-14, engine 0.6.2: Tiger dashboard work (continuous aggrega
 - ✅ **Full test run after the rebuild passed:** engine 149 tests, web 46 tests, browser smoke 23/23 offline and 8/8 with the API, 44 deep offline checks, Similar nights 6/6. Table in [UI_ISSUES.md](UI_ISSUES.md#full-test-run-after-the-062-bundle-2026-11-13).
 - ✅ **Tests after the Tiger dashboard work (2026-11-14):** engine 161 passed, 2 skipped; web 46 passed; typecheck clean; the dashboard opened live from the API with no console errors. The browser smoke script passed 27/27 offline with the dashboard steps; those steps were then removed with the page, so it is back to the earlier 23.
 - ✅ **Tests after Sam and the Tiger track record were merged (`main` at `664bbdd`, 2026-11-14):** engine 179 passed, 2 skipped; web 50 passed; typecheck clean; production build OK; browser smoke 23/23 offline and 10/10 with the API (`make web-test-api`, now including Ask Sam: a question from Tiger, a plan in at most 5 tries, the history panel, Open in the Lab).
-- ✅ **Waste outlook (2026-11-14):** Insights opens on the next 8 nights, simulated with each night's adopted plan (Lab or Ask Sam) vs. tonight's plan, next to the recorded past; `waste_lb` on every result, `GET /api/waste/outlook`, `waste/outlook.json` in the bundle. Tests: engine 182 passed, 2 skipped; web 54; browser smoke 23/23 and 10/10; outlook flow checked in the browser (Lab preset and Sam plan adopted, both nights updated). `waste/outlook.json` is in the demo bundle (refresh it with `cd engine && uv run dcsim bundle --waste-only` after new runs); plans adopted from API runs need the API or the browser's saved copy.
+- ✅ **Latest full test run (`main` at `39f5791`, 2026-11-14):** engine 182 passed, 2 skipped (`make test`); web 54 passed in 11 files (`make web-test`); typecheck clean; production build OK; browser smoke 23/23 (`scripts/smoke.mjs`) and 10/10 with the API (`make web-test-api` on the test stack: ask → run, Why?, menu edits, adopt, saved list, Hall replay + narration, lever-grid replay, Ask Sam question and plan); 0 problems, no Tiger ledger writes.
+- ✅ **Waste outlook (2026-11-14):** Insights opens on the next 8 nights, simulated with each night's adopted plan (Lab or Ask Sam) vs. tonight's plan, next to the recorded past; `waste_lb` on every result, `GET /api/waste/outlook`, `waste/outlook.json` in the bundle. Outlook flow checked in the browser (Lab preset and Sam plan adopted, both nights updated). `waste/outlook.json` is in the demo bundle (refresh it with `cd engine && uv run dcsim bundle --waste-only` after new runs); plans adopted from API runs need the API or the browser's saved copy.
 - ✗ Restart `make serve` if it was started before the Sam merge (`/api/agent`, `/api/similar-nights`, `/tiger` and `/api/tiger/*` → 404 otherwise; Ask Sam then says "Not Found").
 - ⚠️ **Browser-test the API only on the test stack:** `make serve-test` (port 8001, a fresh copy of the cache in `cache-test/`, `DCSIM_LEDGER_WRITES=0`) + `make web-test-ui` (port 5174), then `make web-test-api`. The script now refuses an API that would write test forecasts to the append-only Tiger ledger (ISSUES T8).
 - ✗ **Rotate the tokens in `.dev.vars` and stop tracking it** (ISSUES T6: pushed to GitHub in `e926ea1`).
@@ -36,7 +37,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 20 | 2 | 8 | [ISSUES.md](ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 21 | 2 | 7 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 2 | 5 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
 | Web UI issues | 10 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
@@ -74,7 +75,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | T4 | `codex-skills` is an empty submodule (no `.gitmodules`) | ✗ Open (owner of PR #1) |
 | T5 | Two similar-night searches (page/API and CLI) | ✗ Open (a decision; both work) |
 | T6 | `.dev.vars` with app tokens pushed to GitHub (`e926ea1`) | ✗ Open, **high**: rotate the tokens, `git rm --cached .dev.vars`, ignore it |
-| T7 | `my-app/` (separate deepspace app) committed without docs | ✗ Open (whoever added it); the folder was deleted locally on 2026-11-14 but the deletion isn't committed |
+| T7 | `my-app/` (separate deepspace app) committed without docs | ✅ Fixed 2026-11-14 (folder deleted in `0f87083`) |
 | T8 | 6 test forecasts in the Tiger ledger for 2026-11-13 (append-only, can't be deleted) | ✗ Open, low: guard added (`DCSIM_LEDGER_WRITES=0`, `make serve-test`); exclude them when reading the scorecard |
 
 ## 0.6.1 review ([ISSUES.md §6b](ISSUES.md))

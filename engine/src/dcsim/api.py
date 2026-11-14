@@ -307,7 +307,16 @@ def _cfg_or_404(svc: Service, h: str) -> ScenarioConfig:
 
 @app.get("/api/health")
 def health(request: Request) -> dict:
-    return {"ok": True, "engine_version": ENGINE_VERSION, "cache": _svc(request).store.stats()}
+    return {"ok": True, "engine_version": ENGINE_VERSION, "cache": _svc(request).store.stats(),
+            "ledger_writes": _ledger_writes()}
+
+
+def _ledger_writes() -> bool:
+    """True when adopting or saving a plan logs its forecast to the append-only Tiger ledger.
+    DCSIM_LEDGER_WRITES=0 turns that off (test servers) while Tiger reads keep working."""
+    from . import tsdb
+
+    return tsdb.configured() and os.environ.get("DCSIM_LEDGER_WRITES", "1") != "0"
 
 
 def _calendar() -> dict:
@@ -532,6 +541,8 @@ def _queue_forecast(s: dict, svc: Service, tasks: BackgroundTasks) -> dict:
 
     if not tsdb.configured():
         return s | {"forecast": "not logged (Tiger not configured)"}
+    if not _ledger_writes():
+        return s | {"forecast": "not logged (ledger writes off: DCSIM_LEDGER_WRITES=0)"}
     cfg = svc.store.get_config(s["config_hash"])
     if cfg is None:
         return s | {"forecast": "not logged (unknown config)"}

@@ -3,12 +3,13 @@ import type { ProxyOptions } from "vite";
 import react from "@vitejs/plugin-react";
 
 // The app reads the static demo bundle in public/cache (no API needed).
-// If `make serve` is running, /api is proxied to it for runs that aren't cached.
+// If `make serve` is running, /api is proxied to it for runs that aren't cached
+// (DCSIM_API_URL picks another API, e.g. the ledger-safe test API from `make serve-test`).
 // When the API is down, /api/health answers 200 {ok:false} instead of a proxy 500,
 // so the pages can check for it without logging an error (UI_ISSUES U13).
 const apiProxy: Record<string, ProxyOptions> = {
   "/api": {
-    target: "http://127.0.0.1:8000",
+    target: process.env.DCSIM_API_URL ?? "http://127.0.0.1:8000", // the test UI (make web-test-ui) points at :8001
     configure: (proxy) => {
       proxy.on("error", (_err, req, res) => {
         const r = res as import("node:http").ServerResponse;

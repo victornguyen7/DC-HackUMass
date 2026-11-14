@@ -1,17 +1,28 @@
 // Browser test for the features that need the engine API (`make serve`):
 // plain-English box, menu edits + new dish, API runs, Why?, API replay + narration, adopt.
-// Usage: node scripts/smoke-api.mjs [baseUrl] [outDir]
+// Ask Sam: a question answered from Tiger, a plan, the history panel.
+// Usage: node scripts/smoke-api.mjs [baseUrl] [outDir] [--allow-ledger]
+// Run it with `make web-test-api` (needs `make serve-test` and `make web-test-ui`): that API has ledger writes off
+// and its own cache, so the test never logs forecasts to the append-only Tiger ledger or fills the real store.
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
 
-const base = process.argv[2] ?? "http://localhost:5173";
-const out = process.argv[3] ?? "smoke-api-out";
+const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const allowLedger = process.argv.includes("--allow-ledger");
+const base = args[0] ?? "http://localhost:5174";
+const out = args[1] ?? "smoke-api-out";
 mkdirSync(out, { recursive: true });
 
 const health = await (await fetch(`${base}/api/health`)).json();
 if (!health.ok) {
-  console.log("API not running; start it with `make serve`.");
+  console.log("API not running; start it with `make serve-test` (and `make web-test-ui`).");
   process.exit(2);
+}
+if (health.ledger_writes !== false && !allowLedger) {
+  // Adopting and saving below would log forecasts to the append-only Tiger ledger (they can't be deleted).
+  console.log("This API writes forecasts to the Tiger ledger. Test against `make serve-test` (ledger writes off),\n" +
+    "or pass --allow-ledger if you really want test forecasts in the ledger.");
+  process.exit(3);
 }
 
 const browser = await chromium.launch({ channel: "chrome", headless: true });
@@ -120,6 +131,34 @@ await step("bundle lever-grid scenario replays from the API", async () => {
     p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 120000 }),
     p.getByText(/couldn't replay/).waitFor({ timeout: 120000 }).then(() => { throw new Error("API couldn't replay the lever-grid hash"); }),
   ]);
+});
+
+await step("Ask Sam: question from Tiger", async () => {
+  await p.goto(`${base}/sam`);
+  await p.locator("#sam-goal").fill("Which dishes ran out on rainy Fridays?");
+  await p.getByRole("button", { name: "Ask Sam" }).click();
+  await p.getByRole("region", { name: "Sam's answer" }).waitFor({ timeout: 180000 });
+  await p.screenshot({ path: `${out}/sam-question.png`, fullPage: true });
+});
+
+await step("Ask Sam: plan (at most 5 tries) + history", async () => {
+  await p.locator("#sam-goal").fill("Cut waste 10% without longer lines or missed meals");
+  await p.getByRole("button", { name: "Ask Sam" }).click();
+  const plan = p.getByRole("region", { name: "Sam's plan" });
+  await Promise.race([
+    plan.waitFor({ timeout: 400000 }),
+    p.locator(".alert.bad").waitFor({ timeout: 400000 }).then(async () => { throw new Error(await p.locator(".alert.bad").innerText()); }),
+  ]);
+  const tries = await p.locator(".sam-try").count();
+  if (tries < 1 || tries > 5) throw new Error(`Sam ran ${tries} tries`);
+  await p.screenshot({ path: `${out}/sam-plan.png`, fullPage: true });
+  await p.locator(".sam-history-open").nth(1).click(); // the question, from the history panel
+  await p.locator(".sam-viewing").waitFor();
+  await p.getByRole("region", { name: "Sam's answer" }).waitFor();
+  await p.getByRole("button", { name: "Back to the current run" }).click();
+  await p.getByRole("button", { name: "Open in the Lab" }).click();
+  await p.waitForURL(/\/lab/);
+  await p.getByText("simulated on the API").waitFor({ timeout: 120000 });
 });
 
 await browser.close();

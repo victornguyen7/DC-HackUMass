@@ -4,5 +4,6 @@
 .venv/
 __pycache__/
 /cache/
+/cache-test/
 trace*.json
 node_modules

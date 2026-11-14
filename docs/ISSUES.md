@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14). 2026-11-14: T3 fixed (Tiger reloaded); T6 (`.dev.vars` with tokens pushed to GitHub) and T7 (undocumented `my-app/` folder) added; later T8 (test forecasts in the Tiger ledger) added with its guard.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -36,6 +36,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
 | T6 | **High** | Repo | `.dev.vars` with app tokens (`APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`) is committed and pushed (`e926ea1`) |
 | T7 | Low | Repo | A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented |
+| T8 | Low | Data | 6 test forecasts for 2026-11-13 are in the append-only Tiger ledger (end-to-end test, 2026-11-14 15:24–15:27 UTC) |
 | N1–N9 | — | Not built | See §7 |
 | U1–U18 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
 
@@ -235,6 +236,11 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 ### T7 · Low · `my-app/` is undocumented
 - Commit `78d9239` ("commits", 2026-11-14) added a `my-app/` folder: a separate deepspace / Cloudflare Workers app (`worker.ts`, `wrangler.toml`, its own tests and `package.json`). No doc says what it is or whether it belongs to the demo, and nothing in `engine/` or `web/` uses it.
 - **Decide (whoever added it):** describe it in the README repo map, or move it to its own repository.
+
+### T8 · Low · Test forecasts in the Tiger ledger
+- An end-to-end check on 2026-11-14 ran `web/scripts/smoke-api.mjs` and clicked **Adopt** on Sam's plan against an API connected to the real Tiger service. Adopting and saving log forecasts, so 6 rows for night 2026-11-13 were written between 15:24 and 15:27 UTC: 4 labeled "smaller batches of favorites…" (the smoke script) and 2 labeled "Sam's plan: Cut waste by 15% and protect all halal dishes." The ledger is append-only (triggers block deletes), so they stay. The scenarios and Sam history the test made were removed from the local store.
+- **Guard (done):** `DCSIM_LEDGER_WRITES=0` stops adopt/save from logging forecasts while Tiger reads keep working, and `/api/health` reports `ledger_writes`. `make serve-test` starts a test API on :8001 with it off and a fresh copy of the cache (`cache-test/`); `make web-test-ui` serves the app on :5174 against it. `smoke-api.mjs` refuses an API that would write to the ledger unless given `--allow-ledger`.
+- **Left:** when reading `forecast_scorecard` or `forecast_results` for 2026-11-13, leave out forecasts issued 2026-11-14 15:24–15:27 UTC.
 
 ### T2 · Fixed · Starlette deprecation warning
 - **Fixed:** `uv run pytest` shows no warnings (checked 2026-11-13).

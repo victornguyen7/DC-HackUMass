@@ -405,6 +405,8 @@ As built (engine 0.3.4, `engine/src/dcsim/api.py`). Every route is under `/api`.
 | `GET /dates`, `/menu/{date}`, `/arrivals/{date}`, `/layout`, `/presets`, `/facts/waste` | reference data (the bundle has static copies) | — |
 | `GET /waste/history`, `/waste/backtest`, `/waste/calibration` | synthetic history, back-test (with per-dish rows and per-station splits), held-out calibration | — (bundle copies) |
 
+**Result fields (engine 0.5.0):** `open`, `close` (serving stops: end of late night), `dinner_close`, `late_close`; `headline` (p10/p50/p90 of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `seat_wait_min`, `peak_seated`); `cook_sheet` (with `period` per dish); `flags`; `stations`; `arrivals`; `staffing` (station → hour → servers needed for ≤ 85% busy); `median_seed`; `baseline_hash`; `vs_baseline`. Levers added in 0.5.0: `kitchen_staff {cooks, equipment}` and `stations.<id>.shifts [[from_min, servers], ...]`.
+
 Planned but **not built:** `?include=series` on results, `POST /warm`, `POST /backtest` as a job (the back-test is `dcsim backtest`), `POST /personas/calibrate`. Traces are gzipped JSON, not msgpack.
 
 ---

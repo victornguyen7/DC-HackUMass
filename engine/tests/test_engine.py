@@ -392,3 +392,14 @@ def test_servers_needed_and_seats(cfg):
     assert m.peak_seated > 300 and m.seat_wait_min == 0  # seats unlimited by default, but counted
     limited = run_night(cfg.updated(seat_limits=True), 1).metrics
     assert limited.peak_seated <= sum(z.seats for z in cfg.layout.seating_zones) and limited.seat_wait_min > 0
+
+
+def test_package_version_matches_engine_version():
+    """ISSUES D2: pyproject.toml and ENGINE_VERSION must agree."""
+    import tomllib
+    from pathlib import Path
+
+    from dcsim.config import ENGINE_VERSION
+
+    meta = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())
+    assert meta["project"]["version"] == ENGINE_VERSION

@@ -88,7 +88,7 @@ Also fixed while testing the second pass:
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
 | U2 | Medium | Hall | Only the top-down view is live; no animated 3D |
 | U4 | Medium | Dashboard | ~~Dinner only~~ **Partly fixed:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch still missing |
-| U5 | Medium | Dashboard | Staffing "needed" isn't computed |
+| U5 | Medium | Dashboard | Staffing "needed": ◐ engine computes it (0.5.0, `result.staffing`); the page doesn't show it yet |
 | U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
 | U15 | Medium | All | Several features need the API; offline they explain why and stay disabled |
 | U9 | Low | Hall | Replay geometry is approximate |
@@ -127,6 +127,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 ### U5 · Medium · Dashboard: staffing "needed" isn't computed
 - The design compares planned servers with servers needed for p90 wait under 8 min, by hour. The result only has servers and peak line length per station, so the page shows those two columns and a note.
 - Needs an engine output (per-hour queue or needed servers). Computing it in the browser would be a guess, so it was left out.
+- **Update (engine 0.5.0):** results now carry `staffing`: servers needed per station and hour ("19" = 7–8 pm) for servers ≤ 85% busy, from the items each station actually served (ISSUES N3). Typed as `Result.staffing?` in `web/src/lib/types.ts`. Still to do: a "needed" column per hour in the Dashboard staffing card, after the bundle is rebuilt with 0.5.0. Shifts can already be tried through the API lever `stations.<id>.shifts`.
 
 ### U7 · Medium · What-If Lab: Optimize and uncertainty sweep
 - **Optimize** stays disabled: the engine has no optimizer.

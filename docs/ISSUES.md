@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -27,8 +27,8 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | L3 | Medium | LLM | The Groq key was pasted into a chat |
 | L4 | ~~Low~~ | LLM | ~~Narration check covers names only~~ **Fixed** (`narrate-v3`: names, times, numbers) |
 | L5 | ~~Medium~~ | LLM | ~~`dcsim bundle` narration could hang forever on a stalled Gemini request~~ **Fixed 2026-11-13** (timeout + progress lines; not committed yet) |
-| D1 | Medium | Docs | ASSUMPTIONS.md has stale planner numbers |
-| D2 | Low | Docs | Version numbers disagree (`pyproject.toml` 0.1.0 vs `ENGINE_VERSION` 0.4.2) |
+| D1 | ~~Medium~~ | Docs | ~~ASSUMPTIONS.md has stale planner numbers~~ **Fixed 2026-11-13** (engine 0.5.0 numbers; golden test guards them) |
+| D2 | ~~Low~~ | Docs | ~~Version numbers disagree~~ **Fixed 2026-11-13** (both 0.5.0; a test keeps them equal) |
 | T1 | ~~Low~~ | Repo | ~~Not a git repository; bundle size undecided~~ **Fixed 2026-11-13** (on GitHub; full bundle committed) |
 | T2 | ~~Low~~ | Tests | ~~Starlette deprecation warning~~ **Fixed** (no warnings in `pytest`, checked 2026-11-13) |
 | N1–N9 | — | Not built | See §7 |
@@ -192,10 +192,11 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 ### D1 · Medium · ASSUMPTIONS.md has stale planner numbers
 - Row A16 says Nov 13 has "72 stockout-min, 30% of cooked portions wasted". The current baseline is about 131 min and 26%.
 - **Fix:** refresh after the E1–E3 changes. Consider generating these numbers from the engine instead of writing them by hand.
+- **Fixed 2026-11-13:** A16 now gives the engine 0.5.0 numbers (Nov 13: dinner 54 stockout-min, 29% wasted; late night 24 min, 21%). `tests/test_golden.py` pins the Nov 13 baseline, so a change that moves them fails until the golden file (and this row) is updated on purpose.
 
 ### D2 · Low · Version numbers disagree
-- `pyproject.toml` says 0.1.0; `ENGINE_VERSION` is 0.4.2 (still open 2026-11-13).
-- **Fix:** read one from the other.
+- `pyproject.toml` said 0.1.0 while `ENGINE_VERSION` moved on.
+- **Fixed 2026-11-13:** `pyproject.toml` is 0.5.0, and `test_package_version_matches_engine_version` fails if the two drift. Bump both together.
 
 ### T1 · Fixed 2026-11-13 · Not a git repository; 16.7 MB bundle undecided
 - **Fixed:** the repo is on GitHub (`main`). `.gitignore` ignores only the root `/cache/`, and the full demo bundle in `web/public/cache` is committed, so `make web` works right after cloning.

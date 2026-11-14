@@ -3,9 +3,13 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-13, engine 0.4.2.
+Last updated: 2026-11-13, engine 0.5.0.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
+
+## Before the demo
+- ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.5.0, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
+- ⚠️ Commit the narration timeout fix (L5) and the similar-night search (Tiger) once they're finished.
 
 ---
 
@@ -13,9 +17,9 @@ Last updated: 2026-11-13, engine 0.4.2.
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 10 | 2 | 11 | [ISSUES.md](ISSUES.md) |
-| Not built yet (N1–N9) | 0 | 1 | 8 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
-| Web UI issues | 7 | 3 | 6 | [UI_ISSUES.md](UI_ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 12 | 3 | 8 | [ISSUES.md](ISSUES.md) |
+| Not built yet (N1–N9) | 1 | 1 | 7 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
+| Web UI issues | 7 | 4 | 5 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
 
 ---
@@ -26,14 +30,14 @@ Last updated: 2026-11-13, engine 0.4.2.
 | --- | --- | --- |
 | E1 | Students walked away from far too many lines | ✅ Fixed 0.4.1 |
 | E2 | Students kept moving through the hall after close | ✅ Fixed 0.4.1 (late night 9 pm–12 am) |
-| E3 | Stockouts higher than the team observes | ✗ Open (better since 0.4.1; needs R06 data) |
+| E3 | Stockouts higher than the team observes | ◐ Better (0.5.0: Nov 13 ~74 stockout-min; late run-outs 12–16% of dinner dishes on Nov 13 but ~21% on Nov 17 vs the team's ≤ 20%); needs R06 data |
 | E4 | Made-to-order dishes showed "empty pan" after close | ✅ Fixed 0.4.1 |
-| E5 | Same crowd every date | ✅ Fixed 0.4.2 (placeholder multipliers; needs real swipe data) |
+| E5 | Same crowd every date | ✅ Fixed 0.4.2 (`crowd_by_date.json`, placeholder multipliers; needs real swipe data) |
 | E6 | Noodle Bowl popularity per station, not per dish | ✗ Open |
 | E7 | Thanksgiving carving modeled as pre-made pans | ✅ Fixed 0.4.2 (confirm with the team) |
 | E8 | Seats are zones; personas can't overlap; add-ons use no stock | ✗ Open |
 | B1 | Back-test grades the engine against itself | ✗ Open (needs real data) |
-| B2 | Plan wins on waste, loses on stockouts | ◐ Partly (UI shows the trade-off; optimizer objective open) |
+| B2 | Plan wins on waste, loses on stockouts | ◐ Partly (0.5.0 back-test: waste 8.5% lower, but 83 stockout-min/night under the plan vs 76 baseline plan and 69 recorded; UI shows the trade-off; optimizer objective open) |
 | C1 | Tiny differences labeled "worse" | ✗ Open |
 | A1 | No authentication on admin / LLM routes | ✗ Open — **do before hosting publicly** |
 | A2 | Memory grows with jobs and cached traces | ✗ Open |
@@ -43,8 +47,8 @@ Last updated: 2026-11-13, engine 0.4.2.
 | L3 | Groq key pasted into a chat | ✗ Open — rotate after the hackathon |
 | L4 | Narration check covered names only | ✅ Fixed (`narrate-v3`: times and numbers) |
 | L5 | `dcsim bundle` narration could hang forever | ✅⚠️ Fixed 2026-11-13 (timeout + progress), **not committed yet** |
-| D1 | ASSUMPTIONS.md has stale planner numbers | ✗ Open |
-| D2 | Version numbers disagree (0.1.0 vs 0.4.2) | ✗ Open |
+| D1 | ASSUMPTIONS.md has stale planner numbers | ✅ Fixed 2026-11-13 (0.5.0 numbers; golden test) |
+| D2 | Version numbers disagree | ✅ Fixed 2026-11-13 (both 0.5.0; test keeps them equal) |
 | T1 | Not a git repo; bundle size undecided | ✅ Fixed 2026-11-13 (GitHub; bundle committed) |
 | T2 | Starlette deprecation warning | ✅ Fixed |
 
@@ -53,8 +57,8 @@ Last updated: 2026-11-13, engine 0.4.2.
 | ID | Item | Status |
 | --- | --- | --- |
 | N1 | Animated 3D Hall | ✗ (top-down 2D replay works) |
-| N2 | Nav graph and table-level seats | ◐ (seating zones and door routes built) |
-| N3 | Servers by hour; "servers needed" output | ✗ |
+| N2 | Nav graph and table-level seats | ◐ (seating zones and door routes; 0.5.0 seat counts per zone, limits off until real seats are counted) |
+| N3 | Servers by hour; "servers needed" output | ✅ Built 0.5.0 (`shifts`, lever, `staffing` in results; not on the Dashboard yet, U5) |
 | N4 | Breakfast and lunch | ✗ (late night added in 0.4.1) |
 | N5 | Survey calibration of personas | ✗ |
 | N6 | Optimizer | ✗ (also the core of the agent prize, SPONSORS §2) |
@@ -77,7 +81,7 @@ Last updated: 2026-11-13, engine 0.4.2.
 | U4 | Dashboard dinner only | ◐ Late night shown; breakfast and lunch open |
 | U7 | Lab: Optimize and uncertainty sweep | ◐ Ask box, menu edits, new dish, Why? built; Optimize and sweep open |
 | U2 | Only the top-down view is live | ✗ |
-| U5 | Staffing "needed" not computed | ✗ (needs N3) |
+| U5 | Staffing "needed" not shown | ◐ Engine computes it (0.5.0); Dashboard column open |
 | U9 | Replay geometry approximate | ✗ (needs N2) |
 | U14 | Stack differs from SPEC §9 | ✗ (a decision, not a bug) |
 | U15 | Several features need the API | ✗ (by design offline; run `make serve` for the demo) |
@@ -89,14 +93,14 @@ Last updated: 2026-11-13, engine 0.4.2.
 | --- | --- | --- |
 | 1 | Gemini API | ◐ Ask box, narration, explain, dish prior, embeddings on Gemini; function calling and menu photo open |
 | 2 | Agentic hack (Sentient) | ✗ Planning agent not built (needs tools + loop; optimizer N6 optional) |
-| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; 500-night demo query and MCP open |
+| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **similar-night search (pgvector + DiskANN) built ⚠️ not committed**; 500-night demo query and MCP open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 
 ## Other docs
-- [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 items 0.1–0.3 ✅ (0.4 golden test ✗); per-date crowd, carving, trade-off card, LLM rate-limit gate and narration checks ✅; seating as a Resource ◐; optimizer, sweep, cooks and equipment ✗.
+- [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 all ✅ (0.4 golden test built in 0.5.0); Tier 1 simulation core ✅ for 1.2 empty-pan wait and 1.3 cooks and equipment (1.1 Container rewrite and 1.4 per-minute series not done); 2.4 seats ◐ (built, limits off); staffing by hour, calibration targets file, per-date crowd, carving, trade-off card, LLM rate-limit gate and narration checks ✅; optimizer and sweep ✗.
 - [LLM.md](LLM.md) §5 and [GEMINI.md](GEMINI.md) §7: their own ~~done~~ lists are current.
-- [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–3 built, 4–7 ideas).
+- [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–3 and 7 built; 4–6 ideas; MCP not installed).
 
 ## How to keep this current
 1. Fix something → mark it in its own doc (strike through + **Fixed** with the engine version or date).

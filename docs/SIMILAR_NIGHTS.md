@@ -167,7 +167,7 @@ This implementation refreshes all historical embeddings on each request. Live da
 From the repository root, start the API and web server in separate terminals.
 
 ```sh
-make serve
+make server
 make web
 ```
 

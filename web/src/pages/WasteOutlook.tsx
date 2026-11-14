@@ -153,7 +153,7 @@ function OutlookChart({ nights, context, source }: { nights: NightPlan[]; contex
 }
 
 function statusText(n: NightPlan) {
-  return n.status === "needs-api" ? "This plan ran on the API: start it (make serve) to load its numbers."
+  return n.status === "needs-api" ? "This plan ran on the API: start it (make server) to load its numbers."
     : n.status === "missing" ? "No simulation of this plan for this night yet: open it in the Lab and run it." : "";
 }
 

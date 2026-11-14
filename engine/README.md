@@ -123,7 +123,7 @@ make demo-bundle      # = dcsim waste-gen && dcsim backtest && dcsim bundle --gr
 
 ## Web app
 
-The web app in `web/` (Simulation with the What-If Lab, Kitchen plan, Insights) reads this bundle, so it works with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make serve` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes, "Why?" and Insights › Similar nights. See `web/README.md` and `docs/UI_ISSUES.md`.
+The web app in `web/` (Simulation with the What-If Lab, Kitchen plan, Insights) reads this bundle, so it works with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make server` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes, "Why?" and Insights › Similar nights. See `web/README.md` and `docs/UI_ISSUES.md`.
 
 ## Not built yet
 Nav graph and table-level seats (zones are built; seat limits off until real seat counts) · add-ons consuming stock · breakfast and lunch · survey calibration · LLM personas (paused; narration is built) · optimizer · uncertainty sweep · animated 3D Hall. Built since 0.4: late night, kitchen capacity, staffing by hour, per-minute series, allergies, groups, swipe queue, pan sizes.

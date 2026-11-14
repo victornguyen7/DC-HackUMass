@@ -43,7 +43,7 @@ There is also a standalone **calibration page** (`web/public/calibration.html`, 
 
 **Two ways to run it:**
 - **Offline (demo-safe):** the pages read a precomputed **static bundle** in `web/public/cache` (results, replays, narrations, back-test). No backend, no network.
-- **With the API** (`make serve`): everything above, plus any combination of settings, replays of any scenario, narration of any student, the plain-English box, menu edits, new dishes and "Why?". Similar nights always needs the API. Features that need the API turn themselves off, or offer a retry, when it isn't running.
+- **With the API** (`make server`): everything above, plus any combination of settings, replays of any scenario, narration of any student, the plain-English box, menu edits, new dishes and "Why?". Similar nights always needs the API. Features that need the API turn themselves off, or offer a retry, when it isn't running.
 
 ---
 
@@ -75,7 +75,7 @@ uv run pytest -q                         # should pass
 cd ..
 
 # 2. API (terminal 1)
-make serve                               # FastAPI on http://127.0.0.1:8000, docs at /docs
+make server                               # FastAPI on http://127.0.0.1:8000, docs at /docs
 
 # 3. web (terminal 2)
 make web                                 # http://localhost:5173, proxies /api to :8000
@@ -192,12 +192,12 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 
 | I want to… | Run |
 | --- | --- |
-| Start the API | `make serve` (add `--warm` via `cd engine && uv run dcsim serve --warm` to precompute every date) |
+| Start the API | `make server` (add `--warm` via `cd engine && uv run dcsim serve --warm` to precompute every date) |
 | Start the web app | `make web` |
 | Run engine tests | `make test` |
 | Run web unit tests | `make web-test` |
 | Build the web app | `make web-build` (output in `web/dist`) |
-| Browser-test the API features | `make serve-test` + `make web-test-ui` (test API on :8001 with its own cache copy and no Tiger ledger writes; app on :5174), then `make web-test-api` |
+| Browser-test the API features | `make server-test` + `make web-test-ui` (test API on :8001 with its own cache copy and no Tiger ledger writes; app on :5174), then `make web-test-api` |
 | Re-read the menu snapshot into per-date menus and plans | `make prepare` |
 | Regenerate the synthetic waste history | `make waste` |
 | Re-run the back-test | `make backtest` |
@@ -206,10 +206,10 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 | Narrate highlight students | `make narrate` |
 | Tiger Data calibration | `make calibrate` (needs Tiger credentials, see `docs/TIGER.md`) |
 | Load the current synthetic history into Tiger | `cd engine && uv run dcsim tsdb load` (after `make waste`) |
-| Live Tiger dashboard | `make serve`, then open `http://127.0.0.1:8000/tiger` (needs Tiger; `docs/TIGER.md` §8) |
+| Live Tiger dashboard | `make server`, then open `http://127.0.0.1:8000/tiger` (needs Tiger; `docs/TIGER.md` §8) |
 | Raw table vs continuous aggregate timings | `make tsdb-bench` |
 | One SQL query across the Tiger stack | `cd engine && uv run dcsim tsdb query stack` |
-| Find past nights like a given one | Insights › Similar nights (needs `make serve`), or `cd engine && uv run dcsim tsdb similar --date 2026-11-14 --weather rain` |
+| Find past nights like a given one | Insights › Similar nights (needs `make server`), or `cd engine && uv run dcsim tsdb similar --date 2026-11-14 --weather rain` |
 
 ### Changing the simulation (important)
 1. Change the logic in `engine/src/dcsim/` or an input in `data/worcester/`.
@@ -372,14 +372,14 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | Symptom | Fix |
 | --- | --- |
 | Web app shows "Couldn't load … run `make demo-bundle`" | The bundle is missing or partial: `make demo-bundle` (or pull it from git). |
-| Lab says "Start the API (`make serve`)" | That combination isn't precomputed. Run `make serve` in another terminal, then reload the page. |
+| Lab says "Start the API (`make server`)" | That combination isn't precomputed. Run `make server` in another terminal, then reload the page. |
 | `make demo-bundle` seems stuck after "bundle --grid" | It is writing AI narrations (rate-limited to 15 calls/min, so this step can take 15–30 min). Wait, or run `LLM_PROVIDER=mock make demo-bundle` for template text in a few minutes. Don't press Ctrl+C. |
 | Narration says "(template)" | No LLM key, or the free-tier limit was hit. Add `GEMINI_API_KEY` to `engine/.env`, or wait a minute. |
 | Numbers in the app don't match the engine CLI | The bundle is older than the engine. `make cache-clean && make demo-bundle`. |
 | `uv` complains about Python | Needs Python ≥ 3.13: `uv python install 3.13`. |
 | Port 8000 or 5173 is busy | Stop the old server, or `uv run dcsim serve --port 8001` and change the proxy target in `web/vite.config.ts`. |
-| Insights › Similar nights says "Can't reach the search service" | The API isn't running, or it was started before you pulled this feature (`/api/similar-nights` → 404). Restart `make serve`. |
-| `http://127.0.0.1:8000/tiger` is 404, or says "Tiger not configured" | 404: the API was started before 2026-11-14, restart `make serve`. "Not configured": set `DCSIM_TSDB_URL` in `engine/.env` (`docs/TIGER.md`). |
+| Insights › Similar nights says "Can't reach the search service" | The API isn't running, or it was started before you pulled this feature (`/api/similar-nights` → 404). Restart `make server`. |
+| `http://127.0.0.1:8000/tiger` is 404, or says "Tiger not configured" | 404: the API was started before 2026-11-14, restart `make server`. "Not configured": set `DCSIM_TSDB_URL` in `engine/.env` (`docs/TIGER.md`). |
 | `git pull` says "You have divergent branches" | You committed locally while someone pushed or merged a PR. Run `git pull --rebase` (or set `git config pull.rebase true` once). See §14. |
 | Smoke test can't start a browser | It uses your installed Google Chrome (`playwright-core`, `channel: "chrome"`). Install Chrome. |
 

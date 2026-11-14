@@ -1,8 +1,8 @@
-// Browser test for the features that need the engine API (`make serve`):
+// Browser test for the features that need the engine API (`make server`):
 // plain-English box, menu edits + new dish, API runs, Why?, API replay + narration, adopt.
 // Ask Sam: a question answered from Tiger, a plan, the history panel.
 // Usage: node scripts/smoke-api.mjs [baseUrl] [outDir] [--allow-ledger]
-// Run it with `make web-test-api` (needs `make serve-test` and `make web-test-ui`): that API has ledger writes off
+// Run it with `make web-test-api` (needs `make server-test` and `make web-test-ui`): that API has ledger writes off
 // and its own cache, so the test never logs forecasts to the append-only Tiger ledger or fills the real store.
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
@@ -15,12 +15,12 @@ mkdirSync(out, { recursive: true });
 
 const health = await (await fetch(`${base}/api/health`)).json();
 if (!health.ok) {
-  console.log("API not running; start it with `make serve-test` (and `make web-test-ui`).");
+  console.log("API not running; start it with `make server-test` (and `make web-test-ui`).");
   process.exit(2);
 }
 if (health.ledger_writes !== false && !allowLedger) {
   // Adopting and saving below would log forecasts to the append-only Tiger ledger (they can't be deleted).
-  console.log("This API writes forecasts to the Tiger ledger. Test against `make serve-test` (ledger writes off),\n" +
+  console.log("This API writes forecasts to the Tiger ledger. Test against `make server-test` (ledger writes off),\n" +
     "or pass --allow-ledger if you really want test forecasts in the ledger.");
   process.exit(3);
 }

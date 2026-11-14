@@ -483,7 +483,7 @@ function StudentCard({ s, narration, names, t, missed, configHash, seed, onPick 
         </div>
       ) : (
         <div className="hint">
-          Narration is pre-generated for the night's highlight students; start the API (<code>make serve</code>) to narrate anyone.
+          Narration is pre-generated for the night's highlight students; start the API (<code>make server</code>) to narrate anyone.
           {narration?.highlights.length ? <> Try {narration.highlights.slice(0, 3).map((h, i) => (
             <span key={h.student_id}>{i ? ", " : ""}<button className="link" onClick={() => onPick(h.student_id)}>#{h.student_id}</button></span>
           ))}.</> : null}

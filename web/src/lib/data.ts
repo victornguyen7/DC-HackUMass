@@ -65,11 +65,11 @@ export function findEntry(m: Manifest, date: string, preset: string | null, leve
 }
 
 /** Minimal POST /api/simulate client for configs that aren't in the bundle
- * (needs `make serve`). Polls the job until done. */
+ * (needs `make server`). Polls the job until done. */
 export async function simulate(body: unknown, onProgress?: (msg: string) => void): Promise<Result> {
   const r = await fetch("/api/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!r.ok) throw new Error(r.status === 404 || r.status === 502 || r.status === 503 || r.status === 504
-    ? "The simulation API isn't running. Start it with `make serve`; cached presets still work."
+    ? "The simulation API isn't running. Start it with `make server`; cached presets still work."
     : `Simulation failed: HTTP ${r.status} ${await r.text()}`);
   const j = await r.json();
   if (j.status === "done") { rememberResult(j.result); return j.result as Result; }
@@ -87,7 +87,7 @@ export async function simulate(body: unknown, onProgress?: (msg: string) => void
   throw new Error("Simulation timed out");
 }
 
-// ---------------------------------------------------------------- live API (`make serve`)
+// ---------------------------------------------------------------- live API (`make server`)
 // Everything below is optional: the pages work from the bundle alone and use
 // these only when the API answers.
 
@@ -117,7 +117,7 @@ let health: Promise<boolean> | null = null;
 export function apiUp(): Promise<boolean> {
   if (!health) {
     health = fetch("/api/health").then(async (r) => r.ok && (await r.json()).ok === true).catch(() => false);
-    // re-check after a while so starting `make serve` mid-demo is picked up
+    // re-check after a while so starting `make server` mid-demo is picked up
     health.then(() => setTimeout(() => { health = null; }, 15000));
   }
   return health;

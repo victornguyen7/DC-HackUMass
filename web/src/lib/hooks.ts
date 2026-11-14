@@ -54,7 +54,7 @@ export function useScenarioResult(date: string, sc: Scenario) {
       } catch (e) {
         if (!base) return null;
         return { entry: base, result: await loadResult(base), fallback: true, source: "bundle",
-          reason: `"${sc.label ?? "This scenario"}" was simulated on the API, which isn't answering (${(e as Error).message}). Start it with \`make serve\`.` };
+          reason: `"${sc.label ?? "This scenario"}" was simulated on the API, which isn't answering (${(e as Error).message}). Start it with \`make server\`.` };
       }
     }
     let entry = sc.hash ? undefined : findEntry(m, date, sc.preset, sc.lever);

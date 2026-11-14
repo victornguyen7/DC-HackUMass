@@ -121,7 +121,7 @@ export default function Lab() {
       return;
     }
     if (!(await apiUp())) {
-      setErr("This combination isn't in the offline bundle. Start the API (`make serve`) to simulate it; presets and single crowd/staffing changes work offline.");
+      setErr("This combination isn't in the offline bundle. Start the API (`make server`) to simulate it; presets and single crowd/staffing changes work offline.");
       return;
     }
     setBusy("starting");
@@ -319,7 +319,7 @@ function Builder({ base, date, draft, setDraft, mode, setMode, saved, remote, on
         </div>
       )}
       <div className="hint" style={{ margin: "4px 0 10px" }}>
-        {offline ? "Cached: results load instantly, offline." : apiUp ? "Not cached: runs 30 nights on the API (a few seconds)." : "Not cached offline. Start the API (`make serve`) to run this combination."}
+        {offline ? "Cached: results load instantly, offline." : apiUp ? "Not cached: runs 30 nights on the API (a few seconds)." : "Not cached offline. Start the API (`make server`) to run this combination."}
       </div>
       <div className="row">
         <button className="btn primary" onClick={onRun} disabled={!!busy || (!offline && !apiUp)}>{busy ? `Running… ${busy}` : "Run 30 nights"}</button>
@@ -346,7 +346,7 @@ function AskBox({ date, apiUp, onApply }: { date: string; apiUp: boolean; onAppl
       <label htmlFor="ask" className="hint" style={{ display: "block", marginBottom: 4 }}>Ask in plain English</label>
       <div className="row" style={{ flexWrap: "nowrap" }}>
         <input id="ask" className="btn" style={{ flex: 1, minWidth: 0, textAlign: "left" }} value={q} disabled={!apiUp}
-          placeholder={apiUp ? "e.g. one more server at Grill and 10% busier" : "Needs the API (make serve)"}
+          placeholder={apiUp ? "e.g. one more server at Grill and 10% busier" : "Needs the API (make server)"}
           onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && go()} />
         <button className="btn" onClick={go} disabled={!apiUp || state === "busy" || q.trim().length < 3}>{state === "busy" ? "Reading…" : "Ask"}</button>
       </div>
@@ -395,7 +395,7 @@ function MenuEditor({ base, date, draft, setDraft, apiUp }: { base: Result; date
   };
   return (
     <div className="stack" style={{ gap: 10 }}>
-      {!apiUp && <div className="hint">Menu changes are simulated on the API. Start it with <code>make serve</code>.</div>}
+      {!apiUp && <div className="hint">Menu changes are simulated on the API. Start it with <code>make server</code>.</div>}
       <div>
         <div className="hint" style={{ marginBottom: 4 }}>Remove a dish</div>
         <div className="row" style={{ flexWrap: "nowrap" }}>
@@ -635,7 +635,7 @@ function ResultsCard({ run, date, adopted, apiUp, onWatch, onAdopt }: { run: Run
               {why === "busy" ? "Explaining…" : "Why?"}
             </button>
           )}
-          <button className="btn" onClick={onWatch} disabled={!onWatch} title={onWatch ? "" : "No replay in the offline bundle for this scenario. Start the API (make serve) to replay it."}>Watch replay</button>
+          <button className="btn" onClick={onWatch} disabled={!onWatch} title={onWatch ? "" : "No replay in the offline bundle for this scenario. Start the API (make server) to replay it."}>Watch replay</button>
           <button className="btn primary" onClick={onAdopt} disabled={!onAdopt || !!isAdopted}>{isAdopted ? "Adopted ✓" : `Adopt for ${dateLabel(date, { weekday: "short", month: "short", day: "numeric" })}`}</button>
         </div>
       </div>

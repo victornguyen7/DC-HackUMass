@@ -14,8 +14,8 @@ Last updated: 2026-11-14, engine 0.6.2, `main` at `39f5791`: Ask Sam (5-try cap,
 - ✅ **Tests after Sam and the Tiger track record were merged (`main` at `664bbdd`, 2026-11-14):** engine 179 passed, 2 skipped; web 50 passed; typecheck clean; production build OK; browser smoke 23/23 offline and 10/10 with the API (`make web-test-api`, now including Ask Sam: a question from Tiger, a plan in at most 5 tries, the history panel, Open in the Lab).
 - ✅ **Latest full test run (`main` at `39f5791`, 2026-11-14):** engine 182 passed, 2 skipped (`make test`); web 54 passed in 11 files (`make web-test`); typecheck clean; production build OK; browser smoke 23/23 (`scripts/smoke.mjs`) and 10/10 with the API (`make web-test-api` on the test stack: ask → run, Why?, menu edits, adopt, saved list, Hall replay + narration, lever-grid replay, Ask Sam question and plan); 0 problems, no Tiger ledger writes.
 - ✅ **Waste outlook (2026-11-14):** Insights opens on the next 8 nights, simulated with each night's adopted plan (Lab or Ask Sam) vs. tonight's plan, next to the recorded past; `waste_lb` on every result, `GET /api/waste/outlook`, `waste/outlook.json` in the bundle. Outlook flow checked in the browser (Lab preset and Sam plan adopted, both nights updated). `waste/outlook.json` is in the demo bundle (refresh it with `cd engine && uv run dcsim bundle --waste-only` after new runs); plans adopted from API runs need the API or the browser's saved copy.
-- ✗ Restart `make serve` if it was started before the Sam merge (`/api/agent`, `/api/similar-nights`, `/tiger` and `/api/tiger/*` → 404 otherwise; Ask Sam then says "Not Found").
-- ⚠️ **Browser-test the API only on the test stack:** `make serve-test` (port 8001, a fresh copy of the cache in `cache-test/`, `DCSIM_LEDGER_WRITES=0`) + `make web-test-ui` (port 5174), then `make web-test-api`. The script now refuses an API that would write test forecasts to the append-only Tiger ledger (ISSUES T8).
+- ✗ Restart `make server` if it was started before the Sam merge (`/api/agent`, `/api/similar-nights`, `/tiger` and `/api/tiger/*` → 404 otherwise; Ask Sam then says "Not Found").
+- ⚠️ **Browser-test the API only on the test stack:** `make server-test` (port 8001, a fresh copy of the cache in `cache-test/`, `DCSIM_LEDGER_WRITES=0`) + `make web-test-ui` (port 5174), then `make web-test-api`. The script now refuses an API that would write test forecasts to the append-only Tiger ledger (ISSUES T8).
 - ✗ **Rotate the tokens in `.dev.vars` and stop tracking it** (ISSUES T6: pushed to GitHub in `e926ea1`).
 
 ## Recently built (2026-11-14)
@@ -76,7 +76,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | T5 | Two similar-night searches (page/API and CLI) | ✗ Open (a decision; both work) |
 | T6 | `.dev.vars` with app tokens pushed to GitHub (`e926ea1`) | ✗ Open, **high**: rotate the tokens, `git rm --cached .dev.vars`, ignore it |
 | T7 | `my-app/` (separate deepspace app) committed without docs | ✅ Fixed 2026-11-14 (folder deleted in `0f87083`) |
-| T8 | 6 test forecasts in the Tiger ledger for 2026-11-13 (append-only, can't be deleted) | ✗ Open, low: guard added (`DCSIM_LEDGER_WRITES=0`, `make serve-test`); exclude them when reading the scorecard |
+| T8 | 6 test forecasts in the Tiger ledger for 2026-11-13 (append-only, can't be deleted) | ✗ Open, low: guard added (`DCSIM_LEDGER_WRITES=0`, `make server-test`); exclude them when reading the scorecard |
 
 ## 0.6.1 review ([ISSUES.md §6b](ISSUES.md))
 
@@ -122,7 +122,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | U5 | Staffing "needed" not shown | ✅ Fixed 0.6.2 ("Needed at peak" column; verified with data on the 0.6.2 bundle) |
 | U9 | Replay geometry approximate | ✗ (needs N2) |
 | U14 | Stack differs from SPEC §9 | ✗ (a decision, not a bug) |
-| U15 | Several features need the API | ✗ (by design offline; run `make serve` for the demo) |
+| U15 | Several features need the API | ✗ (by design offline; run `make server` for the demo) |
 | U16 | Per-dish $ doesn't sum to the headline | ✅ Fixed 0.6.2 (same $ basis; rows add up to the average week) |
 | U17 | Two Hall smoke steps fail after the redesign | ✅ Fixed 2026-11-13 (script selectors; the app was fine) |
 | U18 | Hall pan level includes the hot-hold cabinet (wrong for 30 s during a pan swap) | ✗ Open (export the on-line level in the replay) |

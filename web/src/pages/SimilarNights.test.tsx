@@ -114,12 +114,12 @@ it("shows the backend's 422 message", async () => {
 });
 
 it("offers a retry when the API is down and keeps the inputs", async () => {
-  reply = () => Response.json({ detail: "The simulation API isn't running. Start it with `make serve`." }, { status: 503 });
+  reply = () => Response.json({ detail: "The simulation API isn't running. Start it with `make server`." }, { status: 503 });
   await page();
   fireEvent.change(screen.getByLabelText("Expected students"), { target: { value: "3200" } });
   search();
   expect(await screen.findByText("Can't reach the search service")).toBeTruthy();
-  expect(screen.queryByText(/make serve/)).toBeNull();              // no terminal commands in the UI
+  expect(screen.queryByText(/make server/)).toBeNull();              // no terminal commands in the UI
   reply = () => Response.json(result());
   fireEvent.click(screen.getByRole("button", { name: "Try again" }));
   await screen.findByRole("list", { name: /most similar first/ });

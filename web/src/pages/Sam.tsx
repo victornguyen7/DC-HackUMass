@@ -76,7 +76,7 @@ export default function Sam() {
                 <button key={x} className="pill" disabled={!apiOn || running} aria-pressed={goal === x} onClick={() => { setGoal(x); go(x); }}>{x}</button>
               ))}
             </div>
-            {!apiOn && <div className="alert warn" role="status" style={{ marginTop: 10 }}><b>Sam needs the API</b>Start it with <code>make serve</code>. Sam runs real simulations, so there is no offline version.</div>}
+            {!apiOn && <div className="alert warn" role="status" style={{ marginTop: 10 }}><b>Sam needs the API</b>Start it with <code>make server</code>. Sam runs real simulations, so there is no offline version.</div>}
           </div>
         </section>
 

@@ -239,7 +239,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 
 ### T8 · Low · Test forecasts in the Tiger ledger
 - An end-to-end check on 2026-11-14 ran `web/scripts/smoke-api.mjs` and clicked **Adopt** on Sam's plan against an API connected to the real Tiger service. Adopting and saving log forecasts, so 6 rows for night 2026-11-13 were written between 15:24 and 15:27 UTC: 4 labeled "smaller batches of favorites…" (the smoke script) and 2 labeled "Sam's plan: Cut waste by 15% and protect all halal dishes." The ledger is append-only (triggers block deletes), so they stay. The scenarios and Sam history the test made were removed from the local store.
-- **Guard (done):** `DCSIM_LEDGER_WRITES=0` stops adopt/save from logging forecasts while Tiger reads keep working, and `/api/health` reports `ledger_writes`. `make serve-test` starts a test API on :8001 with it off and a fresh copy of the cache (`cache-test/`); `make web-test-ui` serves the app on :5174 against it. `smoke-api.mjs` refuses an API that would write to the ledger unless given `--allow-ledger`.
+- **Guard (done):** `DCSIM_LEDGER_WRITES=0` stops adopt/save from logging forecasts while Tiger reads keep working, and `/api/health` reports `ledger_writes`. `make server-test` starts a test API on :8001 with it off and a fresh copy of the cache (`cache-test/`); `make web-test-ui` serves the app on :5174 against it. `smoke-api.mjs` refuses an API that would write to the ledger unless given `--allow-ledger`.
 - **Left:** when reading `forecast_scorecard` or `forecast_results` for 2026-11-13, leave out forecasts issued 2026-11-14 15:24–15:27 UTC.
 
 ### T2 · Fixed · Starlette deprecation warning

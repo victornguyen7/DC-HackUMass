@@ -22,7 +22,7 @@ uv run dcsim forecast --date 2026-11-15 --weather rain   # a forecast that recor
 uv run dcsim bundle --waste-only                  # refresh calibration + ledger files in the demo bundle (seconds)
 ```
 
-Live dashboard: `make serve`, then open `http://127.0.0.1:8000/tiger` (§8). It is served by the API only, not by the web app. API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
+Live dashboard: `make server`, then open `http://127.0.0.1:8000/tiger` (§8). It is served by the API only, not by the web app. API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
 (protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page, table `dcsim.night_embeddings`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
@@ -286,7 +286,7 @@ What to say about it:
 ### The dashboard (`engine/src/dcsim/static/tiger.html`, served at `/tiger`)
 
 Standalone page, same style as the calibration page. **It is not part of the web app**: the engine API serves it
-at `GET /tiger` (hidden from the OpenAPI docs), so open `http://127.0.0.1:8000/tiger` with `make serve` running.
+at `GET /tiger` (hidden from the OpenAPI docs), so open `http://127.0.0.1:8000/tiger` with `make server` running.
 The React app has no link to it and the Vite dev server doesn't serve it. It polls every 5 s and shows:
 
 - tiles (nights, weigh-ins, pan readings, columnstore ratio, ledger size);
@@ -342,7 +342,7 @@ live and offline, with no console errors. Web unit tests pass (46); the page is 
 
 Still to do:
 
-1. **Restart `make serve`.** An API started before this work answers 404 on `/tiger` and `/api/tiger/*`.
+1. **Restart `make server`.** An API started before this work answers 404 on `/tiger` and `/api/tiger/*`.
 2. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
    `DELETE` the `run_id = 'observed:live' AND night = '2026-11-13'` rows from `nights` and `pan_windows`, the
    Nov 13 rows from `waste_log`, then `dcsim tsdb refresh`. Worth a small CLI action if rehearsing more than once.

@@ -172,7 +172,7 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 ### What already exists
 | Piece | Where |
 | --- | --- |
-| FastAPI server | `make serve` → `uv run dcsim serve` (`engine/src/dcsim/api.py`) |
+| FastAPI server | `make server` → `uv run dcsim serve` (`engine/src/dcsim/api.py`) |
 | Parallel simulation workers | `ProcessPoolExecutor`, size set by `DCSIM_WORKERS` (default: CPU count) |
 | Allowed web origins | `DCSIM_CORS` (default `http://localhost:5173`) |
 | The web app calls a relative `/api/...` | `web/src/lib/data.ts`, so serving the app and the API on one domain needs no code change |

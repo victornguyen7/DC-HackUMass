@@ -349,7 +349,7 @@ Four pages plus 3D is more than the original MVP, so each page has a **P0** (mus
 - **Dashboard:** P0 and P1 built for **dinner + late night** (engine 0.4.1; no breakfast/lunch); the staffing table shows servers and peak lines. "Servers needed" per hour is computed by the engine since 0.5.0 (`result.staffing`) but not shown yet (UI_ISSUES U5).
 - **Engine (0.6.0) beyond this spec:** late night 9 pm–12 am, students choosing lines from a distance, cooks and equipment as limited resources, staffing by hour, waits at empty pans, hotel-pan sizes with a hot-hold cabinet, entrance swipe queue, groups, allergies and a pescetarian diet, crowd by date, a forecast-reorder preset, per-minute series. See ENGINE.md §3 and IMPROVEMENTS.md.
 - **Waste Record:** P0 and P1 built, including per-dish "with plan" and $ per week.
-- **What-If Lab:** P0 and P1 built (new-dish form with AI estimate and demand shift, save/adopt, Watch in 3D), plus the P2 plain-English box. Optimizer and order risk curve not built. Menu edits, new dishes and lever combinations need the API (`make serve`).
+- **What-If Lab:** P0 and P1 built (new-dish form with AI estimate and demand shift, save/adopt, Watch in 3D), plus the P2 plain-English box. Optimizer and order risk curve not built. Menu edits, new dishes and lever combinations need the API (`make server`).
 
 ---
 

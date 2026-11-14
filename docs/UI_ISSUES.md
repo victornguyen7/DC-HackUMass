@@ -12,7 +12,7 @@ Severity: **High** = misleads a viewer or breaks the demo story · **Medium** = 
 | `npm run build` (TypeScript strict + Vite) | passes (JS 99.5 KB gzipped) |
 | `npm test`: 17 unit tests on the real bundle (playback, lever mapping, plain-English settings → API request, grouped alerts, back-test per-station totals) | 17 passed |
 | `node scripts/smoke.mjs`: headless Chrome, API **down**, 3 widths (1440 / 1024 / 390), 4 pages, plus interactions | 0 problems on the dev server and on the production build (`vite preview`) |
-| `node scripts/smoke-api.mjs`: headless Chrome, API **up** (`make serve`, Gemini configured) | 8 of 8 steps pass, 0 problems |
+| `node scripts/smoke-api.mjs`: headless Chrome, API **up** (`make server`, Gemini configured) | 8 of 8 steps pass, 0 problems |
 | Engine tests (`uv run pytest`) | 80 passed, 2 skipped |
 
 What the unit tests check:
@@ -140,7 +140,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 
 ### U15 · Medium · Several features need the API
 Offline (bundle only), these are disabled with a message: the plain-English box, menu edits and new dishes, "Why?", combinations of levers, replays of scenarios without a bundled trace, narration of non-highlight students, and Insights › Similar nights (no bundle fallback; it shows "Can't reach the search service" with Try again). An adopted API plan still shows on the Dashboard offline (its result is kept in the browser), but it can't be replayed.
-- **For the demo:** run `make serve` next to `make web`, or stick to presets and single levers.
+- **For the demo:** run `make server` next to `make web`, or stick to presets and single levers.
 
 ### U9 · Low · Hall replay geometry is approximate
 - **Wall/counter crossing fixed 2026-11-13:** both views use cached routes around shared counters, stairs, rooms, walls, and tables. Paths maintain body clearance and use the back-room door openings. Queue interpolation also follows safe paths and no longer jumps between neighboring slots. Recorded event times are preserved.
@@ -186,7 +186,7 @@ Run on `main` at `a392917` plus the rebuilt bundle, with a fresh API (port 8011)
 | Typecheck + production build | clean |
 | Browser smoke, no API (`scripts/smoke.mjs`) | 23 of 23 steps, 0 problems (desktop, tablet, phone) |
 | Deep offline browser check (44 checks) | 44 passed, 0 console errors: Kitchen plan numbers equal the bundle on all 8 dates; production plan (54 batch-cooked dishes) + CSV; staffing "Needed at peak"; leftovers; alerts; Menu tab; Nov 18 carving; replay on all 8 dates; station inspector; play; top-down view; late night; 12 student stories with narration; three presets whose on-screen changes equal the bundle; Nov 17 comparison without an animation; all 6 Lab presets; Waste history; Similar nights offline message; calibration page; no horizontal scroll on 6 phone pages |
-| Browser smoke with the API (`scripts/smoke-api.mjs`) | 8 of 8: ask → run, Why?, remove + new dish, adopt → Kitchen plan, saved list, API replay + narration, any-student narration, lever-grid replay. 2026-11-14: 10 of 10 with the two Ask Sam steps, run on the test stack (`make serve-test` + `make web-test-ui`; ISSUES T8) |
+| Browser smoke with the API (`scripts/smoke-api.mjs`) | 8 of 8: ask → run, Why?, remove + new dish, adopt → Kitchen plan, saved list, API replay + narration, any-student narration, lever-grid replay. 2026-11-14: 10 of 10 with the two Ask Sam steps, run on the test stack (`make server-test` + `make web-test-ui`; ISSUES T8) |
 | Similar nights with the API (browser) | 6 of 6: Tiger pgvector results in order, menu overlap, unknown menu, empty history, form validation, keyboard-only search |
 | API (script) | 28 reference routes 200; a new uncached scenario runs in 2.6 s as a job; cache hit identical; `/compare` equals `vs_baseline`; per-minute series; replay is the median night; highlights; narration; `/ask`; `/explain`; similar dishes; bad requests → 404 / 422 |
 | CLI | `dcsim run`, `compare`, `menu`, `bench` (30 nights in 2.2 s); numbers equal the bundle and the screens |

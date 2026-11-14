@@ -30,7 +30,7 @@ export async function loadOutlook(): Promise<{ data: Outlook; source: "bundle" |
     return { data: await fetchJSON<Outlook>("waste/outlook.json"), source: "bundle" };
   } catch {
     if (await apiUp()) return { data: await api<Outlook>("waste/outlook"), source: "api" };
-    throw new Error("No waste outlook in the demo bundle yet. Run `cd engine && uv run dcsim bundle --waste-only` (seconds), or start the API (`make serve`).");
+    throw new Error("No waste outlook in the demo bundle yet. Run `cd engine && uv run dcsim bundle --waste-only` (seconds), or start the API (`make server`).");
   }
 }
 

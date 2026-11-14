@@ -4,7 +4,7 @@ The main navigation is **Simulation**, **Kitchen plan**, and **Insights** (tabs:
 React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS: `src/styles.css` (tokens and primitives), `src/guided.css` (the redesign) and `src/similar-nights.css`. New UI follows the "Visual system" in [`docs/FRONTEND_REDESIGN_PLAN.md`](../docs/FRONTEND_REDESIGN_PLAN.md).
 
 The app reads the static demo bundle in `public/cache` (written by `make demo-bundle`), so the demo runs with **no API and no network**.
-If the engine API is running (`make serve`, port 8000), Vite proxies `/api` to it and the What-If Lab can also run combinations that aren't in the bundle.
+If the engine API is running (`make server`, port 8000), Vite proxies `/api` to it and the What-If Lab can also run combinations that aren't in the bundle.
 
 ```bash
 cd web
@@ -13,10 +13,10 @@ npm run dev          # http://localhost:5173
 npm test             # unit tests: playback + bundle checks against public/cache
 npm run build        # typecheck + production build in dist/
 node scripts/smoke.mjs http://localhost:5173 smoke-out   # headless-Chrome smoke test + screenshots (needs Google Chrome)
-node scripts/smoke-api.mjs http://localhost:5174         # API-backed features + Ask Sam (needs `make serve-test` + `make web-test-ui`)
+node scripts/smoke-api.mjs http://localhost:5174         # API-backed features + Ask Sam (needs `make server-test` + `make web-test-ui`)
 ```
 
-## With the API (`make serve`)
+## With the API (`make server`)
 
 The pages check `/api/health` (the dev/preview proxy answers `{ok:false}` when the API is down) and turn these on when it answers:
 

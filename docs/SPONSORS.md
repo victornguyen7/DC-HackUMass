@@ -12,7 +12,7 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 | # | Prize | Our feature | Status | Effort left | Owner |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Best Use of Gemini API | Plain-English what-if box on Gemini; **menu photo → menu JSON** | ◐ box built, photo import not | S–M | |
-| 2 | Best Agentic Hack (Sentient) | **Planning agent**: goal → tool calls → checks its own results → production plan | ✗ not built | M–L | |
+| 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
 | 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night search | ◐ mostly built | S (polish + demo) | |
 | 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ✗ not built | S–M | |
 | 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done | ~10 min | |
@@ -76,7 +76,32 @@ It counts as a real agent because it has a goal, tools, and a loop that checks i
 
 > ⚠️ Confirm the Sentient track rules at the event. If they require Sentient's platform, the tools below can be exposed through it instead.
 
-### What already exists
+### Built (2026-11-14): Sam the Minuteman
+
+The agent has the UMass mascot as its persona: **Sam the Minuteman**, drawn as an original tricorn-hat avatar in UMass maroon (not the official logo).
+
+| Piece | Where |
+| --- | --- |
+| Agent loop, tools, goal check, rule-based fallback, hold-out check | `engine/src/dcsim/ai/agent.py` |
+| One Gemini function-calling turn (mode ANY, cached per conversation, so a demo replays instantly) | `LLM.tool_turn` in `ai/llm.py` |
+| API: `POST /api/agent {goal, date, max_tries, n_nights}` → 202; SSE `GET /api/agent/{id}/stream` (start, goal, try_start, progress, try, notice, validate_start, final / error); `GET /api/agent/{id}` | `api.py` |
+| CLI: `uv run dcsim agent "cut waste 20% without any vegetarian dish running out"` | `cli.py` |
+| Web: **Ask Sam** page (`/sam`): goal box, live tries with Sam's notes and pass/fail checks, final plan with reasoning, the unseen-night check, cook-sheet changes, **Adopt**, **Open in the Lab**, **Watch a night** | `web/src/pages/Sam.tsx`, `lib/agent.ts`, `components/SamAvatar.tsx`, `sam.css` |
+| Tests | `engine/tests/test_agent.py` (fake Gemini, cache replay, fallback, API), `web/src/lib/agent.test.ts` |
+
+How it works: Gemini parses the goal into targets (`Goal`). Each `run_simulation` call takes scale factors for groups (`unprotected`, `protected`, `all`, a station, a dish) plus exact per-dish values. The engine runs 30 paired nights, and `check_goal` (code) checks four things: waste cut ≥ target; no protected dish runs out more than today (share of nights +0.10, median empty minutes +1); missed meals not "worse"; long wait not "worse". The tool result includes a factual `diagnosis`. `finish(try_id, reasoning)` ends the run. The code overrides a pick that fails when another try passes. Then the plan is re-run on unseen seeds 31–60.
+
+**Added 2026-11-14 (later):**
+- **At most 5 tries.** `MAX_TRIES = 5` in `agent.py`; the API rejects `max_tries > 5` (422), the CLI takes `--tries 1-5`.
+- **Tiger Data through the Tiger MCP server.** The engine is an MCP client of `tiger mcp start stdio` (Python `mcp` package, `ai/tiger_mcp.py`). Sam gets `query_tiger(sql, why)` and `tiger_schema()`, at most 6 lookups per run, and they don't use simulation tries. Before its first try, Sam looks up which protected dishes ran out on past nights with tonight's weekday. Only the server's `db_schema` and `db_query` are ever called (never `service_*`). `db_query` would run any SQL on this DEV service, so every query first passes `guard_sql`: one SELECT/WITH, no write, session or `INTO` keywords. It then runs inside `BEGIN TRANSACTION READ ONLY` with a 20 s timeout, and Sam sees at most 40 rows. Needs `TIGER_SERVICE_ID` and the Tiger CLI login; `DCSIM_TIGER_MCP=0` turns it off.
+- **Questions.** A question instead of a goal ("Which dishes ran out on rainy Fridays?") is answered from Tiger only, with no simulations. The goal parser sets `kind: question`. Live: 3 rainy Fridays, Cumin Basmati Rice and Savory Baked Chicken Thigh, matching TIGER.md §6.
+- **History.** Every finished run keeps only its final analysis (prompt, menu date, time asked, reasoning or answer, checks, cook-sheet changes, Tiger lookups; no per-try details). It is stored in the API's SQLite (`agent_history`; `GET /api/agent/history`, `GET /api/agent/history/{id}`, `DELETE` with the admin token) and copied in the browser (localStorage, last 40), so past analyses open with the API down. The CLI saves there too. The Ask Sam page lists them on the right.
+
+Settings: `DCSIM_AGENT_MODEL` (default `strong` = `gemini-4-hydrogen`; it falls back to the main model, then to the rules), `DCSIM_AGENT_EFFORT` (default `low`), `DCSIM_AGENT_MAX_RUNNING` (default 2).
+
+First live result (Nov 13, "cut waste 20% without any vegetarian dish running out", before the 5-try cap): 8 tries in ~50 s. The best try cut waste 18–22% and protected every vegetarian dish, but missed meals came out "worse" by about 4 students, so Sam honestly reports **"closest plan, goal not fully met"**. "Cut waste 15% and keep every halal dish stocked" went the same way: try 5 hit −15% with all 42 halal dishes protected, but the long wait came out "worse" (+0.6 min), so the goal is not met. Each goal checks every guard (waste, protected dishes, missed meals, wait), and so far none has passed all four in 8 tries. For a demo, either show the honest "closest plan" or, before the demo, find a goal that passes and replay it from the cache.
+
+### What already existed
 | Piece | Where |
 | --- | --- |
 | Run N paired nights for any config (cached by config hash) | `Service.ensure_nights`, `Service.result` in `engine/src/dcsim/service.py`; `POST /api/simulate` |

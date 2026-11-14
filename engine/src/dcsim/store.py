@@ -37,6 +37,9 @@ CREATE TABLE IF NOT EXISTS scenarios (
   scenario_id TEXT PRIMARY KEY, name TEXT, config_hash TEXT,
   status TEXT CHECK (status IN ('saved', 'adopted')), for_date TEXT, created_at TEXT
 );
+CREATE TABLE IF NOT EXISTS agent_history (
+  run_id TEXT PRIMARY KEY, kind TEXT, prompt TEXT, for_date TEXT, created_at TEXT, final_json TEXT
+);
 CREATE TABLE IF NOT EXISTS llm_cache (
   request_hash TEXT PRIMARY KEY,   -- sha256(kind + prompt_version + model + normalized inputs)
   kind TEXT, model TEXT, prompt_version TEXT, response_json TEXT, created_at TEXT
@@ -155,6 +158,39 @@ class Store:
     def delete_scenario(self, sid: str) -> bool:
         with self._lock, self._db:
             return self._db.execute("DELETE FROM scenarios WHERE scenario_id = ?", (sid,)).rowcount > 0
+
+    # ------------------------------------------------------------ Sam's history (final analyses only)
+
+    def put_agent_history(self, run_id: str, kind: str, prompt: str, for_date: str, final: dict) -> dict:
+        with self._lock, self._db:
+            self._db.execute("INSERT OR REPLACE INTO agent_history VALUES (?, ?, ?, ?, ?, ?)",
+                             (run_id, kind, prompt, for_date, _now(), json.dumps(final, separators=(",", ":"))))
+        return self.get_agent_history(run_id)
+
+    def get_agent_history(self, run_id: str) -> dict | None:
+        with self._lock:
+            r = self._db.execute("SELECT * FROM agent_history WHERE run_id = ?", (run_id,)).fetchone()
+        if not r:
+            return None
+        d = dict(r)
+        d["final"] = json.loads(d.pop("final_json"))
+        return d
+
+    def list_agent_history(self, limit: int = 50) -> list[dict]:
+        """Newest first, without the stored analysis (open one with get_agent_history)."""
+        with self._lock:
+            rows = self._db.execute("SELECT run_id, kind, prompt, for_date, created_at, final_json FROM agent_history "
+                                    "ORDER BY created_at DESC LIMIT ?", (limit,)).fetchall()
+        out = []
+        for r in rows:
+            f = json.loads(r["final_json"])
+            out.append({k: r[k] for k in ("run_id", "kind", "prompt", "for_date", "created_at")}
+                       | {"met": (f.get("check") or {}).get("met"), "headline": f.get("headline", "")})
+        return out
+
+    def delete_agent_history(self, run_id: str) -> bool:
+        with self._lock, self._db:
+            return self._db.execute("DELETE FROM agent_history WHERE run_id = ?", (run_id,)).rowcount > 0
 
     # ------------------------------------------------------------ LLM responses (ENGINE.md §5.2, §7.5)
 

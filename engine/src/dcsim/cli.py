@@ -145,6 +145,13 @@ def main(argv: list[str] | None = None) -> None:
     ak = sub.add_parser("ask", help="plain English -> lever settings")
     ak.add_argument("question")
     ak.add_argument("--date")
+    ag = sub.add_parser("agent", help="Sam the Minuteman: a goal -> simulate, check, adjust -> plan; or a question answered from Tiger")
+    ag.add_argument("goal", help='e.g. "cut waste 20%% without any vegetarian dish running out"')
+    ag.add_argument("--date")
+    ag.add_argument("--tries", type=int, default=5, choices=range(1, 6), metavar="1-5",
+                    help="most simulations Sam may run (at most 5)")
+    ag.add_argument("--nights", type=int, default=30, help="nights per try (validation uses the next as many)")
+    ag.add_argument("--json", action="store_true", help="print the final result as JSON")
     si = sub.add_parser("similar", help="menu dishes most like a new dish (Gemini embeddings, keyword fallback)")
     si.add_argument("name")
     si.add_argument("--date")
@@ -184,7 +191,7 @@ def main(argv: list[str] | None = None) -> None:
         _tiger(args)
         return
 
-    if args.cmd in ("personas", "narrate", "ask", "explain", "similar", "ai-status"):
+    if args.cmd in ("personas", "narrate", "ask", "explain", "similar", "ai-status", "agent"):
         _ai(args)
         return
 
@@ -463,6 +470,10 @@ def _ai(args) -> None:
                          indent=2))
         return
 
+    if args.cmd == "agent":
+        _agent(llm, args)
+        return
+
     if args.cmd == "ask":
         from .ai.ask import ask
 
@@ -500,3 +511,65 @@ def _ai(args) -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def _agent(llm, args) -> None:
+    from concurrent.futures import ProcessPoolExecutor
+
+    import uuid
+
+    from .ai.agent import AGENT_NAME, history_entry, run_agent
+    from .service import Service
+    from .store import Store
+
+    def emit(kind: str, d: dict) -> None:
+        if kind == "goal":
+            g = d["goal"]
+            print(f"Goal: {g['summary']}  [{d['source']}; {len(d['protected'])} protected dishes]")
+        elif kind == "try_start":
+            print(f"\n> Try {d['id']}: {d['note']}")
+            for m in d["moves"]:
+                print(f"    {m}")
+        elif kind == "try":
+            for c in d["check"]["checks"]:
+                print(f"    {'PASS' if c['ok'] else 'FAIL'}  {c['text']}")
+        elif kind in ("notice", "thought"):
+            print(f"  ({d['text']})")
+        elif kind == "tiger":
+            what = f"{d.get('row_count')} rows" if not d.get("error") else f"error: {d['error']}"
+            print(f"  [Tiger] {d['why']} -> {what}")
+        elif kind == "validate_start":
+            print(f"\nChecking try {d['try_id']} on unseen nights {d['seeds'][0]}-{d['seeds'][1]}...")
+
+    workers = int(os.environ.get("DCSIM_WORKERS", os.cpu_count() or 1))
+    pool = ProcessPoolExecutor(workers) if workers > 1 else None
+    store = Store()
+    date = args.date or available_dates()[0]
+    try:
+        print(f"{AGENT_NAME} is on it.")
+        r = run_agent(Service(store, pool), llm, args.goal, date, n_nights=args.nights, max_tries=args.tries, emit=emit)
+    finally:
+        if pool:
+            pool.shutdown()
+    entry = history_entry(r)
+    store.put_agent_history(uuid.uuid4().hex[:12], entry.get("kind", "plan"), args.goal, date, entry)
+    if args.json:
+        print(json.dumps(r, indent=2))
+        return
+    if r.get("kind") == "question":
+        print(f"\n{r['answer']}")
+        if r.get("caveats"):
+            print(f"Note: {r['caveats']}")
+        print(f"\n{len(r['tiger_lookups'])} Tiger lookups [{r['source']}{' / ' + r['model'] if r.get('model') else ''}]")
+        return
+    h = r["holdout"]
+    print(f"\nPlan: try {r['chosen']} ({r['chosen_by']}) - goal {'MET' if r['check']['met'] else 'NOT met'}; "
+          f"on unseen nights: {'MET' if h['met'] else 'NOT met'} (waste {h['waste_pct']:+.1f}%)")
+    for c in h["checks"]:
+        if not c["ok"]:
+            print(f"    unseen nights FAIL  {c['text']}")
+    print(f"\n{r['reasoning']}")
+    if r["caveats"]:
+        print(f"Watch: {r['caveats']}")
+    print(f"\n{len(r['changed_dishes'])} dishes changed; {r['nights_simulated']} nights simulated; "
+          f"config {r['config_hash'][:12]} [{r['source']}{' / ' + r['model'] if r['model'] else ''}]")

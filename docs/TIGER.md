@@ -361,6 +361,12 @@ also exposes `service_delete`, `service_resize` and `service_update_password`. F
 per-call approval on and deny the `service_*` tools. Safer still: a read replica (`db_query` on a replica set id is
 read-only) or a `SELECT`-only role. The ledger triggers still block edits to `dcsim.forecasts` either way.
 
+**Sam uses the same MCP server (2026-11-14).** The Ask Sam page and `dcsim agent` run `tiger mcp start stdio` and call
+`db_schema` and `db_query` themselves (`engine/src/dcsim/ai/tiger_mcp.py`). Each query is checked in code first
+(single SELECT, no writes) and wrapped in `BEGIN TRANSACTION READ ONLY` with a 20 s timeout. The server's own
+read-only mode covers only PROD services and this one is DEV, so that guard is what keeps Sam read-only.
+Details: SPONSORS.md §2.
+
 Similar-night search: the CLI version is in §7 below. A teammate's API and web page version (`GET /api/similar-nights`,
 exact pgvector cosine scoring, local synthetic fallback) is described in [the integration handoff](SIMILAR_NIGHTS.md).
 

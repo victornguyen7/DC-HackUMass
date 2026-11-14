@@ -4,6 +4,7 @@ import { useAsync, useManifest } from "../lib/hooks";
 import { loadDates } from "../lib/data";
 import { dateLabel, scenarioLabel } from "../lib/format";
 import { useApp, type Scenario } from "../lib/store";
+import { SamAvatar } from "./SamAvatar";
 
 const icons: Record<string, ReactNode> = {
   hall: <path d="M2 4l4-2 4 2 4-2v10l-4 2-4-2-4 2zM6 2v10M10 4v10" />,
@@ -26,6 +27,7 @@ export function Sidebar() {
         <NavLink to="/hall" className={({ isActive }) => isActive || location.pathname === "/lab" ? "active" : ""}><Icon name="hall" /><span>Simulation</span></NavLink>
         <NavLink to="/dashboard"><Icon name="dashboard" /><span>Kitchen plan</span></NavLink>
         <NavLink to="/waste" className={({ isActive }) => isActive || location.pathname === "/similar-nights" ? "active" : ""}><Icon name="waste" /><span>Insights</span></NavLink>
+        <NavLink to="/sam" className="sam-link"><SamAvatar size={20} /><span>Ask Sam</span></NavLink>
       </nav>
       <details className="model-information"><summary>Model information</summary><div>
         <h3>Know what the model knows</h3>

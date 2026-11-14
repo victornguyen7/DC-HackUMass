@@ -13,7 +13,7 @@ npm run dev          # http://localhost:5173
 npm test             # unit tests: playback + bundle checks against public/cache
 npm run build        # typecheck + production build in dist/
 node scripts/smoke.mjs http://localhost:5173 smoke-out   # headless-Chrome smoke test + screenshots (needs Google Chrome)
-node scripts/smoke-api.mjs http://localhost:5173         # same, for the API-backed features (needs `make serve`)
+node scripts/smoke-api.mjs http://localhost:5174         # API-backed features + Ask Sam (needs `make serve-test` + `make web-test-ui`)
 ```
 
 ## With the API (`make serve`)

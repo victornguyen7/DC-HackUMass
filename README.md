@@ -197,7 +197,7 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 | Run engine tests | `make test` |
 | Run web unit tests | `make web-test` |
 | Build the web app | `make web-build` (output in `web/dist`) |
-| Browser-test the API features | `make serve` + `make web`, then `make web-test-api` |
+| Browser-test the API features | `make serve-test` + `make web-test-ui` (test API on :8001 with its own cache copy and no Tiger ledger writes; app on :5174), then `make web-test-api` |
 | Re-read the menu snapshot into per-date menus and plans | `make prepare` |
 | Regenerate the synthetic waste history | `make waste` |
 | Re-run the back-test | `make backtest` |
@@ -253,7 +253,7 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 | Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle, Similar nights search and route; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
 | Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals, Hall playback and walking paths, Similar nights page states (defaults, menu, empty, 422, API down + retry) |
 | Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | Simulation, Kitchen plan, Insights and Lab at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/` |
-| Browser, API up | `make web-test-api` | ask → run, Why?, new dish + AI estimate, adopt → Dashboard, saved list, API replay + narration |
+| Browser, API up | `make web-test-api` (on the test stack above) | ask → run, Why?, new dish + AI estimate, adopt → Dashboard, saved list, API replay + narration, Ask Sam (question from Tiger, plan in ≤ 5 tries, history, Open in the Lab) |
 
 ---
 

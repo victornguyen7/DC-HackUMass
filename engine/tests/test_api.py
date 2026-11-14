@@ -202,3 +202,19 @@ def test_warm_and_backtest_admin_jobs(client):
     assert client.post("/api/warm", json={"dates": ["2030-01-01"]}).status_code == 404
     assert client.post("/api/backtest", json={"plan": "nope"}).status_code == 422
     assert client.get("/api/backtest").json()["status"] in ("idle", "running", "done", "error")
+
+
+def test_ledger_writes_switch(client, monkeypatch):
+    """DCSIM_LEDGER_WRITES=0 keeps test servers from logging forecasts to the append-only Tiger ledger."""
+    from fastapi import BackgroundTasks
+
+    from dcsim import api
+
+    assert client.get("/api/health").json()["ledger_writes"] is False  # conftest leaves Tiger unset
+    monkeypatch.setenv("TIGER_SERVICE_ID", "test-service")
+    assert api._ledger_writes() is True
+    monkeypatch.setenv("DCSIM_LEDGER_WRITES", "0")
+    assert client.get("/api/health").json()["ledger_writes"] is False
+    tasks = BackgroundTasks()
+    out = api._queue_forecast({"config_hash": "x", "name": "n", "scenario_id": "s"}, None, tasks)
+    assert out["forecast"].startswith("not logged (ledger writes off") and not tasks.tasks

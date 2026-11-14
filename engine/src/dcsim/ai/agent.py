@@ -34,8 +34,13 @@ from .describe import config_changes
 from .llm import LLM, LLMError
 
 AGENT_NAME = "Sam the Minuteman"
-PROMPT_VERSION = "agent-v2"  # v2: Tiger lookups through the Tiger MCP server, at most 5 tries
-GOAL_VERSION = "agent-goal-v2"  # v2: plan vs question
+PROMPT_VERSION = "agent-v3"  # v3: the setting functions (staffing, menu) next to batch scaling
+GOAL_VERSION = "agent-goal-v3"  # v3: plan vs question vs what-if
+# The setting functions Sam may use when planning: decisions only. The crowd, arrival times and popularity
+# describe the night, not the kitchen's plan; changing them would "meet" a goal without a real plan.
+# (What-ifs use all 13, through ai/ask.py.)
+PLAN_LEVERS = ("apply_preset", "set_servers", "set_service_time", "set_shift", "set_cooks", "set_batch", "scale_batch",
+               "remove_dish", "note_unsupported", "explain")
 MAX_TRIES = 5  # simulations per plan, never more
 MAX_TIGER = 6  # Tiger lookups per run
 DIETS = ("vegetarian", "vegan", "halal")
@@ -54,9 +59,11 @@ Emit = Callable[[str, dict], None]
 
 
 class Goal(BaseModel):
-    kind: Literal["plan", "question"] = Field(
-        "plan", description="plan = the manager wants a production plan (batch changes, a waste target); question = a "
-                            "question about past or recorded nights, answered from the history with no plan")
+    kind: Literal["plan", "question", "whatif"] = Field(
+        "plan", description="plan = the manager gives a goal to reach (a waste target, dishes to protect) and wants a "
+                            "plan; whatif = the manager names specific changes to try (\"what if we add a Grill server "
+                            "and it's 10% busier?\"): simulate exactly those; question = a question about past or "
+                            "recorded nights, answered from the history with no plan")
     waste_cut_pct: float = Field(ge=0, le=80, description="cut waste by this many percent, e.g. 20; 0 = no waste target")
     protect_diets: list[Literal["vegetarian", "vegan", "halal"]] = Field(
         description="dishes with these diet tags must not run out more than they do today")
@@ -72,7 +79,19 @@ Targets: a waste cut in percent; diets (vegetarian, vegan, halal) or dish ids wh
 more than today; whether missed meals and the long wait must stay no worse (true unless the manager says otherwise).
 Use only dish ids from the table. Put anything else (prices, staffing, other halls) in `unsupported`.
 If the manager asks a question about what happened (past nights, history, "which dishes ran out on rainy Fridays?")
-rather than asking for a plan, set kind = question, waste_cut_pct = 0 and no protected diets or dishes."""
+rather than asking for a plan, set kind = question, waste_cut_pct = 0 and no protected diets or dishes.
+If the manager names the changes themselves ("what if we add a Grill server and it's 10% busier?", "halve the hot pot
+batches") instead of a target to reach, set kind = whatif, waste_cut_pct = 0 and no protected diets or dishes."""
+
+
+def is_whatif(text: str) -> bool:
+    """Keyword guess (no AI): specific changes to try, not a goal or a history question."""
+    q = text.lower().strip()
+    if re.match(r"^(what if|what happens if|suppose|imagine|try)\b", q):
+        return True
+    goal = re.search(r"\b(cut|reduce|lower)\b.*\bwaste\b", q)
+    lever = re.search(r"\b(server|cook|busier|quieter|crowd|remove|drop|halve|batch|popular|preset|shift)\w*", q)
+    return bool(lever) and not goal and not q.endswith("?")
 
 
 def is_question(text: str) -> bool:
@@ -85,6 +104,9 @@ def is_question(text: str) -> bool:
 
 def _goal_mock(text: str, cfg: ScenarioConfig) -> Goal:
     q = text.lower()
+    if is_whatif(text):
+        return Goal(kind="whatif", waste_cut_pct=0, protect_diets=[], protect_dishes=[], keep_missed_meals=True,
+                    keep_wait=True, summary=text.strip()[:160], unsupported=[])
     if is_question(text):
         return Goal(kind="question", waste_cut_pct=0, protect_diets=[], protect_dishes=[], keep_missed_meals=True,
                     keep_wait=True, summary=text.strip()[:160], unsupported=[])
@@ -160,7 +182,9 @@ TOOLS = [
         "description": "Simulate tonight's dinner and late night with a changed batch plan (paired nights against "
                        "the baseline, as many as the budget says) and check it against the goal. Changes apply on top of the chosen preset: "
                        "first every `scale` entry in order (factors multiply the current values), then `dishes` "
-                       "(absolute values). Returns waste, missed meals, wait, the goal check, the protected dishes "
+                       "(absolute values). Staffing and menu changes come from the setting functions (set_servers, "
+                       "set_shift, set_cooks, remove_dish, ...): call them first, in the same turn; they apply to this "
+                       "run only. Returns waste, missed meals, wait, the goal check, the protected dishes "
                        "that got worse and the dishes that still waste the most.",
         "parameters": {
             "type": "object",
@@ -282,6 +306,23 @@ def plan_to_request(date: str, plan: TryPlan, protected: set[str]) -> ScenarioRe
     return ScenarioRequest(date=date, preset=preset, levers=Levers(kitchen=kitchen) if kitchen else None)
 
 
+def merge_request(date: str, plan: TryPlan, levers_plan, protected: set[str]) -> ScenarioRequest:
+    """Sam's batch scaling (TryPlan) plus the setting functions it called for this try (an ask.AskPlan).
+    Explicit per-dish values from set_batch / scale_batch win over group scaling."""
+    from .ask import to_request
+
+    preset = None if plan.preset in (None, "", "none") else plan.preset
+    preset = preset or levers_plan.preset
+    base = plan_to_request(date, plan.model_copy(update={"preset": preset}), protected)
+    extra = to_request(date, levers_plan.model_copy(update={"preset": None})).levers or Levers()
+    kitchen = dict(base.levers.kitchen) if base.levers else {}
+    for d, k in extra.kitchen.items():
+        merged = (kitchen[d].model_dump(exclude_none=True) if d in kitchen else {}) | k.model_dump(exclude_none=True)
+        kitchen[d] = KitchenLever(**merged)
+    levers = extra.model_copy(update={"kitchen": kitchen})
+    return ScenarioRequest(date=date, preset=preset, levers=None if levers == Levers() else levers)
+
+
 def describe_plan(plan: TryPlan, names: dict[str, str]) -> list[str]:
     """The try in the manager's words (the full list of changed settings is separate)."""
     out = []
@@ -371,6 +412,7 @@ class AgentRun:
     notices: list[str] = field(default_factory=list)
     tiger_lookups: list[dict] = field(default_factory=list)
     tiger: object | None = None  # TigerMCP, opened on the first lookup
+    pending: list[dict] = field(default_factory=list)  # setting-function calls for the next run_simulation
 
     def __post_init__(self):
         self.max_tries = max(1, min(MAX_TRIES, int(self.max_tries)))
@@ -402,13 +444,19 @@ class AgentRun:
         """The run_simulation tool. Returns the small summary the model reads (or {"error": ...})."""
         if len(self.tries) >= self.max_tries:
             return {"error": f"simulation budget used ({self.max_tries} tries); call finish with your best try"}
+        from .ask import calls_to_plan
+
+        calls, self.pending = self.pending, []
         try:
-            req = plan_to_request(self.date, plan, self.protected)
+            levers_plan, problems = calls_to_plan(calls, self.date)
+            req = merge_request(self.date, plan, levers_plan, self.protected)
             cfg = build_config(req)
         except (ValueError, ValidationError) as e:
             return {"error": str(e)}
         k = len(self.tries) + 1
-        moves = describe_plan(plan, self.names)
+        moves = describe_plan(plan, self.names) if (plan.scale or plan.dishes or plan.preset not in (None, "", "none")
+                                                    or not calls) else []
+        moves = [m for m in moves if m != "Tonight's plan, unchanged" or not calls] + self.lever_moves(levers_plan)
         settings = config_changes(self.base_cfg, cfg)
         self.emit("try_start", {"id": k, "note": plan.note, "moves": moves})
         nights = self.simulate(cfg, self.n_nights, f"try {k}")
@@ -418,6 +466,38 @@ class AgentRun:
         self.tries.append(t)
         self.emit("try", self.try_public(t))
         return self.try_summary(t)
+
+    def lever_moves(self, lp) -> list[str]:
+        """The setting functions' changes in the manager's words (staffing first: it costs money)."""
+        from .ask import to_request
+
+        out = []
+        extra = to_request(self.date, lp.model_copy(update={"preset": None, "kitchen": []})).levers
+        if extra is not None:
+            out += [f"{x}" for x in config_changes(self.base_cfg, build_config(
+                ScenarioRequest(date=self.date, levers=extra)))]
+        for kc in lp.kitchen:
+            fs = [f"{f.replace('_', ' ')} {v}" for f, v in kc.model_dump(exclude={"dish_id"}, exclude_none=True).items()]
+            out.append(f"{self.names.get(kc.dish_id, kc.dish_id)}: {', '.join(fs)}")
+        if lp.preset:
+            out.append(f"Start from preset: {lp.preset.replace('_', ' ')}")
+        return out
+
+    def queue_lever(self, name: str, args: dict) -> dict:
+        """A setting function while planning: checked now, applied to the next run_simulation."""
+        from .ask import calls_to_plan
+
+        if name not in PLAN_LEVERS:
+            return {"error": f"{name} describes the night, not the plan: Sam can't use it to reach a goal"}
+        if name == "remove_dish" and args.get("dish_id") in self.protected:
+            return {"error": "that dish is protected by the goal; removing it would dodge the check"}
+        _, problems = calls_to_plan([{"name": name, "args": args}], self.date)
+        if problems[0]:
+            return {"error": problems[0]}
+        if name in ("note_unsupported", "explain"):
+            return {"ok": True}
+        self.pending.append({"name": name, "args": args})
+        return {"queued": f"{name} applies to the next run_simulation ({len(self.pending)} queued)"}
 
     def _headline(self, res: dict, key: str) -> dict:
         b, n = self.base["headline"][key]["p50"], res["headline"][key]["p50"]
@@ -606,10 +686,16 @@ class AgentRun:
                     return self.run_try(TryPlan.model_validate(args)), None
                 except ValidationError as e:
                     return {"error": f"bad arguments: {e.error_count()} errors: {str(e)[:300]}"}, None
+            if name in lever_names:
+                return self.queue_lever(name, args), None
             return {"error": f"unknown tool {name!r}"}, None
 
+        from .ask import ask_tools
+
+        levers = [t for t in ask_tools(self.date) if t["name"] in PLAN_LEVERS]
+        lever_names = {t["name"] for t in levers}
         tiger = self.tiger_on()
-        tools = TOOLS + (TIGER_TOOLS if tiger else [])
+        tools = TOOLS + levers + (TIGER_TOOLS if tiger else [])
         intro = self.intro() + (f"\n\n{_tiger_digest()}" if tiger else "")
         return self.tool_loop(SYSTEM + (TIGER_RULES if tiger else ""), tools, intro,
                               self.max_tries + MAX_TIGER + 4, on_call)
@@ -689,6 +775,8 @@ class AgentRun:
         if self.goal.kind == "question":
             self.emit("goal", {"goal": self.goal.model_dump(), "source": goal_src, "protected": [], "baseline": None})
             return self.answer_question()
+        if self.goal.kind == "whatif":
+            return self.run_whatif(goal_src)
         self.protected = protected_ids(self.goal, self.base_cfg)
         base = self.baseline()
         self.emit("goal", {"goal": self.goal.model_dump(), "source": goal_src,
@@ -719,6 +807,47 @@ class AgentRun:
             self.notice(f"Sam picked try {tid}, which misses the goal; try {best.id} meets it, so that is the plan.")
             chosen, chosen_by = best, "goal check"
         return self.final(chosen, chosen_by, reasoning, caveats)
+
+    def run_whatif(self, goal_src: str) -> dict:
+        """A what-if: read it with the same function calling as the Lab's box (ai/ask.py), simulate it as asked,
+        and compare with tonight's plan. No search, no goal check."""
+        from .ask import ask
+
+        self.protected = set()
+        self.goal = self.goal.model_copy(update={"unsupported": []})  # the function calls below decide what maps
+        base = self.baseline()
+        self.emit("goal", {"goal": self.goal.model_dump(), "source": goal_src, "protected": [],
+                           "baseline": {k: base["headline"][k]["p50"] for k in ("waste_total", "missed_meal", "wait_p90")},
+                           "baseline_hash": base["config_hash"]})
+        r = ask(self.llm, self.goal_text, self.date)
+        self.source = r["source"]
+        out = {"kind": "whatif", "agent": AGENT_NAME, "goal_text": self.goal_text, "goal": self.goal.model_dump(),
+               "date": self.date, "ok": r["ok"], "settings": r.get("settings", []), "explanation": r.get("explanation", ""),
+               "unsupported": r.get("unsupported", []), "method": r.get("method"), "error": r.get("error"),
+               "source": r["source"], "model": None if r["source"] in ("mock", "fallback") else r.get("model"),
+               "notices": self.notices, "baseline_hash": base["config_hash"]}
+        self.emit("whatif", {k: out[k] for k in ("ok", "settings", "explanation", "unsupported", "method", "error")})
+        if not r["ok"] or not r.get("request") or not out["settings"]:
+            out["summary"] = ("Sam couldn't turn that into settings." if not r["ok"]
+                              else "Nothing in that maps to a setting, so there is nothing to simulate.")
+            return out
+        req = ScenarioRequest(**r["request"])
+        cfg = build_config(req)
+        self.emit("try_start", {"id": 1, "note": "Simulating the what-if as asked.", "moves": out["settings"]})
+        nights = self.simulate(cfg, self.n_nights, "what-if")
+        res = self.svc.result(cfg, nights, self.base_nights)
+        metrics = {k: self._headline(res, k) for k in ("waste_total", "missed_meal", "wait_p90", "stockout_min_total")}
+        words = {"waste_total": "waste", "missed_meal": "missed meals", "wait_p90": "the long wait",
+                 "stockout_min_total": "empty-pan minutes"}
+        bw = metrics["waste_total"]
+        pct = 100 * bw.get("median_change", 0) / bw["baseline"] if bw["baseline"] else 0
+        parts = [f"waste {pct:+.1f}% ({bw.get('verdict', 'n/a')})"] + [
+            f"{words[k]} {metrics[k].get('verdict', 'n/a')}" for k in ("missed_meal", "wait_p90", "stockout_min_total")]
+        out |= {"request": req.model_dump(exclude_none=True), "config_hash": config_hash(cfg),
+                "label": f"What-if: {self.goal_text}"[:120], "metrics": metrics, "waste_lb": res.get("waste_lb"),
+                "summary": "Against tonight's plan: " + ", ".join(parts) + ".",
+                "nights_simulated": 2 * self.n_nights}
+        return out
 
     def notice(self, text: str) -> None:
         self.notices.append(text)
@@ -783,6 +912,10 @@ How to work:
   run out and students miss meals. If waste is past the goal but another check fails, cut a little less.
 - Each result has a `diagnosis` computed from the checks: read it before the next try.
 - Presets are blunt; tonight's plan ('none') plus your own changes is usually the better start.
+- You also have setting functions (set_servers, set_shift, set_cooks, set_service_time, set_batch, scale_batch,
+  remove_dish, apply_preset). Call them in the same turn as run_simulation; they apply to that run only. Staff costs
+  money: add servers or cooks only when batch changes alone can't meet the goal, and say so. Removing a dish is a menu
+  decision; never remove a protected dish.
 - Stop as soon as a try meets every check: call finish. If the budget runs out, finish with the closest try and
   say plainly which checks fail.
 - In notes and reasoning, use only numbers the tools returned. Be brief and friendly, like a calm Minuteman
@@ -822,6 +955,11 @@ def history_entry(final: dict) -> dict:
     out["tiger_lookups"] = [{k: x.get(k) for k in ("why", "sql", "row_count", "error")} for x in final.get("tiger_lookups") or []]
     if final.get("kind") == "question":
         out["headline"] = re.sub(r"[*_`#]+", "", final.get("answer") or "").strip()[:160]
+    elif final.get("kind") == "whatif":
+        for k in ("ok", "settings", "explanation", "unsupported", "method", "metrics", "waste_lb", "summary"):
+            if k in final:
+                out[k] = final[k]
+        out["headline"] = (final.get("summary") or "").removeprefix("Against tonight's plan: ")[:160]
     else:
         c = final.get("check") or {}
         out["headline"] = (f"{'Goal met' if c.get('met') else 'Closest plan'} · waste {c.get('waste_pct', 0):+.1f}% "
@@ -840,4 +978,5 @@ def run_agent(svc: Service, llm: LLM, goal: str, date: str, *, n_nights: int = 3
 
 
 __all__ = ["AGENT_NAME", "Goal", "TryPlan", "Scale", "DishSet", "check_goal", "parse_goal", "plan_to_request",
-           "protected_ids", "run_agent", "AgentRun", "TOOLS", "TIGER_TOOLS", "MAX_TRIES", "history_entry", "is_question"]
+           "protected_ids", "run_agent", "AgentRun", "TOOLS", "TIGER_TOOLS", "MAX_TRIES", "history_entry", "is_question",
+           "is_whatif", "merge_request", "PLAN_LEVERS"]

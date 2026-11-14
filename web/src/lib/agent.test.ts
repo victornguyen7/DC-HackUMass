@@ -61,3 +61,19 @@ describe("Sam's history (browser copy)", () => {
     expect((await listHistory(false)).map((x) => x.run_id)).toEqual(["a2"]);
   });
 });
+
+describe("what-ifs in the Ask Sam box", () => {
+  it("keeps the settings Sam read, live and in the browser's history copy", async () => {
+    const { agentReducer, AGENT_IDLE, rememberLocal, openHistory, listHistory } = await import("./agent");
+    let s = agentReducer(AGENT_IDLE, { event: "start", data: {} });
+    s = agentReducer(s, { event: "whatif", data: { ok: true, settings: ["Grill Station servers: 2 -> 3"], explanation: "", unsupported: [], method: "function_calling" } });
+    expect(s.whatif?.settings).toEqual(["Grill Station servers: 2 -> 3"]);
+    localStorage.clear();
+    rememberLocal({ kind: "whatif", agent: "Sam", goal_text: "what if one more Grill server", goal: {}, date: "2026-11-13", history_id: "w1",
+      created_at: "2026-11-14T12:00:00Z", settings: ["Grill Station servers: 2 -> 3"], tries: [],
+      summary: "Against tonight's plan: waste -3.0% (same), missed meals better.", ok: true } as never);
+    const [item] = await listHistory(false);
+    expect(item).toMatchObject({ kind: "whatif", met: null, headline: "waste -3.0% (same), missed meals better." });
+    expect((await openHistory("w1", false)).settings).toEqual(["Grill Station servers: 2 -> 3"]);
+  });
+});

@@ -15,7 +15,7 @@ export type AgentTry = {
   waste: Headline; missed_meal: Headline; wait_p90: Headline; request: NonNullable<AskReply["request"]>;
 };
 export type Goal = {
-  kind?: "plan" | "question";
+  kind?: "plan" | "question" | "whatif";
   waste_cut_pct: number; protect_diets: string[]; protect_dishes: string[]; keep_missed_meals: boolean; keep_wait: boolean;
   summary: string; unsupported: string[];
 };
@@ -29,8 +29,15 @@ export type TigerLookup = {
   n?: number; why: string; sql: string | null; row_count?: number | null; columns?: string[]; rows?: (string | null)[][];
   truncated?: boolean; error?: string;
 };
+export type WhatIf = {
+  ok: boolean; settings: string[]; explanation: string; unsupported: string[];
+  method?: "function_calling" | "json_schema" | "keywords"; error?: string | null;
+};
 export type AgentFinal = {
-  kind?: "plan" | "question"; answer?: string; tiger_lookups?: TigerLookup[]; history_id?: string; created_at?: string;
+  kind?: "plan" | "question" | "whatif"; answer?: string;
+  /** what-ifs: the settings Sam read (same function calling as the Lab box), the comparison with tonight's plan */
+  ok?: boolean; explanation?: string; unsupported?: string[]; method?: WhatIf["method"];
+  metrics?: Record<"waste_total" | "missed_meal" | "wait_p90" | "stockout_min_total", Headline>; summary?: string; tiger_lookups?: TigerLookup[]; history_id?: string; created_at?: string;
   tries_run?: number; headline?: string;
   agent: string; goal_text: string; goal: Goal; date: string; chosen: number; chosen_by: "agent" | "rules" | "goal check";
   reasoning: string; caveats: string; check: GoalCheck; holdout: GoalCheck & { seeds: [number, number] };
@@ -56,6 +63,7 @@ export type AgentState = {
   notices: string[];
   thoughts: string[];
   tiger: TigerLookup[];
+  whatif?: WhatIf;
   validating?: { try_id: number; seeds: [number, number] };
   final?: AgentFinal;
   error?: string;
@@ -80,6 +88,8 @@ export function agentReducer(s: AgentState, e: AgentEvent): AgentState {
       return { ...s, progress: undefined, tries: s.tries.map((t) => (t.id === d.id ? { ...t, ...d } : t)) };
     case "notice":
       return { ...s, notices: [...s.notices, d.text] };
+    case "whatif":
+      return { ...s, whatif: d };
     case "tiger":
       return { ...s, tiger: [...s.tiger.filter((x) => x.n !== d.n), d] };
     case "thought":
@@ -95,7 +105,7 @@ export function agentReducer(s: AgentState, e: AgentEvent): AgentState {
   }
 }
 
-const EVENTS = ["start", "goal", "progress", "try_start", "try", "notice", "thought", "tiger", "validate_start", "final", "error"];
+const EVENTS = ["start", "goal", "progress", "try_start", "try", "notice", "thought", "tiger", "whatif", "validate_start", "final", "error"];
 
 /** Start a run and follow its stream. Returns a function that stops listening. */
 export async function runAgent(goal: string, date: string, onEvent: (e: AgentEvent) => void): Promise<() => void> {
@@ -125,7 +135,7 @@ export async function runAgent(goal: string, date: string, onEvent: (e: AgentEve
 // Kept on the API (shared) and in this browser (so past analyses still open when the API is down).
 
 export type HistoryItem = {
-  run_id: string; kind: "plan" | "question"; prompt: string; for_date: string; created_at: string;
+  run_id: string; kind: "plan" | "question" | "whatif"; prompt: string; for_date: string; created_at: string;
   met: boolean | null; headline: string; local?: boolean;
 };
 const LOCAL_KEY = "dcwhatif.sam.history";
@@ -142,11 +152,13 @@ function writeLocal(xs: LocalEntry[]) {
 /** The history keeps only the final analysis: drop per-try details. */
 export function slimFinal(f: AgentFinal): AgentFinal {
   const { tries, settings, ...rest } = f; // eslint-disable-line @typescript-eslint/no-unused-vars
-  return { ...rest, tries: [], settings: [], tries_run: f.tries_run ?? tries?.length ?? 0 } as AgentFinal;
+  // a what-if's settings are its content; a plan's full settings list is long and repeats changed_dishes
+  return { ...rest, tries: [], settings: f.kind === "whatif" ? settings : [], tries_run: f.tries_run ?? tries?.length ?? 0 } as AgentFinal;
 }
 
 export function headlineOf(f: AgentFinal): string {
   if (f.kind === "question") return (f.answer ?? "").replace(/[*_`#]+/g, "").trim().slice(0, 160);
+  if (f.kind === "whatif") return (f.summary ?? "").replace(/^Against tonight's plan: /, "").slice(0, 160);
   const n = f.tries_run ?? f.tries?.length ?? 0;
   return `${f.check?.met ? "Goal met" : "Closest plan"} · waste ${f.check?.waste_pct > 0 ? "+" : ""}${(f.check?.waste_pct ?? 0).toFixed(1)}% · try ${f.chosen} of ${n}`;
 }
@@ -155,7 +167,7 @@ export function rememberLocal(f: AgentFinal) {
   const id = f.history_id ?? `local-${Date.now()}`;
   const e: LocalEntry = {
     run_id: id, kind: f.kind ?? "plan", prompt: f.goal_text, for_date: f.date, created_at: f.created_at ?? new Date().toISOString(),
-    met: f.kind === "question" ? null : !!f.check?.met, headline: headlineOf(f), final: slimFinal(f),
+    met: f.kind === "plan" || !f.kind ? !!f.check?.met : null, headline: headlineOf(f), final: slimFinal(f),
   };
   writeLocal([e, ...readLocal().filter((x) => x.run_id !== id)]);
 }

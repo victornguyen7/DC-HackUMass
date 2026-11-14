@@ -15,6 +15,7 @@ const EXAMPLES = [
   "Cut waste 20% without any vegetarian dish running out",
   "Cut waste 15% and keep every halal dish stocked",
   "Cut waste 10% without longer lines or missed meals",
+  "What if we add a Grill server and it's 10% busier?",
   "Which dishes ran out on rainy Fridays?",
 ];
 
@@ -61,8 +62,9 @@ export default function Sam() {
             <div className="overline">Planning agent · {dateLabel(date)}</div>
             <h2>Sam the Minuteman</h2>
             <p className="muted">Tell Sam what tonight's kitchen should achieve. Sam checks the recorded history in Tiger Data,
-              proposes batch-plan changes, runs each one on simulated nights (at most 5 tries), adjusts, and hands you a production
-              plan and its reasons. Or ask a question about past nights and Sam answers it from Tiger.</p>
+              proposes batch, staffing and menu changes, runs each one on simulated nights (at most 5 tries), adjusts, and hands you a
+              production plan and its reasons. You can also try a what-if ("what if we add a Grill server?"), or ask a question about
+              past nights and Sam answers it from Tiger.</p>
             <form className="sam-ask" onSubmit={(e) => { e.preventDefault(); go(); }}>
               <label htmlFor="sam-goal" className="sr-only">Goal</label>
               <input id="sam-goal" className="btn" value={goal} onChange={(e) => setGoal(e.target.value)} disabled={!apiOn || running}
@@ -86,7 +88,7 @@ export default function Sam() {
               <span>From history: <span className="sam-viewing-q">{viewing.goal_text}</span> · for {dateLabel(viewing.date)}{viewing.created_at ? ` · asked ${askedLabel(viewing.created_at)}` : ""}</span>
               <button className="btn ghost" onClick={() => setViewing(null)}>{s.status === "idle" ? "Close" : "Back to the current run"}</button>
             </div>
-            {viewing.kind === "question" ? <AnswerCard f={viewing} /> : <PlanCard f={viewing} />}
+            {viewing.kind === "question" ? <AnswerCard f={viewing} /> : viewing.kind === "whatif" ? <WhatIfCard f={viewing} /> : <PlanCard f={viewing} />}
             {(viewing.tiger_lookups?.length ?? 0) > 0 && <TigerCard lookups={viewing.tiger_lookups!} />}
           </div>
         ) : s.status !== "idle" && <Run s={s} />}
@@ -114,12 +116,15 @@ function Run({ s }: { s: AgentState }) {
       {s.goal && <GoalCard s={s} />}
       {s.notices.map((n) => <div key={n} className="alert info" role="status">{n}</div>)}
       {s.tiger.length > 0 && <TigerCard lookups={s.tiger} live={running} />}
-      <ol className="sam-tries" aria-label="Sam's tries">
-        {s.tries.map((t) => <TryCard key={t.id} t={t} s={s} chosen={s.final?.chosen === t.id} />)}
-      </ol>
+      {s.goal?.kind !== "whatif" && (
+        <ol className="sam-tries" aria-label="Sam's tries">
+          {s.tries.map((t) => <TryCard key={t.id} t={t} s={s} chosen={s.final?.chosen === t.id} />)}
+        </ol>
+      )}
+      {s.goal?.kind === "whatif" && s.whatif && !s.final && <WhatIfSettings w={s.whatif} />}
       {running && <Working s={s} />}
       {s.status === "error" && <div className="alert bad" role="alert"><b>Sam couldn't finish</b>{s.error}</div>}
-      {s.final && (s.final.kind === "question" ? <AnswerCard f={s.final} /> : <PlanCard f={s.final} />)}
+      {s.final && (s.final.kind === "question" ? <AnswerCard f={s.final} /> : s.final.kind === "whatif" ? <WhatIfCard f={s.final} /> : <PlanCard f={s.final} />)}
     </div>
   );
 }
@@ -127,7 +132,10 @@ function Run({ s }: { s: AgentState }) {
 function Working({ s }: { s: AgentState }) {
   const p = s.progress;
   const question = s.goal?.kind === "question";
-  const what = question ? "Sam is asking Tiger Data" : s.validating ? `Checking try ${s.validating.try_id} on nights Sam never saw (${s.validating.seeds[0]}–${s.validating.seeds[1]})`
+  const whatif = s.goal?.kind === "whatif";
+  const what = question ? "Sam is asking Tiger Data"
+    : whatif ? (s.whatif ? `Simulating the what-if on ${s.nNights ?? 30} nights` : "Reading the what-if into settings")
+    : s.validating ? `Checking try ${s.validating.try_id} on nights Sam never saw (${s.validating.seeds[0]}–${s.validating.seeds[1]})`
     : !s.goal ? "Reading the goal and simulating tonight's baseline"
     : p?.what.startsWith("try") ? `Simulating ${p.what}`
     : s.tries.length ? "Sam is reading the results and deciding what to try next"
@@ -143,6 +151,14 @@ function Working({ s }: { s: AgentState }) {
 
 function GoalCard({ s }: { s: AgentState }) {
   const g = s.goal!;
+  if (g.kind === "whatif") {
+    return (
+      <section className="card" aria-label="What-if">
+        <div className="overline">What-if · simulated exactly as asked, against tonight's plan</div>
+        <h3>{s.goalText}</h3>
+      </section>
+    );
+  }
   if (g.kind === "question") {
     return (
       <section className="card" aria-label="Question">
@@ -390,7 +406,7 @@ function HistoryPanel({ items, loading, activeId, onOpen, onDelete }: {
           <li key={h.run_id} className={activeId === h.run_id ? "active" : ""}>
             <button className="sam-history-open" onClick={() => onOpen(h.run_id)}>
               <span className="sam-history-meta">
-                {h.kind === "question" ? "Question" : "Plan"} for {dateLabel(h.for_date)} · {askedLabel(h.created_at)}
+                {h.kind === "question" ? "Question" : h.kind === "whatif" ? "What-if" : "Plan"} for {dateLabel(h.for_date)} · {askedLabel(h.created_at)}
                 {h.local ? " · this browser" : ""}
               </span>
               <b>{h.prompt}</b>
@@ -401,5 +417,72 @@ function HistoryPanel({ items, loading, activeId, onOpen, onDelete }: {
         ))}
       </ul>
     </aside>
+  );
+}
+
+function methodText(m?: string) {
+  return m === "function_calling" ? "Read by Gemini function calling" : m === "json_schema" ? "Read by AI (JSON settings)" : "Keyword matching (no AI key set)";
+}
+
+function WhatIfSettings({ w }: { w: NonNullable<AgentState["whatif"]> }) {
+  return (
+    <section className="card" aria-label="What-if settings">
+      <div className="overline">{methodText(w.method)}</div>
+      {w.settings.length ? <ul className="sam-moves">{w.settings.map((x) => <li key={x}>{x}</li>)}</ul>
+        : <div className="hint">{w.error ?? "Nothing in that maps to a setting."}</div>}
+      {w.unsupported.length > 0 && <div className="hint">Not supported: {w.unsupported.join("; ")}</div>}
+    </section>
+  );
+}
+
+/** A what-if from the Ask Sam box: the settings Sam read, simulated as asked, against tonight's plan. */
+function WhatIfCard({ f }: { f: AgentFinal }) {
+  const { adopt, adopted } = useApp();
+  const nav = useNavigate();
+  const [note, setNote] = useState<string | null>(null);
+  const ran = !!f.metrics && !!f.config_hash;
+  const isAdopted = ran && adopted[f.date]?.hash === f.config_hash;
+  const scenario = { preset: null, lever: "api", hash: f.config_hash, label: f.label };
+  const onAdopt = async () => {
+    adopt(f.date, scenario);
+    loadApiResult(f.config_hash).catch(() => undefined);
+    try {
+      const sv = await saveScenario(f.label, f.config_hash, "adopted");
+      setNote(`Adopted for ${dateLabel(f.date)} and saved on the API${sv.forecast ? ` (forecast ${sv.forecast})` : ""}.`);
+    } catch (e) {
+      setNote(`Adopted in this browser. The API didn't record it: ${(e as Error).message}.`);
+    }
+  };
+  const m = f.metrics;
+  return (
+    <section className="card sam-plan" aria-label="Sam's what-if">
+      <div className="row" style={{ alignItems: "flex-start", flexWrap: "nowrap", marginBottom: 8 }}>
+        <SamAvatar size={44} />
+        <div>
+          <div className="overline">What-if · {dateLabel(f.date)}</div>
+          <h2>{f.goal_text}</h2>
+        </div>
+      </div>
+      {f.settings?.length ? <ul className="sam-moves">{f.settings.map((x) => <li key={x}>{x}</li>)}</ul> : null}
+      {f.explanation && <blockquote className="sam-says"><SamAvatar size={20} /><span>{f.explanation}</span></blockquote>}
+      {(f.unsupported?.length ?? 0) > 0 && <div className="hint">Not supported: {f.unsupported!.join("; ")}</div>}
+      {m ? (
+        <div className="sam-metrics" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
+          <Metric label="Waste" h={m.waste_total} unit="portions" pct={m.waste_total.baseline ? (100 * (m.waste_total.median_change ?? 0)) / m.waste_total.baseline : 0} />
+          <Metric label="Missed meals" h={m.missed_meal} unit="students" />
+          <Metric label="90% wait" h={m.wait_p90} unit="min" dec />
+          <Metric label="Empty-pan minutes" h={m.stockout_min_total} unit="min" dec />
+        </div>
+      ) : <div className="alert warn" style={{ marginTop: 8 }}><b>Nothing simulated</b>{f.summary}</div>}
+      {ran && (
+        <div className="row" style={{ margin: "12px 0 4px" }}>
+          <button className="btn primary" onClick={onAdopt} disabled={isAdopted}>{isAdopted ? "Adopted for tonight" : "Adopt this what-if"}</button>
+          <button className="btn" onClick={() => nav("/lab", { state: { agentRequest: f.request } })}>Open in the Lab</button>
+          <button className="btn ghost" onClick={() => { useApp.getState().setScenario(scenario); nav("/hall"); }}>Watch a night</button>
+        </div>
+      )}
+      {note && <div className="alert info" role="status">{note}</div>}
+      <div className="faint" style={{ marginTop: 8, fontSize: 11 }}>{methodText(f.method)} · {ran ? `${f.nights_simulated ?? 60} simulated nights (what-if + tonight's plan) · ` : ""}the Lab's "Ask in plain English" box does the same, without Sam</div>
+    </section>
   );
 }

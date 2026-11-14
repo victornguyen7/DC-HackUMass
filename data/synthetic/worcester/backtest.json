@@ -3,7 +3,7 @@
  "_note": "SYNTHETIC history; simulated savings, not measured. Pre-consumer waste only (expired + left at close).",
  "plan": "smaller_batches",
  "seeds_per_night": 10,
- "generated_at": "2026-11-14T03:48:38+00:00",
+ "generated_at": "2026-11-14T04:39:43+00:00",
  "headline": {
   "nights": 39,
   "plan_wins": 38,
@@ -111,7 +111,7 @@
     },
     "street_food": {
      "recorded_lb": 90.9,
-     "plan_lb": 75.4
+     "plan_lb": 75.5
     },
     "tandoor": {
      "recorded_lb": 71.3,
@@ -805,7 +805,7 @@
     },
     "tandoor": {
      "recorded_lb": 97.0,
-     "plan_lb": 91.0
+     "plan_lb": 90.9
     }
    }
   },
@@ -1263,7 +1263,7 @@
      "plan_lb": 185.0
     },
     "latino": {
-     "recorded_lb": 63.3,
+     "recorded_lb": 63.2,
      "plan_lb": 34.5
     },
     "mediterranean": {
@@ -1328,7 +1328,7 @@
      "plan_lb": 92.5
     },
     "grill": {
-     "recorded_lb": 140.3,
+     "recorded_lb": 140.4,
      "plan_lb": 153.3
     },
     "latino": {
@@ -1673,7 +1673,7 @@
      "plan_lb": 114.5
     },
     "grill": {
-     "recorded_lb": 170.7,
+     "recorded_lb": 170.8,
      "plan_lb": 169.4
     },
     "latino": {
@@ -1827,7 +1827,7 @@
      "plan_lb": 32.6
     },
     "seasons": {
-     "recorded_lb": 83.4,
+     "recorded_lb": 83.5,
      "plan_lb": 62.0
     },
     "soups": {
@@ -1885,11 +1885,11 @@
     },
     "latino": {
      "recorded_lb": 61.0,
-     "plan_lb": 38.5
+     "plan_lb": 38.4
     },
     "mediterranean": {
      "recorded_lb": 81.2,
-     "plan_lb": 74.0
+     "plan_lb": 73.9
     },
     "noodle_bowl": {
      "recorded_lb": 26.6,
@@ -2530,7 +2530,7 @@
     },
     "tandoor": {
      "recorded_lb": 95.2,
-     "plan_lb": 89.6
+     "plan_lb": 89.7
     }
    }
   },
@@ -4627,16 +4627,6 @@
    "usd_saved_per_week": -18.8
   },
   {
-   "dish_id": "mediterranean.sauteed_kale",
-   "dish": "Sauteed Kale",
-   "station": "mediterranean",
-   "nights": 5,
-   "recorded_lb_per_night": 11.37,
-   "plan_lb_per_night": 9.44,
-   "change_pct": -16.9,
-   "usd_saved_per_week": 4.1
-  },
-  {
    "dish_id": "street_food.jasmine_rice",
    "dish": "Jasmine Rice",
    "station": "street_food",
@@ -4645,6 +4635,16 @@
    "plan_lb_per_night": 9.6,
    "change_pct": -15.5,
    "usd_saved_per_week": 2.9
+  },
+  {
+   "dish_id": "mediterranean.sauteed_kale",
+   "dish": "Sauteed Kale",
+   "station": "mediterranean",
+   "nights": 5,
+   "recorded_lb_per_night": 11.37,
+   "plan_lb_per_night": 9.44,
+   "change_pct": -16.9,
+   "usd_saved_per_week": 4.1
   },
   {
    "dish_id": "late.display.zesty_orange_tofu",

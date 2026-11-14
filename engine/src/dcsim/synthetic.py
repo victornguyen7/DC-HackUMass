@@ -214,7 +214,7 @@ def simulate_night(day: dt.date, gt: dict, plan: ScenarioConfig | None = None) -
     pre_cost = sum(w["portions"] * cost[w["dish_id"]] for w in waste if w["reason"] != "plate")
     summary = {
         "date": day.isoformat(), "weekday": day.strftime("%A"), "menu_source_date": cfg.date,
-        "students": m.students, "adopted": gt["adopted"],
+        "students": m.students, "late_night_students": m.late_night_students, "adopted": gt["adopted"],
         "waste_portions": pre_portions, "waste_lb": round(pre_lb, 1), "waste_cost_usd": round(pre_cost, 2),
         "expired_lb": round(sum(w["weight_lb"] for w in waste if w["reason"] == "expired"), 1),
         "close_lb": round(sum(w["weight_lb"] for w in waste if w["reason"] == "close"), 1),

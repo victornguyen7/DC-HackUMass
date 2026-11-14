@@ -19,7 +19,16 @@ Tables (hypertables when TimescaleDB is present, plain tables otherwise):
     forecasts     append-only ledger of forecasts issued before a night (trigger blocks UPDATE/DELETE/TRUNCATE);
                   view forecast_scorecard scores each one once the night is observed
 
+    dish_nights   per dish per simulated night (replays): cooked / served / expired / leftover / stockout
+    station_hours per station and hour (replays): servers planned, servers needed, peak line
+    minute_series per-minute students inside and line per station (replays, one seed per night)
+    category tables (periods, stations, dishes, personas, allergies, date_context, kitchen_resources,
+                  cat_values) and website views (v_nights, v_waste_by_reason, v_menu)
+
 Continuous aggregate `dish_nightly` rolls pan_windows up to one row per dish per night per run.
+Columns added since engine 0.4 (NEW_COLUMNS) are added by init_schema; simulated rows fill every
+metric column, observed rows only what a real record has (waste cost, per-period waste, students by
+period). `sql/tiger_website.sql` (dcsim.tiger_sql) is the same schema as one console script.
 
 Connection: DCSIM_TSDB_URL (env or engine/.env), else `tiger db uri --with-password`
 for TIGER_SERVICE_ID (or the CLI's default service).
@@ -41,15 +50,54 @@ from .data import load_baseline
 TZ = ZoneInfo("America/New_York")
 TEST_FROM = dt.date(2026, 10, 29)  # last 2 of the 6 recorded weeks are held out
 
+# Columns added since engine 0.4 (init_schema adds them with ADD COLUMN IF NOT EXISTS).
+NEW_COLUMNS = {
+    "nights": [
+        ("waste_cost_usd", "double precision"),
+        ("engine_version", "text"), ("config_hash", "text"),
+        ("dinner_students", "int"), ("late_night_students", "int"),
+        ("missed_first_choice_rate", "double precision"), ("missed_meal", "int"),
+        ("wait_p50_min", "double precision"), ("wait_p90_min", "double precision"),
+        ("lines_skipped", "int"), ("empty_pans_seen", "int"),          # balks (seen from a distance), empty_seen
+        ("in_hall_at_2330", "int"),                                      # students inside 30 min before serving stops
+        ("batch_wait_min", "double precision"), ("cook_busy_share", "double precision"),  # 0.5.0 kitchen capacity
+        ("equipment_peak", "jsonb"),                                     # {"oven": 14, "cooks:dinner": 12, ...}
+        ("empty_pan_wait_min", "double precision"),                      # 0.5.0 waits at an empty pan
+        ("seat_wait_min", "double precision"), ("peak_seated", "int"),   # 0.5.0 seats
+        ("swipe_wait_min", "double precision"), ("swipe_queue_max", "int"),  # 0.6.0 entrance
+        ("group_students", "int"),                                       # 0.6.0 friends arriving together
+        ("allergy_students", "int"), ("allergy_no_meal", "int"),         # 0.6.0 allergies
+        ("dinner_stockout_min", "double precision"), ("late_night_stockout_min", "double precision"),
+        ("dinner_waste_portions", "int"), ("late_night_waste_portions", "int"),
+    ],
+    "pan_windows": [("period", "text")],                                  # dinner | late_night
+    "waste_log": [("period", "text")],
+    "planned_batches": [
+        ("period", "text"), ("cook_min", "double precision"), ("hold_min", "double precision"),
+        ("last_batch_min", "int"), ("expected_demand", "double precision"),
+        ("taper_from_min", "int"), ("taper_batch_size", "int"), ("taper_reorder_point", "int"),  # 0.4.2 late-night taper
+        ("forecast_reorder", "boolean"),                                  # 0.6.0 preset
+    ],
+}
+_new = lambda t: tuple(c for c, _ in NEW_COLUMNS[t])  # noqa: E731
+
 NIGHT_COLS = (
     "ts", "night", "source", "scenario", "run_id", "draw", "seed", "menu_date", "plan", "weekday", "weather",
     "event_night", "adopted", "split", "crowd_multiplier", "over_prep", "students", "cooked_portions",
     "waste_portions", "waste_lb", "expired_lb", "close_lb", "plate_lb", "stockout_min",
-)
+) + _new("nights")
 PAN_COLS = ("ts", "night", "source", "scenario", "run_id", "seed", "station", "dish_id", "dish",
-            "portions_out", "portions_eaten", "portions_left")
-WASTE_COLS = ("ts", "night", "station", "dish_id", "dish", "portions", "weight_lb", "reason")
-PLAN_COLS = ("menu_date", "plan", "dish_id", "station", "batch_size", "starting_batches", "reorder_point", "max_batches")
+            "portions_out", "portions_eaten", "portions_left") + _new("pan_windows")
+WASTE_COLS = ("ts", "night", "station", "dish_id", "dish", "portions", "weight_lb", "reason") + _new("waste_log")
+PLAN_FIELDS = ("batch_size", "starting_batches", "reorder_point", "max_batches", "cook_min", "hold_min",
+               "last_batch_min", "expected_demand", "taper_from_min", "taper_batch_size", "taper_reorder_point",
+               "forecast_reorder")
+PLAN_COLS = ("menu_date", "plan", "dish_id", "station", "period") + PLAN_FIELDS
+DISH_NIGHT_COLS = ("ts", "night", "source", "scenario", "run_id", "seed", "dish_id", "station", "period", "to_order",
+                   "cooked", "served", "expired", "leftover", "waste", "stockout_min", "runout_min", "first_choice_demand")
+STATION_HOUR_COLS = ("ts", "night", "scenario", "run_id", "seed", "station", "hour", "servers_planned",
+                     "servers_needed", "peak_line")
+SERIES_COLS = ("ts", "night", "scenario", "run_id", "seed", "kind", "key", "value")
 
 TABLES = """
 CREATE SCHEMA IF NOT EXISTS dcsim;
@@ -116,12 +164,150 @@ SELECT create_hypertable('dcsim.pan_windows', by_range('ts', INTERVAL '7 days'),
 SELECT create_hypertable('dcsim.waste_log', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
 """
 
+VECTOR_DIM = 7 + 4 + 1 + 64  # weekday one-hot + weather one-hot + event flag + 64 menu buckets (nightsearch.DIM)
+
+NEW_TABLES = """
+-- Per dish per night per run (NightMetrics.dishes): what the cook sheet and Waste pages show.
+CREATE TABLE IF NOT EXISTS dcsim.dish_nights (
+  ts timestamptz NOT NULL, night date NOT NULL, source text NOT NULL, scenario text NOT NULL,
+  run_id text NOT NULL, seed int NOT NULL DEFAULT 0,
+  dish_id text NOT NULL, station text, period text,
+  to_order boolean, cooked int, served int, expired int, leftover int, waste int,
+  stockout_min double precision, runout_min double precision, first_choice_demand int
+);
+CREATE INDEX IF NOT EXISTS dish_nights_dish_idx ON dcsim.dish_nights (dish_id, ts);
+-- Servers needed per station and hour (engine 0.5.0, ISSUES N3): servers for <= 85% busy, peak line that hour.
+CREATE TABLE IF NOT EXISTS dcsim.station_hours (
+  ts timestamptz NOT NULL, night date NOT NULL, scenario text NOT NULL, run_id text NOT NULL, seed int NOT NULL DEFAULT 0,
+  station text NOT NULL, hour int NOT NULL, servers_planned int, servers_needed int, peak_line int
+);
+-- Per-minute series (engine 0.6.0, ?include=series): one row per minute and thing measured.
+CREATE TABLE IF NOT EXISTS dcsim.minute_series (
+  ts timestamptz NOT NULL, night date NOT NULL, scenario text NOT NULL, run_id text NOT NULL, seed int NOT NULL DEFAULT 0,
+  kind text NOT NULL,              -- inside | queue | pan  (see cat_values series_kind)
+  key text NOT NULL,               -- 'hall', a station id or a dish id
+  value double precision NOT NULL
+);
+"""
+# Similar nights (pgvector; nightsearch.py fills it and builds its index).
+VECTOR_TABLE = f"""
+CREATE TABLE IF NOT EXISTS dcsim.night_vectors (
+  run_id text NOT NULL, night date NOT NULL,
+  weekday text, weather text, event_night boolean, n_dishes int,
+  embedding vector({VECTOR_DIM}) NOT NULL,
+  PRIMARY KEY (run_id, night)
+);
+"""
+NEW_HYPERTABLES = """
+SELECT create_hypertable('dcsim.dish_nights', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
+SELECT create_hypertable('dcsim.station_hours', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
+SELECT create_hypertable('dcsim.minute_series', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
+"""
+
+CATEGORY_TABLES = """
+-- Small fixed lists: what each code in the fact tables means.
+CREATE TABLE IF NOT EXISTS dcsim.cat_values (
+  category text NOT NULL,          -- source | waste_reason | weather | role | diet | vessel | method | split | series_kind | resource_kind
+  code text NOT NULL,
+  label text NOT NULL,
+  sort int NOT NULL DEFAULT 0,
+  PRIMARY KEY (category, code)
+);
+-- Service periods (engine 0.4.1): dinner 4:30-9 pm, late night 9 pm-12 am.
+CREATE TABLE IF NOT EXISTS dcsim.periods (
+  period text PRIMARY KEY, label text NOT NULL, opens time NOT NULL, closes time NOT NULL,
+  expected_students int, note text
+);
+CREATE TABLE IF NOT EXISTS dcsim.stations (
+  station text PRIMARY KEY, name text NOT NULL, servers int, self_serve boolean, to_order boolean,
+  service_median_min double precision, pos_x_m double precision, pos_y_m double precision,
+  equipment text,                  -- engine 0.5.0: kitchen equipment its batches use (NULL = by dish role)
+  note text
+);
+-- One row per dish on a menu date (dinner and late night; late-night ids start with "late.").
+CREATE TABLE IF NOT EXISTS dcsim.dishes (
+  menu_date date NOT NULL, dish_id text NOT NULL, name text NOT NULL, station text NOT NULL,
+  period text NOT NULL, role text, vessel text, hot boolean,
+  diet_tags text[], allergens text[],
+  popularity double precision,     -- survey-adjusted weight incl. staff and per-dish boosts (E6)
+  batch_cooked boolean,            -- false = made to order (no pans)
+  equipment text, prep_min double precision,   -- engine 0.5.0 kitchen capacity
+  PRIMARY KEY (menu_date, dish_id)
+);
+CREATE TABLE IF NOT EXISTS dcsim.personas (
+  persona text PRIMARY KEY, label text, diet text, share double precision,
+  seconds_prob double precision, dwell_median_min double precision, description text
+);
+-- Engine 0.6.0: allergy shares (UMass Dining survey 2022-23) and the menu labels each one avoids.
+CREATE TABLE IF NOT EXISTS dcsim.allergies (
+  allergy text PRIMARY KEY, share double precision, menu_labels text[]
+);
+-- Engine 0.4.2: crowd multipliers by date (weekday x event; placeholders until swipe data).
+CREATE TABLE IF NOT EXISTS dcsim.date_context (
+  menu_date date PRIMARY KEY, weekday text, weekend boolean,
+  dinner_crowd_factor double precision, late_night_crowd_factor double precision,
+  events text[], expected_dinner_students int, expected_late_night_students int
+);
+-- Engine 0.5.0: cooks per period and equipment units (placeholders).
+CREATE TABLE IF NOT EXISTS dcsim.kitchen_resources (
+  kind text NOT NULL,              -- cooks | equipment
+  name text NOT NULL,              -- period for cooks, equipment type otherwise
+  units int NOT NULL,
+  PRIMARY KEY (kind, name)
+);
+"""
+
+# Views the website can read directly: codes joined to their categories.
+WEB_VIEWS = """
+CREATE OR REPLACE VIEW dcsim.v_nights AS
+SELECT n.night, n.source, sv.label AS source_label, n.scenario, n.run_id, n.seed, n.weekday, n.weather,
+       n.event_night, n.adopted, n.students, n.dinner_students, n.late_night_students,
+       n.waste_portions, n.waste_lb, n.waste_cost_usd, n.expired_lb, n.close_lb, n.plate_lb,
+       n.stockout_min, n.dinner_stockout_min, n.late_night_stockout_min,
+       n.missed_first_choice_rate, n.missed_meal, n.wait_p50_min, n.wait_p90_min,
+       n.batch_wait_min, n.cook_busy_share, n.empty_pan_wait_min, n.peak_seated, n.swipe_wait_min,
+       n.group_students, n.allergy_students, n.allergy_no_meal, n.in_hall_at_2330,
+       c.dinner_crowd_factor, c.late_night_crowd_factor, c.events, n.engine_version,
+       n.dinner_waste_portions, n.late_night_waste_portions   -- appended: views can only grow at the end
+FROM dcsim.nights n
+LEFT JOIN dcsim.cat_values sv ON sv.category = 'source' AND sv.code = n.source
+-- Context of the night's own date: past nights reuse a same-weekday menu, but not its events.
+LEFT JOIN dcsim.date_context c ON c.menu_date = n.night;
+
+CREATE OR REPLACE VIEW dcsim.v_waste_by_reason AS
+SELECT w.night, w.period, w.station, s.name AS station_name, w.reason, r.label AS reason_label,
+       sum(w.weight_lb) AS weight_lb, sum(w.portions) AS portions
+FROM dcsim.waste_log w
+LEFT JOIN dcsim.stations s ON s.station = w.station
+LEFT JOIN dcsim.cat_values r ON r.category = 'waste_reason' AND r.code = w.reason
+GROUP BY 1, 2, 3, 4, 5, 6;
+
+CREATE OR REPLACE VIEW dcsim.v_menu AS
+SELECT d.menu_date, d.period, p.label AS period_label, d.station, s.name AS station_name, d.dish_id, d.name,
+       d.role, d.diet_tags, d.allergens, d.popularity, d.batch_cooked, d.equipment, d.prep_min
+FROM dcsim.dishes d
+JOIN dcsim.periods p ON p.period = d.period
+LEFT JOIN dcsim.stations s ON s.station = d.station;
+"""
+
+
+def alter_columns_sql() -> str:
+    lines = []
+    for table, cols in NEW_COLUMNS.items():
+        adds = ",\n  ".join(f"ADD COLUMN IF NOT EXISTS {c} {t}" for c, t in cols)
+        lines.append(f"ALTER TABLE dcsim.{table}\n  {adds};")
+    return "\n".join(lines) + "\n"
+
+
 # Columnstore (compression): segment by what queries and calibrate's delete-and-reload filter on,
 # so a re-run drops whole compressed segments. Chunks older than a day convert automatically.
 COLUMNSTORE = {
     "nights": ("scenario", "ts, run_id, draw, seed"),
     "pan_windows": ("scenario, dish_id", "ts, seed"),
     "waste_log": ("dish_id", "ts"),
+    "dish_nights": ("scenario, dish_id", "ts, seed"),
+    "station_hours": ("scenario, station", "ts, seed"),
+    "minute_series": ("scenario, kind, key", "ts, seed"),
 }
 COLUMNSTORE_AFTER = "1 day"
 
@@ -232,8 +418,19 @@ def init_schema(conn) -> bool:
         conn.rollback()
     ts = has_timescale(conn)
     conn.execute(TABLES)
+    conn.execute(alter_columns_sql())
+    conn.execute(NEW_TABLES)
+    conn.execute(CATEGORY_TABLES)
+    try:  # similar nights need pgvector
+        conn.execute("SAVEPOINT vec")
+        conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        conn.execute(VECTOR_TABLE)
+        conn.execute("RELEASE SAVEPOINT vec")
+    except Exception:
+        conn.execute("ROLLBACK TO SAVEPOINT vec")
     if ts:
         conn.execute(HYPERTABLES)
+        conn.execute(NEW_HYPERTABLES)
         conn.execute(CAGG)
         enabled = {r[0] for r in conn.execute(
             "SELECT hypertable_name FROM timescaledb_information.hypertables"
@@ -248,8 +445,17 @@ def init_schema(conn) -> bool:
         conn.execute(PLAIN_VIEW)
     conn.execute(FORECAST_CHECK)
     conn.execute(SCORECARD)
+    conn.execute(WEB_VIEWS)
+    load_categories(conn)
     conn.commit()
     return ts
+
+
+def load_categories(conn) -> None:
+    """Upsert the category tables from the current data files (dcsim.tiger_sql.category_rows)."""
+    from .tiger_sql import category_rows
+
+    conn.execute(category_rows())
 
 
 def configured() -> bool:
@@ -312,17 +518,83 @@ def compress_now(conn) -> dict:
 # ------------------------------------------------------------------ writes
 
 def copy_rows(conn, table: str, cols: tuple[str, ...], rows: Iterable[dict]) -> int:
+    from psycopg.types.json import Jsonb
+
     n = 0
     with conn.cursor() as cur, cur.copy(f"COPY dcsim.{table} ({', '.join(cols)}) FROM STDIN") as cp:
         for r in rows:
-            cp.write_row([r.get(c, 0 if c in ("draw", "seed") else None) for c in cols])  # COPY skips DEFAULTs
+            vals = [r.get(c, 0 if c in ("draw", "seed") else None) for c in cols]  # COPY skips DEFAULTs
+            cp.write_row([Jsonb(v) if isinstance(v, dict) else v for v in vals])
             n += 1
     return n
 
 
 def delete_scenario(conn, scenario: str) -> None:
-    for t in ("nights", "pan_windows"):
+    for t in ("nights", "pan_windows", "dish_nights", "station_hours", "minute_series"):
         conn.execute(f"DELETE FROM dcsim.{t} WHERE scenario = %s", (scenario,))
+
+
+def period_of(dish_id: str | None) -> str:
+    """Service period of a dish: late-night dish ids start with "late." (engine 0.4.1)."""
+    return "late_night" if dish_id and dish_id.startswith("late.") else "dinner"
+
+
+def plan_rows(menu_date: str, plan: str, cfg) -> list[dict]:
+    """planned_batches rows: every BatchPlan field the engine has, plus the dish's station and period."""
+    dish = {x.id: x for x in cfg.menu}
+    return [{"menu_date": menu_date, "plan": plan, "dish_id": k, "station": dish[k].station if k in dish else None,
+             "period": dish[k].period if k in dish else period_of(k), **b.model_dump(include=set(PLAN_FIELDS))}
+            for k, b in cfg.kitchen.items()]
+
+
+def metric_columns(cfg, m, config_hash: str | None = None, cost: dict | None = None) -> dict:
+    """The engine 0.4+ night columns from one simulated night's NightMetrics (`cost`: dish -> $ per
+    portion, synthetic.dish_cost; pass it when calling per seed)."""
+    from .config import ENGINE_VERSION
+    from .config import config_hash as hash_of
+    from .synthetic import dish_cost
+
+    cost = cost if cost is not None else dish_cost(cfg)
+
+    per = {d.id: d.period for d in cfg.menu}
+    so = {"dinner": 0.0, "late_night": 0.0}
+    waste = {"dinner": 0, "late_night": 0}
+    for k, d in m.dishes.items():
+        p = per.get(k, period_of(k))
+        so[p] += d.stockout_min
+        if not d.to_order:
+            waste[p] += d.waste
+    late = m.late_night_students
+    return {
+        "engine_version": ENGINE_VERSION, "config_hash": config_hash or hash_of(cfg),
+        "waste_cost_usd": round(sum(d.waste * cost.get(k, 0.0) for k, d in m.dishes.items() if not d.to_order), 2),
+        "dinner_students": m.students - late, "late_night_students": late,
+        "missed_first_choice_rate": m.missed_first_choice_rate, "missed_meal": m.missed_meal,
+        "wait_p50_min": m.wait_p50, "wait_p90_min": m.wait_p90,
+        "lines_skipped": m.balks, "empty_pans_seen": m.empty_seen, "in_hall_at_2330": m.in_hall_before_close,
+        "batch_wait_min": m.batch_wait_min, "cook_busy_share": m.cook_busy_share,
+        "equipment_peak": dict(m.equipment_peak) or None, "empty_pan_wait_min": m.empty_wait_min,
+        "seat_wait_min": m.seat_wait_min, "peak_seated": m.peak_seated,
+        "swipe_wait_min": m.swipe_wait_min, "swipe_queue_max": m.swipe_queue_max,
+        "group_students": m.group_students, "allergy_students": m.allergy_students,
+        "allergy_no_meal": m.allergy_no_meal,
+        "dinner_stockout_min": round(so["dinner"], 2), "late_night_stockout_min": round(so["late_night"], 2),
+        "dinner_waste_portions": waste["dinner"], "late_night_waste_portions": waste["late_night"],
+    }
+
+
+def observed_extras(summary: dict, waste_rows: list[dict]) -> dict:
+    """The engine 0.4+ night columns a real record has: waste cost, students by period (swipe
+    times), and pre-consumer waste by period (from the weigh-ins)."""
+    out = {"waste_cost_usd": float(summary["waste_cost_usd"]) if summary.get("waste_cost_usd") not in (None, "") else None}
+    if summary.get("late_night_students") not in (None, ""):
+        late = int(float(summary["late_night_students"]))
+        out |= {"late_night_students": late, "dinner_students": int(float(summary["students"])) - late}
+    waste = {"dinner": 0, "late_night": 0}
+    for w in waste_rows:
+        if w["reason"] in ("expired", "close") and w.get("portions"):
+            waste[w["period"]] += int(w["portions"])
+    return out | {"dinner_waste_portions": waste["dinner"], "late_night_waste_portions": waste["late_night"]}
 
 
 def at(night: dt.date | str, minutes: float) -> dt.datetime:
@@ -370,6 +642,16 @@ def load_observed(conn, test_from: dt.date = TEST_FROM) -> dict:
             opens[menu_date] = load_baseline(menu_date).open_min
         return opens[menu_date]
 
+    waste = [{
+        "ts": dt.datetime.fromisoformat(r["timestamp"]).replace(tzinfo=TZ), "night": night_of(r["timestamp"]),
+        "station": r["station"], "dish_id": r["dish_id"], "dish": r["dish"],
+        "portions": int(r["portions"]) if r["portions"] else None, "weight_lb": float(r["weight_lb"]),
+        "reason": r["reason"], "period": period_of(r["dish_id"]),
+    } for r in csv.DictReader((d / "waste_log.csv").open())]
+    waste_by_night: dict = {}
+    for w in waste:
+        waste_by_night.setdefault(w["night"], []).append(w)
+
     nights = []
     menu_of = {}
     for r in csv.DictReader((d / "nights.csv").open()):
@@ -384,29 +666,20 @@ def load_observed(conn, test_from: dt.date = TEST_FROM) -> dict:
             "waste_portions": int(float(r["waste_portions"])), "waste_lb": float(r["waste_lb"]),
             "expired_lb": float(r["expired_lb"]), "close_lb": float(r["close_lb"]),
             "plate_lb": float(r["plate_lb"]), "stockout_min": float(r["stockout_min"]),
+            **observed_extras(r, waste_by_night.get(r["date"], [])),
         })
     pans = ({
         "ts": at(r["date"], hhmm_to_min(r["window_start"])), "night": r["date"], "source": "observed",
         "scenario": "observed", "run_id": "observed", "station": r["station"], "dish_id": r["dish_id"],
         "dish": r["dish"], "portions_out": int(r["portions_out"]), "portions_eaten": int(r["portions_eaten"]),
-        "portions_left": int(r["portions_left"]),
+        "portions_left": int(r["portions_left"]), "period": period_of(r["dish_id"]),
     } for r in csv.DictReader((d / "consumption.csv").open()))
-    waste = ({
-        "ts": dt.datetime.fromisoformat(r["timestamp"]).replace(tzinfo=TZ), "night": night_of(r["timestamp"]),
-        "station": r["station"], "dish_id": r["dish_id"], "dish": r["dish"],
-        "portions": int(r["portions"]) if r["portions"] else None, "weight_lb": float(r["weight_lb"]),
-        "reason": r["reason"],
-    } for r in csv.DictReader((d / "waste_log.csv").open()))
 
     from .calibration import executed_plan
 
     plans = []
     for menu_date, adopted in sorted({(n["menu_date"], n["adopted"]) for n in nights}):
-        cfg = executed_plan(menu_date, adopted)
-        st = {x.id: x.station for x in cfg.menu}
-        plans += [{"menu_date": menu_date, "plan": "recommended" if adopted else "baseline", "dish_id": k,
-                   "station": st.get(k), **b.model_dump(include={"batch_size", "starting_batches", "reorder_point", "max_batches"})}
-                  for k, b in cfg.kitchen.items()]
+        plans += plan_rows(menu_date, "recommended" if adopted else "baseline", executed_plan(menu_date, adopted))
 
     hist = [n["night"] for n in nights]
     for t in ("nights", "pan_windows"):
@@ -497,24 +770,22 @@ def load_live_night(conn, result: dict, cfg, gt: dict, plan: str) -> dict:
         conn.execute(f"DELETE FROM dcsim.{t} WHERE run_id = %s AND night = %s", (LIVE_RUN, night))
     conn.execute("DELETE FROM dcsim.waste_log WHERE night = %s", (night,))
     conn.execute("DELETE FROM dcsim.planned_batches WHERE menu_date = %s AND plan = %s", (cfg.date, plan))
-    st = {x.id: x.station for x in cfg.menu}
-    copy_rows(conn, "planned_batches", PLAN_COLS, [
-        {"menu_date": cfg.date, "plan": plan, "dish_id": k, "station": st.get(k),
-         **b.model_dump(include={"batch_size", "starting_batches", "reorder_point", "max_batches"})}
-        for k, b in cfg.kitchen.items()])
+    copy_rows(conn, "planned_batches", PLAN_COLS, plan_rows(cfg.date, plan, cfg))
+    waste = [{"ts": dt.datetime.fromisoformat(w["timestamp"]).replace(tzinfo=TZ), "night": night,
+              "period": period_of(w["dish_id"]),
+              **{k: w[k] for k in ("station", "dish_id", "dish", "portions", "weight_lb", "reason")}} for w in result["waste"]]
     copy_rows(conn, "nights", NIGHT_COLS, [{
         "ts": at(night, cfg.open_min), "night": night, "source": "observed", "scenario": "observed",
         "run_id": LIVE_RUN, "menu_date": cfg.date, "plan": plan, "weekday": s["weekday"], "weather": gt["weather"],
         "event_night": gt["event_night"], "adopted": s["adopted"], "split": "live",
         **{k: s[k] for k in ("students", "cooked_portions", "waste_portions", "waste_lb", "expired_lb", "close_lb",
-                             "plate_lb", "stockout_min")}}])
+                             "plate_lb", "stockout_min")}, **observed_extras(s, waste)}])
     n_pans = copy_rows(conn, "pan_windows", PAN_COLS, ({
         "ts": at(night, hhmm_to_min(r["window_start"])), "night": night, "source": "observed", "scenario": "observed",
-        "run_id": LIVE_RUN, **{k: r[k] for k in ("station", "dish_id", "dish", "portions_out", "portions_eaten",
-                                                  "portions_left")}} for r in result["consumption"]))
-    copy_rows(conn, "waste_log", WASTE_COLS, ({
-        "ts": dt.datetime.fromisoformat(w["timestamp"]).replace(tzinfo=TZ), "night": night,
-        **{k: w[k] for k in ("station", "dish_id", "dish", "portions", "weight_lb", "reason")}} for w in result["waste"]))
+        "run_id": LIVE_RUN, "period": period_of(r["dish_id"]),
+        **{k: r[k] for k in ("station", "dish_id", "dish", "portions_out", "portions_eaten",
+                             "portions_left")}} for r in result["consumption"]))
+    copy_rows(conn, "waste_log", WASTE_COLS, waste)
     conn.commit()
     refresh(conn)
     return {"night": night, "pan_windows": n_pans, **{k: s[k] for k in ("students", "waste_lb", "stockout_min")}}

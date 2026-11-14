@@ -38,12 +38,13 @@ from uuid import uuid4
 import numpy as np
 
 from .config import ENGINE_VERSION, ScenarioConfig
+from .config import config_hash as hash_of
 from .data import load_baseline
-from .metrics import NightMetrics, compute_metrics
+from .metrics import NightMetrics, compute_metrics, night_series
 from .model import Night
 from .presets import PRESETS
 from .service import Service
-from .synthetic import RECOMMENDED_PLAN, _over_prep, dish_oz, out_dir, pan_windows
+from .synthetic import RECOMMENDED_PLAN, _over_prep, dish_cost, dish_oz, out_dir, pan_windows
 from . import tsdb
 
 NAIVE_SEEDS = 20
@@ -138,11 +139,54 @@ def binomial_range(n: int, p: float = 0.8, mass: float = 0.95) -> tuple[int, int
 
 # ------------------------------------------------------------------ replay worker (needs trace=True for pans)
 
-def _replay_night(args: tuple[ScenarioConfig, int, str]) -> tuple[NightMetrics, list[dict]]:
+SERIES_SEEDS = 1  # replay seeds per night that also write per-minute series (inside + lines)
+
+
+def _servers_at(st, minute: float) -> int:
+    n = st.servers
+    for t, k in sorted(st.shifts):
+        if minute >= t:
+            n = k
+    return n
+
+
+def _replay_night(args: tuple[ScenarioConfig, int, str]) -> tuple[NightMetrics, list[dict], dict[str, list[dict]]]:
+    """One replay night: metrics, pan windows, and the engine 0.4+ detail rows (dish_nights,
+    station_hours, minute_series) for Tiger."""
     cfg, seed, night = args
     n = Night(cfg, seed, trace=True).run()
     rows, _ = pan_windows(n, dt.date.fromisoformat(night))
-    return compute_metrics(n), rows
+    m = compute_metrics(n)
+    key = {"night": night, "scenario": "replay", "run_id": f"replay:{night}", "seed": seed}
+    open_ts = tsdb.at(night, cfg.open_min)
+    station_of = {d.id: d.station for d in cfg.menu}
+    dishes = [key | {"ts": open_ts, "source": "simulated", "dish_id": k, "station": station_of.get(k),
+                     "period": tsdb.period_of(k), **{f: getattr(d, f) for f in (
+                         "to_order", "cooked", "served", "expired", "leftover", "waste", "stockout_min",
+                         "runout_min", "first_choice_demand")}}
+              for k, d in m.dishes.items()]
+    hours = []
+    for i, st in enumerate(cfg.stations):
+        changes = n.rec.queue_lens[i]
+        for h in range(cfg.open_min // 60, cfg.service_end // 60 + 1):
+            lo, hi = h * 60, (h + 1) * 60
+            before = [q for t, q in changes if t <= lo]
+            inside = [q for t, q in changes if lo < t < hi]
+            peak = max([before[-1] if before else 0, *inside])
+            need = m.servers_needed.get(st.id, {}).get(str(h))
+            if need is None and peak == 0:
+                continue
+            hours.append(key | {"ts": tsdb.at(night, lo), "station": st.id, "hour": h,
+                                "servers_planned": _servers_at(st, lo), "servers_needed": need or 0, "peak_line": peak})
+    series = []
+    if seed <= SERIES_SEEDS:
+        ser = night_series(n)
+        t0, step = ser["t0"], ser["step"]
+        for kind, data in (("inside", {"hall": ser["inside"]}), ("queue", ser["queue"])):
+            for k, vals in data.items():
+                series += [key | {"ts": tsdb.at(night, t0 + j * step), "kind": kind, "key": k, "value": float(v)}
+                           for j, v in enumerate(vals)]
+    return m, rows, {"dish_nights": dishes, "station_hours": hours, "minute_series": series}
 
 
 # ------------------------------------------------------------------ protocol
@@ -165,7 +209,8 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
     naive: dict[tuple[str, bool], list[dict]] = {}
     for key in sorted({(o["menu_date"], o["adopted"]) for o in obs}):
         cfg = executed_plan(*key)
-        naive[key] = [night_values(cfg, m) for m in svc.ensure_nights(cfg, NAIVE_SEEDS)]
+        h, cost = hash_of(cfg), dish_cost(cfg)
+        naive[key] = [night_values(cfg, m) | tsdb.metric_columns(cfg, m, h, cost) for m in svc.ensure_nights(cfg, NAIVE_SEEDS)]
     expected = {k: float(np.median([v["students"] for v in vs])) for k, vs in naive.items()}
     seed_sd = float(np.mean([np.std(np.log([v["students"] for v in vs]), ddof=1) for vs in naive.values()]))
     log(f"naive forecast: {len(naive)} menu/plan configs x {NAIVE_SEEDS} seeds")
@@ -228,8 +273,9 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
         for c in crowd_draws:
             for p in prod_draws:
                 cfg = with_inputs(base, c, p)
+                h, cost = hash_of(cfg), dish_cost(cfg)
                 for m in svc.ensure_nights(cfg, CAL_SEEDS):
-                    v = night_values(cfg, m, oz)
+                    v = night_values(cfg, m, oz) | tsdb.metric_columns(cfg, m, h, cost)
                     draw_vals.append(v)
                     rows.append(row(o, "forecast_calibrated", d, m.seed, cfg, v, round(c, 2), round(p, 2)))
                 d += 1
@@ -260,8 +306,11 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
             replay_meta.append(o)
     results = list(pool.map(_replay_night, replay_args, chunksize=4)) if pool else [_replay_night(a) for a in replay_args]
     pan_rows, replay_samples = [], {}
-    for (cfg, s, night), o, (m, pans) in zip(replay_args, replay_meta, results):
-        v = night_values(cfg, m)
+    detail: dict[str, list[dict]] = {"dish_nights": [], "station_hours": [], "minute_series": []}
+    for (cfg, s, night), o, (m, pans, extra) in zip(replay_args, replay_meta, results):
+        v = night_values(cfg, m) | tsdb.metric_columns(cfg, m)
+        for t, r in extra.items():
+            detail[t] += r
         rows.append(row(o, "replay", 0, s, cfg, v, round(o["crowd_ratio"], 2), o["production"]))
         replay_samples.setdefault(night, []).append(v)
         for p in pans:
@@ -269,7 +318,7 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
                              "source": "simulated", "scenario": "replay", "run_id": f"replay:{night}", "seed": s,
                              "station": p["station"], "dish_id": p["dish_id"], "dish": p["dish"],
                              "portions_out": p["portions_out"], "portions_eaten": p["portions_eaten"],
-                             "portions_left": p["portions_left"]})
+                             "portions_left": p["portions_left"], "period": tsdb.period_of(p["dish_id"])})
     scores["replay"] = {k: score([[v[k] for v in replay_samples[o["night"]]] for o in test], truth[k])
                         for k in ("waste_lb", "stockout_min", "cooked_portions")}
     log(f"replay: {len(obs)} nights x {REPLAY_SEEDS} seeds, {len(pan_rows)} pan windows")
@@ -284,6 +333,9 @@ def calibrate(svc: Service, conn, pool: Executor | None = None, test_from: dt.da
                  (test_from,))
     tsdb.copy_rows(conn, "nights", tsdb.NIGHT_COLS, rows)
     tsdb.copy_rows(conn, "pan_windows", tsdb.PAN_COLS, pan_rows)
+    cols = {"dish_nights": tsdb.DISH_NIGHT_COLS, "station_hours": tsdb.STATION_HOUR_COLS, "minute_series": tsdb.SERIES_COLS}
+    written = {t: tsdb.copy_rows(conn, t, cols[t], rows_) for t, rows_ in detail.items()}
+    log("detail rows: " + ", ".join(f"{t} {n}" for t, n in written.items()))
     cal_id = f"cal-{dt.datetime.now(dt.UTC):%Y%m%dT%H%M%S}"
     params = {"crowd": crowd, "production": production,
               "draws": {"crowd": [round(c, 4) for c in crowd_draws], "production": prod_draws},

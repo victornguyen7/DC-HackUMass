@@ -48,6 +48,19 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | `forecasts` | table, **append-only** | 1 per forecast | the ledger: naive and calibrated p10 / p50 / p90 for students, waste, stockouts, cooked, plus samples (JSONB) |
 | `night_vectors` | table + DiskANN index | 1 per observed night | 76-dim night vector (weekday, weather, event, hashed menu) for `dcsim tsdb similar` |
 | `forecast_scorecard` | view | | each ledger forecast next to the observed night: `issued_before_open`, `inside` / `outside` / `awaiting` |
+| `dish_nights` | hypertable (engine 0.6.2 loader) | ~23k (replays) | per dish per replay night: cooked, served, expired, leftover, waste, stockout min, run-out time, first-choice demand, period |
+| `station_hours` | hypertable | ~31k (replays) | per station and hour: servers planned (shifts), servers needed for ≤ 85% busy, peak line that hour |
+| `minute_series` | hypertable | ~263k (replay seed 1) | per minute: students inside (`kind='inside'`, key `hall`) and line length per station (`kind='queue'`) |
+| category tables | tables | | `periods`, `stations`, `dishes` (447: all dates, dinner + late night, diet tags, allergens), `personas`, `allergies`, `date_context`, `kitchen_resources`, `cat_values` (code labels); upserted by every `dcsim tsdb load` |
+| `v_nights`, `v_waste_by_reason`, `v_menu` | views | | for the website: codes joined to labels, night context from the night's own date |
+
+**Columns added since engine 0.4** (`tsdb.NEW_COLUMNS`, added by every `dcsim tsdb init/load`):
+- `nights`: waste cost; students by period; missed first choice; missed meals; wait p50/p90; lines skipped; empty pans seen; students inside at 11:30 pm; kitchen batch wait and cook busy share; equipment peaks (JSONB); empty-pan wait; seat wait and peak seated; swipe wait and queue; group students; allergy students and allergy no-meal; stockouts and waste by period; engine version and config hash.
+  - **Simulated rows** (`forecast_*`, `replay`) fill all of them.
+  - **Observed rows** fill only what a real record has: waste cost, students by period (swipe times), waste by period (weigh-ins). The live Nov 14 night was loaded before this and keeps them empty; `dcsim tsdb observe --date 2026-11-14` would refill it but also regenerate its observation.
+- `pan_windows`, `waste_log`: `period` (dinner / late_night). `planned_batches`: period, cook/hold time, last batch, expected demand, late-night taper fields, forecast reorder.
+
+The same schema is one console script: `engine/sql/tiger_website.sql` (`uv run python -m dcsim.tiger_sql`).
 
 `scenario` tells the rows apart:
 
@@ -69,15 +82,15 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 5. **Replay** every night with its observed crowd and production ratio, with pan windows. This separates "the engine's kitchen and demand model is off" from "the forecast inputs are off".
 6. **Recovery check.** Possible only because the data is synthetic: the fitted values are compared with the generator's hidden ones. It tests the pipeline, not the engine.
 
-### Result (engine 0.3.3, SYNTHETIC history)
-
-*Measured on engine 0.3.3. The engine is 0.6.0 and the synthetic history was regenerated (late night, crowd by date, kitchen capacity); re-run `make calibrate` to refresh this table.*
+### Result (engine 0.6.2, SYNTHETIC history, `cal-20261114T044443`)
 
 | Held-out nights (n = 14) | naive inside 10–90% | calibrated inside 10–90% | naive bias / CRPS | calibrated bias / CRPS |
 | --- | --- | --- | --- | --- |
-| Pre-consumer waste (lb) | **1 / 14** | **10 / 14** | +63 / 69 | +29 / 41 |
-| Stockout minutes | 6 / 14 | 8 / 14 | −11.0 / 22.5 | −0.1 / 18.6 |
-| Students | 1 / 14 | 11 / 14 | −80 / 202 | −92 / 166 |
+| Pre-consumer waste (lb) | **1 / 14** | **9 / 14** | +98.5 / 96.9 | +51.3 / 51.6 |
+| Stockout minutes | 5 / 14 | 10 / 14 | −5.7 / 15.0 | +5.0 / 12.9 |
+| Students | 1 / 14 | 10 / 14 | −104 / 270 | −87 / 209 |
+
+Engine 0.6.2 numbers (dinner + late night, kitchen capacity, crowd by date). Replay with crowd and production known: waste bias +8.4 lb, CRPS 15.2 lb; stockouts bias +0.6 min. Recovery: production 1.080 fitted vs 1.084 true (per-night correlation 0.997); crowd log-sd 0.077 vs 0.074. Training production ratio median 1.065 (sd 0.058); adopted nights 1.00, 1.02, 1.05. The bullets below were written for engine 0.3.3 (table: waste 1/14 → 10/14, students 1/14 → 11/14); the pattern is the same.
 
 A perfectly calibrated 80% range lands **8–14 of 14** inside, 95% of the time, so 10 and 11 are consistent with honest ranges. The naive ranges come only from random seeds, which is too narrow: the forecast the app shows today is overconfident.
 

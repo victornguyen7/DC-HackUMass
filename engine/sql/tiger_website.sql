@@ -1,8 +1,8 @@
 -- DC What-If: Tiger Data (TimescaleDB + pgvector) schema and categories for the website.
 -- Generated 2026-11-13 by `uv run python -m dcsim.tiger_sql` (engine 0.6.2).
 -- Idempotent: safe to run again. Existing rows are kept; new columns start NULL.
--- Fact tables are filled by `dcsim tsdb load` / `dcsim calibrate`; columns and tables marked
--- "engine 0.4+" need the loader extended before they hold data. Category tables are filled here.
+-- Fact tables are filled by `dcsim tsdb load` (observed, categories) and `dcsim calibrate` (simulated
+-- metrics, dish_nights, station_hours, minute_series). Category tables are also filled here.
 -- Observed data is SYNTHETIC until UMass Dining shares real exports.
 
 CREATE EXTENSION IF NOT EXISTS timescaledb;
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS dcsim.dish_nights (
   stockout_min double precision, runout_min double precision, first_choice_demand int
 );
 CREATE INDEX IF NOT EXISTS dish_nights_dish_idx ON dcsim.dish_nights (dish_id, ts);
--- Servers needed per station and hour (engine 0.5.0, ISSUES N3): items served and servers for <= 85% busy.
+-- Servers needed per station and hour (engine 0.5.0, ISSUES N3): servers for <= 85% busy, peak line that hour.
 CREATE TABLE IF NOT EXISTS dcsim.station_hours (
   ts timestamptz NOT NULL, night date NOT NULL, scenario text NOT NULL, run_id text NOT NULL, seed int NOT NULL DEFAULT 0,
   station text NOT NULL, hour int NOT NULL, servers_planned int, servers_needed int, peak_line int
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS dcsim.minute_series (
   key text NOT NULL,               -- 'hall', a station id or a dish id
   value double precision NOT NULL
 );
--- Similar nights (pgvector): one vector per observed night (76 = weekday 7 + weather 4 + event 1 + menu 64).
+
 CREATE TABLE IF NOT EXISTS dcsim.night_vectors (
   run_id text NOT NULL, night date NOT NULL,
   weekday text, weather text, event_night boolean, n_dishes int,
@@ -300,7 +300,8 @@ SELECT n.night, n.source, sv.label AS source_label, n.scenario, n.run_id, n.seed
        n.missed_first_choice_rate, n.missed_meal, n.wait_p50_min, n.wait_p90_min,
        n.batch_wait_min, n.cook_busy_share, n.empty_pan_wait_min, n.peak_seated, n.swipe_wait_min,
        n.group_students, n.allergy_students, n.allergy_no_meal, n.in_hall_at_2330,
-       c.dinner_crowd_factor, c.late_night_crowd_factor, c.events, n.engine_version
+       c.dinner_crowd_factor, c.late_night_crowd_factor, c.events, n.engine_version,
+       n.dinner_waste_portions, n.late_night_waste_portions   -- appended: views can only grow at the end
 FROM dcsim.nights n
 LEFT JOIN dcsim.cat_values sv ON sv.category = 'source' AND sv.code = n.source
 -- Context of the night's own date: past nights reuse a same-weekday menu, but not its events.

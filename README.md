@@ -39,7 +39,7 @@ A web app in `web/`. It was first built from the Figma file (*DC What-If — Wor
 | **Insights › Waste history** | `/waste` | Recorded waste history (**synthetic**, clearly labeled) vs. what the recommended plan would have done on each past night: reduction with range, $ per week, stockout trade-off, where waste comes from, top waste dishes with "with plan" numbers, station filters, adopted-plan tracker, CSV export. | Synthetic history + back-test |
 | **Insights › Similar nights** | `/similar-nights` | Describe a night (date, expected students, weather, event night, optionally a prepared menu) and get the recorded nights before it with the most similar conditions, most similar first, with the waste and stockouts each one actually had (recorded outcomes, not a forecast). Searches Tiger with pgvector, or the local synthetic files when Tiger isn't set up. | `GET /api/similar-nights` ([`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md)) |
 
-There is also a standalone **calibration page** (`web/public/calibration.html`, open `/calibration.html` on the dev server) that checks the forecasts against held-out nights (see `docs/TIGER.md`), and a standalone **live Tiger dashboard** (`web/public/tiger.html`, open `/tiger.html`) that reads waste and pan levels from continuous aggregates and refreshes every 5 s (`docs/TIGER.md` §8).
+There is also a standalone **calibration page** (`web/public/calibration.html`, open `/calibration.html` on the dev server) that checks the forecasts against held-out nights (see `docs/TIGER.md`). The live Tiger dashboard is not part of the web app: the API serves it at `http://127.0.0.1:8000/tiger` (`docs/TIGER.md` §8).
 
 **Two ways to run it:**
 - **Offline (demo-safe):** the pages read a precomputed **static bundle** in `web/public/cache` (results, replays, narrations, back-test). No backend, no network.
@@ -151,7 +151,9 @@ HackUMass2026/
 │   │   ├── reports.py       cook sheet, alerts, station table
 │   │   ├── service.py, store.py, api.py   caching, SQLite, FastAPI
 │   │   ├── synthetic.py, backtest.py      synthetic waste history + back-test
-│   │   ├── calibration.py, tsdb.py        held-out calibration + Tiger Data ledger
+│   │   ├── calibration.py, tsdb.py        held-out calibration, Tiger Data ledger, aggregates, benchmark
+│   │   ├── tiger_sql.py     generates engine/sql/tiger_website.sql (the whole Tiger schema as one console script)
+│   │   ├── static/tiger.html  live Tiger dashboard, served by the API at /tiger (not part of the web app)
 │   │   ├── similar_nights.py  Similar nights search for the page and API (48-dim vectors; Tiger pgvector or local files)
 │   │   ├── nightsearch.py   `dcsim tsdb similar` (76-dim vectors, DiskANN index, held-out check)
 │   │   ├── bundle.py        writes the static demo bundle
@@ -178,6 +180,7 @@ HackUMass2026/
 ├── survey/                student survey draft (feeds persona calibration)
 ├── work/design/           earlier standalone hall concept (dining-simulation.html), not the app
 ├── codex-skills           empty: a submodule entry with no .gitmodules (ISSUES T4)
+├── my-app/                a separate deepspace app, not used by the engine or web app (ISSUES T7)
 └── cache/                 local results cache (SQLite + traces); not committed
 ```
 
@@ -202,7 +205,10 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 | Drop cached results from old engine versions | `make cache-clean` |
 | Narrate highlight students | `make narrate` |
 | Tiger Data calibration | `make calibrate` (needs Tiger credentials, see `docs/TIGER.md`) |
-| Load the current synthetic history into Tiger | `cd engine && uv run dcsim tsdb load` (fixes ISSUES T3) |
+| Load the current synthetic history into Tiger | `cd engine && uv run dcsim tsdb load` (after `make waste`) |
+| Live Tiger dashboard | `make serve`, then open `http://127.0.0.1:8000/tiger` (needs Tiger; `docs/TIGER.md` §8) |
+| Raw table vs continuous aggregate timings | `make tsdb-bench` |
+| One SQL query across the Tiger stack | `cd engine && uv run dcsim tsdb query stack` |
 | Find past nights like a given one | Insights › Similar nights (needs `make serve`), or `cd engine && uv run dcsim tsdb similar --date 2026-11-14 --weather rain` |
 
 ### Changing the simulation (important)
@@ -268,11 +274,13 @@ Consequences:
 
 ## 9. Current status and known issues
 
-*As of 2026-11-13, engine 0.6.2. The demo bundle was rebuilt 2026-11-14 04:05 UTC on engine **0.6.2** (264 results, 14 replays, 168 Gemini narrations, 22 MB), so the web app shows current numbers; rebuild it again only if the engine or data changes. A full test run after the rebuild passed (see `docs/STATUS.md`). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
+*As of 2026-11-14, engine 0.6.2. The demo bundle was rebuilt 2026-11-14 04:05 UTC on engine **0.6.2** (264 results, 14 replays, 168 Gemini narrations, 22 MB), so the web app shows current numbers; rebuild it again only if the engine or data changes. A full test run after the rebuild passed (see `docs/STATUS.md`). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
 **Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; the redesigned web app (Simulation, Kitchen plan, Insights with Waste history and Similar nights) offline and with the API; synthetic history, back-test and Tiger calibration.
 
 **New since 0.6.2 (merged 2026-11-13; the engine version didn't change):** the frontend redesign (PR #1) and Hall fixes (PR #2); **Similar nights** (`/similar-nights` page + `GET /api/similar-nights`, Tiger pgvector with a local fallback; handoff in PR #3); `dcsim tsdb similar` from the command line (DiskANN, held-out check); `dcsim bundle` narration times out after `DCSIM_LLM_TIMEOUT` seconds and prints one progress line per student (ISSUES L5). Branch by branch: §14.
+
+**New on 2026-11-14 (Tiger Data; the engine version didn't change):** two real-time continuous aggregates with refresh policies (`waste_daily_by_dish`, `pan_hourly`); `dcsim tsdb bench` times the same questions on raw hypertables and aggregates (557 ms → 82 ms on pans by hour; the columnstore wins the per-dish totals, and the output says so); `dcsim tsdb query stack` joins aggregates, nights, plan, forecasts and ledger in one statement; all six hypertables in the columnstore (76 MB → 9.6 MB); the Tiger loader fills every engine 0.4+ column; a live dashboard served by the API at `/tiger` (not linked from the web app). Details: `docs/TIGER.md` §8.
 
 **New in 0.6.2 (API and UI fixes):** optional admin token and per-IP AI rate limit (A1); job expiry and a smaller trace cache (A2); `POST /api/warm` and `/api/backtest` admin jobs (A3); verdict "no real difference" below a per-metric minimum (C1); a "Needed at peak" servers column on the Dashboard (U5, needs a 0.5.0+ bundle); per-dish $ / week now add up to the average simulated week (U16); the offline plain-English parser no longer mixes "an extra server at Grill" with the extra-server preset (R6).
 
@@ -296,7 +304,7 @@ Consequences:
 | No breakfast/lunch | U4 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
-| Tiger's copy of the synthetic history is stale (24 of 43 nights differ), so Similar nights gives slightly different matches on Tiger and on the local files | ISSUES T3 |
+| **`.dev.vars` with app tokens is on GitHub** (`e926ea1`): rotate the tokens, stop tracking the file | ISSUES T6 |
 | The Hall's pan level counts the hot-hold cabinet too, so for the 30 s of a pan swap it shows food in a pan a student just found empty | UI_ISSUES U18 |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 
@@ -316,7 +324,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`data/README.md`](data/README.md) | You need to find an input or a source |
 | [`data/worcester/ASSUMPTIONS.md`](data/worcester/ASSUMPTIONS.md) | You need to know where a number comes from |
 | [`docs/LLM.md`](docs/LLM.md), [`docs/GEMINI.md`](docs/GEMINI.md) | You touch anything AI: rules, prompts, fallbacks, rate limits |
-| [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data, `dcsim tsdb similar` |
+| [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data, `dcsim tsdb similar`, continuous aggregates, the `/tiger` dashboard and its demo script (§8) |
 | [`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md) | The Similar nights page and API: contract, vector design, UI states, verification |
 | [`docs/FRONTEND_REDESIGN_PLAN.md`](docs/FRONTEND_REDESIGN_PLAN.md) | The redesign's navigation, interaction stages and visual system (follow it for new UI) |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |
@@ -371,6 +379,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | `uv` complains about Python | Needs Python ≥ 3.13: `uv python install 3.13`. |
 | Port 8000 or 5173 is busy | Stop the old server, or `uv run dcsim serve --port 8001` and change the proxy target in `web/vite.config.ts`. |
 | Insights › Similar nights says "Can't reach the search service" | The API isn't running, or it was started before you pulled this feature (`/api/similar-nights` → 404). Restart `make serve`. |
+| `http://127.0.0.1:8000/tiger` is 404, or says "Tiger not configured" | 404: the API was started before 2026-11-14, restart `make serve`. "Not configured": set `DCSIM_TSDB_URL` in `engine/.env` (`docs/TIGER.md`). |
 | `git pull` says "You have divergent branches" | You committed locally while someone pushed or merged a PR. Run `git pull --rebase` (or set `git config pull.rebase true` once). See §14. |
 | Smoke test can't start a browser | It uses your installed Google Chrome (`playwright-core`, `channel: "chrome"`). Install Chrome. |
 
@@ -378,7 +387,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 
 ## 14. Branches and merges
 
-Everything lives on `main`. As of 2026-11-13 every branch below is merged, so they can be deleted on GitHub.
+Everything lives on `main`. As of 2026-11-14 every branch below is merged, so they can be deleted on GitHub.
 
 | Branch | By | What it brought | Merged |
 | --- | --- | --- | --- |
@@ -395,6 +404,16 @@ Pushed straight to `main` on 2026-11-13 (not through a branch):
 | `137c784` | Similar nights: `similar_nights.py`, `GET /api/similar-nights`, the Insights › Similar nights page, 30 tests |
 | `dcf6772` | Narration timeout and progress lines in `dcsim bundle` (ISSUES L5) |
 | `9e01ec7` | `dcsim tsdb similar` (`nightsearch.py`, DiskANN index, held-out check) |
+
+Pushed straight to `main` on 2026-11-14:
+
+| Commit | What |
+| --- | --- |
+| `36493f1` | Demo bundle rebuilt on engine 0.6.2; bundle-dependent tests and smoke script fixed |
+| `1ab7e16`, `4a5d6fb`, `094dbc4` | Tiger console script (`engine/sql/tiger_website.sql`), new columns and category tables, loader fills them |
+| `78d9239` | Tiger aggregates, benchmark, `/api/tiger/*`, the dashboard page; also added `my-app/` (ISSUES T7) |
+| `9160ee5` | Dashboard linked from Insights and smoke-tested (undone the same day: the page moved to the API at `/tiger`) |
+| `e926ea1` | `.gitignore` (`node_modules`) and `.dev.vars`, **which holds tokens** (ISSUES T6) |
 
 **Working with branches**
 - Branch from an up-to-date `main` (`git pull --rebase` first), open a PR, merge on GitHub.

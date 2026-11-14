@@ -368,6 +368,55 @@ class LLM:
         except ValidationError as e:
             raise LLMError(f"response did not match {schema.__name__}: {e.error_count()} errors") from e
 
+    def tool_turn(self, kind: str, prompt_version: str, *, system: str, contents: list[dict], tools: list[dict],
+                  effort: str = "low", max_tokens: int = 3000, model: str | None = None) -> tuple[dict, str, str]:
+        """One Gemini function-calling turn: the model must answer with function calls (mode ANY).
+
+        `contents` are google.genai Content dicts (JSON mode); `tools` are {name, description, parameters}
+        with a plain JSON schema. Returns (the model's Content as a dict, source "llm"/"cache", model).
+        Cached by the whole conversation, so a replayed demo makes the same moves.
+        `model`: use this model instead of the main one (no backups then); it is part of the cache key.
+        """
+        if self.provider != "gemini":
+            raise LLMError(f"tool calling needs the gemini provider (now {self.provider})")
+        from google.genai import types
+
+        model = model or self.model
+        h = request_hash(kind, prompt_version, model, {"system": system, "contents": contents, "tools": tools})
+        hit = self.cached(h)
+        if hit is not None:
+            return hit["content"], "cache", hit.get("model", model)
+        decls = [types.FunctionDeclaration(name=t["name"], description=t["description"],
+                                           parameters_json_schema=t["parameters"]) for t in tools]
+        chain, last = self._chain(model), None
+        for m in chain:
+            try:
+                self._count_call()
+                resp = self._sync().models.generate_content(
+                    model=m, contents=contents,
+                    config=self._gemini_config(
+                        system, effort, max_tokens, m, temperature=0,
+                        tools=[types.Tool(function_declarations=decls)],
+                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+                        tool_config=types.ToolConfig(function_calling_config=types.FunctionCallingConfig(mode="ANY"))))
+                self.last_model = m
+                break
+            except LLMError:
+                raise
+            except Exception as e:  # noqa: BLE001 - APIError, timeouts
+                last = e
+                if not (self._gemini_busy(e) and m != chain[-1]):
+                    raise self._gemini_error(e) from e
+        else:  # pragma: no cover - the loop always breaks or raises
+            raise self._gemini_error(last)
+        cand = (resp.candidates or [None])[0]
+        if cand is None or cand.content is None or not cand.content.parts:
+            raise LLMError(f"empty response (finish_reason={getattr(cand, 'finish_reason', None) or 'none'})")
+        content = cand.content.model_dump(mode="json", exclude_none=True)
+        content["role"] = "model"
+        self.remember(h, kind, prompt_version, {"content": content, "model": self.last_model})
+        return content, "llm", self.last_model
+
     @staticmethod
     def _gemini_error(e: Exception) -> LLMError:
         from google.genai import errors

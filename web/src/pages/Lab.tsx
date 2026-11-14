@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ErrorBox, Loading, TopBar } from "../components/Shell";
 import {
   apiUp, ask, dishPrior, explain, findEntry, listScenarios, loadApiResult, loadManifest, loadResult, saveScenario, similarDishes, simulate,
@@ -86,7 +86,10 @@ type Run = { result: Result; base: Result; source: "bundle" | "api"; scenario: S
 export default function Lab() {
   const { date, scenario, setScenario, adopt, adopted } = useApp();
   const nav = useNavigate();
-  const [draft, setDraft] = useState<Draft>(() => ({ ...EMPTY, preset: scenario.preset ?? "smaller_batches" }));
+  // "Open in the Lab" from Ask Sam passes the agent's plan as router state
+  const fromAgent = (useLocation().state as { agentRequest?: AskReply["request"] } | null)?.agentRequest;
+  const [draft, setDraft] = useState<Draft>(() => (fromAgent ? draftFromRequest(fromAgent)
+    : { ...EMPTY, preset: scenario.preset ?? "smaller_batches" }));
   const [run, setRun] = useState<Run | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -94,7 +97,7 @@ export default function Lab() {
   const [saved, setSaved] = useState<{ name: string; draft: Draft }[]>(() => {
     try { return JSON.parse(localStorage.getItem("dcwhatif.saved") ?? "[]"); } catch { return []; }
   });
-  const [mode, setMode] = useState<"baseline" | "preset" | "saved">("preset");
+  const [mode, setMode] = useState<"baseline" | "preset" | "saved">(fromAgent && !fromAgent.preset ? "baseline" : "preset");
   const apiOn = useApiUp();
   // scenarios saved on the API (any browser), for this date
   const remote = useAsync<SavedScenario[]>(async () => ((await apiUp()) ? listScenarios(date).catch(() => []) : []), [date, apiOn, note]);

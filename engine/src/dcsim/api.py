@@ -21,11 +21,14 @@
     POST /api/ask                                   plain English -> lever settings (not run)
     POST /api/ai/dish-prior                         persona affinities for a new dish ("AI estimate")
     POST /api/explain                               why a scenario won or lost (from cached nights)
+    POST /api/agent | GET /api/agent/{id}[/stream]  Sam the Minuteman: goal -> simulate (<= 5 tries), check, adjust -> plan,
+                                                    or a question answered from Tiger via the Tiger MCP server (SSE steps)
+    GET /api/agent/history[/{id}]                   Sam's past final analyses (prompt, date); DELETE one (admin)
     Admin (DCSIM_ADMIN_TOKEN, if set: header `Authorization: Bearer <token>` or `X-Admin-Token`):
     DELETE /api/scenarios/{id}
     POST /api/warm  | GET /api/warm                 precompute baseline + presets per date (background job)
     POST /api/backtest | GET /api/backtest          re-run the back-test on the synthetic history (background job)
-    The AI routes are limited per client IP (DCSIM_AI_RATE per minute, default 20) -> 429 with Retry-After.
+    The AI routes (and POST /api/agent) are limited per client IP (DCSIM_AI_RATE per minute, default 20) -> 429 with Retry-After.
 
 The browser never simulates; it plays back results. Identical in-flight
 requests join one job (ENGINE.md §5.5).
@@ -67,10 +70,11 @@ from .store import Store
 # ---------------------------------------------------------------- jobs
 
 
-class Job:
-    def __init__(self, job_id: str, cfg: ScenarioConfig, n: int):
-        self.id, self.cfg, self.n = job_id, cfg, n
-        self.hash = hash_of(cfg)
+class EventLog:
+    """A background job's event log: every SSE follower replays it from the start, then waits for more."""
+
+    def __init__(self, job_id: str):
+        self.id = job_id
         self.status: Literal["running", "done", "error"] = "running"
         self.events: list[dict] = []
         self.result: dict | None = None
@@ -97,9 +101,30 @@ class Job:
             if finished and i >= len(self.events):
                 return
 
+    async def finish(self, status: Literal["done", "error"]) -> None:
+        async with self._changed:
+            self.status = status
+            self.finished_at = time.monotonic()
+            self._changed.notify_all()
+
+
+class Job(EventLog):
+    def __init__(self, job_id: str, cfg: ScenarioConfig, n: int):
+        super().__init__(job_id)
+        self.cfg, self.n = cfg, n
+        self.hash = hash_of(cfg)
+
     def public(self) -> dict:
         return {"job_id": self.id, "status": self.status, "config_hash": self.hash, "n_nights": self.n,
                 "result": self.result, "error": self.error}
+
+
+def _sse(job: EventLog) -> StreamingResponse:
+    async def gen():
+        async for e in job.follow():
+            yield f"event: {e['event']}\ndata: {json.dumps(e['data'], separators=(',', ':'))}\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream", headers={"Cache-Control": "no-cache"})
 
 
 JOB_TTL_S = float(os.environ.get("DCSIM_JOB_TTL_S", 900))  # finished jobs are kept this long (ISSUES A2)
@@ -183,6 +208,7 @@ async def lifespan(app: FastAPI):
     app.state.llm = LLM(store)
     app.state.narrator = Narrator(svc, app.state.llm)
     app.state.admin = {}  # name -> admin job status (warm, backtest)
+    app.state.agents = {}  # planning-agent runs (POST /api/agent)
     app.state.ai_limit = RateLimit(int(os.environ.get("DCSIM_AI_RATE", "20")))
     TRACES.size = int(os.environ.get("DCSIM_TRACE_CACHE", "2"))  # decompressed traces kept for narration (ISSUES A2)
     warm = None
@@ -723,6 +749,111 @@ def explain_endpoint(body: ExplainRequest, request: Request) -> dict:
         raise HTTPException(404, str(e).strip("'")) from e
     except LLMError as e:
         raise HTTPException(503, f"LLM unavailable: {e}") from e
+
+
+# ---------------------------------------------------------------- planning agent (Sam the Minuteman)
+
+AGENT_MAX_RUNNING = int(os.environ.get("DCSIM_AGENT_MAX_RUNNING", "2"))  # each run is up to ~10 simulations + Gemini calls
+
+
+class AgentRequest(BaseModel):
+    goal: str = Field(min_length=5, max_length=400)
+    date: str | None = None
+    max_tries: int = Field(5, ge=1, le=5)  # Sam never runs more than 5 simulations per plan
+    n_nights: int = Field(30, ge=3, le=60)
+
+
+class AgentJob(EventLog):
+    def __init__(self, job_id: str, body: AgentRequest, date: str):
+        super().__init__(job_id)
+        self.goal, self.date = body.goal, date
+
+    def public(self) -> dict:
+        return {"job_id": self.id, "status": self.status, "goal": self.goal, "date": self.date,
+                "result": self.result, "error": self.error, "events": len(self.events)}
+
+
+def _agent_jobs(request: Request) -> dict[str, AgentJob]:
+    jobs: dict[str, AgentJob] = request.app.state.agents
+    now = time.monotonic()
+    for jid in [j.id for j in jobs.values() if j.finished_at is not None and now - j.finished_at > JOB_TTL_S]:
+        del jobs[jid]
+    return jobs
+
+
+@app.post("/api/agent", status_code=202, dependencies=[Depends(limit_ai)])
+async def agent_start(body: AgentRequest, request: Request) -> dict:
+    """Start Sam on a goal. Steps stream over GET /api/agent/{id}/stream (SSE):
+    start, goal, try_start, progress, try, thought, notice, validate_start, final | error."""
+    from .ai.agent import history_entry, run_agent
+
+    date = body.date or available_dates()[0]
+    if date not in available_dates():
+        raise HTTPException(404, f"no menu for {date}")
+    jobs = _agent_jobs(request)
+    if sum(j.status == "running" for j in jobs.values()) >= AGENT_MAX_RUNNING:
+        raise HTTPException(429, "Sam is already planning for someone; try again in a minute")
+    job = AgentJob(uuid.uuid4().hex[:12], body, date)
+    jobs[job.id] = job
+    loop = asyncio.get_running_loop()
+
+    def emit(kind: str, data: dict) -> None:  # called from the worker thread
+        asyncio.run_coroutine_threadsafe(job.emit(kind, data), loop).result(timeout=10)
+
+    async def run() -> None:
+        try:
+            job.result = await asyncio.to_thread(run_agent, _svc(request), _llm(request), body.goal, date,
+                                                 n_nights=body.n_nights, max_tries=body.max_tries, emit=emit)
+            entry = history_entry(job.result)
+            saved = await asyncio.to_thread(_svc(request).store.put_agent_history, job.id, entry.get("kind", "plan"),
+                                            body.goal, date, entry)
+            job.result["history_id"], job.result["created_at"] = job.id, saved["created_at"]
+            await job.emit("final", job.result)
+            await job.finish("done")
+        except Exception as e:  # surfaced as an SSE `error`
+            job.error = f"{type(e).__name__}: {e}"
+            await job.emit("error", {"message": job.error})
+            await job.finish("error")
+
+    asyncio.create_task(run())
+    return {"status": "running", "job_id": job.id, "stream": f"/api/agent/{job.id}/stream"}
+
+
+@app.get("/api/agent/history")
+def agent_history(request: Request, limit: int = Query(50, ge=1, le=200)) -> list[dict]:
+    """Sam's past final analyses, newest first: run_id, kind, prompt, for_date, created_at, met, headline."""
+    return _svc(request).store.list_agent_history(limit)
+
+
+@app.get("/api/agent/history/{run_id}")
+def agent_history_item(run_id: str, request: Request) -> dict:
+    h = _svc(request).store.get_agent_history(run_id)
+    if not h:
+        raise HTTPException(404, "unknown history entry")
+    return h
+
+
+@app.delete("/api/agent/history/{run_id}", status_code=204, dependencies=[Depends(require_admin)])
+def agent_history_delete(run_id: str, request: Request) -> Response:
+    if not _svc(request).store.delete_agent_history(run_id):
+        raise HTTPException(404, "unknown history entry")
+    return Response(status_code=204)
+
+
+@app.get("/api/agent/{job_id}")
+def agent_status(job_id: str, request: Request) -> dict:
+    job = _agent_jobs(request).get(job_id)
+    if not job:
+        raise HTTPException(404, "unknown agent run")
+    return job.public()
+
+
+@app.get("/api/agent/{job_id}/stream")
+async def agent_stream(job_id: str, request: Request):
+    job = _agent_jobs(request).get(job_id)
+    if not job:
+        raise HTTPException(404, "unknown agent run")
+    return _sse(job)
 
 
 # ---------------------------------------------------------------- admin jobs (ISSUES A3)

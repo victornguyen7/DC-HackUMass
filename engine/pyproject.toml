@@ -12,6 +12,7 @@ dependencies = [
     "groq>=1.7.0",
     "google-genai>=3.3.0",
     "psycopg[binary]>=3.2",
+    "mcp>=2.3.0",
 ]
 
 [project.scripts]

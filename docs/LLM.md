@@ -1,6 +1,6 @@
 # LLM layer
 
-Status as of 2026-11-13, engine 0.3.4. **Provider: Google Gemini** (switched from Groq on 2026-11-13; Groq still works with `LLM_PROVIDER=groq`). Models, tested features and ideas: [GEMINI.md](GEMINI.md). Code: `engine/src/dcsim/ai/`. Design background: ENGINE.md §7 (plan) and §7.6 (as built).
+Status as of 2026-11-13 (engine 0.6.0; the LLM layer itself last changed at 0.3.4, plus narration wording for 0.4.1 events). **Provider: Google Gemini** (switched from Groq on 2026-11-13; Groq still works with `LLM_PROVIDER=groq`). Models, tested features and ideas: [GEMINI.md](GEMINI.md). Code: `engine/src/dcsim/ai/`. Design background: ENGINE.md §7 (plan) and §7.6 (as built).
 
 **Personas are paused.** The engine uses the hand-written `data/worcester/personas.json`. LLM persona generation is turned off until a different approach replaces it (see [Personas](#personas-paused)). Everything else in this file is live.
 
@@ -77,7 +77,7 @@ Supporting pieces:
 - `similar.near_duplicates(llm, {id: text}, threshold)`: flags pairs that mean nearly the same thing. Built for the persona replacement's duplicate check; **not wired in** while personas are paused.
 - `describe.py`: readable list of what a config changes vs the baseline. Used by `/ask` and explain.
 - `levers.NewDish` / `add_dishes`: adds a dish with borrowed popularity (geometric mean of the "similar to" dishes), per-persona affinity snapped to 0.1, and a batch plan copied from a similar dish. It is flagged `estimate` and shows on the cook sheet as `popularity_source: "ai_estimate"`.
-- Trace fields the narration relies on: `queue_join` and `balk` carry `line`; going back for a favorite is a `retry` event.
+- Trace fields the narration relies on: `queue_join` and `balk` carry `line`; going back for a favorite is a `retry` event. Since engine 0.4.1 `balk` means "saw that line from where they stood and chose not to join it" (no walking away), `retry` means "looked at the line again", and `closed` means the dish's service period ended while they were in line (9 pm or midnight); `_event_text` in `narrate.py` words them that way.
 - Web UI (2026-11-13): the What-If Lab uses `/api/ask` (plain-English box; settings are shown before running), `/api/ai/similar-dishes` ("suggest"), `/api/ai/dish-prior` ("AI estimate" in the new-dish form) and `/api/explain` ("Why?"). The Hall uses `/api/traces/{hash}/highlights` and `/api/narrate/...?stream=false` for students without a pre-built narration. Each one is disabled with a message when the API is down.
 - Demo bundle: `web/public/cache/narration/<hash>_s<seed>.json` holds the highlight students' card and narration for **every exported trace** (8 date baselines + 5 Nov 13 presets). Rebuilt 2026-11-13: 156 narrations, all from Gemini (`narrate-v3`). The builder waits for the rate limit instead of falling back to the template. `manifest.llm` records the provider.
 
@@ -106,7 +106,7 @@ Supporting pieces:
 - The rejected file is at `data/llm_drafts/rejected/2026-11-12_personas_raw_qwen3.8-27b.json`, outside the engine's inputs. Nothing reads it.
 - Its cached responses are deleted, so a rerun can't replay them.
 - `dcsim personas generate/adopt` refuse to run without `DCSIM_PERSONAS_LLM=1`.
-- `data/worcester/personas.json` is unchanged (7 hand-written personas). The baseline and preset config hashes match the demo bundle, so no result changed.
+- `data/worcester/personas.json` is still hand-written: 7 personas when this was written, 8 since engine 0.6.0 (a 2% `pescetarian` persona from the survey, ISSUES N8). `PersonaDraft.diet` accepts `pescetarian`.
 
 **Contract for a replacement.** Whatever produces personas next (another model, a hand-curated list, survey-derived personas) only has to write a file that `personas.adopt()` accepts:
 
@@ -157,6 +157,6 @@ Required: at least one vegetarian and one vegan persona. Their group shares are 
 12. **Pre-warm narration** for a newly run scenario's median night in the background (like the trace warm-up in `api.py`).
 13. **Provider interface.** If another provider comes back, implement `_parse` and `stream_text` for it in `llm.py`. Everything else (cache, checks, fallbacks) is provider-neutral.
 
-### Engine issue found through narration (not an LLM problem)
-- Students who arrive a few minutes before the 9:00 pm close keep walking between stations after close, past empty pans (for example Student #15730 on Nov 13, night 11). Arrivals should stop earlier, or students should leave at close.
-- Low-patience students may walk away from 15–20 lines in a row within about 4 minutes during the 7:30 rush. Worth tuning the patience model.
+### Engine issues found through narration (not LLM problems), both fixed in engine 0.4.1
+- ~~Students who arrive a few minutes before the 9:00 pm close keep walking between stations after close, past empty pans (for example Student #15730 on Nov 13, night 11).~~ Late night (9 pm–12 am) is now modeled; dinner lines formed at 9 pm are served, serving stops at midnight (ISSUES E2).
+- ~~Low-patience students may walk away from 15–20 lines in a row within about 4 minutes during the 7:30 rush.~~ Students now decide from where they stand and stay in the line they pick: at most a few skipped lines, none walked away from (ISSUES E1).

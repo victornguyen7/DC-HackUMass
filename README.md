@@ -153,7 +153,7 @@ HackUMass2026/
 │   │   ├── bundle.py        writes the static demo bundle
 │   │   ├── cli.py           the `dcsim` command
 │   │   └── ai/              LLM client (Gemini/Groq/mock), narration, ask, dish prior, explain, similar dishes
-│   ├── tests/               pytest (engine, API, AI with fakes, calibration, bundle)
+│   ├── tests/               pytest (engine, API, AI with fakes, calibration, bundle, golden baseline, team targets)
 │   └── .env                 your keys (not committed)
 ├── web/                   React app (see web/README.md)
 │   ├── src/pages/           Hall.tsx, Dashboard.tsx, Waste.tsx, Lab.tsx

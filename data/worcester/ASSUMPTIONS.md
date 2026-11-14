@@ -1,6 +1,6 @@
 # Worcester data: sources and assumptions
 
-Updated 2026-11-12; late night and the 9 pm switch added 2026-11-13 (engine 0.4.1). Built from the research uploads (attendance, population, waste, tools ecosystem, floor plan) and revised after the public-source audit of this file (`raw/research/worcester_simulation_assumption_evidence.json`, split per assumption in `sources/audit/assumptions/A01…A17`). File index: `data/README.md`. Citations: `data/sources/registry.json`. What to ask UMass Dining for: `sources/audit/data_requests.json` (R01–R08).
+Updated 2026-11-12; late night and the 9 pm switch added 2026-11-13 (engine 0.4.1); crowd by date, carving line and late-night taper (0.4.2); kitchen capacity, empty-pan wait and seats (0.5.0); allergies, pescetarian, Noodle Bowl per dish, swipe queue, groups, pan sizes and the forecast-reorder preset (0.6.0). Built from the research uploads (attendance, population, waste, tools ecosystem, floor plan) and revised after the public-source audit of this file (`raw/research/worcester_simulation_assumption_evidence.json`, split per assumption in `sources/audit/assumptions/A01…A17`). File index: `data/README.md`. Citations: `data/sources/registry.json`. What to ask UMass Dining for: `sources/audit/data_requests.json` (R01–R08).
 
 ## Sourced inputs the engine uses
 

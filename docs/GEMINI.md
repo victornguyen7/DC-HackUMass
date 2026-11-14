@@ -2,7 +2,7 @@
 
 Everything about the Google Gemini API in this project: how it is set up, what the team's free-tier key can do (tested, not assumed), what the engine uses today, and what else is worth using.
 
-Status as of 2026-11-13, engine 0.3.4. Code: `engine/src/dcsim/ai/llm.py`. Job details and rules: [LLM.md](LLM.md).
+Status as of 2026-11-13 (engine 0.6.0; nothing Gemini-specific changed since engine 0.3.4). Code: `engine/src/dcsim/ai/llm.py`. Job details and rules: [LLM.md](LLM.md).
 
 ---
 

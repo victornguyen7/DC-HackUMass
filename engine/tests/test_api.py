@@ -218,3 +218,12 @@ def test_ledger_writes_switch(client, monkeypatch):
     tasks = BackgroundTasks()
     out = api._queue_forecast({"config_hash": "x", "name": "n", "scenario_id": "s"}, None, tasks)
     assert out["forecast"].startswith("not logged (ledger writes off") and not tasks.tasks
+
+
+def test_waste_outlook_route(client):
+    o = client.get("/api/waste/outlook?n_nights=3").json()
+    assert o["kind"] == "waste_outlook" and o["recommended_plan"]
+    base = [e for k, e in o["entries"].items() if k.endswith("|baseline|")]
+    assert base and all(e["lb"]["p50"] > 0 for e in base)
+    r = client.get(f"/api/results/{base[0]['config_hash']}?n_nights=3").json()
+    assert r["waste_lb"]["lb"]["p50"] > 0

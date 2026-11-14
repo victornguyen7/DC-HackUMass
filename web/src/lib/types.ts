@@ -130,7 +130,12 @@ export type Result = {
   staffing?: Record<string, Record<string, number>>;
   baseline_hash: string;
   vs_baseline?: Compare;
+  /** Pre-consumer waste in the recorded history's units (engine outlook.py). Missing in older bundles and saved copies. */
+  waste_lb?: WasteSummary | null;
 };
+
+/** Simulated waste per night as 10/50/90% ranges: lb and $ count expired + left at close, like the recorded history. */
+export type WasteSummary = { lb: Range; usd: Range; portions: Range; stockout_min: Range; n_nights: number; basis: string };
 
 export type TraceEvent = {
   t: number;

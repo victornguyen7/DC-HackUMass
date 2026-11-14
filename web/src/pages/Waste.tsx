@@ -3,40 +3,45 @@ import { niceMax } from "../components/Charts";
 import { ErrorBox, InsightsTabs, Loading, TopBar } from "../components/Shell";
 import { loadBacktest, loadFacts, loadHistory } from "../lib/data";
 import { dateLabel, downloadCSV, fmt1, fmtInt, PRESET_LABELS, stationName } from "../lib/format";
-import { useAsync } from "../lib/hooks";
+import { useAsync, useManifest } from "../lib/hooks";
 import type { Backtest, HistoryNight, WasteFacts, WasteHistory } from "../lib/types";
+import WasteOutlook from "./WasteOutlook";
 
-type Win = 28 | 56 | 0;
+/** "next" = the coming menu dates (simulated); a number = the last N recorded nights; 0 = all recorded. */
+type Win = "next" | 28 | 0;
 
 export default function Waste() {
   const data = useAsync(async () => {
     const [h, b, f] = await Promise.all([loadHistory(), loadBacktest(), loadFacts()]);
     return { h, b, f };
   }, []);
-  const [win, setWin] = useState<Win>(28);
+  const [win, setWin] = useState<Win>("next");
   const [station, setStation] = useState<string | null>(null);
   const d = data.data;
-  const nights = useMemo(() => (d ? (win ? d.h.nights.slice(-win) : d.h.nights) : []), [d, win]);
-  const first = nights[0]?.date, last = nights[nights.length - 1]?.date;
+  const future = win === "next";
+  const nights = useMemo(() => (d ? (typeof win === "number" && win ? d.h.nights.slice(-win) : d.h.nights) : []), [d, win]);
+  const comingDates = useManifest().data?.dates ?? [];
+  const [first, last] = future ? [comingDates[0], comingDates[comingDates.length - 1]] : [nights[0]?.date, nights[nights.length - 1]?.date];
+  const weeks = d ? Math.round(d.h.nights.length / 7) : 0;
   return (
     <>
-      <TopBar title="Insights" sub="Recorded waste vs. what the recommended plan would have done"
-        scenario={d ? { preset: d.b.plan, lever: "" } : undefined} scenarioPrefix="Plan"
+      <TopBar title="Insights" sub={future ? "The coming nights with the plans you adopted, next to the recorded past" : "Recorded waste vs. what the recommended plan would have done"}
+        scenario={d && !future ? { preset: d.b.plan, lever: "" } : undefined} scenarioPrefix="Plan"
         dateControl={first ? <span className="chip" style={{ padding: "6px 10px", borderRadius: 8 }}>{dateLabel(first, { month: "short", day: "numeric" })} – {dateLabel(last!, { month: "short", day: "numeric" })}</span> : undefined} />
       <div className="content insights-content">
         <InsightsTabs />
-        <div className="banner"><span className="chip warn">Synthetic</span>Recorded numbers are synthetic, shaped like MetaFoodX / LeanPath exports, until UMass Dining shares real data. Simulated numbers always come with a range.</div>
         {data.error && <ErrorBox error={data.error} />}
         {data.loading && <Loading />}
         {d && (
           <>
             <div className="row insights-filters">
               <div className="row insights-period" role="group" aria-label="Time range">
-              {([[28, "Last 4 weeks"], [56, "Last 8 weeks"], [0, "All recorded"]] as const).map(([w, l]) => (
-                <button key={l} className="pill" aria-pressed={win === w} onClick={() => setWin(w)}
-                  disabled={w === 56 && d.h.nights.length < 56} title={w === 56 && d.h.nights.length < 56 ? `Only ${d.h.nights.length} nights recorded` : undefined}>{l}</button>
+              {([["next", `Next ${comingDates.length || 8} nights`], ...(d.h.nights.length > 28 ? [[28, "Last 4 weeks"]] : []),
+                [0, `All recorded · ${weeks} weeks`]] as [Win, string][]).map(([w, l]) => (
+                <button key={l} className="pill" aria-pressed={win === w} onClick={() => setWin(w)}>{l}</button>
               ))}
               </div>
+              {!future && <>
               <label className="insights-station-select">Station
                 <select className="btn" value={station ?? ""} onChange={(e) => setStation(e.target.value || null)}>
                   <option value="">All stations</option>
@@ -49,15 +54,18 @@ export default function Waste() {
                 <button key={s} className="pill" aria-pressed={station === s} onClick={() => setStation(s)}>{stationName(s)}</button>
               ))}
               </div>
+              </>}
               <span className="spacer" />
-              <button className="btn" onClick={() => exportSummary(nights, d.b)}>Export summary</button>
+              {!future && <button className="btn" onClick={() => exportSummary(nights, d.b)}>Export summary</button>}
             </div>
+            {future ? <WasteOutlook history={d.h.nights} /> : <>
             <Kpis nights={nights} b={d.b} />
             <WasteChart nights={nights} b={d.b} station={d.b.nights[0]?.by_station ? station : null} />
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 2fr)", gap: 16 }} className="waste-row">
               <Causes nights={nights} f={d.f} />
               {d.b.dishes ? <TopDishesPlan b={d.b} station={station} /> : <TopDishes h={d.h} station={station} />}
             </div>
+            </>}
             <Tracker b={d.b} />
           </>
         )}

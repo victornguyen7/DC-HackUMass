@@ -9,6 +9,7 @@
     GET  /api/dates | /api/menu/{date} | /api/arrivals/{date} | /api/layout | /api/presets | /api/facts/waste
     GET  /api/waste/history | /api/waste/backtest      (SYNTHETIC recorded history + "if we had used the plan")
     GET  /api/waste/calibration                         held-out forecast check (`dcsim calibrate`, Tiger Data)
+    GET  /api/waste/outlook                             simulated waste (lb) of every bundled scenario on the coming dates
     GET/POST/DELETE /api/scenarios, POST /api/scenarios/{id}/adopt   (adopting logs a forecast to the Tiger ledger)
     GET  /api/forecasts?date=                           forecast ledger, scored once the night is observed
     GET  /api/similar-nights?date=&students=&weather=&event_night=&menu_date=&limit=
@@ -401,6 +402,23 @@ def waste_backtest() -> dict:
     if not p.exists():
         raise HTTPException(404, "no back-test yet; run `dcsim backtest`")
     return json.loads(p.read_text())
+
+
+_OUTLOOK: dict = {}  # n_nights -> {"at": monotonic time, "data": ...}: it reads ~260 cached configs, so keep it 60 s
+
+
+@app.get("/api/waste/outlook")
+async def waste_outlook(request: Request, n_nights: int = Query(30, ge=3, le=60)) -> dict:
+    """Simulated pre-consumer waste (lb) for every bundled scenario on the coming dates (outlook.py).
+    Plans run on the API (Lab, Ask Sam) carry the same numbers in their result's `waste_lb`."""
+    from .outlook import outlook
+
+    hit = _OUTLOOK.get(n_nights)
+    if hit and time.monotonic() - hit["at"] < 60:
+        return hit["data"]
+    data = await asyncio.to_thread(outlook, _svc(request), n_nights)
+    _OUTLOOK[n_nights] = {"at": time.monotonic(), "data": data}
+    return data
 
 
 @app.get("/api/waste/calibration")

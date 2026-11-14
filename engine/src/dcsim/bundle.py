@@ -188,6 +188,9 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
     ledger = forecast_snapshot()
     if ledger is not None:
         size += _write(out / "waste" / "forecasts.json", ledger)
+    from .outlook import outlook
+
+    size += _write(out / "waste" / "outlook.json", outlook(svc, n_nights, entries=entries))
 
     manifest = {
         "generated_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
@@ -205,7 +208,8 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
                   "history": "waste/history.json" if hist["nights"] else None,
                   "backtest": "waste/backtest.json" if backtest_path().exists() else None,
                   "calibration": "waste/calibration.json" if calib else None,
-                  "forecasts": "waste/forecasts.json" if ledger is not None else None},
+                  "forecasts": "waste/forecasts.json" if ledger is not None else None,
+                  "outlook": "waste/outlook.json"},
     }
     size += _write(out / "manifest.json", manifest)
     log(f"bundle: {len(entries)} results, {sum(1 for e in entries if e['trace'])} traces, {size / 1e6:.1f} MB -> {out}")
@@ -229,8 +233,12 @@ def forecast_snapshot() -> dict | None:
 
 
 def refresh_waste(out: Path | None = None) -> list[str]:
-    """Rewrite only the calibration report and ledger snapshot in an existing bundle (seconds, not minutes)."""
+    """Rewrite only the calibration report, ledger snapshot and future-waste outlook in an existing bundle
+    (seconds, not minutes: the outlook reads cached nights)."""
     from .calibration import public_report
+    from .outlook import outlook
+    from .service import Service
+    from .store import Store
 
     out = out or default_out()
     manifest_path = out / "manifest.json"
@@ -238,7 +246,9 @@ def refresh_waste(out: Path | None = None) -> list[str]:
         raise FileNotFoundError(f"no bundle at {out}; run `dcsim bundle` first")
     manifest = json.loads(manifest_path.read_text())
     written = []
-    for name, data in (("calibration", public_report()), ("forecasts", forecast_snapshot())):
+    entries = [{k: e[k] for k in ("key", "date", "preset", "lever", "label", "config_hash")} for e in manifest["entries"]]
+    waste_outlook = outlook(Service(Store()), manifest.get("n_nights", 30), entries=entries)
+    for name, data in (("calibration", public_report()), ("forecasts", forecast_snapshot()), ("outlook", waste_outlook)):
         if data is not None:
             _write(out / "waste" / f"{name}.json", data)
             manifest.setdefault("waste", {})[name] = f"waste/{name}.json"

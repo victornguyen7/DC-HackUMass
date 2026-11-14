@@ -6,7 +6,7 @@ import {
   AGENT_IDLE, agentReducer, deleteHistory, listHistory, openHistory, rememberLocal, runAgent,
   type AgentFinal, type AgentState, type AgentTry, type Check, type HistoryItem, type TigerLookup,
 } from "../lib/agent";
-import { saveScenario } from "../lib/data";
+import { loadApiResult, saveScenario } from "../lib/data";
 import { dateLabel, fmt1, fmtInt, stationName } from "../lib/format";
 import { useApiUp, useAsync } from "../lib/hooks";
 import { useApp } from "../lib/store";
@@ -77,7 +77,6 @@ export default function Sam() {
               ))}
             </div>
             {!apiOn && <div className="alert warn" role="status" style={{ marginTop: 10 }}><b>Sam needs the API</b>Start it with <code>make serve</code>. Sam runs real simulations, so there is no offline version.</div>}
-            <div className="faint sam-rules">Sam only proposes settings. Every number comes from the simulator or a read-only Tiger query, and a fixed check (code, not AI) decides whether the goal is met.</div>
           </div>
         </section>
 
@@ -246,6 +245,7 @@ function PlanCard({ f }: { f: AgentFinal }) {
   const scenario = { preset: null, lever: "api", hash: f.config_hash, label: f.label };
   const onAdopt = async () => {
     adopt(f.date, scenario);
+    loadApiResult(f.config_hash).catch(() => undefined); // keeps a copy, so the waste outlook shows this plan offline too
     try {
       const sv = await saveScenario(f.label, f.config_hash, "adopted");
       setNote(`Adopted for ${dateLabel(f.date)} and saved on the API${sv.forecast ? ` (forecast ${sv.forecast})` : ""}. The Kitchen plan page now shows it.`);

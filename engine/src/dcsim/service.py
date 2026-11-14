@@ -99,6 +99,9 @@ class Service:
             "staffing": summary.get("staffing", {}),  # station -> hour -> servers needed (N3)
             "median_seed": median_night(nights),
         }
+        from .outlook import waste_summary  # lazy: synthetic -> model is heavy to import
+
+        out["waste_lb"] = waste_summary(cfg, nights)  # recorded-history units, for the waste outlook
         base = baseline_of(cfg)
         bh = config_hash(base)
         out["baseline_hash"] = bh

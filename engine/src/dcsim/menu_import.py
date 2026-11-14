@@ -102,7 +102,10 @@ def import_menus(raw_path: Path, stations_path: Path, overrides_path: Path, out_
     raw = json.loads(raw_path.read_text())
     stations = json.loads(stations_path.read_text())["stations"]
     by_name = _station_index(stations)
-    role_overrides = json.loads(overrides_path.read_text()).get("roles", {}) if overrides_path.exists() else {}
+    ov = json.loads(overrides_path.read_text()) if overrides_path.exists() else {}
+    role_overrides = ov.get("roles", {})
+    moves = ov.get("station_by_date", {})  # {date: {dish name: station id}} (E7: carving line)
+    known = {s["id"] for s in stations}
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
     for day in raw["dates"]:
@@ -113,8 +116,10 @@ def import_menus(raw_path: Path, stations_path: Path, overrides_path: Path, out_
         for st in m.get("stations", []):
             if st["name"] not in by_name:
                 raise ValueError(f"{day['date']}: unknown station {st['name']!r}; add it to {stations_path.name}")
-            sid = by_name[st["name"]]
             for it in st["items"]:
+                sid = moves.get(day["date"], {}).get(it["name"], by_name[st["name"]]) if meal == "dinner" else by_name[st["name"]]
+                if sid not in known:
+                    raise ValueError(f"{day['date']}: station_by_date moves {it['name']!r} to unknown station {sid!r}")
                 dish_id = f"{sid}.{slug(it['name'])}"
                 if dish_id in seen:
                     continue
@@ -124,7 +129,7 @@ def import_menus(raw_path: Path, stations_path: Path, overrides_path: Path, out_
                     "id": dish_id,
                     "name": it["name"],
                     "station": sid,
-                    "station_name": st["name"],
+                    "station_name": st["name"] if sid == by_name[st["name"]] else sid.replace("_", " ").title(),
                     "serving_size": it.get("serving_size"),
                     "dietary_labels": it.get("dietary_labels", []),
                     "allergens": it.get("allergens", []),

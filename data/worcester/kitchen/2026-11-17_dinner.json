@@ -360,8 +360,11 @@
    "reorder_point": 33,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 10,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 8,
+   "taper_reorder_point": 12
   },
   "late.grill.halal_burger_patty": {
    "batch_size": 27,
@@ -369,8 +372,11 @@
    "reorder_point": 33,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1320,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 11
   },
   "late.grill.halal_french_fries": {
    "batch_size": 43,
@@ -378,8 +384,11 @@
    "reorder_point": 32,
    "cook_min": 20,
    "hold_min": 75,
-   "max_batches": 4,
-   "last_batch_min": 1420
+   "max_batches": 9,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 11,
+   "taper_reorder_point": 12
   },
   "late.grill.jerk_chicken_thigh": {
    "batch_size": 27,
@@ -387,8 +396,11 @@
    "reorder_point": 30,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1315,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 11
   },
   "late.grill.oven_roasted_summer_squash": {
    "batch_size": 23,
@@ -396,8 +408,11 @@
    "reorder_point": 17,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 10,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 6,
+   "taper_reorder_point": 6
   },
   "late.display.jasmine_rice": {
    "batch_size": 50,
@@ -405,8 +420,11 @@
    "reorder_point": 77,
    "cook_min": 20,
    "hold_min": 75,
-   "max_batches": 6,
-   "last_batch_min": 1420
+   "max_batches": 12,
+   "last_batch_min": 1420,
+   "taper_from_min": 1315,
+   "taper_batch_size": 13,
+   "taper_reorder_point": 17
   },
   "late.display.make_your_own_waffles": {
    "batch_size": 48,
@@ -414,8 +432,11 @@
    "reorder_point": 107,
    "cook_min": 30,
    "hold_min": 180,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1315,
+   "taper_batch_size": 12,
+   "taper_reorder_point": 23
   },
   "late.display.steamed_broccoli": {
    "batch_size": 40,
@@ -423,8 +444,11 @@
    "reorder_point": 45,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1315,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 10
   },
   "late.display.vegetable_spring_rolls": {
    "batch_size": 40,
@@ -432,8 +456,11 @@
    "reorder_point": 78,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 16
   },
   "late.display.zesty_orange_chicken": {
    "batch_size": 40,
@@ -441,8 +468,11 @@
    "reorder_point": 65,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 15
   },
   "late.display.zesty_orange_tofu": {
    "batch_size": 40,
@@ -450,8 +480,11 @@
    "reorder_point": 71,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 16
   }
  },
  "basis": {

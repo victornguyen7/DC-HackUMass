@@ -378,8 +378,11 @@
    "reorder_point": 33,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1320,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 12
   },
   "late.grill.halal_french_fries": {
    "batch_size": 45,
@@ -387,8 +390,11 @@
    "reorder_point": 32,
    "cook_min": 20,
    "hold_min": 75,
-   "max_batches": 4,
-   "last_batch_min": 1420
+   "max_batches": 9,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 12,
+   "taper_reorder_point": 13
   },
   "late.grill.kelp_burger": {
    "batch_size": 31,
@@ -396,8 +402,11 @@
    "reorder_point": 38,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1320,
+   "taper_batch_size": 8,
+   "taper_reorder_point": 13
   },
   "late.grill.montreal_chicken_thigh": {
    "batch_size": 26,
@@ -405,8 +414,11 @@
    "reorder_point": 30,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 12
   },
   "late.grill.roasted_zucchini": {
    "batch_size": 24,
@@ -414,8 +426,11 @@
    "reorder_point": 18,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 6,
+   "taper_reorder_point": 6
   },
   "late.display.baked_waffle_fries": {
    "batch_size": 48,
@@ -423,8 +438,11 @@
    "reorder_point": 107,
    "cook_min": 30,
    "hold_min": 180,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 12,
+   "taper_reorder_point": 22
   },
   "late.display.celery_sticks": {
    "batch_size": 40,
@@ -432,8 +450,11 @@
    "reorder_point": 45,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 10
   },
   "late.display.make_your_own_waffles": {
    "batch_size": 48,
@@ -441,8 +462,11 @@
    "reorder_point": 108,
    "cook_min": 30,
    "hold_min": 180,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 12,
+   "taper_reorder_point": 23
   },
   "late.display.plant_based_buffalo_chic_n": {
    "batch_size": 40,
@@ -450,8 +474,11 @@
    "reorder_point": 46,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1315,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 10
   },
   "late.display.spicy_fried_chicken_wings": {
    "batch_size": 40,
@@ -459,8 +486,11 @@
    "reorder_point": 143,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 8,
-   "last_batch_min": 1420
+   "max_batches": 14,
+   "last_batch_min": 1420,
+   "taper_from_min": 1330,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 18
   }
  },
  "basis": {

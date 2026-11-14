@@ -369,8 +369,11 @@
    "reorder_point": 29,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 10,
+   "last_batch_min": 1420,
+   "taper_from_min": 1320,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 11
   },
   "late.grill.halal_burger_patty": {
    "batch_size": 28,
@@ -378,8 +381,11 @@
    "reorder_point": 30,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1320,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 12
   },
   "late.grill.halal_french_fries": {
    "batch_size": 47,
@@ -387,8 +393,11 @@
    "reorder_point": 34,
    "cook_min": 20,
    "hold_min": 75,
-   "max_batches": 4,
-   "last_batch_min": 1420
+   "max_batches": 10,
+   "last_batch_min": 1420,
+   "taper_from_min": 1310,
+   "taper_batch_size": 12,
+   "taper_reorder_point": 14
   },
   "late.grill.kelp_burger": {
    "batch_size": 32,
@@ -396,8 +405,11 @@
    "reorder_point": 36,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 11,
+   "last_batch_min": 1420,
+   "taper_from_min": 1320,
+   "taper_batch_size": 8,
+   "taper_reorder_point": 13
   },
   "late.grill.roasted_butternut_squash": {
    "batch_size": 25,
@@ -405,8 +417,11 @@
    "reorder_point": 18,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 5,
-   "last_batch_min": 1420
+   "max_batches": 10,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 7,
+   "taper_reorder_point": 6
   },
   "late.display.make_your_own_waffles": {
    "batch_size": 48,
@@ -414,8 +429,11 @@
    "reorder_point": 179,
    "cook_min": 30,
    "hold_min": 180,
-   "max_batches": 8,
-   "last_batch_min": 1420
+   "max_batches": 14,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 12,
+   "taper_reorder_point": 26
   },
   "late.display.pinto_beans": {
    "batch_size": 40,
@@ -423,8 +441,11 @@
    "reorder_point": 74,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 8,
-   "last_batch_min": 1420
+   "max_batches": 15,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 10,
+   "taper_reorder_point": 12
   },
   "late.display.yellow_rice": {
    "batch_size": 50,
@@ -432,8 +453,11 @@
    "reorder_point": 135,
    "cook_min": 20,
    "hold_min": 75,
-   "max_batches": 8,
-   "last_batch_min": 1420
+   "max_batches": 15,
+   "last_batch_min": 1420,
+   "taper_from_min": 1325,
+   "taper_batch_size": 13,
+   "taper_reorder_point": 20
   }
  },
  "basis": {

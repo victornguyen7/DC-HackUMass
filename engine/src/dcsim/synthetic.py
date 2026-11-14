@@ -84,6 +84,8 @@ def _over_prep(cfg: ScenarioConfig, factor: float) -> ScenarioConfig:
     kitchen = {}
     for k, p in cfg.kitchen.items():
         kitchen[k] = p.model_dump() | {"batch_size": max(1, round(p.batch_size * factor))}
+        if p.taper_batch_size:
+            kitchen[k]["taper_batch_size"] = max(1, round(p.taper_batch_size * factor))
     return cfg.updated(kitchen=kitchen)
 
 
@@ -111,7 +113,7 @@ def actual_config(day: dt.date, gt: dict, plan: ScenarioConfig | None = None) ->
     if plan is not None:
         cfg = plan
     else:
-        cfg = load_baseline(menu_date_for(day))
+        cfg = load_baseline(menu_date_for(day), events=False)  # weekday effect yes, the snapshot date's events no
         if gt["adopted"]:
             cfg = PRESETS[RECOMMENDED_PLAN](cfg)
     cfg = cfg.updated(**cfg.crowd_scaled(gt["crowd_multiplier"]))

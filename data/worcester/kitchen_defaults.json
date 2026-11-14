@@ -1,5 +1,5 @@
 {
-  "_note": "Role defaults used by `dcsim prepare` to size the baseline production plan from simulated demand at typical (neutral) popularity. station_dilution: each item's popularity is divided by (same-role items at its station)^dilution, so a station with 5 sushi rolls doesn't get 5x the demand of a one-entree station. PLACEHOLDERS until staff estimates. planner.reorder_factor raised 0.8 -> 1.2 on 2026-11-12 so the 3,000-student crowd rarely runs out (team: food rarely runs out late on a normal day).",
+  "_note": "Role defaults used by `dcsim prepare` to size the baseline production plan from simulated demand at typical (neutral) popularity. station_dilution: each item's popularity is divided by (same-role items at its station)^dilution, so a station with 5 sushi rolls doesn't get 5x the demand of a one-entree station. PLACEHOLDERS until staff estimates. planner.reorder_factor raised 0.8 -> 1.2 on 2026-11-12 so the 3,000-student crowd rarely runs out (team: food rarely runs out late on a normal day). planner_by_period.late_night (2026-11-13, engine 0.4.2): late-night demand collapses after ~10:30 pm, so once fewer than 1.5 batches are still to be eaten the kitchen cooks top-up batches of 25% with a matching reorder point, and keeps no spare batches. Cut late-night waste from ~41% to ~20% of cooked portions with about the same stockout minutes. Tuning choice, not staff-confirmed.",
   "roles": {
     "entree": {
       "batch_size": 40,
@@ -51,5 +51,12 @@
     "spare_batches": 2,
     "last_batch_before_close_min": 20
   },
-  "station_dilution": 0.5
+  "station_dilution": 0.5,
+  "planner_by_period": {
+    "late_night": {
+      "taper_fill": 1.5,
+      "taper_batch_factor": 0.25,
+      "spare_batches": 0
+    }
+  }
 }

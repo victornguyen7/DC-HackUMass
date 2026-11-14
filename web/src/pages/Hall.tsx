@@ -16,6 +16,7 @@ const ANCHORS: Record<string, [number, number]> = {
   desserts: [238.0, 133.7], mediterranean: [361.0, 120.3], seasons: [484.0, 120.3], street_food: [647.1, 123.0],
   latino: [147.1, 228.6], grill: [350.3, 176.5], tandoor: [451.9, 219.3], soups: [382.4, 274.1],
   sushi: [645.8, 217.9], noodle_bowl: [701.9, 176.5], display: [740.7, 260.7],
+  carving: [712.0, 244.0],
 };
 const MARKERS: { xy: [number, number]; text: string; dark?: boolean }[] = [
   { xy: [150, 96], text: "Dish return (assumed)", dark: true },

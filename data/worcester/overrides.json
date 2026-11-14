@@ -25,5 +25,11 @@
     "noodle_bowl": 2.0,
     "grill": 2.0,
     "latino": 2.0
+  },
+  "station_by_date": {
+    "_note": "Per-date station moves (E7): a dish named here is served at that station on that date instead of its published one. Nov 18 (Friendsgiving): the carved turkey gets a staffed carving line (roasts still cooked in batches, so leftovers still count); its sides stay self-serve at Display. Confirm with the team.",
+    "2026-11-18": {
+      "Carved Local Roast Turkey": "carving"
+    }
   }
 }

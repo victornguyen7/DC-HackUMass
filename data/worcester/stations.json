@@ -170,6 +170,20 @@
       "self_serve": true,
       "to_order": false,
       "service_median_min": 0.2
+    },
+    {
+      "id": "carving",
+      "names": [],
+      "display_name": "Carving",
+      "pos": [
+        53.5,
+        15.1
+      ],
+      "servers": 2,
+      "self_serve": false,
+      "to_order": false,
+      "service_median_min": 0.5,
+      "_note": "Not a published station: dishes move here by date via overrides.json -> station_by_date (E7). A staffed carving line beside Display; 2 carvers and 0.5 min per plate are guesses (team: hot stations take 30-60 s per plate)."
     }
   ]
 }

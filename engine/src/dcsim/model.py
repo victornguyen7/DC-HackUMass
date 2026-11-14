@@ -42,7 +42,7 @@ class Lot:
 class Pan:
     __slots__ = (
         "idx", "plan", "to_order", "last_batch", "lots", "level", "cooking", "batches_started",
-        "cooked", "served", "expired", "leftover", "closed", "last_call",
+        "cooked", "served", "expired", "leftover", "closed", "last_call", "taper_armed",
     )
 
     def __init__(self, idx: int, plan: BatchPlan | None, last_batch: float, not_open_yet: bool):
@@ -60,6 +60,7 @@ class Pan:
         self.leftover = 0
         self.closed = not_open_yet  # closed before its period starts and after it ends
         self.last_call = False  # period over: no new students, but the line already formed is served
+        self.taper_armed = False  # a re-check is scheduled for when the taper starts
 
     @property
     def visibly_empty(self) -> bool:
@@ -199,19 +200,34 @@ class Night:
         plan, now = pan.plan, self.env.now
         while (
             not pan.closed
-            and self._usable(pan) + pan.cooking <= plan.reorder_point
+            and self._usable(pan) + pan.cooking <= plan.reorder_at(now)
             and pan.batches_started < plan.max_batches
             and now + plan.cook_min <= pan.last_batch
         ):
+            size = plan.batch_at(now)
             pan.batches_started += 1
-            pan.cooking += plan.batch_size
+            pan.cooking += size
             self.rec.pan(now, pan.idx, pan.level, PanEv.BATCH_START)
-            self.env.process(self._cook(pan))
+            self.env.process(self._cook(pan, size))
+        if plan.taper_from_min is not None and now < plan.taper_from_min and not pan.closed:
+            self._taper_wakeup(pan)
 
-    def _cook(self, pan: Pan) -> Proc:
+    def _taper_wakeup(self, pan: Pan) -> None:
+        """Re-check the pan once when the taper starts (the reorder point changes then)."""
+        if pan.taper_armed:
+            return
+        pan.taper_armed = True
+
+        def wake() -> Proc:
+            yield self.env.timeout(pan.plan.taper_from_min - self.env.now)
+            self._kitchen_check(pan)
+
+        self.env.process(wake())
+
+    def _cook(self, pan: Pan, size: int) -> Proc:
         yield self.env.timeout(pan.plan.cook_min)
-        pan.cooking -= pan.plan.batch_size
-        self._add_lot(pan, pan.plan.batch_size, PanEv.BATCH_READY)
+        pan.cooking -= size
+        self._add_lot(pan, size, PanEv.BATCH_READY)
 
     def _take(self, pan: Pan) -> bool:
         if pan.closed:

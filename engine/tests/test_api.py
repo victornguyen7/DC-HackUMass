@@ -110,7 +110,8 @@ def test_levers_and_validation(client):
 def test_crowd_lever_snaps_to_steps():
     a = build_config(ScenarioRequest(date=DATE, levers=Levers(crowd_multiplier=1.11)))
     b = build_config(ScenarioRequest(date=DATE, levers=Levers(crowd_multiplier=1.09)))
-    assert a.crowd.multiplier == b.crowd.multiplier == pytest.approx(1.1)
+    base = load_baseline(DATE).crowd.multiplier  # the date's weekday/event factor (crowd_by_date.json)
+    assert a.crowd.multiplier == b.crowd.multiplier == pytest.approx(base * 1.1)
 
 
 def test_remove_dish_drops_its_plan():

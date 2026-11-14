@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-ENGINE_VERSION = "0.4.1"  # bump when model logic changes; invalidates cached results
+ENGINE_VERSION = "0.4.2"  # bump when model logic changes; invalidates cached results
 
 Diet = Literal["none", "vegetarian", "vegan", "halal"]
 Period = Literal["dinner", "late_night"]
@@ -96,6 +96,18 @@ class BatchPlan(_Frozen):
     hold_min: float = Field(gt=0)  # max time on the line before it's expired
     max_batches: int = Field(ge=0)  # batches after the starting ones
     last_batch_min: int | None = None  # latest a batch may be ready; default close
+    # When the crowd thins (late night after ~10:30 pm), cook small top-up batches instead:
+    taper_from_min: int | None = None  # from this time on, batches use the taper size and reorder point
+    taper_batch_size: int | None = Field(None, ge=1)
+    taper_reorder_point: int | None = Field(None, ge=0)
+
+    def batch_at(self, t: float) -> int:
+        return self.taper_batch_size if self.taper_from_min is not None and self.taper_batch_size and t >= self.taper_from_min else self.batch_size
+
+    def reorder_at(self, t: float) -> int:
+        if self.taper_from_min is not None and self.taper_reorder_point is not None and t >= self.taper_from_min:
+            return self.taper_reorder_point
+        return self.reorder_point
 
 
 class Wave(_Frozen):

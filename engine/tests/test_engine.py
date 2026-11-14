@@ -290,3 +290,45 @@ def test_crowd_lever_scales_late_night(cfg):
     big = apply_levers(cfg, Levers(crowd_multiplier=1.2))
     assert big.late_crowd.multiplier == pytest.approx(cfg.late_crowd.multiplier * 1.2)
     assert big.crowd.multiplier == pytest.approx(cfg.crowd.multiplier * 1.2)
+
+
+# ---------------------------------------------------------------- E5: crowd by date
+
+
+def test_crowd_by_date():
+    from dcsim.data import crowd_factors
+
+    fri, wed_event = load_baseline("2026-11-13"), load_baseline("2026-11-18")
+    assert fri.crowd.multiplier == pytest.approx(crowd_factors("2026-11-13")[0])
+    assert crowd_factors("2026-11-13")[0] < 1.0  # Friday dinner guess
+    # Friendsgiving lifts only its own date; the synthetic history (events=False) keeps the weekday factor
+    assert wed_event.crowd.multiplier > load_baseline("2026-11-18", events=False).crowd.multiplier
+    assert load_baseline("2026-11-17").crowd.multiplier == pytest.approx(1.0)
+
+
+# ---------------------------------------------------------------- E7: Nov 18 carving line
+
+
+def test_nov18_carving_line():
+    c = load_baseline("2026-11-18")
+    turkey = next(d for d in c.menu if "Turkey" in d.name and d.period == "dinner")
+    assert turkey.station == "carving"
+    st = c.station("carving")
+    assert not st.self_serve and not st.to_order and turkey.id in c.kitchen  # staffed line, roasts in batches
+    assert all(d.station != "carving" for d in load_baseline("2026-11-17").menu)
+
+
+# ---------------------------------------------------------------- late-night waste taper
+
+
+def test_late_night_taper_cuts_waste():
+    c = load_baseline(DATE)
+    late = [d.id for d in c.menu if d.period == "late_night" and d.id in c.kitchen]
+    assert all(c.kitchen[k].taper_from_min is not None for k in late)
+    assert all(c.kitchen[k].taper_from_min is None for k in c.kitchen if k not in late)  # dinner unchanged
+    waste = cooked = 0
+    for seed in (1, 2):
+        m = run_night(c, seed).metrics
+        waste += sum(m.dishes[k].waste for k in late)
+        cooked += sum(m.dishes[k].cooked for k in late)
+    assert waste / cooked < 0.3  # was ~41% before the taper

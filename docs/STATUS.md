@@ -3,12 +3,19 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-13, engine 0.6.2.
+Last updated: 2026-11-13, engine 0.6.2, after merging PRs #1–#3 and adding Similar nights (`main` at `9e01ec7` + this docs pass).
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
 ## Before the demo
 - ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.2, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
+
+## Recently merged (2026-11-13)
+All branches are merged into `main`; details in [README §14](../README.md#14-branches-and-merges).
+- ✅ PR #1 `frontend/redesign`: top navigation, guided Watch → Try a change → Compare, isometric hall ([FRONTEND_REDESIGN_PLAN.md](FRONTEND_REDESIGN_PLAN.md)).
+- ✅ PR #2 `fix-bug`: Hall comparison and replay-retry fixes.
+- ✅ PR #3 `codex/similar-nights-docs`: Similar nights handoff, then the feature itself (`137c784`, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)).
+- ✅ `dcsim tsdb similar` (`9e01ec7`) and the narration timeout L5 (`dcf6772`).
 
 ---
 
@@ -16,9 +23,9 @@ Last updated: 2026-11-13, engine 0.6.2.
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 18 | 2 | 3 | [ISSUES.md](ISSUES.md) |
-| Not built yet (N1–N9) | 2 | 1 | 6 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
-| Web UI issues | 9 | 3 | 5 | [UI_ISSUES.md](UI_ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 18 | 2 | 6 | [ISSUES.md](ISSUES.md) |
+| Not built yet (N1–N9) | 2 | 2 | 5 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
+| Web UI issues | 9 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
 
 ---
@@ -50,6 +57,9 @@ Last updated: 2026-11-13, engine 0.6.2.
 | D2 | Version numbers disagree | ✅ Fixed 2026-11-13 (both 0.5.0; test keeps them equal) |
 | T1 | Not a git repo; bundle size undecided | ✅ Fixed 2026-11-13 (GitHub; bundle committed) |
 | T2 | Starlette deprecation warning | ✅ Fixed |
+| T3 | Tiger's copy of the synthetic history is stale (24 of 43 nights) | ✗ Open (`uv run dcsim tsdb load`) |
+| T4 | `codex-skills` is an empty submodule (no `.gitmodules`) | ✗ Open (owner of PR #1) |
+| T5 | Two similar-night searches (page/API and CLI) | ✗ Open (a decision; both work) |
 
 ## 0.6.1 review ([ISSUES.md §6b](ISSUES.md))
 
@@ -67,7 +77,7 @@ Last updated: 2026-11-13, engine 0.6.2.
 
 | ID | Item | Status |
 | --- | --- | --- |
-| N1 | Animated 3D Hall | ✗ (top-down 2D replay works) |
+| N1 | Animated 3D Hall | ◐ (isometric Canvas replay since PR #1; orbital 3D not built) |
 | N2 | Nav graph and table-level seats | ◐ (seating zones and door routes; 0.5.0 seat counts per zone, limits off until real seats are counted) |
 | N3 | Servers by hour; "servers needed" output | ✅ Built 0.5.0 (`shifts`, lever, `staffing` in results; not on the Dashboard yet, U5) |
 | N4 | Breakfast and lunch | ✗ (late night added in 0.4.1) |
@@ -91,7 +101,7 @@ Last updated: 2026-11-13, engine 0.6.2.
 | U1 | Figma numbers are placeholders | ◐ SPEC demo script fixed; Figma frames and slides open |
 | U4 | Dashboard dinner only | ◐ Late night shown; breakfast and lunch open |
 | U7 | Lab: Optimize and uncertainty sweep | ◐ Ask box, menu edits, new dish, Why? built; Optimize and sweep open |
-| U2 | Only the top-down view is live | ✗ |
+| U2 | Only the top-down view is live | ◐ Isometric replay plays the full trace (PR #1); orbital 3D open |
 | U5 | Staffing "needed" not shown | ✅ Fixed 0.6.2 ("Needed at peak" column; data after the bundle rebuild) |
 | U9 | Replay geometry approximate | ✗ (needs N2) |
 | U14 | Stack differs from SPEC §9 | ✗ (a decision, not a bug) |

@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted. Later on 2026-11-13: L5 fixed; T3–T5 added after the Similar nights work and the branch merges (README §14).
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -31,8 +31,11 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | D2 | ~~Low~~ | Docs | ~~Version numbers disagree~~ **Fixed 2026-11-13** (both 0.5.0; a test keeps them equal) |
 | T1 | ~~Low~~ | Repo | ~~Not a git repository; bundle size undecided~~ **Fixed 2026-11-13** (on GitHub; full bundle committed) |
 | T2 | ~~Low~~ | Tests | ~~Starlette deprecation warning~~ **Fixed** (no warnings in `pytest`, checked 2026-11-13) |
+| T3 | Low | Data | Tiger's copy of the synthetic history is stale, so Similar nights differs between Tiger and the local files |
+| T4 | Low | Repo | `codex-skills` is a submodule entry with no `.gitmodules`: the folder is empty in every clone |
+| T5 | Low | Repo | Two similar-night searches with separate vectors and tables (page/API vs. `dcsim tsdb similar`) |
 | N1–N9 | — | Not built | See §7 |
-| U1–U16 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
+| U1–U17 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
 
 ---
 
@@ -207,6 +210,18 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
   - `git init` with a `.gitignore` (already has `.env`, `.venv/`, `__pycache__/`; add `cache/`).
   - Decide whether to commit the full bundle, or default to the presets-only bundle (about 5 MB) and build the grid in CI.
 
+### T3 · Low · Tiger's copy of the synthetic history is stale
+- Found 2026-11-13 while building Similar nights: 24 of the 43 observed nights in Tiger (`dcsim.nights`, `dcsim.pan_windows`) have different students or dishes than `data/synthetic/worcester`, because the history was regenerated after the last upload. The page's ranking is identical on both paths when they read the same data (max difference 0.0), so only the inputs differ.
+- **Fix:** `cd engine && uv run dcsim tsdb load` (loads the current files). `make calibrate` also loads, but regenerates the history first (`waste-gen`).
+
+### T4 · Low · `codex-skills` is an empty submodule
+- The redesign commit (PR #1) added `codex-skills` as a gitlink (`160000 cd9f49a`) without a `.gitmodules` file, so git can't fetch it and the folder is empty after cloning. `FRONTEND_REDESIGN_PLAN.md` cites `codex-skills/skills/frontend-design/SKILL.md` from it.
+- **Fix (owner of PR #1):** commit the skill files as normal files, or add `.gitmodules` with the repo URL, or remove the entry (`git rm --cached codex-skills`).
+
+### T5 · Low · Two similar-night searches
+- The page and API (`similar_nights.py`, 48-dim, `dcsim.night_embeddings`, exact cosine) and the CLI (`nightsearch.py`, 76-dim, `dcsim.night_vectors`, DiskANN index, held-out check) were built in parallel. Both work; they rank differently and don't share tables.
+- **Decide:** keep both (page for managers, CLI for the Tiger demo and accuracy check), or point the page at one vector design. See `SIMILAR_NIGHTS.md` and `TIGER.md` §7.
+
 ### T2 · Fixed · Starlette deprecation warning
 - **Fixed:** `uv run pytest` shows no warnings (checked 2026-11-13).
 - The FastAPI test client warns "Using `httpx` with `starlette.testclient` is deprecated; install `httpx2`". Harmless today.
@@ -235,7 +250,7 @@ Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s
 
 | ID | Item | Spec |
 | --- | --- | --- |
-| N1 | Animated 3D Hall (React Three Fiber). The four pages are **built** in `web/` with a top-down 2D replay; remaining UI gaps are in UI_ISSUES.md | SPEC §3–6 |
+| N1 | Animated 3D Hall (React Three Fiber). **Partly:** since the redesign (PR #1) the web app plays the full trace on an illustrated isometric view (Canvas) and the top-down plan; orbital 3D is not built. Remaining UI gaps are in UI_ISSUES.md | SPEC §3–6 |
 | N2 | Nav graph and table-level seats. Seating zones (main / back) and door routes are built (0.3.4) | ENGINE §3 |
 | N3 | ✅ **Built (engine 0.5.0):** `Station.shifts` / lever `stations.<id>.shifts` change servers during the night, and results carry `staffing` (servers needed per station and hour for ≤ 85% busy). ~~Servers by hour, and a "servers needed for p90 wait < 8 min" output~~. The Dashboard doesn't show it yet (UI_ISSUES U5) | SPEC §6.1 |
 | N4 | Breakfast and lunch (full-day arrivals) | SPEC §7 |

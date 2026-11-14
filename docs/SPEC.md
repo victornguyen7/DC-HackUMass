@@ -28,6 +28,8 @@ Everything else in this document is a default we can change.
 
 The product has four pages, all reading from one simulation engine:
 
+> **Update (2026-11-13):** the frontend redesign (PR #1, [FRONTEND_REDESIGN_PLAN.md](FRONTEND_REDESIGN_PLAN.md)) groups these pages into three destinations: **Simulation** (Hall, with the What-If Lab as its advanced settings), **Kitchen plan** (Dashboard) and **Insights** (Waste Record, now "Waste history", plus the new **Similar nights** search, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)). The sections below keep the original page names.
+
 ```
                  ┌───────────────────────────────┐
                  │  Simulation engine (SimPy)     │

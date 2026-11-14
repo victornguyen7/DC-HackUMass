@@ -1,6 +1,6 @@
 # Web UI: test results and known issues
 
-Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.2. The committed demo bundle is engine 0.4.1, so the pages show 0.4.1 numbers until `make demo-bundle` is re-run. New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts).
+Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.2. The committed demo bundle is engine 0.4.1, so the pages show 0.4.1 numbers until `make demo-bundle` is re-run. New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts). Since then (same day): the redesign (PR #1) and Hall fixes (PR #2) were merged, and **Insights › Similar nights** (`/similar-nights`) was added and tested (9 unit tests; Chrome at 1440 px and 390 px with the live API, no horizontal scroll, no console errors).
 Second pass (same day): the UI now uses the engine API features it ignored before, and the back-test exports per-dish and per-station numbers. See [Second pass](#second-pass-connecting-the-ui-to-the-backend).
 
 Severity: **High** = misleads a viewer or breaks the demo story · **Medium** = a designed feature that is missing or only partly works · **Low** = cleanup.
@@ -86,7 +86,7 @@ Also fixed while testing the second pass:
 | ID | Sev | Page | Issue |
 | --- | --- | --- | --- |
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
-| U2 | Medium | Hall | Only the top-down view is live; no animated 3D |
+| U2 | Medium | Hall | ~~Only the top-down view is live~~ **Partly fixed (PR #1):** the illustrated isometric view (Canvas) plays the full trace; no orbital 3D |
 | U4 | Medium | Dashboard | ~~Dinner only~~ **Partly fixed:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch still missing |
 | U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; shows data once the bundle is rebuilt |
 | U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
@@ -138,7 +138,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - Dish **swap** is "remove one + add one" (two steps), not a single control.
 
 ### U15 · Medium · Several features need the API
-Offline (bundle only), these are disabled with a message: the plain-English box, menu edits and new dishes, "Why?", combinations of levers, replays of scenarios without a bundled trace, and narration of non-highlight students. An adopted API plan still shows on the Dashboard offline (its result is kept in the browser), but it can't be replayed.
+Offline (bundle only), these are disabled with a message: the plain-English box, menu edits and new dishes, "Why?", combinations of levers, replays of scenarios without a bundled trace, narration of non-highlight students, and Insights › Similar nights (no bundle fallback; it shows "Can't reach the search service" with Try again). An adopted API plan still shows on the Dashboard offline (its result is kept in the browser), but it can't be replayed.
 - **For the demo:** run `make serve` next to `make web`, or stick to presets and single levers.
 
 ### U9 · Low · Hall replay geometry is approximate

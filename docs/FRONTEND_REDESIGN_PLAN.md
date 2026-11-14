@@ -1,6 +1,6 @@
 # DC What-If frontend redesign proposal
 
-Status: Guided direction selected, November 13, 2026. The first implementation is now in the main app at `/hall`: illustrated isometric replay, Watch/Try/Compare stages, all station inspectors, continuous full-trace playback, and the existing top-down view. The original standalone concept remains a design reference. Items below that describe zoom, orbital 3D, or richer editing are future work.
+Status: Guided direction selected, November 13, 2026. The first implementation is now in the main app at `/hall`: illustrated isometric replay, Watch/Try/Compare stages, all station inspectors, continuous full-trace playback, and the existing top-down view. The original standalone concept remains a design reference. Items below that describe zoom, orbital 3D, or richer editing are future work. **Update (Nov 13, later):** Kitchen plan and Insights use the same top navigation; Insights has two tabs, Waste history (`/waste`) and **Similar nights** (`/similar-nights`, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), built in the visual system below. The local skill this plan cites (`codex-skills/skills/frontend-design/SKILL.md`) isn't available in a fresh clone (ISSUES T4).
 
 ## Product direction
 
@@ -30,7 +30,7 @@ Use Image 1's clear sequence and stylized dimensional scene, and Image 3's spaci
 | --- | --- | --- |
 | **Simulation** (default) | Watch, change, compare | Hall + the primary Lab workflow; saved scenarios; optional advanced editing |
 | **Kitchen plan** | Decide what to cook and when | Dashboard production plan, quantities, staffing context, print and CSV |
-| **Insights** | Understand history and assumptions | Waste Record, synthetic back-test, model information, calibration link |
+| **Insights** | Understand history and assumptions | Waste Record ("Waste history" tab), synthetic back-test, **Similar nights** tab, model information, calibration link |
 
 Comparison is a stage inside Simulation, not a fourth destination. Retain old route links through redirects and preserve date/scenario context across navigation. Keep saved scenarios in the scenario picker.
 

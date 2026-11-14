@@ -15,6 +15,7 @@ uv run dcsim trace --date 2026-11-13 --out trace.json
 uv run dcsim bench
 uv run pytest -q                          # incl. golden Nov 13 baseline + the team's calibration targets
 DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py   # after an intended change to the numbers
+uv run dcsim tsdb similar --date 2026-11-14 --weather rain   # past nights most like this one, on Tiger (docs/TIGER.md §7)
 ```
 
 Presets: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`, `forecast_reorder` (cook to the expected rush, with safety stock).
@@ -38,6 +39,7 @@ uv run dcsim cache stats|prune     # results live in <repo>/cache (DCSIM_CACHE t
 | `GET /api/dates`, `/api/menu/{date}`, `/api/arrivals/{date}`, `/api/layout`, `/api/presets`, `/api/facts/waste` | Reference data for the pages |
 | `GET/POST /api/scenarios`, `POST /api/scenarios/{id}/adopt`, `DELETE /api/scenarios/{id}` | Saved and adopted what-ifs (one adopted per date); DELETE needs the admin token when `DCSIM_ADMIN_TOKEN` is set |
 | `POST /api/warm`, `GET /api/warm` | Admin job: precompute baseline (+ presets) for dates (`{dates?, presets, n_nights}`); GET polls progress |
+| `GET /api/similar-nights` | `?date=&students=&weather=&event_night=&menu_date=&limit=` → recorded nights before `date` most like it, with their waste and stockouts. Tiger pgvector, else the local synthetic files; 422 on bad input, 503 if Tiger fails after connecting ([docs/SIMILAR_NIGHTS.md](../docs/SIMILAR_NIGHTS.md)) |
 | `POST /api/backtest`, `GET /api/backtest` | Admin job: re-run the back-test (`{plan?, regenerate_history}`) → `backtest.json`; GET polls |
 
 AI routes (`/api/ask`, `/api/narrate`, `/api/explain`, `/api/ai/dish-prior`, `/api/ai/similar-dishes`) are limited to `DCSIM_AI_RATE` requests per minute per client IP (default 20 → 429). Comparisons (`vs_baseline`, `/api/compare`) give each metric a verdict: `better`, `worse`, `inconclusive`, or `same` when the median difference is below a per-metric minimum (`runner.min_meaningful`; e.g. 0.5 min of wait).
@@ -86,6 +88,8 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 | `store.py` | SQLite + trace files cache, saved/adopted scenarios |
 | `service.py` | Cache-aware orchestration: missing seeds in batches of 8, results, traces |
 | `api.py` | FastAPI app, background jobs with in-flight dedupe, SSE streaming |
+| `similar_nights.py` | Similar nights for the page and API: 48-dim condition vectors, cosine ranking, Tiger `dcsim.night_embeddings` or local files |
+| `nightsearch.py` | `dcsim tsdb similar`: 76-dim night vectors in `dcsim.night_vectors` (DiskANN index), held-out check |
 
 ## Guarantees (tested)
 - **Golden baseline:** Nov 13 headline numbers (seeds 1–10) are pinned in `tests/golden/nov13.json`; any change that moves them fails until the file is rewritten on purpose.
@@ -110,7 +114,7 @@ make demo-bundle      # = dcsim waste-gen && dcsim backtest && dcsim bundle --gr
 
 ## Web app
 
-The four pages (Hall, Dashboard, Waste Record, What-If Lab) are in `web/` and read this bundle, so they work with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make serve` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes and "Why?". See `web/README.md` and `docs/UI_ISSUES.md`.
+The web app in `web/` (Simulation with the What-If Lab, Kitchen plan, Insights) reads this bundle, so it works with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make serve` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes, "Why?" and Insights › Similar nights. See `web/README.md` and `docs/UI_ISSUES.md`.
 
 ## Not built yet
 Nav graph and table-level seats (zones are built; seat limits off until real seat counts) · add-ons consuming stock · breakfast and lunch · survey calibration · LLM personas (paused; narration is built) · optimizer · uncertainty sweep · animated 3D Hall. Built since 0.4: late night, kitchen capacity, staffing by hour, per-minute series, allergies, groups, swipe queue, pan sizes.

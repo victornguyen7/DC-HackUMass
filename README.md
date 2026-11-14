@@ -10,7 +10,7 @@ This README is the catch-up guide. Each section links to the detailed doc.
 ---
 
 ## Contents
-1. [What the app does (the 4 pages)](#1-what-the-app-does)
+1. [What the app does (3 destinations)](#1-what-the-app-does)
 2. [Quick start](#2-quick-start)
 3. [How it works](#3-how-it-works)
 4. [Repository map](#4-repository-map)
@@ -23,25 +23,27 @@ This README is the catch-up guide. Each section links to the detailed doc.
 11. [Glossary](#11-glossary)
 12. [Rules of the road](#12-rules-of-the-road)
 13. [Troubleshooting](#13-troubleshooting)
+14. [Branches and merges](#14-branches-and-merges)
 
 ---
 
 ## 1. What the app does
 
-A web app with four pages, designed in Figma (file *DC What-If — Worcester*) and built in `web/`.
+A web app in `web/`. It was first built from the Figma file (*DC What-If — Worcester*), then redesigned (PR #1, [`docs/FRONTEND_REDESIGN_PLAN.md`](docs/FRONTEND_REDESIGN_PLAN.md)) around **three destinations** in a slim top navigation. The routes didn't change.
 
-| Page | What a manager sees | Main data |
-| --- | --- | --- |
-| **Hall** (`/hall`) | The simulated night played back on the Worcester 2nd-floor plan: every dot is a student entering, queuing, getting a plate or bowl, sitting, leaving. Play / pause, 1×–60× speed, a timeline to scrub, color by diet / wait / missed first choice, pan levels per station, "Right now" counters. Click a station for its dishes and line over time; click a student for their timeline and an AI-written story of their night. | Median-night **trace** (per-student events) + result |
-| **Dashboard** (`/dashboard`) | Tonight's plan for the chosen date: expected students, peak time, portions to prepare, forecast waste, dishes at risk, peak wait, all with ranges. Arrivals chart (click a bar to jump the Hall there), alerts, menu by station, the **production plan** (Print, CSV), staffing, and what will be left at close for donation pickup. Shows the plan adopted for that date, or the baseline. | Result of the adopted scenario |
-| **Waste Record** (`/waste`) | Recorded waste history (**synthetic**, clearly labeled) vs. what the recommended plan would have done on each past night: reduction with range, $ per week, stockout trade-off, where waste comes from, top waste dishes with "with plan" numbers, station filters, adopted-plan tracker, CSV export. | Synthetic history + back-test |
-| **What-If Lab** (`/lab`) | Build a scenario: presets, batch-plan sliders per dish, crowd size, servers per station, menu edits (remove a dish, change popularity, **add a new dish with an AI estimate**), or **ask in plain English**. Run 30 paired nights and see results vs. baseline with verdicts, the cook sheet with changed rows, side effects, when pans run empty, where demand moves, and "Why?". Then **Adopt** it for the date or **Watch in 3D** (the Hall replay). | Bundle, or the API for anything not precomputed |
+| Destination | Route | What a manager sees | Main data |
+| --- | --- | --- | --- |
+| **Simulation** | `/hall` | A guided workspace: **Watch the hall → Try a change → Compare**. The night plays back on an illustrated isometric hall (or the measured top-down plan): every dot is a student entering, queuing, getting a plate or bowl, sitting, leaving. Play / pause, 1×–60× speed, a scrubber, one temporary alert at a time for long lines and empty pans. Select a station for its dishes, pan levels and queue over the night; select a student for their journey and an AI-written story. **Try a change** offers presets (smaller batches, an extra Grill server, a busier night); **Compare** shows waste, waiting and dish availability against the baseline with ranges and verdicts, and works on every bundled date without the API. | Median-night **trace** (per-student events) + result |
+| ↳ **What-If Lab** | `/lab` | The advanced settings behind Simulation: batch-plan sliders per dish, crowd size, servers per station, menu edits (remove a dish, change popularity, **add a new dish with an AI estimate**), or **ask in plain English**. Run 30 paired nights and see results vs. baseline with verdicts, the cook sheet with changed rows, side effects, when pans run empty, where demand moves, and "Why?". Then **Adopt** it for the date or watch the replay. | Bundle, or the API for anything not precomputed |
+| **Kitchen plan** | `/dashboard` | Tonight's plan for the chosen date: expected students, peak time, portions to prepare, forecast waste, dishes at risk, peak wait, all with ranges. Arrivals chart with **View alerts** (links into the replay), a Menu tab (`?view=menu`), and the **production plan** (Print, CSV), staffing and what will be left at close in dialogs. Shows the plan adopted for that date, or the baseline. | Result of the adopted scenario |
+| **Insights › Waste history** | `/waste` | Recorded waste history (**synthetic**, clearly labeled) vs. what the recommended plan would have done on each past night: reduction with range, $ per week, stockout trade-off, where waste comes from, top waste dishes with "with plan" numbers, station filters, adopted-plan tracker, CSV export. | Synthetic history + back-test |
+| **Insights › Similar nights** | `/similar-nights` | Describe a night (date, expected students, weather, event night, optionally a prepared menu) and get the recorded nights before it with the most similar conditions, most similar first, with the waste and stockouts each one actually had (recorded outcomes, not a forecast). Searches Tiger with pgvector, or the local synthetic files when Tiger isn't set up. | `GET /api/similar-nights` ([`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md)) |
 
 There is also a standalone **calibration page** (`web/public/calibration.html`, open `/calibration.html` on the dev server) that checks the forecasts against held-out nights (see `docs/TIGER.md`).
 
 **Two ways to run it:**
 - **Offline (demo-safe):** the pages read a precomputed **static bundle** in `web/public/cache` (results, replays, narrations, back-test). No backend, no network.
-- **With the API** (`make serve`): everything above, plus any combination of settings, replays of any scenario, narration of any student, the plain-English box, menu edits, new dishes and "Why?". Features that need the API turn themselves off with a message when it isn't running.
+- **With the API** (`make serve`): everything above, plus any combination of settings, replays of any scenario, narration of any student, the plain-English box, menu edits, new dishes and "Why?". Similar nights always needs the API. Features that need the API turn themselves off, or offer a retry, when it isn't running.
 
 ---
 
@@ -79,7 +81,7 @@ make serve                               # FastAPI on http://127.0.0.1:8000, doc
 make web                                 # http://localhost:5173, proxies /api to :8000
 ```
 
-Try this in the Lab with the API running: type *"one more server at Grill and 10% busier"* into **Ask in plain English**, press **Apply and run**, then **Watch in 3D**.
+Try this in the What-If Lab (`/lab`, the advanced settings behind Simulation) with the API running: type *"one more server at Grill and 10% busier"* into **Ask in plain English**, press **Apply and run**, then watch the replay. Or open **Insights › Similar nights** and press **Find similar nights**.
 
 ### Command-line only (no web)
 ```bash
@@ -150,15 +152,19 @@ HackUMass2026/
 │   │   ├── service.py, store.py, api.py   caching, SQLite, FastAPI
 │   │   ├── synthetic.py, backtest.py      synthetic waste history + back-test
 │   │   ├── calibration.py, tsdb.py        held-out calibration + Tiger Data ledger
+│   │   ├── similar_nights.py  Similar nights search for the page and API (48-dim vectors; Tiger pgvector or local files)
+│   │   ├── nightsearch.py   `dcsim tsdb similar` (76-dim vectors, DiskANN index, held-out check)
 │   │   ├── bundle.py        writes the static demo bundle
 │   │   ├── cli.py           the `dcsim` command
 │   │   └── ai/              LLM client (Gemini/Groq/mock), narration, ask, dish prior, explain, similar dishes
 │   ├── tests/               pytest (engine, API, AI with fakes, calibration, bundle, golden baseline, team targets)
 │   └── .env                 your keys (not committed)
 ├── web/                   React app (see web/README.md)
-│   ├── src/pages/           Hall.tsx, Dashboard.tsx, Waste.tsx, Lab.tsx
-│   ├── src/lib/             data.ts (bundle + API client), playback.ts (trace → dots), store.ts, format.ts, types.ts
-│   ├── src/components/      Shell (sidebar, top bar), Charts
+│   ├── src/pages/           Hall.tsx (Simulation), Lab.tsx, Dashboard.tsx (Kitchen plan), Waste.tsx + SimilarNights.tsx (Insights)
+│   ├── src/lib/             data.ts (bundle + API client), playback.ts (trace → dots), navigation.ts + hallGeometry.ts (walking paths),
+│   │                        useReplayClock.ts, similarNights.ts, store.ts, format.ts, types.ts
+│   ├── src/components/      Shell (top navigation, Insights tabs, top bar), HallScene (isometric canvas), DetailDialog, ReplayAlert, Charts
+│   ├── src/*.css            styles.css (tokens), guided.css (redesign), similar-nights.css
 │   ├── public/cache/        STATIC DEMO BUNDLE (committed, ~17 MB)
 │   ├── public/plan/         floor-plan SVGs (top-down + static 3D render)
 │   ├── public/calibration.html   standalone forecast-calibration page
@@ -170,6 +176,8 @@ HackUMass2026/
 │   └── synthetic/worcester/ SYNTHETIC "recorded" history + backtest.json
 ├── docs/                  design docs and issue lists (see §10)
 ├── survey/                student survey draft (feeds persona calibration)
+├── work/design/           earlier standalone hall concept (dining-simulation.html), not the app
+├── codex-skills           empty: a submodule entry with no .gitmodules (ISSUES T4)
 └── cache/                 local results cache (SQLite + traces); not committed
 ```
 
@@ -194,6 +202,8 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 | Drop cached results from old engine versions | `make cache-clean` |
 | Narrate highlight students | `make narrate` |
 | Tiger Data calibration | `make calibrate` (needs Tiger credentials, see `docs/TIGER.md`) |
+| Load the current synthetic history into Tiger | `cd engine && uv run dcsim tsdb load` (fixes ISSUES T3) |
+| Find past nights like a given one | Insights › Similar nights (needs `make serve`), or `cd engine && uv run dcsim tsdb similar --date 2026-11-14 --weather rain` |
 
 ### Changing the simulation (important)
 1. Change the logic in `engine/src/dcsim/` or an input in `data/worcester/`.
@@ -234,9 +244,9 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
-| Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals |
-| Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | all 4 pages at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/` |
+| Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle, Similar nights search and route; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
+| Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals, Hall playback and walking paths, Similar nights page states (defaults, menu, empty, 422, API down + retry) |
+| Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | Simulation, Kitchen plan, Insights and Lab at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/`. Two Hall steps fail after the redesign (UI_ISSUES U17) |
 | Browser, API up | `make web-test-api` | ask → run, Why?, new dish + AI estimate, adopt → Dashboard, saved list, API replay + narration |
 
 ---
@@ -260,7 +270,9 @@ Consequences:
 
 *As of 2026-11-13, engine 0.6.2. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
-**Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; all four web pages offline and with the API; synthetic history, back-test and Tiger calibration.
+**Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; the redesigned web app (Simulation, Kitchen plan, Insights with Waste history and Similar nights) offline and with the API; synthetic history, back-test and Tiger calibration.
+
+**New since 0.6.2 (merged 2026-11-13; the engine version didn't change):** the frontend redesign (PR #1) and Hall fixes (PR #2); **Similar nights** (`/similar-nights` page + `GET /api/similar-nights`, Tiger pgvector with a local fallback; handoff in PR #3); `dcsim tsdb similar` from the command line (DiskANN, held-out check); `dcsim bundle` narration times out after `DCSIM_LLM_TIMEOUT` seconds and prints one progress line per student (ISSUES L5). Branch by branch: §14.
 
 **New in 0.6.2 (API and UI fixes):** optional admin token and per-IP AI rate limit (A1); job expiry and a smaller trace cache (A2); `POST /api/warm` and `/api/backtest` admin jobs (A3); verdict "no real difference" below a per-metric minimum (C1); a "Needed at peak" servers column on the Dashboard (U5, needs a 0.5.0+ bundle); per-dish $ / week now add up to the average simulated week (U16); the offline plain-English parser no longer mixes "an extra server at Grill" with the extra-server preset (R6).
 
@@ -270,7 +282,7 @@ Consequences:
 
 **New in 0.5.0 (simulation core):** cooks and equipment as limited resources (`kitchen_defaults.json → resources`, placeholders: 12 dinner / 5 late-night cooks since 0.6.1, ovens, steamers, kettles, flat-tops, woks, fryers, tandoors); students wait up to 2 min at an empty pan when a batch is cooking; staffing by hour (`shifts`) with a "servers needed" table; seats counted per night (limits off); golden baseline and calibration-target tests. New result fields: `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `peak_seated`, `staffing`.
 
-**New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey. **Also new:** similar-night search on Tiger from the command line (`dcsim tsdb similar`, see `docs/TIGER.md` §7); the bundle's narration step times out after `DCSIM_LLM_TIMEOUT` seconds and prints one progress line per student (ISSUES L5); the Similar Nights page (`docs/SIMILAR_NIGHTS.md`).
+**New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey.
 
 **Headline numbers right now** (they change whenever the engine changes, so check the app):
 - Fri Nov 13 baseline (engine 0.6.1, median of 10 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 38 stockout-minutes per night (dinner 14, late night 20), about 3,360 portions wasted (dinner ~29% of cooked, late night ~24%). The web app still shows 0.4.1 numbers until the bundle is rebuilt.
@@ -280,11 +292,13 @@ Consequences:
 | Item | Where |
 | --- | --- |
 | Figma frames and pitch use placeholder numbers (e.g. "−18% waste") that don't match the data | `docs/UI_ISSUES.md` U1 |
-| No animated 3D yet: the Hall is a top-down 2D replay; "3D overview" is a still image | U2 / ISSUES N1 |
+| No orbital 3D: the Hall plays on an illustrated isometric view and the top-down plan | U2 / ISSUES N1 |
 | No breakfast/lunch (the Dashboard's "servers needed" column needs the bundle rebuilt to show data) | U4 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
 | The committed demo bundle is engine 0.4.1; rebuild once on the final engine (`make demo-bundle`) | `docs/STATUS.md` |
+| Tiger's copy of the synthetic history is stale (24 of 43 nights differ), so Similar nights gives slightly different matches on Tiger and on the local files | ISSUES T3 |
+| Two Hall steps of the browser smoke test fail after the redesign | UI_ISSUES U17 |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 
 Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.md`** (web app). Ideas ranked by value: `docs/IMPROVEMENTS.md`.
@@ -303,7 +317,9 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`data/README.md`](data/README.md) | You need to find an input or a source |
 | [`data/worcester/ASSUMPTIONS.md`](data/worcester/ASSUMPTIONS.md) | You need to know where a number comes from |
 | [`docs/LLM.md`](docs/LLM.md), [`docs/GEMINI.md`](docs/GEMINI.md) | You touch anything AI: rules, prompts, fallbacks, rate limits |
-| [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data |
+| [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data, `dcsim tsdb similar` |
+| [`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md) | The Similar nights page and API: contract, vector design, UI states, verification |
+| [`docs/FRONTEND_REDESIGN_PLAN.md`](docs/FRONTEND_REDESIGN_PLAN.md) | The redesign's navigation, interaction stages and visual system (follow it for new UI) |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |
 | [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) | Planning what to build next |
 | [`docs/SPONSORS.md`](docs/SPONSORS.md) | Picking up a sponsor-prize feature (Gemini, agent, Tiger Data, Vultr, domain): status and build steps |
@@ -327,6 +343,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | **Verdict** | *better / worse / inconclusive*, from the paired win rate over the 30 nights. |
 | **Back-test** | Re-simulating each past (synthetic) night with the recommended plan to estimate "what if we had used it". |
 | **Bundle** | `web/public/cache`: everything the app needs to demo offline. |
+| **Similar night** | A recorded night before the target date whose conditions (weekday, weather, event, attendance, menu) are closest by cosine similarity. Shown with what actually happened on it; not a forecast. |
 | **Persona** | A type of student (regular, athlete, rushed, social, vegetarian, vegan, halal) with its own share, tastes and patience (`data/worcester/personas.json`). |
 
 ---
@@ -354,6 +371,35 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | Numbers in the app don't match the engine CLI | The bundle is older than the engine. `make cache-clean && make demo-bundle`. |
 | `uv` complains about Python | Needs Python ≥ 3.13: `uv python install 3.13`. |
 | Port 8000 or 5173 is busy | Stop the old server, or `uv run dcsim serve --port 8001` and change the proxy target in `web/vite.config.ts`. |
+| Insights › Similar nights says "Can't reach the search service" | The API isn't running, or it was started before you pulled this feature (`/api/similar-nights` → 404). Restart `make serve`. |
+| `git pull` says "You have divergent branches" | You committed locally while someone pushed or merged a PR. Run `git pull --rebase` (or set `git config pull.rebase true` once). See §14. |
 | Smoke test can't start a browser | It uses your installed Google Chrome (`playwright-core`, `channel: "chrome"`). Install Chrome. |
 
-Similar Nights now has a search API and reference frontend. See [the frontend handoff](docs/SIMILAR_NIGHTS.md) for its contract, behavior, and verification status.
+---
+
+## 14. Branches and merges
+
+Everything lives on `main`. As of 2026-11-13 every branch below is merged, so they can be deleted on GitHub.
+
+| Branch | By | What it brought | Merged |
+| --- | --- | --- | --- |
+| `frontend/redesign` | Eric | The redesigned web app: top navigation (Simulation / Kitchen plan / Insights), guided **Watch → Try a change → Compare**, illustrated isometric hall (`HallScene.tsx`), walking paths around counters and tables (`navigation.ts`, `hallGeometry.ts`), replay clock and alerts, detail dialogs, tablet and phone layouts. Plan: `docs/FRONTEND_REDESIGN_PLAN.md` | PR #1 → `0ba140e` |
+| `fix-bug` | Eric | Hall fixes after the redesign: Compare keeps its results while a replay is retried, a "replay unavailable" panel with retry for dates without a bundled animation, more Hall tests | PR #2 → `2662dc8` |
+| `codex/similar-nights-docs` | Ky | `docs/SIMILAR_NIGHTS.md`: the Similar nights API contract and vector design, plus links. Docs only; the code was never pushed, so it was rebuilt from this contract (`137c784`) | PR #3 → `3c62eff` |
+| `tigerdata` | Victor | Points at the sponsor-guide commit (`bb86eab`); nothing beyond `main` | already in `main` |
+
+Pushed straight to `main` on 2026-11-13 (not through a branch):
+
+| Commit | What |
+| --- | --- |
+| `c936f81`, `4609597` | Engine 0.6.2: admin token, AI rate limit, job expiry, admin jobs, "no real difference" verdict, Dashboard servers-needed column, per-dish $ fix |
+| `137c784` | Similar nights: `similar_nights.py`, `GET /api/similar-nights`, the Insights › Similar nights page, 30 tests |
+| `dcf6772` | Narration timeout and progress lines in `dcsim bundle` (ISSUES L5) |
+| `9e01ec7` | `dcsim tsdb similar` (`nightsearch.py`, DiskANN index, held-out check) |
+
+**Working with branches**
+- Branch from an up-to-date `main` (`git pull --rebase` first), open a PR, merge on GitHub.
+- Set `git config pull.rebase true` once. Then a pull replays your local commits on top of the remote ones instead of stopping with "divergent branches".
+- Before merging UI work: `make web-test`, `make web-build` and the smoke test. Before merging engine work: `make test`, and bump `ENGINE_VERSION` if the numbers move.
+- Don't rebuild or commit the demo bundle on a branch. It is rebuilt once, on the final `main`, before the demo.
+- New UI follows `docs/FRONTEND_REDESIGN_PLAN.md` (navigation and "Visual system").

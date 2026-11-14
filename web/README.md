@@ -1,7 +1,7 @@
 # DC What-If · web
 
-The main navigation is **Simulation**, **Kitchen plan**, and **Insights**. The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
-React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS (`src/styles.css` and `src/guided.css`).
+The main navigation is **Simulation**, **Kitchen plan**, and **Insights** (tabs: **Waste history** and **Similar nights**). The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
+React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS: `src/styles.css` (tokens and primitives), `src/guided.css` (the redesign) and `src/similar-nights.css`. New UI follows the "Visual system" in [`docs/FRONTEND_REDESIGN_PLAN.md`](../docs/FRONTEND_REDESIGN_PLAN.md).
 
 The app reads the static demo bundle in `public/cache` (written by `make demo-bundle`), so the demo runs with **no API and no network**.
 If the engine API is running (`make serve`, port 8000), Vite proxies `/api` to it and the What-If Lab can also run combinations that aren't in the bundle.
@@ -22,6 +22,7 @@ The pages check `/api/health` (the dev/preview proxy answers `{ok:false}` when t
 
 - **Hall:** replays any scenario without a bundled trace (`/api/traces/{hash}`), highlight students (`/highlights`), and narrates any student on request (`/api/narrate`).
 - **What-If Lab:** plain-English box (`/api/ask`), menu edits and the new-dish form with *suggest* and **AI estimate** (`/api/ai/similar-dishes`, `/api/ai/dish-prior`), lever combinations (`/api/simulate`), "Why?" (`/api/explain`), and save/adopt on the API (`/api/scenarios`). API runs can be watched and adopted; their results are kept in `localStorage` so an adopted plan still shows offline.
+- **Insights › Similar nights:** `GET /api/similar-nights`. This page has no bundle data: without the API it says the search service isn't answering and offers **Try again**.
 
 ## Pages
 
@@ -29,8 +30,9 @@ The pages check `/api/health` (the dev/preview proxy answers `{ok:false}` when t
 | --- | --- | --- |
 | `/hall` | Guided simulation | `results/<hash>.json`, `traces/<hash>_s<seed>.json.gz`, `narration/…`, `public/plan/*.svg` |
 | `/dashboard` | Kitchen plan | result of the scenario adopted for the date (baseline if none), `ref/dates.json`, `ref/menu/<date>.json` |
-| `/waste` | Insights | `waste/history.json`, `waste/backtest.json` (incl. per-dish and per-station back-test), `waste/facts.json` |
+| `/waste` | Insights › Waste history | `waste/history.json`, `waste/backtest.json` (incl. per-dish and per-station back-test), `waste/facts.json` |
 | `/lab` | Advanced scenario settings | presets + lever grid from the manifest; `POST /api/simulate` for anything else |
+| `/similar-nights` | Insights › Similar nights | `manifest.json` (menu dates), `GET /api/similar-nights` |
 
 Landscape tablets use a viewport-height Guided workspace: station details scroll independently, and the hall, playback controls, and scrubber stay together. **Replay options & legend** opens the scenario selector and metadata without adding a permanent panel. The scene fits its actual floor bounds and keeps station labels apart in short viewports. Touch controls are at least 44px for primary actions; touch selects use 16px text to avoid focus zoom.
 
@@ -66,6 +68,11 @@ The committed bundle in `public/cache` is from engine **0.4.1**; run `make demo-
 
 Known gaps and issues found while testing: **[docs/UI_ISSUES.md](../docs/UI_ISSUES.md)**.
 
-## Similar Nights integration
+## Similar nights
 
-The /similar-nights route calls the Python search API. For the teammate UI integration, use [the Similar Nights handoff](../docs/SIMILAR_NIGHTS.md), including request and response types, loading and error states, null handling, and remaining verification.
+`/similar-nights` (Insights › Similar nights) finds recorded nights before a date with the most similar conditions. API contract, vector design and verification: [`docs/SIMILAR_NIGHTS.md`](../docs/SIMILAR_NIGHTS.md).
+
+- Files: `src/pages/SimilarNights.tsx` (page), `src/lib/similarNights.ts` (types, query builder, error classification), `src/similar-nights.css`, `InsightsTabs` in `src/components/Shell.tsx` (also shown on `/waste`). The Insights link stays highlighted on both routes.
+- Defaults: the date selected elsewhere in the app, 4,000 students, rain, not an event night, that date's prepared menu when there is one (the manager can switch to Unknown menu, which omits `menu_date`), 5 results.
+- States: before a search, loading (skeleton, button disabled), results (summary of recorded outcomes with median and range, then ranked match cards), no earlier nights, invalid input (422 message), history unavailable (the API's fixed 503 detail), and API not answering (proxy 503, network error or 404), each with **Try again** and the inputs kept. No terminal commands in user-facing text.
+- Tests: `src/pages/SimilarNights.test.tsx` (9).

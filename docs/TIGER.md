@@ -17,7 +17,7 @@ uv run dcsim bundle --waste-only                  # refresh calibration + ledger
 ```
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
-(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (similar-night search). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, and adopting a scenario
+(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page, table `dcsim.night_embeddings`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
 (`POST /api/scenarios/{id}/adopt`, or `POST /api/scenarios` with `status: "adopted"`) logs its forecast. The What-If
 Lab's **Adopt** button makes that call when the API is up, so adopting in the web app writes to the ledger. Page: `web/public/calibration.html`.
 

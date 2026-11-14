@@ -36,6 +36,9 @@
   h2 { font-size: 18px; margin: 0 0 4px; }
   h3 { font-size: 14px; margin: 20px 0 8px; }
   header p { color: var(--ink-2); max-width: 70ch; margin: 6px 0 0; }
+  header .back { margin: 0 0 14px; font-size: 13px; }
+  header .back a { color: var(--ink-2); text-decoration: none; }
+  header .back a:hover, header .back a:focus-visible { color: var(--ink); text-decoration: underline; }
   code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--chip); padding: 1px 5px; border-radius: 5px; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .02em; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--ink-2); margin: 0 6px 10px 0; }
   .live { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-top: 12px; color: var(--ink-2); min-height: 22px; }
@@ -118,6 +121,7 @@
 <body>
 <main>
   <header>
+    <p class="back"><a href="/waste">← Insights</a></p>
     <span class="badge">Tiger Data</span><span class="badge" id="version">TimescaleDB</span><span class="badge">Synthetic history</span>
     <h1>Kitchen data, live from one database</h1>
     <p>Weigh-ins and pan levels land in hypertables. Continuous aggregates keep the charts below current, and the same Postgres database holds the plan and the forecasts they are scored against.</p>

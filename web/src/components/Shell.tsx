@@ -43,6 +43,8 @@ export function InsightsTabs() {
     <nav className="insights-tabs no-print" aria-label="Insights sections">
       <NavLink to="/waste" end>Waste history</NavLink>
       <NavLink to="/similar-nights">Similar nights</NavLink>
+      {/* Standalone page (web/public/tiger.html): reads Tiger's continuous aggregates, snapshot when offline. */}
+      <a href="/tiger.html">Live data</a>
     </nav>
   );
 }

@@ -37,7 +37,7 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 4 | Calibration over time (weekly coverage aggregate + scheduled refresh) | idea | below |
 | 5 | Weather and event flags as crowd-forecast inputs | idea | below |
 | 6 | Tiger MCP server for live questions in the demo | idea (not installed) | below |
-| 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14, **not committed yet** (§8 has the handoff) | `dcsim tsdb bench`, `/api/tiger/*`, `web/public/tiger.html` |
+| 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14 (commit `78d9239`; §8) | `dcsim tsdb bench`, `/api/tiger/*`, `web/public/tiger.html` |
 | 7 | **Similar-night search** with pgvector + a pgvectorscale DiskANN index | built | `dcsim tsdb similar`, `dcsim.night_vectors` (§7); API + web page handoff: [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md) |
 
 ## Schema (`dcsim`)
@@ -212,7 +212,7 @@ forecast. It earns more with real history, where menus rotate independently of t
 ## 8. Live dashboard: aggregates, benchmark, one query across the stack
 
 Built 2026-11-14 from the Tiger track plan (unified stack, hypertables, continuous aggregates, compression,
-show the performance, forecasting pitch). **Status: working and tested, not committed.** The handoff list is at
+show the performance, forecasting pitch). **Status: working, tested and committed (`78d9239`).** What is left is at
 the end of this section.
 
 ### What the plan asked for, and where it stands
@@ -297,7 +297,8 @@ When the API isn't reachable it falls back to `web/public/cache/waste/tiger.json
 written directly from that function, not by a bundle run, so `manifest.json` doesn't list it yet (the page doesn't
 need it to).
 
-The page is not linked from the React app. Reads take about 1.2 s per poll from a laptop (most of it connecting
+The Insights tabs link to it (**Live data**, next to Waste history and Similar nights), and the page links back.
+`web/scripts/smoke.mjs` opens it at all three widths. Reads take about 1.2 s per poll from a laptop (most of it connecting
 to Tiger Cloud).
 
 ### Demo script (about 2 minutes)
@@ -332,20 +333,14 @@ live and offline, with no console errors. The web unit tests and smoke scripts w
 
 Still to do:
 
-1. **Commit.** Nothing here is committed. Changed: `Makefile`, `engine/sql/tiger_website.sql`,
-   `engine/src/dcsim/{api,bundle,cli,tiger_sql,tsdb}.py`, `docs/` (this file, STATUS, SPONSORS), READMEs. New:
-   `engine/tests/test_tiger_dashboard.py`, `web/public/tiger.html`, `web/public/cache/waste/tiger.json`.
-   (`tiger_sql.py` also carries one unrelated `# pyright: ignore` line from another session.)
-2. **Restart `make serve`.** An API started before this work answers 404 on `/api/tiger/*`, and the page then
+1. **Restart `make serve`.** An API started before this work answers 404 on `/api/tiger/*`, and the page then
    shows the snapshot.
-3. **Re-run `dcsim bundle --waste-only` before the demo** so the snapshot and `manifest.json` are current
+2. **Re-run `dcsim bundle --waste-only` before the demo** so the snapshot and `manifest.json` are current
    (seconds; it does not rebuild the simulation bundle).
-4. **Link the page** from Insights (next to Waste history) if it should be reachable in the app, and add it to
-   `web/scripts/smoke.mjs`.
-5. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
+3. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
    `DELETE` the `run_id = 'observed:live' AND night = '2026-11-13'` rows from `nights` and `pan_windows`, the
    Nov 13 rows from `waste_log`, then `dcsim tsdb refresh`. Worth a small CLI action if rehearsing more than once.
-6. Ideas not started: a weekly coverage aggregate over the scorecard (#4 below), a longer history (the
+4. Ideas not started: a weekly coverage aggregate over the scorecard (#4 below), a longer history (the
    "500-night" query) so the timings mean more, columnstore on the aggregates themselves, the Tiger MCP server (#6).
 
 ## Not built yet

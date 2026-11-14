@@ -9,7 +9,6 @@ Last updated: 2026-11-13, engine 0.6.2.
 
 ## Before the demo
 - ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.2, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
-- ⚠️ Commit the command-line similar-night search (`dcsim tsdb similar`) once it's finished. The narration timeout fix (L5) and the Similar Nights page are committed.
 
 ---
 
@@ -106,7 +105,7 @@ Last updated: 2026-11-13, engine 0.6.2.
 | --- | --- | --- |
 | 1 | Gemini API | ◐ Ask box, narration, explain, dish prior, embeddings on Gemini; function calling and menu photo open |
 | 2 | Agentic hack (Sentient) | ✗ Planning agent not built (needs tools + loop; optimizer N6 optional) |
-| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built ⚠️ not committed; 500-night demo query and MCP open |
+| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; 500-night demo query and MCP open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 

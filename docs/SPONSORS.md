@@ -3,7 +3,7 @@
 Five sponsor prizes that fit DC What-If, what already exists in the repo for each one, and the steps to finish it.
 Pick one, put your name in the **Owner** column, and update **Status** as you go.
 
-Status as of 2026-11-13, engine 0.4.1.
+Status as of 2026-11-13, engine 0.6.1 (kitchen capacity since 0.5.0 makes the optimizer meaningful: small batches now cost cook and oven time; a `forecast_reorder` preset exists to compare against). Roll-up of everything done / open: [STATUS.md](STATUS.md).
 
 ---
 
@@ -13,7 +13,7 @@ Status as of 2026-11-13, engine 0.4.1.
 | --- | --- | --- | --- | --- | --- |
 | 1 | Best Use of Gemini API | Plain-English what-if box on Gemini; **menu photo → menu JSON** | ◐ box built, photo import not | S–M | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent**: goal → tool calls → checks its own results → production plan | ✗ not built | M–L | |
-| 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side | ◐ mostly built | S (polish + demo) | |
+| 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night search | ◐ mostly built | S (polish + demo) | |
 | 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ✗ not built | S–M | |
 | 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done | ~10 min | |
 
@@ -121,15 +121,17 @@ Full details: [`TIGER.md`](TIGER.md). Code: `engine/src/dcsim/tsdb.py`, `engine/
 | Append-only **forecast ledger**; adopting a plan in the Lab writes to it | ✅ built |
 | Calibration page (`/calibration.html`) | ✅ built |
 | Columnstore compression | ✅ built (`make tsdb-compress`) |
-| Calibration over time, weather/event flags, Tiger MCP for live questions, similar-night vector search | ✗ ideas (TIGER.md "Not built yet") |
+| **Similar-night search**: pgvector + pgvectorscale DiskANN index over 76-dim night vectors (weekday, weather, event, menu), with a held-out check (`uv run dcsim tsdb similar --date 2026-11-14 --weather rain`) | ✅ built (`nightsearch.py`, TIGER.md §7) |
+| Calibration over time, weather/event flags, Tiger MCP for live questions | ✗ ideas (TIGER.md "Not built yet"; MCP not installed) |
 
 Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql://...` in `engine/.env`.
 
 ### To build or polish (S)
 1. **Demo query from the pitch:** "average empty-pan minutes for General Tso's across 500 nights". Add it as a named query in `tsdb.QUERIES` (`uv run dcsim tsdb query <name>`) built on `dish_nightly`, and run enough simulated nights (≥ 500) for that date.
 2. **Tiger MCP server** (TIGER.md #6): `tiger mcp start`, then judges ask questions in plain English against the tables live. Keep `read_only` on.
-3. **Show it in the app:** link the calibration page from the Waste Record page, and show "forecast logged to Tiger ✓" after **Adopt**.
-4. **Be honest on stage:** the "observed" nights are **synthetic**. Say so (README §8).
+3. **Similar nights on stage:** "Which past nights look like tonight, and what happened on them?" is a good live demo of pgvector + pgvectorscale on Tiger. Show the held-out check too, and say plainly that it's a hand-built feature vector, not a learned embedding.
+4. **Show it in the app:** link the calibration page from the Waste Record page, and show "forecast logged to Tiger ✓" after **Adopt**.
+5. **Be honest on stage:** the "observed" nights are **synthetic**. Say so (README §8).
 
 ---
 

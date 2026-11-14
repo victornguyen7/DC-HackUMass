@@ -157,11 +157,15 @@ def main(argv: list[str] | None = None) -> None:
     ex.add_argument("--preset", choices=sorted(PRESETS), required=True)
     ex.add_argument("--nights", type=int, default=30)
     tq = sub.add_parser("tsdb", help="Tiger Data (TimescaleDB): observed nights and simulated runs side by side")
-    tq.add_argument("action", choices=["init", "load", "query", "compress", "observe"],
+    tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar"],
                     help="init: create schema · load: recorded history -> observed rows · query: run a named query or SQL"
                          " · compress: convert older chunks to the columnstore now and report sizes"
-                         " · observe: generate + load the SYNTHETIC observation for --date (scores its logged forecasts)")
-    tq.add_argument("--date", help="night for `observe`")
+                         " · observe: generate + load the SYNTHETIC observation for --date (scores its logged forecasts)"
+                         " · similar: past nights most like --date (pgvector) and a held-out check")
+    tq.add_argument("--date", help="night for `observe` / `similar`")
+    tq.add_argument("--weather", choices=["clear", "rain", "cold", "snow"], help="forecast weather for `similar`")
+    tq.add_argument("--event", action="store_true", help="`similar`: the night is an event night")
+    tq.add_argument("-k", type=int, default=5, help="`similar`: how many nights")
     tq.add_argument("query", nargs="?", default="status", help="query name (status, situations, weekdays, pans, "
                     "dishes, coverage, nights, calibrations) or a SQL string")
     fc = sub.add_parser("forecast", help="log a naive + calibrated forecast for a night in the append-only Tiger ledger")
@@ -324,6 +328,32 @@ def _tiger(args) -> None:
                   f"{r['waste_lb']} lb waste, {r['stockout_min']} stockout min")
             cols, rows = tsdb.run_query(conn, "ledger")
             print(tsdb.format_table(cols, [x for x in rows if str(x[0]) == args.date]))
+        elif args.cmd == "tsdb" and args.action == "similar":
+            from . import nightsearch as ns
+
+            if not args.date:
+                raise SystemExit("--date is required for similar")
+            index = ns.init(conn)
+            n = ns.build(conn)
+            vec, q = ns.query_vector(args.date, args.weather, args.event)
+            print(f"{n} observed nights embedded ({ns.DIM} dims, index: {index}). Query: {q['weekday']} {q['night']}, "
+                  f"{q['n_dishes']} dinner dishes, weather {q['weather'] or 'not given (ignored)'}"
+                  f"{', event night' if q['event_night'] else ''}\n")
+            near = ns.similar(conn, vec, k=args.k, exclude=q["night"])
+            cols = ["night", "weekday", "weather", "event_night", "distance", "students", "waste_lb", "stockout_min"]
+            print(tsdb.format_table(cols, [[r[c] if c != "distance" else round(r[c], 3) for c in cols] for r in near]))
+            if near:
+                avg = {m: sum(float(r[m]) for r in near) / len(near) for m in ns.OUTCOMES}
+                print(f"\naverage of these {len(near)}: {avg['students']:.0f} students, {avg['waste_lb']:.0f} lb waste, "
+                      f"{avg['stockout_min']:.0f} stockout min")
+            bt = ns.backtest(conn, tsdb.TEST_FROM, k=args.k)
+            if bt.get("nights"):
+                print(f"\nheld-out check ({bt['nights']} nights from {tsdb.TEST_FROM}, neighbours from the "
+                      f"{bt['train_nights']} training nights only), mean absolute error:")
+                for m in ns.OUTCOMES:
+                    e = bt[m]
+                    print(f"  {m:<13} similar nights {e['knn']:>6}   training mean {e['train_mean']:>6}"
+                          f"   same-weekday mean {e['weekday_mean']:>6}")
         elif args.cmd == "tsdb" and args.action == "compress":
             tsdb.init_schema(conn)
             r = tsdb.compress_now(conn)

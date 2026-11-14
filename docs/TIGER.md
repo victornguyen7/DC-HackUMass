@@ -12,11 +12,12 @@ cd engine && uv run dcsim tsdb query coverage     # or: status situations weekda
 uv run dcsim tsdb query "SELECT ..."              # any SQL
 uv run dcsim forecast --date 2026-11-15 --preset smaller_batches   # log a forecast in the ledger (adopting in the app does this too)
 uv run dcsim tsdb observe --date 2026-11-15       # SYNTHETIC: let that night "happen", then see it scored
+uv run dcsim tsdb similar --date 2026-11-14 --weather rain   # past nights most like this one (pgvector), + held-out check
 uv run dcsim bundle --waste-only                  # refresh calibration + ledger files in the demo bundle (seconds)
 ```
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
-(protocol, forecasts). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, and adopting a scenario
+(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (similar-night search). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, and adopting a scenario
 (`POST /api/scenarios/{id}/adopt`, or `POST /api/scenarios` with `status: "adopted"`) logs its forecast. The What-If
 Lab's **Adopt** button makes that call when the API is up, so adopting in the web app writes to the ledger. Page: `web/public/calibration.html`.
 
@@ -30,8 +31,8 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 3 | **Columnstore compression** with an automatic policy | built | `dcsim tsdb compress` |
 | 4 | Calibration over time (weekly coverage aggregate + scheduled refresh) | idea | below |
 | 5 | Weather and event flags as crowd-forecast inputs | idea | below |
-| 6 | Tiger MCP server for live questions in the demo | idea | below |
-| 7 | Vector search for similar nights (pgvector) | implemented, live search verified | [Handoff](SIMILAR_NIGHTS.md) |
+| 6 | Tiger MCP server for live questions in the demo | idea (not installed) | below |
+| 7 | **Similar-night search** with pgvector + a pgvectorscale DiskANN index | built | `dcsim tsdb similar`, `dcsim.night_vectors` (§7); API + web page handoff: [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md) |
 
 ## Schema (`dcsim`)
 
@@ -45,6 +46,7 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | `dish_nightly` | **continuous aggregate** over `pan_windows` | | per dish per night per run: cooked, eaten, left at close, empty windows. Bucketed in local time, because dinner crosses midnight UTC |
 | `forecast_check` | view | | per observed night and scenario: simulated p10 / p50 / p90 and whether the observation fell inside |
 | `forecasts` | table, **append-only** | 1 per forecast | the ledger: naive and calibrated p10 / p50 / p90 for students, waste, stockouts, cooked, plus samples (JSONB) |
+| `night_vectors` | table + DiskANN index | 1 per observed night | 76-dim night vector (weekday, weather, event, hashed menu) for `dcsim tsdb similar` |
 | `forecast_scorecard` | view | | each ledger forecast next to the observed night: `issued_before_open`, `inside` / `outside` / `awaiting` |
 
 `scenario` tells the rows apart:
@@ -68,6 +70,8 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 6. **Recovery check.** Possible only because the data is synthetic: the fitted values are compared with the generator's hidden ones. It tests the pipeline, not the engine.
 
 ### Result (engine 0.3.3, SYNTHETIC history)
+
+*Measured on engine 0.3.3. The engine is 0.6.0 and the synthetic history was regenerated (late night, crowd by date, kitchen capacity); re-run `make calibrate` to refresh this table.*
 
 | Held-out nights (n = 14) | naive inside 10–90% | calibrated inside 10–90% | naive bias / CRPS | calibrated bias / CRPS |
 | --- | --- | --- | --- | --- |
@@ -149,6 +153,36 @@ recompresses chunks that calibrate rewrote, vacuums, and reports:
 On-disk total is 13–16 MB (higher right after a calibrate, until autovacuum catches up), because each chunk keeps fixed index and heap overhead and the newest week stays in
 row-store until it is a day old. Calibrate still runs (33 s) with identical scores on compressed tables.
 
+## 7. Similar-night search
+
+`dcsim tsdb similar --date D [--weather rain] [--event] [-k 5]` lists the observed nights most like D and what
+happened on them, then runs a held-out check. Each observed night is one 76-dim vector in `dcsim.night_vectors`
+(extension `vector`, DiskANN index from `vectorscale`; falls back to an HNSW index without it):
+
+| block | dims | from |
+| --- | --- | --- |
+| weekday | 7 | one-hot |
+| weather | 4 | clear / rain / cold / snow; all zero when not given, so it can't favour any past night |
+| event night | 1 | flag |
+| menu | 64 | the dishes put out that night (`pan_windows`), feature-hashed; for D, its planned dinner menu |
+
+Blocks are scaled to unit length and weighted, and distance is cosine. It is a hand-built feature vector, not a
+learned embedding, so "similar" means "same kind of night, same menu". The command rebuilds the vectors on each
+run (43 nights, under a second).
+
+**Held-out check (SYNTHETIC history, k = 5, neighbours from the 28 training nights, 14 test nights), mean absolute error:**
+
+| outcome | similar nights | training mean | same-weekday mean |
+| --- | --- | --- | --- |
+| students | 226.6 | 231.1 | 230.5 |
+| waste lb | 74.3 | 96.7 | **70.1** |
+| stockout min | 25.3 | 26.9 | **25.0** |
+
+It beats the overall average on waste but is no better than "average of the same weekday". The synthetic history
+reuses 7 menus, one per weekday, so menu and weekday carry the same information here, and the five Saturdays tie
+at the same distance. Treat it as a lookup ("what happened last time we served this on a Saturday"), not a
+forecast. It earns more with real history, where menus rotate independently of the weekday.
+
 ## Not built yet
 
 **4. Calibration over time.** A continuous aggregate of `forecast_scorecard` by week (coverage, bias), refreshed by a
@@ -159,11 +193,16 @@ Needs a few weeks of ledger entries to be worth showing.
 situation on the training weeks and keep the change only if held-out CRPS improves. So far, clear held-out nights
 were also about 150 students below forecast, so weather may not explain much.
 
-**6. Tiger MCP server.** `tiger mcp start` runs Tiger's MCP server with the CLI's login. Add it to Claude Code and
-judges' questions ("which dishes ran out on rainy Fridays?") can be answered live against these tables.
-Keep `read_only` on for the demo.
+**6. Tiger MCP server.** `tiger mcp install claude-code` adds Tiger's MCP server (it uses the CLI's login), and
+judges' questions ("which dishes ran out on rainy Fridays?") can be answered live with its `db_query` tool against
+these tables. Not installed: it changes your Claude Code config. **There is no read-only switch** (checked:
+`tiger mcp get db_query` marks it destructive): `db_query` runs any SQL as `tsdbadmin`, and the server
+also exposes `service_delete`, `service_resize` and `service_update_password`. For the demo, keep Claude Code's
+per-call approval on and deny the `service_*` tools. Safer still: a read replica (`db_query` on a replica set id is
+read-only) or a `SELECT`-only role. The ledger triggers still block edits to `dcsim.forecasts` either way.
 
-Similar-night search is implemented with exact pgvector cosine scoring and a local synthetic fallback. See [the integration handoff](SIMILAR_NIGHTS.md) for the API, feature weights, persistence behavior, and verification gaps.
+Similar-night search: the CLI version is in §7 below. A teammate's API and web page version (`GET /api/similar-nights`,
+exact pgvector cosine scoring, local synthetic fallback) is described in [the integration handoff](SIMILAR_NIGHTS.md).
 
 ## Useful queries
 

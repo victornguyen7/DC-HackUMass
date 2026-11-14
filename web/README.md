@@ -65,3 +65,7 @@ Typed in `src/lib/types.ts` (optional, so the 0.4.1 bundle still works): `headli
 The committed bundle in `public/cache` is from engine **0.4.1**; run `make demo-bundle` once on the final engine.
 
 Known gaps and issues found while testing: **[docs/UI_ISSUES.md](../docs/UI_ISSUES.md)**.
+
+## Similar Nights integration
+
+The /similar-nights route calls the Python search API. For the teammate UI integration, use [the Similar Nights handoff](../docs/SIMILAR_NIGHTS.md), including request and response types, loading and error states, null handling, and remaining verification.

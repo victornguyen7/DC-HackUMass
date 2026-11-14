@@ -31,7 +31,7 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 4 | Calibration over time (weekly coverage aggregate + scheduled refresh) | idea | below |
 | 5 | Weather and event flags as crowd-forecast inputs | idea | below |
 | 6 | Tiger MCP server for live questions in the demo | idea | below |
-| 7 | Vector search for similar nights (pgvector / pgvectorscale) | idea | below |
+| 7 | Vector search for similar nights (pgvector) | implemented, live search verified | [Handoff](SIMILAR_NIGHTS.md) |
 
 ## Schema (`dcsim`)
 
@@ -163,8 +163,7 @@ were also about 150 students below forecast, so weather may not explain much.
 judges' questions ("which dishes ran out on rainy Fridays?") can be answered live against these tables.
 Keep `read_only` on for the demo.
 
-**7. Similar-night search.** The service has `vector` (0.8.7) and `vectorscale` (0.9.0). Embed each night (menu,
-situation, outcome) and offer "past nights most like tonight". It looks good but does less for credibility than 1–4.
+Similar-night search is implemented with exact pgvector cosine scoring and a local synthetic fallback. See [the integration handoff](SIMILAR_NIGHTS.md) for the API, feature weights, persistence behavior, and verification gaps.
 
 ## Useful queries
 

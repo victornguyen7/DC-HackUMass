@@ -266,25 +266,61 @@ function ProductionPlan({ r, date }: { r: Result; date: string }) {
   );
 }
 
+function hourLabel(h: number) {
+  const h12 = ((h + 11) % 12) + 1;
+  return `${h12}${h % 24 >= 12 ? "pm" : "am"}`;
+}
+
+/** Servers needed per station and hour for servers ≤85% busy (engine 0.5.0 `result.staffing`, UI_ISSUES U5). */
+export function staffingNeed(r: Result, sid: string): { peak: number; hour: number | null; byHour: [number, number][] } {
+  const byHour = Object.entries(r.staffing?.[sid] ?? {}).map(([h, n]) => [Number(h), n] as [number, number]).sort((a, b) => a[0] - b[0]);
+  const top = byHour.reduce<[number, number] | null>((best, x) => (!best || x[1] > best[1] ? x : best), null);
+  return { peak: top ? top[1] : 0, hour: top ? top[0] : null, byHour };
+}
+
 function Staffing({ r }: { r: Result }) {
   const rows = r.stations.filter((s) => !s.self_serve).sort((a, b) => b.max_queue.p50 - a.max_queue.p50);
+  const has = !!r.staffing && Object.keys(r.staffing).length > 0;
+  const short = has ? rows.filter((s) => staffingNeed(r, s.id).peak > s.servers) : [];
   return (
     <section className="card">
       <h2>Staffing</h2>
-      <div className="hint" style={{ marginBottom: 8 }}>Servers planned per station and the longest line they face (median night)</div>
+      <div className="hint" style={{ marginBottom: 8 }}>Servers planned per station, the longest line they face (median night){has ? ", and the servers needed in the busiest hour to keep them at most 85% busy" : ""}</div>
       <table className="t">
-        <thead><tr><th>Station</th><th className="n">Servers</th><th className="n">Peak line</th></tr></thead>
+        <thead><tr><th>Station</th><th className="n">Servers</th><th className="n">Peak line</th>{has && <th className="n">Needed at peak</th>}</tr></thead>
         <tbody>
-          {rows.map((s) => (
-            <tr key={s.id}>
-              <td>{s.name}</td>
-              <td className="n">{s.servers}</td>
-              <td className="n"><span className={`chip ${s.max_queue.p50 >= 25 ? "bad" : s.max_queue.p50 >= 12 ? "warn" : ""}`}>{Math.round(s.max_queue.p50)}</span></td>
-            </tr>
-          ))}
+          {rows.map((s) => {
+            const need = staffingNeed(r, s.id);
+            return (
+              <tr key={s.id}>
+                <td>{s.name}</td>
+                <td className="n">{s.servers}</td>
+                <td className="n"><span className={`chip ${s.max_queue.p50 >= 25 ? "bad" : s.max_queue.p50 >= 12 ? "warn" : ""}`}>{Math.round(s.max_queue.p50)}</span></td>
+                {has && (
+                  <td className="n">
+                    <span className={`chip ${need.peak > s.servers ? "warn" : "good"}`} title={need.byHour.map(([h, n]) => `${hourLabel(h)}: ${n}`).join(" · ")}>
+                      {need.peak}{need.hour !== null ? ` · ${hourLabel(need.hour)}` : ""}
+                    </span>
+                  </td>
+                )}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
-      <div className="hint" style={{ marginTop: 6 }}>By-hour "servers needed for p90 wait &lt; 8 min" isn't computed by the engine yet.</div>
+      {has ? (
+        short.length > 0 && (
+          <div className="stack" style={{ marginTop: 8, gap: 4 }}>
+            {short.map((s) => (
+              <div key={s.id} className="hint">
+                <b>{s.name}</b> by hour: {staffingNeed(r, s.id).byHour.map(([h, n]) => `${hourLabel(h)} ${n}`).join(" · ")} (has {s.servers})
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
+        <div className="hint" style={{ marginTop: 6 }}>"Servers needed" by hour comes with engine 0.5.0+ results; this demo bundle is older (rebuild with <code>make demo-bundle</code>, or run the API).</div>
+      )}
     </section>
   );
 }

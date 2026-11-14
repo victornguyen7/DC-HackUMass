@@ -3,12 +3,12 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-13, engine 0.6.1.
+Last updated: 2026-11-13, engine 0.6.2.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
 ## Before the demo
-- ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.1, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
+- ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.2, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
 - ⚠️ Commit the narration timeout fix (L5) and the similar-night search (Tiger) once they're finished.
 
 ---
@@ -17,9 +17,9 @@ Last updated: 2026-11-13, engine 0.6.1.
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 18 | 1 | 4 | [ISSUES.md](ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 18 | 2 | 3 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 1 | 6 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
-| Web UI issues | 7 | 4 | 5 | [UI_ISSUES.md](UI_ISSUES.md) |
+| Web UI issues | 9 | 3 | 5 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
 
 ---
@@ -35,9 +35,9 @@ Last updated: 2026-11-13, engine 0.6.1.
 | E5 | Same crowd every date | ✅ Fixed 0.4.2 (`crowd_by_date.json`, placeholder multipliers; needs real swipe data) |
 | E6 | Noodle Bowl popularity per station, not per dish | ✅ Fixed 0.6.0 (Hot Pot, Pho, Tom Yum, Taiwan Pork 2×; ramen 1×) |
 | E7 | Thanksgiving carving modeled as pre-made pans | ✅ Fixed 0.4.2 (confirm with the team) |
-| E8 | Seats are zones; personas can't overlap; add-ons use no stock | ◐ Partly (0.6.0: pescetarian diet and allergies added; seat zones, overlap, add-ons open) |
+| E8 | Seats are zones; personas can't overlap; add-ons use no stock | ◐ Partly (0.6.0: pescetarian diet and allergies; add-ons not modeled **by decision** (cheap, refilled constantly, would add guesses); seat zones and persona overlap open) |
 | B1 | Back-test grades the engine against itself | ✗ Open (needs real data) |
-| B2 | Plan wins on waste, loses on stockouts | ◐ Partly (0.5.0 back-test: waste 8.5% lower, but 83 stockout-min/night under the plan vs 76 baseline plan and 69 recorded; UI shows the trade-off; optimizer objective open) |
+| B2 | Plan wins on waste, loses on stockouts | ◐ Partly (0.6.1 back-test: waste 8.8% lower, but 53 stockout-min/night under the plan vs 48 baseline plan and 41 recorded; UI shows the trade-off; optimizer objective open) |
 | C1 | Tiny differences labeled "worse" | ✅ Fixed (verdict "same" below a per-metric minimum: waste max(5, 1%), stockouts 1 min, missed first 0.5 pp, wait p90 0.5 min, missed meal max(2, 1%)) |
 | A1 | No authentication on admin / LLM routes | ✅ Fixed (`DCSIM_ADMIN_TOKEN` guards DELETE scenarios, `/api/warm`, `/api/backtest`; AI routes rate-limited per IP, `DCSIM_AI_RATE`, default 20/min) |
 | A2 | Memory grows with jobs and cached traces | ✅ Fixed (finished jobs expire after `DCSIM_JOB_TTL_S`=900 s, max 200 kept; trace cache 2, `DCSIM_TRACE_CACHE`) |
@@ -61,7 +61,7 @@ Last updated: 2026-11-13, engine 0.6.1.
 | R3 | "Why?" / settings list missed kitchen staff, shifts, forecast | ✅ Fixed 0.6.1 |
 | R4 | Plain-English box couldn't set cooks or shifts | ✅ Fixed 0.6.1 (`ask-v3`) |
 | R5 | Pan swaps not counted as stockouts | ✗ By design, documented |
-| R6 | Mock /ask matches preset names in questions | ✗ Low (offline fallback only) |
+| R6 | Mock /ask matches preset names in questions | ✅ Fixed 0.6.2 |
 | R7 | Forecast reorder trades waste for run-outs | ✗ Open (optimizer could tune it) |
 
 ## Not built yet ([ISSUES.md §7](ISSUES.md#7-not-built-yet-n))
@@ -93,11 +93,12 @@ Last updated: 2026-11-13, engine 0.6.1.
 | U4 | Dashboard dinner only | ◐ Late night shown; breakfast and lunch open |
 | U7 | Lab: Optimize and uncertainty sweep | ◐ Ask box, menu edits, new dish, Why? built; Optimize and sweep open |
 | U2 | Only the top-down view is live | ✗ |
-| U5 | Staffing "needed" not shown | ◐ Engine computes it (0.5.0); Dashboard column open |
+| U5 | Staffing "needed" not shown | ✅ Fixed 0.6.2 ("Needed at peak" column; data after the bundle rebuild) |
 | U9 | Replay geometry approximate | ✗ (needs N2) |
 | U14 | Stack differs from SPEC §9 | ✗ (a decision, not a bug) |
 | U15 | Several features need the API | ✗ (by design offline; run `make serve` for the demo) |
-| U16 | Per-dish $ doesn't sum to the headline | ✗ |
+| U16 | Per-dish $ doesn't sum to the headline | ✅ Fixed 0.6.2 (same $ basis; rows add up to the average week) |
+| U17 | Two Hall smoke steps fail after the redesign | ✗ Open (smoke selectors; owner of PR #1) |
 
 ## Sponsor prizes ([SPONSORS.md](SPONSORS.md))
 

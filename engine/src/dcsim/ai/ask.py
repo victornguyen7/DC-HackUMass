@@ -167,6 +167,10 @@ def _mock(question: str, date: str) -> AskPlan:
             plan.kitchen.append(KitchenChange(dish_id=d.id, batch_size=max(1, cfg.kitchen[d.id].batch_size // 2),
                                               starting_batches=None, reorder_point=None, max_batches=None,
                                               last_batch_time=None))
+    if plan.preset == "extra_server" and any(c.servers is not None for c in plan.stations):
+        # "an extra server at Grill" names a station: that's the station lever, not the
+        # "extra server at the busiest station" preset (ISSUES R6).
+        plan.preset = None
     if plan == _empty(explanation=plan.explanation):
         plan.unsupported = [question]
     return plan

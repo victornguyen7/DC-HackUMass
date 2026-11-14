@@ -236,6 +236,9 @@ export type Backtest = {
     reduction_pct: Range;
     lb_per_week: Range;
     usd_per_week: Range;
+    /** The average simulated week; the per-dish rows add up to it (engine 0.6.2, UI_ISSUES U16). */
+    usd_per_week_mean?: number;
+    lb_per_week_mean?: number;
     recorded_lb_per_week: number;
     stockout_min_per_night: { recorded: number; baseline_plan: Range; plan: Range };
   };

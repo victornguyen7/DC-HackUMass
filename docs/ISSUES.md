@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.2 (A1–A3, C1, R6 and UI U5/U16 fixed; add-ons decided), 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -109,7 +109,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 ### E8 · Low · Smaller modeling gaps
 - Seating has two zones since 0.3.4 (`main`, 284 seats, and the indoor `back` area, 120 seats, reached by turning left after check-in), and walks route through the doors. There are no individual tables or nav graph: the web replay picks a seat from an **assumed** table layout and walks in straight lines (UI_ISSUES U9).
 - Persona shares must sum to 1, but "rushed" and "social" can overlap in real students. (Pescetarian diet and allergies were added in 0.6.0, N8.)
-- Add-ons (sauces, toppings) don't use up stock.
+- Add-ons (sauces, toppings) don't use up stock. **Decided 2026-11-13: not modeled.** They are cheap, refilled constantly and small in waste; modeling them would add guesses (take rates, pan sizes) for little gain.
 - Pescetarian (2.0%) has no diet rule.
 - "Make Your Own Waffles" is modeled as a dessert pan.
 - Display station position is a guess (`layout/floor_plan.json`, marked `assumed`).
@@ -224,7 +224,7 @@ Found while checking engines 0.5.0–0.6.0; all fixed in 0.6.1 unless noted.
 | R3 | Gap | "Why?" and the /ask settings list described kitchen staff, shifts and forecast reordering as no change | `ai/describe.py` lists cooks, equipment, servers by hour, forecast reordering and a separate late-night crowd |
 | R4 | Gap | The plain-English box couldn't set cooks or server shifts | `ai/ask.py` (prompt `ask-v3`): `cooks` and `shifts` in the plan (optional, so cached v2 replies stay valid); the mock understands "one more cook" |
 | R5 | Model note (open) | Stockout-minutes count food on hand (line + hot-hold cabinet), so a 0.5-min pan swap isn't a stockout, though students see an empty pan and it counts in `empty_seen` | By design; documented in ENGINE.md |
-| R6 | Model note (open) | The mock (no-AI) /ask parser matches preset names inside questions: "an extra server at grill" also picks the `extra_server` preset. Gemini doesn't | Low; only the offline fallback |
+| R6 | Model note (open) | The mock (no-AI) /ask parser matches preset names inside questions: "an extra server at grill" also picks the `extra_server` preset. Gemini doesn't | Low; only the offline fallback **Fixed in 0.6.2** |
 | R7 | Trade-off (open) | The `forecast_reorder` preset saves waste but can cost run-outs: Nov 13 waste −13%, stockouts 36 → 107 min; Nov 17 waste −6%, stockouts 66 → 57 | Shown as a choice in the Lab; an optimizer (N6) could tune its factor and safety stock per dish |
 
 Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s without kitchen limits, pans, swipe and groups); the forecast preset ~0.26 s.

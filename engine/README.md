@@ -1,6 +1,6 @@
 # dcsim: DC What-If simulation engine
 
-SimPy model of a Worcester night, **dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am**, on the **real menu** (see `../docs/SPEC.md` §7 and `../docs/ENGINE.md`). Engine 0.6.1.
+SimPy model of a Worcester night, **dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am**, on the **real menu** (see `../docs/SPEC.md` §7 and `../docs/ENGINE.md`). Engine 0.6.2.
 
 What one night includes: arrivals by date (weekday and event multipliers), an entrance swipe queue, friends who arrive and sit together, students with diets (incl. pescetarian) and allergies, who pick lines from where they stand and stay in them; staffed and self-serve stations (servers can change by hour); pans as SimPy Containers with hold times, hotel-pan size limits and a hot-hold cabinet; a kitchen with limited cooks and equipment; seats counted per zone.
 
@@ -36,7 +36,11 @@ uv run dcsim cache stats|prune     # results live in <repo>/cache (DCSIM_CACHE t
 | `POST /api/compare` | `{baseline_hash, scenario_hash, n_nights}` → paired diff and win rate |
 | `GET /api/traces/{hash}` | One night's per-student events + pan events for 3D (median night, or `?seed=`), gzipped JSON |
 | `GET /api/dates`, `/api/menu/{date}`, `/api/arrivals/{date}`, `/api/layout`, `/api/presets`, `/api/facts/waste` | Reference data for the pages |
-| `GET/POST /api/scenarios`, `POST /api/scenarios/{id}/adopt`, `DELETE /api/scenarios/{id}` | Saved and adopted what-ifs (one adopted per date) |
+| `GET/POST /api/scenarios`, `POST /api/scenarios/{id}/adopt`, `DELETE /api/scenarios/{id}` | Saved and adopted what-ifs (one adopted per date); DELETE needs the admin token when `DCSIM_ADMIN_TOKEN` is set |
+| `POST /api/warm`, `GET /api/warm` | Admin job: precompute baseline (+ presets) for dates (`{dates?, presets, n_nights}`); GET polls progress |
+| `POST /api/backtest`, `GET /api/backtest` | Admin job: re-run the back-test (`{plan?, regenerate_history}`) → `backtest.json`; GET polls |
+
+AI routes (`/api/ask`, `/api/narrate`, `/api/explain`, `/api/ai/dish-prior`, `/api/ai/similar-dishes`) are limited to `DCSIM_AI_RATE` requests per minute per client IP (default 20 → 429). Comparisons (`vs_baseline`, `/api/compare`) give each metric a verdict: `better`, `worse`, `inconclusive`, or `same` when the median difference is below a per-metric minimum (`runner.min_meaningful`; e.g. 0.5 min of wait).
 
 A result holds `open`/`close`/`dinner_close`/`late_close`, `headline` (median and 10–90% range of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus kitchen wait, cook busy share, empty-pan wait, seat wait, peak seated), `cook_sheet` (per dish incl. `period`: portions to prepare, batch plan, run-out window), `flags` (run-outs, long lines, diet coverage), `stations`, `arrivals` (expected per 10 min), `staffing` (servers needed per station and hour), `median_seed`, and `vs_baseline` for anything that isn't the baseline. Per night (`NightMetrics`) there are also swipe wait, group students, and allergy students / allergy students with no meal.
 

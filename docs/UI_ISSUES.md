@@ -1,6 +1,6 @@
 # Web UI: test results and known issues
 
-Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.1. The committed demo bundle is engine 0.4.1, so the pages show 0.4.1 numbers until `make demo-bundle` is re-run. New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts).
+Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.2. The committed demo bundle is engine 0.4.1, so the pages show 0.4.1 numbers until `make demo-bundle` is re-run. New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts).
 Second pass (same day): the UI now uses the engine API features it ignored before, and the back-test exports per-dish and per-station numbers. See [Second pass](#second-pass-connecting-the-ui-to-the-backend).
 
 Severity: **High** = misleads a viewer or breaks the demo story · **Medium** = a designed feature that is missing or only partly works · **Low** = cleanup.
@@ -88,12 +88,13 @@ Also fixed while testing the second pass:
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
 | U2 | Medium | Hall | Only the top-down view is live; no animated 3D |
 | U4 | Medium | Dashboard | ~~Dinner only~~ **Partly fixed:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch still missing |
-| U5 | Medium | Dashboard | Staffing "needed": ◐ engine computes it (0.5.0, `result.staffing`); the page doesn't show it yet |
+| U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; shows data once the bundle is rebuilt |
 | U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
 | U15 | Medium | All | Several features need the API; offline they explain why and stay disabled |
 | U9 | Low | Hall | Replay geometry is approximate |
 | U11 | ~~Low~~ | Hall | ~~Engine issues E1/E2 are visible in the replay~~ **Fixed** with E1/E2 in engine 0.4.1 |
-| U16 | Low | Waste | Per-dish "$ / week" doesn't add up exactly to the headline |
+| U16 | ~~Low~~ | Waste | ~~Per-dish "$ / week" doesn't add up exactly to the headline~~ **Fixed (0.6.2):** dish rows use the same $ basis and add up to the average simulated week (shown under the table); the headline is the median week |
+| U17 | Low | Hall | After the frontend redesign (PR #1) two smoke steps fail: "hall station click" (the script's `heading "Grill"` now matches 2 elements) and "hall other date baseline" (times out). Same on the redesign commit itself, so not caused by later engine work |
 | U14 | Low | Repo | Stack differs from SPEC §9 (no Tailwind, no Recharts) |
 
 Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1). Partly fixed: U4, U7.
@@ -128,6 +129,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 ### U5 · Medium · Dashboard: staffing "needed" isn't computed
 - The design compares planned servers with servers needed for p90 wait under 8 min, by hour. The result only has servers and peak line length per station, so the page shows those two columns and a note.
 - Needs an engine output (per-hour queue or needed servers). Computing it in the browser would be a guess, so it was left out.
+- **Fixed (0.6.2):** the Staffing dialog has a "Needed at peak" column (servers needed in the busiest hour, hour shown, highlighted when above the plan; hover for every hour) and a by-hour line for each short station. With an older bundle it explains that the data comes with a rebuild. Tested in `src/pages/Staffing.test.ts`.
 - **Update (engine 0.5.0):** results now carry `staffing`: servers needed per station and hour ("19" = 7–8 pm) for servers ≤ 85% busy, from the items each station actually served (ISSUES N3). Typed as `Result.staffing?` in `web/src/lib/types.ts`. Still to do: a "needed" column per hour in the Dashboard staffing card, after the bundle is rebuilt with 0.5.0. Shifts can already be tried through the API lever `stations.<id>.shifts`.
 
 ### U7 · Medium · What-If Lab: Optimize and uncertainty sweep
@@ -153,7 +155,12 @@ Offline (bundle only), these are disabled with a message: the plain-English box,
 
 ### U16 · Low · Per-dish $ doesn't add up exactly to the headline
 - The per-dish "$ / week" column uses the mean of the simulated nights and converts recorded pounds to dollars with the dish cost table. Summed over dishes it gives ≈ $718 / week, while the headline (median of seeds, recorded cost column) says ≈ $824. The table's note says the plan is an average; the gap is within the headline's range.
+- **Fixed (0.6.2):** two causes. (1) The dish rows rebuilt dollars from rounded pounds; they now use portions × dish cost like the nightly totals. (2) The rows average the simulated weeks while the headline is the median week. The back-test now also exports `usd_per_week_mean` / `lb_per_week_mean`; the dish rows add up to it (engine 0.6.1 data: $1,695 vs $1,696), and the note under the table shows that total next to the median headline ($1,821). Tested in `src/pages/WasteTotals.test.ts`. Also fixed: the Waste tables listed dinner and late-night versions of a dish under the same name; late-night rows now say "(late night)".
 
 ### U14 · Low · Stack differs from SPEC §9
 - No Tailwind or Recharts. Plain CSS with the Figma tokens and small SVG charts keep the JS at about 100 KB gzipped.
 - `dist/` is about 17 MB because it copies `public/cache` (16.7 MB). The bundle is now committed to git (ISSUES T1, fixed).
+
+### U17 · Low · Two Hall smoke steps fail after the redesign
+- `node scripts/smoke.mjs` (2026-11-13, engine 0.6.2 bundle 0.4.1): "hall station click" fails because `getByRole('heading', { name: 'Grill' })` matches two headings in the redesigned Hall; "hall other date baseline" times out waiting for its locator. Both also fail on the redesign merge commit (0ba140e) before any later change.
+- **Fix:** update the smoke script's selectors for the redesigned Hall (owner of PR #1), then check whether the date switch really works in the Hall.

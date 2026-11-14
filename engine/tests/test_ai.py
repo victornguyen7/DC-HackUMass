@@ -498,3 +498,12 @@ def test_describe_and_ask_cover_engine_06_settings():
     text = " | ".join(config_changes(base, cfg))
     assert "Cooks (dinner): 12 -> 13" in text and "servers by hour" in text
     assert any("Forecast reordering" in c for c in config_changes(base, PRESETS["forecast_reorder"](base)))
+
+
+def test_mock_ask_station_server_is_not_the_preset():
+    """ISSUES R6: "an extra server at grill station" is the Grill lever, not also the extra_server preset."""
+    from dcsim.ai.ask import _mock
+
+    plan = _mock("what if we add an extra server at grill station?", "2026-11-13")
+    assert plan.preset is None and [c.station_id for c in plan.stations] == ["grill"]
+    assert _mock("try the extra server preset", "2026-11-13").preset == "extra_server"

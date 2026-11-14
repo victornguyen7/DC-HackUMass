@@ -64,8 +64,10 @@ def _recorded_by_dish() -> dict[tuple[str, str], dict]:
     for w in load_waste_log():
         if w["reason"] not in ("expired", "close"):
             continue
-        r = out.setdefault((night_of(w["timestamp"]), w["dish_id"]), {"dish": w["dish"], "station": w["station"], "lb": 0.0})
+        r = out.setdefault((night_of(w["timestamp"]), w["dish_id"]),
+                           {"dish": w["dish"], "station": w["station"], "lb": 0.0, "portions": 0})
         r["lb"] += float(w["weight_lb"])
+        r["portions"] += int(w["portions"] or 0)
     return out
 
 
@@ -129,7 +131,8 @@ def run_backtest(svc: Service, plan: str = RECOMMENDED_PLAN, seeds: int = SEEDS)
             plan_lb = float(np.mean([s.get(k, (0.0, 0.0))[0] for s in per_seed]))
             plan_usd = float(np.mean([s.get(k, (0.0, 0.0))[1] for s in per_seed]))
             rec_lb = recorded.get((n["date"], k), {}).get("lb", 0.0)
-            rec_usd = rec_lb * 16 / oz[k] * cost[k] if oz.get(k) else 0.0
+            # Same basis as the nightly recorded cost (portions x dish cost), not re-derived from rounded lb (UI_ISSUES U16)
+            rec_usd = recorded.get((n["date"], k), {}).get("portions", 0) * cost.get(k, 0.0)
             d = dishes.setdefault(k, {"dish_id": k, "dish": names[k][0], "station": names[k][1], "nights": 0,
                                       "recorded_lb": 0.0, "plan_lb": 0.0, "recorded_usd": 0.0, "plan_usd": 0.0})
             d["nights"] += 1
@@ -182,6 +185,9 @@ def run_backtest(svc: Service, plan: str = RECOMMENDED_PLAN, seeds: int = SEEDS)
         "of_which_plan_changes_pct": _pct((red - from_forecast) * 100),
         "lb_per_week": _pct((tot_rec["lb"] - tot["plan_lb"]) / weeks),
         "usd_per_week": _pct((tot_rec["usd"] - tot["plan_usd"]) / weeks),
+        # The average simulated week (mean over seeds): what the per-dish rows add up to (UI_ISSUES U16).
+        "lb_per_week_mean": round(float((tot_rec["lb"] - np.mean(tot["plan_lb"])) / weeks), 1),
+        "usd_per_week_mean": round(float((tot_rec["usd"] - np.mean(tot["plan_usd"])) / weeks), 1),
         "recorded_lb_per_week": round(tot_rec["lb"] / weeks, 1),
         "stockout_min_per_night": {
             "recorded": round(rec_stockout / len(rows), 1),
@@ -195,7 +201,9 @@ def run_backtest(svc: Service, plan: str = RECOMMENDED_PLAN, seeds: int = SEEDS)
         "plan": plan, "seeds_per_night": seeds, "generated_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "headline": headline, "nights": rows, "adopted_nights": adopted_rows,
         "_dishes_note": "Per dish over the back-tested nights: recorded pre-consumer lb per night served vs the plan "
-                        "(mean of seeds). $ uses the dish cost table.",
+                        "(mean of seeds). $ uses the dish cost table, like the nightly cost. The rows add up to "
+                        "headline.usd_per_week_mean (the average simulated week); headline.usd_per_week is the "
+                        "range over seeds, whose median can differ.",
         "dishes": dish_rows,
     }
 

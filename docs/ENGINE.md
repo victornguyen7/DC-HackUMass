@@ -416,7 +416,7 @@ As built (engine 0.3.4, `engine/src/dcsim/api.py`). Every route is under `/api`.
 
 **Result fields (engine 0.5.0; `series` only with `?include=series`, 0.6.0):** `open`, `close` (serving stops: end of late night), `dinner_close`, `late_close`; `headline` (p10/p50/p90 of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `seat_wait_min`, `peak_seated`); `cook_sheet` (with `period` per dish); `flags`; `stations`; `arrivals`; `staffing` (station → hour → servers needed for ≤ 85% busy); `median_seed`; `baseline_hash`; `vs_baseline`. Levers added in 0.5.0: `kitchen_staff {cooks, equipment}` and `stations.<id>.shifts [[from_min, servers], ...]`.
 
-Planned but **not built:** `?include=series` on results, `POST /warm`, `POST /backtest` as a job (the back-test is `dcsim backtest`), `POST /personas/calibrate`. Traces are gzipped JSON, not msgpack.
+Built in 0.6.0–0.6.2: `?include=series` on results; `POST/GET /api/warm` and `POST/GET /api/backtest` as admin background jobs; an optional admin token (`DCSIM_ADMIN_TOKEN`) on DELETE scenarios and the admin jobs; a per-IP limit on the AI routes (`DCSIM_AI_RATE`); finished jobs expire (`DCSIM_JOB_TTL_S`). Verdicts in comparisons: `better` / `worse` / `inconclusive` / `same` (below `runner.min_meaningful`). Planned but **not built:** `POST /personas/calibrate`. Traces are gzipped JSON, not msgpack.
 
 ---
 

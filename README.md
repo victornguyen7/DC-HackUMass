@@ -221,6 +221,9 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 | `DCSIM_LLM_MODEL` | override the model | see `docs/GEMINI.md` |
 | `TIGER_SERVICE_ID` or `DCSIM_TSDB_URL` | Tiger Data forecast ledger + calibration | optional; adopting still works without it |
 | `DCSIM_CACHE` | move the results cache | default `<repo>/cache` |
+| `DCSIM_ADMIN_TOKEN` | protect deleting scenarios and the admin jobs (`/api/warm`, `/api/backtest`) | **set before hosting publicly** (ISSUES A1). Unset = open (local). Send `Authorization: Bearer <token>` or `X-Admin-Token` |
+| `DCSIM_AI_RATE` | AI requests per minute per client IP (ask, narrate, explain, dish prior, similar dishes) | default 20; `0` = no limit; over it → 429 with `Retry-After` |
+| `DCSIM_JOB_TTL_S`, `DCSIM_TRACE_CACHE` | API memory: how long finished jobs are kept, how many decompressed traces narration keeps | defaults 900 s (max 200 jobs) and 2 (ISSUES A2) |
 | `DCSIM_LLM_TIMEOUT` | how long an LLM request may stall before falling back to the template | seconds, default 60 (ISSUES L5; in the working tree, not committed yet) |
 
 **Without any keys everything still runs:** the LLM features use templates or keyword matching, and the static bundle already contains AI narrations.
@@ -255,9 +258,11 @@ Consequences:
 
 ## 9. Current status and known issues
 
-*As of 2026-11-13, engine 0.6.1. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
+*As of 2026-11-13, engine 0.6.2. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
 **Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; all four web pages offline and with the API; synthetic history, back-test and Tiger calibration.
+
+**New in 0.6.2 (API and UI fixes):** optional admin token and per-IP AI rate limit (A1); job expiry and a smaller trace cache (A2); `POST /api/warm` and `/api/backtest` admin jobs (A3); verdict "no real difference" below a per-metric minimum (C1); a "Needed at peak" servers column on the Dashboard (U5, needs a 0.5.0+ bundle); per-dish $ / week now add up to the average simulated week (U16); the offline plain-English parser no longer mixes "an extra server at Grill" with the extra-server preset (R6).
 
 **New in 0.6.1 (review fixes):** late run-outs fixed against the team's targets (last dinner batch 15 min before close, ISSUES E3); late-night kitchen retuned for the cook limit (50% top-up batches, 5 late cooks); a rare expiry bookkeeping bug fixed; "Why?" and the plain-English box now handle cooks, server shifts and forecast reordering. All calibration targets pass. Details: `docs/ISSUES.md` §6b.
 
@@ -276,9 +281,9 @@ Consequences:
 | --- | --- |
 | Figma frames and pitch use placeholder numbers (e.g. "−18% waste") that don't match the data | `docs/UI_ISSUES.md` U1 |
 | No animated 3D yet: the Hall is a top-down 2D replay; "3D overview" is a still image | U2 / ISSUES N1 |
-| Dashboard doesn't show "servers needed" yet (the engine computes it since 0.5.0); no breakfast/lunch | U4, U5 |
+| No breakfast/lunch (the Dashboard's "servers needed" column needs the bundle rebuilt to show data) | U4 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
-| API has no auth; don't host it publicly as is | ISSUES A1 |
+| Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
 | The committed demo bundle is engine 0.4.1; rebuild once on the final engine (`make demo-bundle`) | `docs/STATUS.md` |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 

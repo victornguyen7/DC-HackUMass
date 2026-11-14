@@ -244,7 +244,7 @@ function TopDishes({ h, station }: { h: WasteHistory; station: string | null }) 
           <tbody>
             {rows.map((d) => (
               <tr key={d.dish_id}>
-                <td>{d.dish}</td>
+                <td>{dishLabel(d.dish_id, d.dish)}</td>
                 <td className="n">—</td>
                 <td className="n">—</td>
               </tr>
@@ -259,9 +259,19 @@ function TopDishes({ h, station }: { h: WasteHistory; station: string | null }) 
 }
 
 /** Back-test per dish: recorded vs. with the plan, $ / week (designed table). */
+/** Dinner and late night can serve the same dish name; late-night ids start with "late." (engine 0.4.1). */
+export const dishLabel = (id: string, name: string) => (id.startsWith("late.") ? `${name} (late night)` : name);
+
+/** Sum of every dish's $ / week at a station (or all): equals the back-test's average week (UI_ISSUES U16). */
+export function dishUsdTotal(b: Backtest, station: string | null): number {
+  return (b.dishes ?? []).filter((d) => !station || d.station === station).reduce((s, d) => s + d.usd_saved_per_week, 0);
+}
+
 function TopDishesPlan({ b, station }: { b: Backtest; station: string | null }) {
-  const rows = b.dishes!.filter((d) => !station || d.station === station)
-    .sort((a, c) => c.recorded_lb_per_night * c.nights - a.recorded_lb_per_night * a.nights).slice(0, 8);
+  const all = b.dishes!.filter((d) => !station || d.station === station);
+  const rows = [...all].sort((a, c) => c.recorded_lb_per_night * c.nights - a.recorded_lb_per_night * a.nights).slice(0, 8);
+  const total = dishUsdTotal(b, station);
+  const usd = (v: number) => (v >= 0 ? `$${fmtInt(v)} saved` : `$${fmtInt(-v)} more`);
   return (
     <section className="card">
       <h2>Top waste dishes</h2>
@@ -272,16 +282,19 @@ function TopDishesPlan({ b, station }: { b: Backtest; station: string | null }) 
           <tbody>
             {rows.map((d) => (
               <tr key={d.dish_id}>
-                <td title={`served on ${d.nights} of ${b.headline.nights} nights`}>{d.dish}</td>
+                <td title={`served on ${d.nights} of ${b.headline.nights} nights`}>{dishLabel(d.dish_id, d.dish)}</td>
                 <td className="n">{d.change_pct == null ? "—" : <span className={d.change_pct < -1 ? "good-text" : d.change_pct > 1 ? "bad-text" : ""}>{d.change_pct > 0 ? "+" : d.change_pct < 0 ? "−" : "±"}{fmt1(Math.abs(d.change_pct))}%</span>}</td>
-                <td className="n">{d.usd_saved_per_week >= 0 ? `$${fmtInt(d.usd_saved_per_week)} saved` : `$${fmtInt(-d.usd_saved_per_week)} more`}</td>
+                <td className="n">{usd(d.usd_saved_per_week)}</td>
               </tr>
             ))}
             {!rows.length && <tr><td colSpan={3} className="muted">No recorded waste at this station.</td></tr>}
           </tbody>
         </table>
       </div>
-      <div className="hint" style={{ marginTop: 6 }}>Negative change means less waste. Estimates use synthetic records across {b.headline.nights} back-tested nights.</div>
+      <div className="hint" style={{ marginTop: 6 }}>
+        Negative change means less waste. Estimates use synthetic records across {b.headline.nights} back-tested nights.
+        {all.length > 0 && <> {station ? "All dishes at this station" : `All ${all.length} dishes`}: <b>{usd(total)}</b> per week (the average simulated week{!station ? (b.headline.usd_per_week_mean != null ? `; the headline ${usd(b.headline.usd_per_week.p50)} is the median week, which can differ` : "; the headline uses the median week, so the two can differ") : ""}).</>}
+      </div>
     </section>
   );
 }

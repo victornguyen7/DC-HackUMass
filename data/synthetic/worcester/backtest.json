@@ -3,7 +3,7 @@
  "_note": "SYNTHETIC history; simulated savings, not measured. Pre-consumer waste only (expired + left at close).",
  "plan": "smaller_batches",
  "seeds_per_night": 10,
- "generated_at": "2026-11-14T02:39:14+00:00",
+ "generated_at": "2026-11-14T03:06:33+00:00",
  "headline": {
   "nights": 39,
   "plan_wins": 38,
@@ -32,6 +32,8 @@
    "p50": 1821.1,
    "p90": 2283.5
   },
+  "lb_per_week_mean": 511.8,
+  "usd_per_week_mean": 1695.7,
   "recorded_lb_per_week": 6154.9,
   "stockout_min_per_night": {
    "recorded": 41.3,
@@ -109,7 +111,7 @@
     },
     "street_food": {
      "recorded_lb": 90.9,
-     "plan_lb": 75.5
+     "plan_lb": 75.4
     },
     "tandoor": {
      "recorded_lb": 71.3,
@@ -779,7 +781,7 @@
     },
     "latino": {
      "recorded_lb": 61.8,
-     "plan_lb": 35.9
+     "plan_lb": 36.0
     },
     "mediterranean": {
      "recorded_lb": 139.1,
@@ -803,7 +805,7 @@
     },
     "tandoor": {
      "recorded_lb": 97.0,
-     "plan_lb": 90.9
+     "plan_lb": 91.0
     }
    }
   },
@@ -1204,7 +1206,7 @@
      "plan_lb": 34.2
     },
     "seasons": {
-     "recorded_lb": 64.4,
+     "recorded_lb": 64.5,
      "plan_lb": 57.9
     },
     "soups": {
@@ -1261,7 +1263,7 @@
      "plan_lb": 185.0
     },
     "latino": {
-     "recorded_lb": 63.2,
+     "recorded_lb": 63.3,
      "plan_lb": 34.5
     },
     "mediterranean": {
@@ -1270,7 +1272,7 @@
     },
     "noodle_bowl": {
      "recorded_lb": 183.0,
-     "plan_lb": 194.9
+     "plan_lb": 194.8
     },
     "seasons": {
      "recorded_lb": 73.2,
@@ -1326,7 +1328,7 @@
      "plan_lb": 92.5
     },
     "grill": {
-     "recorded_lb": 140.3,
+     "recorded_lb": 140.4,
      "plan_lb": 153.3
     },
     "latino": {
@@ -1350,7 +1352,7 @@
      "plan_lb": 67.5
     },
     "street_food": {
-     "recorded_lb": 97.3,
+     "recorded_lb": 97.2,
      "plan_lb": 100.7
     },
     "tandoor": {
@@ -1606,7 +1608,7 @@
      "plan_lb": 149.4
     },
     "latino": {
-     "recorded_lb": 57.1,
+     "recorded_lb": 57.2,
      "plan_lb": 50.8
     },
     "mediterranean": {
@@ -1753,7 +1755,7 @@
     },
     "noodle_bowl": {
      "recorded_lb": 194.5,
-     "plan_lb": 194.8
+     "plan_lb": 194.9
     },
     "seasons": {
      "recorded_lb": 72.4,
@@ -1806,7 +1808,7 @@
     },
     "display": {
      "recorded_lb": 83.2,
-     "plan_lb": 84.6
+     "plan_lb": 84.7
     },
     "grill": {
      "recorded_lb": 154.2,
@@ -1825,7 +1827,7 @@
      "plan_lb": 32.6
     },
     "seasons": {
-     "recorded_lb": 83.4,
+     "recorded_lb": 83.5,
      "plan_lb": 62.0
     },
     "soups": {
@@ -1887,7 +1889,7 @@
     },
     "mediterranean": {
      "recorded_lb": 81.2,
-     "plan_lb": 74.0
+     "plan_lb": 73.9
     },
     "noodle_bowl": {
      "recorded_lb": 26.6,
@@ -2167,7 +2169,7 @@
     },
     "noodle_bowl": {
      "recorded_lb": 177.0,
-     "plan_lb": 194.8
+     "plan_lb": 194.9
     },
     "seasons": {
      "recorded_lb": 95.1,
@@ -2378,7 +2380,7 @@
     },
     "seasons": {
      "recorded_lb": 88.2,
-     "plan_lb": 74.5
+     "plan_lb": 74.4
     },
     "soups": {
      "recorded_lb": 29.1,
@@ -2528,7 +2530,7 @@
     },
     "tandoor": {
      "recorded_lb": 95.2,
-     "plan_lb": 89.6
+     "plan_lb": 89.7
     }
    }
   },
@@ -2597,7 +2599,7 @@
     },
     "tandoor": {
      "recorded_lb": 91.9,
-     "plan_lb": 74.2
+     "plan_lb": 74.1
     }
    }
   },
@@ -2802,7 +2804,7 @@
    "within_range": true
   }
  ],
- "_dishes_note": "Per dish over the back-tested nights: recorded pre-consumer lb per night served vs the plan (mean of seeds). $ uses the dish cost table.",
+ "_dishes_note": "Per dish over the back-tested nights: recorded pre-consumer lb per night served vs the plan (mean of seeds). $ uses the dish cost table, like the nightly cost. The rows add up to headline.usd_per_week_mean (the average simulated week); headline.usd_per_week is the range over seeds, whose median can differ.",
  "dishes": [
   {
    "dish_id": "grill.halal_burger_patty",
@@ -2812,7 +2814,7 @@
    "recorded_lb_per_night": 27.54,
    "plan_lb_per_night": 30.14,
    "change_pct": 9.4,
-   "usd_saved_per_week": -93.2
+   "usd_saved_per_week": -93.1
   },
   {
    "dish_id": "street_food.vegetable_spring_rolls",
@@ -2862,7 +2864,7 @@
    "recorded_lb_per_night": 12.73,
    "plan_lb_per_night": 12.63,
    "change_pct": -0.8,
-   "usd_saved_per_week": 2.3
+   "usd_saved_per_week": 2.4
   },
   {
    "dish_id": "late.grill.halal_burger_patty",
@@ -3032,7 +3034,7 @@
    "recorded_lb_per_night": 49.68,
    "plan_lb_per_night": 39.61,
    "change_pct": -20.3,
-   "usd_saved_per_week": 55.5
+   "usd_saved_per_week": 55.6
   },
   {
    "dish_id": "tandoor.savory_baked_chicken_leg",
@@ -3102,7 +3104,7 @@
    "recorded_lb_per_night": 52.38,
    "plan_lb_per_night": 42.05,
    "change_pct": -19.7,
-   "usd_saved_per_week": 47.5
+   "usd_saved_per_week": 47.4
   },
   {
    "dish_id": "soups.native_three_sisters_soup",
@@ -3232,7 +3234,7 @@
    "recorded_lb_per_night": 37.02,
    "plan_lb_per_night": 23.34,
    "change_pct": -37.0,
-   "usd_saved_per_week": 75.4
+   "usd_saved_per_week": 75.5
   },
   {
    "dish_id": "seasons.spanish_pisto_vegetable_stew",
@@ -3402,7 +3404,7 @@
    "recorded_lb_per_night": 37.63,
    "plan_lb_per_night": 32.46,
    "change_pct": -13.7,
-   "usd_saved_per_week": 23.8
+   "usd_saved_per_week": 23.7
   },
   {
    "dish_id": "grill.golden_bbq_chicken_thigh",
@@ -3722,7 +3724,7 @@
    "recorded_lb_per_night": 27.13,
    "plan_lb_per_night": 32.97,
    "change_pct": 21.5,
-   "usd_saved_per_week": -26.8
+   "usd_saved_per_week": -26.9
   },
   {
    "dish_id": "display.roasted_brussels_sprouts_squash_cranberries",
@@ -3792,7 +3794,7 @@
    "recorded_lb_per_night": 12.7,
    "plan_lb_per_night": 11.17,
    "change_pct": -12.1,
-   "usd_saved_per_week": 35.3
+   "usd_saved_per_week": 35.2
   },
   {
    "dish_id": "desserts.churro_bread_pudding",
@@ -3802,7 +3804,7 @@
    "recorded_lb_per_night": 21.06,
    "plan_lb_per_night": 18.96,
    "change_pct": -10.0,
-   "usd_saved_per_week": 7.3
+   "usd_saved_per_week": 7.2
   },
   {
    "dish_id": "late.display.ancho_chile_pork_torta",
@@ -4082,7 +4084,7 @@
    "recorded_lb_per_night": 18.42,
    "plan_lb_per_night": 15.02,
    "change_pct": -18.4,
-   "usd_saved_per_week": 9.8
+   "usd_saved_per_week": 9.7
   },
   {
    "dish_id": "grill.roasted_zucchini",
@@ -4102,7 +4104,7 @@
    "recorded_lb_per_night": 15.06,
    "plan_lb_per_night": 12.99,
    "change_pct": -13.7,
-   "usd_saved_per_week": 28.4
+   "usd_saved_per_week": 28.5
   },
   {
    "dish_id": "soups.roasted_red_pepper_smoked_gouda_bisque",
@@ -4122,7 +4124,7 @@
    "recorded_lb_per_night": 8.12,
    "plan_lb_per_night": 6.94,
    "change_pct": -14.4,
-   "usd_saved_per_week": 5.6
+   "usd_saved_per_week": 5.5
   },
   {
    "dish_id": "latino.mexican_tomato_salad",
@@ -4262,7 +4264,7 @@
    "recorded_lb_per_night": 16.2,
    "plan_lb_per_night": 8.33,
    "change_pct": -48.6,
-   "usd_saved_per_week": 60.2
+   "usd_saved_per_week": 60.3
   },
   {
    "dish_id": "tandoor.chole_chickpea_curry",
@@ -4625,6 +4627,16 @@
    "usd_saved_per_week": -18.8
   },
   {
+   "dish_id": "street_food.jasmine_rice",
+   "dish": "Jasmine Rice",
+   "station": "street_food",
+   "nights": 5,
+   "recorded_lb_per_night": 11.37,
+   "plan_lb_per_night": 9.6,
+   "change_pct": -15.5,
+   "usd_saved_per_week": 2.9
+  },
+  {
    "dish_id": "mediterranean.sauteed_kale",
    "dish": "Sauteed Kale",
    "station": "mediterranean",
@@ -4633,16 +4645,6 @@
    "plan_lb_per_night": 9.44,
    "change_pct": -16.9,
    "usd_saved_per_week": 4.1
-  },
-  {
-   "dish_id": "street_food.jasmine_rice",
-   "dish": "Jasmine Rice",
-   "station": "street_food",
-   "nights": 5,
-   "recorded_lb_per_night": 11.37,
-   "plan_lb_per_night": 9.6,
-   "change_pct": -15.5,
-   "usd_saved_per_week": 3.0
   },
   {
    "dish_id": "late.display.zesty_orange_tofu",
@@ -4752,7 +4754,7 @@
    "recorded_lb_per_night": 7.48,
    "plan_lb_per_night": 8.24,
    "change_pct": 10.2,
-   "usd_saved_per_week": -3.9
+   "usd_saved_per_week": -4.0
   },
   {
    "dish_id": "mediterranean.roasted_butternut_squash_w_spices",
@@ -4772,7 +4774,7 @@
    "recorded_lb_per_night": 7.45,
    "plan_lb_per_night": 5.68,
    "change_pct": -23.7,
-   "usd_saved_per_week": 4.6
+   "usd_saved_per_week": 4.5
   },
   {
    "dish_id": "latino.quinoa_mango_salad",
@@ -4992,7 +4994,7 @@
    "recorded_lb_per_night": 6.28,
    "plan_lb_per_night": 5.35,
    "change_pct": -14.9,
-   "usd_saved_per_week": 21.5
+   "usd_saved_per_week": 21.6
   },
   {
    "dish_id": "latino.plant_based_chorizo_crumbles",
@@ -5002,7 +5004,7 @@
    "recorded_lb_per_night": 6.26,
    "plan_lb_per_night": 3.54,
    "change_pct": -43.5,
-   "usd_saved_per_week": 62.5
+   "usd_saved_per_week": 62.6
   },
   {
    "dish_id": "seasons.sauteed_kale_jain",

@@ -6,7 +6,7 @@
   "soups.butternut_ginger_soup": {
    "batch_size": 60,
    "starting_batches": 1,
-   "reorder_point": 146,
+   "reorder_point": 144,
    "cook_min": 30,
    "hold_min": 150,
    "max_batches": 9,
@@ -15,14 +15,14 @@
   "soups.native_three_sisters_soup": {
    "batch_size": 60,
    "starting_batches": 1,
-   "reorder_point": 155,
+   "reorder_point": 153,
    "cook_min": 30,
    "hold_min": 150,
    "max_batches": 10,
    "last_batch_min": 1240
   },
   "grill.black_bean_burger": {
-   "batch_size": 34,
+   "batch_size": 33,
    "starting_batches": 1,
    "reorder_point": 33,
    "cook_min": 25,
@@ -42,7 +42,7 @@
   "grill.halal_french_fries": {
    "batch_size": 33,
    "starting_batches": 1,
-   "reorder_point": 23,
+   "reorder_point": 24,
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
@@ -51,16 +51,16 @@
   "grill.hand_cut_sweet_potato_fries": {
    "batch_size": 30,
    "starting_batches": 1,
-   "reorder_point": 20,
+   "reorder_point": 21,
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
    "last_batch_min": 1240
   },
   "grill.key_west_baked_chicken": {
-   "batch_size": 31,
+   "batch_size": 30,
    "starting_batches": 1,
-   "reorder_point": 33,
+   "reorder_point": 32,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
@@ -69,46 +69,46 @@
   "grill.oven_roasted_summer_squash": {
    "batch_size": 18,
    "starting_batches": 1,
-   "reorder_point": 14,
+   "reorder_point": 13,
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
    "last_batch_min": 1240
   },
   "grill.roasted_butternut_squash": {
-   "batch_size": 20,
+   "batch_size": 21,
    "starting_batches": 1,
-   "reorder_point": 15,
+   "reorder_point": 16,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 7,
+   "max_batches": 6,
    "last_batch_min": 1240
   },
   "desserts.churro_bread_pudding": {
    "batch_size": 48,
    "starting_batches": 1,
-   "reorder_point": 206,
-   "cook_min": 30,
-   "hold_min": 180,
-   "max_batches": 14,
-   "last_batch_min": 1240
-  },
-  "desserts.fudge_brownie_w_sesame": {
-   "batch_size": 48,
-   "starting_batches": 1,
-   "reorder_point": 218,
+   "reorder_point": 211,
    "cook_min": 30,
    "hold_min": 180,
    "max_batches": 15,
    "last_batch_min": 1240
   },
+  "desserts.fudge_brownie_w_sesame": {
+   "batch_size": 48,
+   "starting_batches": 1,
+   "reorder_point": 229,
+   "cook_min": 30,
+   "hold_min": 180,
+   "max_batches": 14,
+   "last_batch_min": 1240
+  },
   "breads.parmesan_rosemary_focaccia_bread": {
    "batch_size": 40,
    "starting_batches": 1,
-   "reorder_point": 22,
+   "reorder_point": 26,
    "cook_min": 5,
    "hold_min": 180,
-   "max_batches": 11,
+   "max_batches": 12,
    "last_batch_min": 1240
   },
   "noodle_bowl.chicken_pho_broth_fish": {
@@ -132,7 +132,7 @@
   "noodle_bowl.vegetarian_pho_base": {
    "batch_size": 40,
    "starting_batches": 1,
-   "reorder_point": 53,
+   "reorder_point": 51,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 8,
@@ -141,7 +141,7 @@
   "display.make_your_own_waffles": {
    "batch_size": 48,
    "starting_batches": 1,
-   "reorder_point": 251,
+   "reorder_point": 265,
    "cook_min": 30,
    "hold_min": 180,
    "max_batches": 17,
@@ -157,7 +157,7 @@
    "last_batch_min": 1240
   },
   "street_food.mandarin_chicken_w_cashews": {
-   "batch_size": 31,
+   "batch_size": 32,
    "starting_batches": 1,
    "reorder_point": 35,
    "cook_min": 25,
@@ -175,16 +175,16 @@
    "last_batch_min": 1240
   },
   "street_food.stir_fry_green_vegetables": {
-   "batch_size": 30,
+   "batch_size": 29,
    "starting_batches": 1,
-   "reorder_point": 19,
+   "reorder_point": 18,
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
    "last_batch_min": 1240
   },
   "street_food.vegetable_spring_rolls": {
-   "batch_size": 34,
+   "batch_size": 33,
    "starting_batches": 1,
    "reorder_point": 36,
    "cook_min": 25,
@@ -202,7 +202,7 @@
    "last_batch_min": 1240
   },
   "tandoor.moraccan_green_garbanzo_bean_salad": {
-   "batch_size": 21,
+   "batch_size": 20,
    "starting_batches": 1,
    "reorder_point": 17,
    "cook_min": 15,
@@ -213,25 +213,25 @@
   "tandoor.slow_roasted_turkish_chicken_vegetables": {
    "batch_size": 37,
    "starting_batches": 1,
-   "reorder_point": 39,
+   "reorder_point": 36,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
    "last_batch_min": 1240
   },
   "tandoor.tomato_salad_w_parsley_sumac": {
-   "batch_size": 22,
+   "batch_size": 20,
    "starting_batches": 1,
-   "reorder_point": 17,
+   "reorder_point": 16,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 6,
+   "max_batches": 7,
    "last_batch_min": 1240
   },
   "tandoor.turmeric_basmati_rice": {
    "batch_size": 50,
    "starting_batches": 1,
-   "reorder_point": 34,
+   "reorder_point": 35,
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
@@ -240,7 +240,7 @@
   "mediterranean.manicotti": {
    "batch_size": 40,
    "starting_batches": 1,
-   "reorder_point": 43,
+   "reorder_point": 44,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
@@ -249,7 +249,7 @@
   "mediterranean.penne_pasta": {
    "batch_size": 45,
    "starting_batches": 1,
-   "reorder_point": 32,
+   "reorder_point": 34,
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
@@ -258,7 +258,7 @@
   "mediterranean.plant_based_spinach_pie": {
    "batch_size": 40,
    "starting_batches": 1,
-   "reorder_point": 54,
+   "reorder_point": 48,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 8,
@@ -283,15 +283,6 @@
    "last_batch_min": 1240
   },
   "seasons.gf_penne_pasta": {
-   "batch_size": 33,
-   "starting_batches": 1,
-   "reorder_point": 26,
-   "cook_min": 20,
-   "hold_min": 75,
-   "max_batches": 6,
-   "last_batch_min": 1240
-  },
-  "seasons.lemon_quinoa_w_craisins_thyme_jain": {
    "batch_size": 32,
    "starting_batches": 1,
    "reorder_point": 24,
@@ -300,37 +291,46 @@
    "max_batches": 6,
    "last_batch_min": 1240
   },
+  "seasons.lemon_quinoa_w_craisins_thyme_jain": {
+   "batch_size": 33,
+   "starting_batches": 1,
+   "reorder_point": 23,
+   "cook_min": 20,
+   "hold_min": 75,
+   "max_batches": 6,
+   "last_batch_min": 1240
+  },
   "seasons.roasted_cauliflower_salad": {
-   "batch_size": 15,
+   "batch_size": 14,
    "starting_batches": 1,
    "reorder_point": 11,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 7,
+   "max_batches": 6,
    "last_batch_min": 1240
   },
   "seasons.roasted_pepper_tomato_salad": {
    "batch_size": 13,
    "starting_batches": 1,
-   "reorder_point": 11,
+   "reorder_point": 12,
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
    "last_batch_min": 1240
   },
   "seasons.sauteed_kale_jain": {
-   "batch_size": 14,
+   "batch_size": 13,
    "starting_batches": 1,
    "reorder_point": 12,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 6,
+   "max_batches": 7,
    "last_batch_min": 1240
   },
   "seasons.spanish_pisto_vegetable_stew": {
    "batch_size": 40,
    "starting_batches": 1,
-   "reorder_point": 56,
+   "reorder_point": 60,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 9,
@@ -348,7 +348,7 @@
   "latino.braised_ancho_chili_lime_pork": {
    "batch_size": 40,
    "starting_batches": 1,
-   "reorder_point": 56,
+   "reorder_point": 54,
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 9,
@@ -357,137 +357,218 @@
   "latino.corn_w_red_peppers": {
    "batch_size": 22,
    "starting_batches": 1,
-   "reorder_point": 17,
+   "reorder_point": 15,
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
    "last_batch_min": 1240
   },
   "latino.mexican_tomato_salad": {
-   "batch_size": 23,
+   "batch_size": 22,
    "starting_batches": 1,
-   "reorder_point": 16,
-   "cook_min": 15,
-   "hold_min": 60,
-   "max_batches": 6,
-   "last_batch_min": 1240
-  },
-  "latino.pinto_beans": {
-   "batch_size": 20,
-   "starting_batches": 1,
-   "reorder_point": 14,
+   "reorder_point": 15,
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
    "last_batch_min": 1240
+  },
+  "latino.pinto_beans": {
+   "batch_size": 21,
+   "starting_batches": 1,
+   "reorder_point": 16,
+   "cook_min": 15,
+   "hold_min": 60,
+   "max_batches": 7,
+   "last_batch_min": 1240
+  },
+  "late.grill.black_bean_burger": {
+   "batch_size": 30,
+   "starting_batches": 1,
+   "reorder_point": 33,
+   "cook_min": 25,
+   "hold_min": 60,
+   "max_batches": 5,
+   "last_batch_min": 1420
+  },
+  "late.grill.halal_burger_patty": {
+   "batch_size": 27,
+   "starting_batches": 1,
+   "reorder_point": 27,
+   "cook_min": 25,
+   "hold_min": 60,
+   "max_batches": 5,
+   "last_batch_min": 1420
+  },
+  "late.grill.halal_french_fries": {
+   "batch_size": 47,
+   "starting_batches": 1,
+   "reorder_point": 34,
+   "cook_min": 20,
+   "hold_min": 75,
+   "max_batches": 4,
+   "last_batch_min": 1420
+  },
+  "late.grill.key_west_baked_chicken": {
+   "batch_size": 28,
+   "starting_batches": 1,
+   "reorder_point": 30,
+   "cook_min": 25,
+   "hold_min": 60,
+   "max_batches": 5,
+   "last_batch_min": 1420
+  },
+  "late.grill.roasted_butternut_squash": {
+   "batch_size": 24,
+   "starting_batches": 1,
+   "reorder_point": 18,
+   "cook_min": 15,
+   "hold_min": 60,
+   "max_batches": 5,
+   "last_batch_min": 1420
+  },
+  "late.display.make_your_own_waffles": {
+   "batch_size": 48,
+   "starting_batches": 3,
+   "reorder_point": 135,
+   "cook_min": 30,
+   "hold_min": 180,
+   "max_batches": 5,
+   "last_batch_min": 1420
+  },
+  "late.display.philly_cheese_steak_grinder": {
+   "batch_size": 40,
+   "starting_batches": 3,
+   "reorder_point": 102,
+   "cook_min": 25,
+   "hold_min": 60,
+   "max_batches": 6,
+   "last_batch_min": 1420
+  },
+  "late.display.plant_based_pulmuone_steak_mushroom_grinder": {
+   "batch_size": 40,
+   "starting_batches": 3,
+   "reorder_point": 138,
+   "cook_min": 25,
+   "hold_min": 60,
+   "max_batches": 8,
+   "last_batch_min": 1420
+  },
+  "late.display.seasoned_curly_fries": {
+   "batch_size": 50,
+   "starting_batches": 3,
+   "reorder_point": 87,
+   "cook_min": 20,
+   "hold_min": 75,
+   "max_batches": 5,
+   "last_batch_min": 1420
   }
  },
  "basis": {
   "soups.butternut_ginger_soup": {
    "name": "Butternut Ginger Soup",
-   "expected_demand": 413.5,
+   "expected_demand": 409.0,
    "opening_demand": 1.5,
-   "peak_per_10min": 40.5
+   "peak_per_10min": 40.0
   },
   "soups.native_three_sisters_soup": {
    "name": "Native Three Sisters Soup",
-   "expected_demand": 433.0,
+   "expected_demand": 426.5,
    "opening_demand": 0.0,
-   "peak_per_10min": 43.0
+   "peak_per_10min": 42.5
   },
   "grill.black_bean_burger": {
    "name": "Black Bean Burger",
-   "expected_demand": 149.0,
+   "expected_demand": 147.0,
    "opening_demand": 5.5,
    "peak_per_10min": 11.0
   },
   "grill.halal_burger_patty": {
    "name": "Halal Burger Patty",
-   "expected_demand": 126.5,
+   "expected_demand": 128.0,
    "opening_demand": 4.5,
    "peak_per_10min": 9.5
   },
   "grill.halal_french_fries": {
    "name": "Halal French Fries",
-   "expected_demand": 118.0,
+   "expected_demand": 117.0,
    "opening_demand": 4.5,
-   "peak_per_10min": 9.5
+   "peak_per_10min": 10.0
   },
   "grill.hand_cut_sweet_potato_fries": {
    "name": "Hand Cut Sweet Potato Fries",
-   "expected_demand": 104.5,
+   "expected_demand": 106.5,
    "opening_demand": 3.5,
-   "peak_per_10min": 8.0
+   "peak_per_10min": 8.5
   },
   "grill.key_west_baked_chicken": {
    "name": "Key West Baked Chicken",
-   "expected_demand": 136.0,
+   "expected_demand": 135.0,
    "opening_demand": 4.5,
-   "peak_per_10min": 11.0
+   "peak_per_10min": 10.5
   },
   "grill.oven_roasted_summer_squash": {
    "name": "Oven Roasted Summer Squash",
    "expected_demand": 80.0,
    "opening_demand": 2.0,
-   "peak_per_10min": 7.5
+   "peak_per_10min": 7.0
   },
   "grill.roasted_butternut_squash": {
    "name": "Roasted Butternut Squash",
-   "expected_demand": 87.0,
+   "expected_demand": 91.0,
    "opening_demand": 4.0,
-   "peak_per_10min": 8.0
+   "peak_per_10min": 8.5
   },
   "desserts.churro_bread_pudding": {
    "name": "Churro Bread Pudding",
-   "expected_demand": 534.5,
+   "expected_demand": 545.0,
    "opening_demand": 1.5,
-   "peak_per_10min": 57.0
+   "peak_per_10min": 58.5
   },
   "desserts.fudge_brownie_w_sesame": {
    "name": "Fudge Brownie w/Sesame",
-   "expected_demand": 551.0,
+   "expected_demand": 542.5,
    "opening_demand": 1.5,
-   "peak_per_10min": 60.5
+   "peak_per_10min": 63.5
   },
   "breads.parmesan_rosemary_focaccia_bread": {
    "name": "Parmesan Rosemary Focaccia Bread",
-   "expected_demand": 337.0,
+   "expected_demand": 352.5,
    "opening_demand": 0.0,
-   "peak_per_10min": 36.5
+   "peak_per_10min": 42.0
   },
   "noodle_bowl.chicken_pho_broth_fish": {
    "name": "Chicken Pho Broth (Fish)",
-   "expected_demand": 185.5,
+   "expected_demand": 185.0,
    "opening_demand": 4.0,
    "peak_per_10min": 14.0
   },
   "noodle_bowl.green_curry_pho_broth_anchovies": {
    "name": "Green Curry Pho Broth (Anchovies)",
-   "expected_demand": 195.5,
+   "expected_demand": 195.0,
    "opening_demand": 4.5,
    "peak_per_10min": 14.5
   },
   "noodle_bowl.vegetarian_pho_base": {
    "name": "Vegetarian Pho Base",
-   "expected_demand": 226.0,
+   "expected_demand": 230.0,
    "opening_demand": 3.0,
-   "peak_per_10min": 17.5
+   "peak_per_10min": 17.0
   },
   "display.make_your_own_waffles": {
    "name": "Make Your Own Waffles",
-   "expected_demand": 657.0,
+   "expected_demand": 655.0,
    "opening_demand": 1.0,
-   "peak_per_10min": 69.5
+   "peak_per_10min": 73.5
   },
   "street_food.egg_tomato_stir_fry": {
    "name": "Egg & Tomato Stir Fry",
-   "expected_demand": 150.0,
+   "expected_demand": 151.0,
    "opening_demand": 4.0,
    "peak_per_10min": 12.0
   },
   "street_food.mandarin_chicken_w_cashews": {
    "name": "Mandarin Chicken w/Cashews",
-   "expected_demand": 135.5,
+   "expected_demand": 141.0,
    "opening_demand": 3.0,
    "peak_per_10min": 11.5
   },
@@ -499,141 +580,195 @@
   },
   "street_food.stir_fry_green_vegetables": {
    "name": "Stir Fry Green Vegetables",
-   "expected_demand": 132.0,
+   "expected_demand": 129.5,
    "opening_demand": 3.0,
-   "peak_per_10min": 10.5
+   "peak_per_10min": 10.0
   },
   "street_food.vegetable_spring_rolls": {
    "name": "Vegetable Spring Rolls",
-   "expected_demand": 150.5,
+   "expected_demand": 148.0,
    "opening_demand": 3.0,
    "peak_per_10min": 12.0
   },
   "tandoor.gigante_bean_tomato_stew": {
    "name": "Gigante Bean & Tomato Stew",
-   "expected_demand": 177.0,
+   "expected_demand": 180.5,
    "opening_demand": 1.0,
    "peak_per_10min": 15.0
   },
   "tandoor.moraccan_green_garbanzo_bean_salad": {
    "name": "Moraccan Green Garbanzo Bean Salad",
-   "expected_demand": 94.0,
+   "expected_demand": 90.0,
    "opening_demand": 1.0,
    "peak_per_10min": 9.0
   },
   "tandoor.slow_roasted_turkish_chicken_vegetables": {
    "name": "Slow Roasted Turkish Chicken & Vegetables",
-   "expected_demand": 166.5,
+   "expected_demand": 164.0,
    "opening_demand": 2.0,
-   "peak_per_10min": 13.0
+   "peak_per_10min": 12.0
   },
   "tandoor.tomato_salad_w_parsley_sumac": {
    "name": "Tomato Salad w/Parsley & Sumac",
-   "expected_demand": 95.0,
+   "expected_demand": 90.0,
    "opening_demand": 1.0,
-   "peak_per_10min": 9.0
+   "peak_per_10min": 8.5
   },
   "tandoor.turmeric_basmati_rice": {
    "name": "Turmeric Basmati Rice",
-   "expected_demand": 183.0,
+   "expected_demand": 188.5,
    "opening_demand": 2.0,
-   "peak_per_10min": 14.0
+   "peak_per_10min": 14.5
   },
   "mediterranean.manicotti": {
    "name": "Manicotti",
-   "expected_demand": 179.5,
+   "expected_demand": 182.5,
    "opening_demand": 1.5,
-   "peak_per_10min": 14.0
+   "peak_per_10min": 14.5
   },
   "mediterranean.penne_pasta": {
    "name": "Penne Pasta",
-   "expected_demand": 161.5,
+   "expected_demand": 161.0,
    "opening_demand": 1.5,
-   "peak_per_10min": 13.0
+   "peak_per_10min": 14.0
   },
   "mediterranean.plant_based_spinach_pie": {
    "name": "Plant Based Spinach Pie",
-   "expected_demand": 209.0,
+   "expected_demand": 209.5,
    "opening_demand": 1.5,
-   "peak_per_10min": 18.0
+   "peak_per_10min": 16.0
   },
   "mediterranean.whole_grain_penne": {
    "name": "Whole Grain Penne",
-   "expected_demand": 143.0,
+   "expected_demand": 142.5,
    "opening_demand": 2.0,
    "peak_per_10min": 12.0
   },
   "seasons.chickpeas_artichokes_spinach_rstd_red_peppers_jain": {
    "name": "Chickpeas, Artichokes, Spinach & Rstd Red Peppers Jain",
-   "expected_demand": 57.0,
+   "expected_demand": 58.5,
    "opening_demand": 1.0,
    "peak_per_10min": 6.0
   },
   "seasons.gf_penne_pasta": {
    "name": "GF Penne Pasta",
-   "expected_demand": 115.5,
-   "opening_demand": 2.0,
-   "peak_per_10min": 10.5
-  },
-  "seasons.lemon_quinoa_w_craisins_thyme_jain": {
-   "name": "Lemon Quinoa w/Craisins & Thyme Jain",
-   "expected_demand": 113.0,
+   "expected_demand": 112.0,
    "opening_demand": 2.0,
    "peak_per_10min": 10.0
   },
+  "seasons.lemon_quinoa_w_craisins_thyme_jain": {
+   "name": "Lemon Quinoa w/Craisins & Thyme Jain",
+   "expected_demand": 116.0,
+   "opening_demand": 2.0,
+   "peak_per_10min": 9.5
+  },
   "seasons.roasted_cauliflower_salad": {
    "name": "Roasted Cauliflower Salad",
-   "expected_demand": 66.0,
+   "expected_demand": 59.5,
    "opening_demand": 1.0,
    "peak_per_10min": 6.0
   },
   "seasons.roasted_pepper_tomato_salad": {
    "name": "Roasted Pepper, Tomato Salad",
-   "expected_demand": 57.0,
+   "expected_demand": 58.0,
    "opening_demand": 0.5,
-   "peak_per_10min": 6.0
+   "peak_per_10min": 6.5
   },
   "seasons.sauteed_kale_jain": {
    "name": "Sauteed Kale Jain",
-   "expected_demand": 59.0,
+   "expected_demand": 58.0,
    "opening_demand": 1.0,
    "peak_per_10min": 6.5
   },
   "seasons.spanish_pisto_vegetable_stew": {
    "name": "Spanish Pisto (Vegetable Stew)",
-   "expected_demand": 244.5,
+   "expected_demand": 251.5,
    "opening_demand": 3.0,
-   "peak_per_10min": 18.5
+   "peak_per_10min": 20.0
   },
   "latino.arroz_blanco": {
    "name": "Arroz Blanco",
-   "expected_demand": 206.0,
+   "expected_demand": 205.5,
    "opening_demand": 6.0,
    "peak_per_10min": 15.0
   },
   "latino.braised_ancho_chili_lime_pork": {
    "name": "Braised Ancho Chili Lime Pork",
-   "expected_demand": 261.5,
+   "expected_demand": 258.5,
    "opening_demand": 6.0,
-   "peak_per_10min": 18.5
+   "peak_per_10min": 18.0
   },
   "latino.corn_w_red_peppers": {
    "name": "Corn w/Red Peppers",
-   "expected_demand": 97.0,
+   "expected_demand": 96.0,
    "opening_demand": 2.0,
-   "peak_per_10min": 9.0
+   "peak_per_10min": 8.0
   },
   "latino.mexican_tomato_salad": {
    "name": "Mexican Tomato Salad",
-   "expected_demand": 99.5,
+   "expected_demand": 97.5,
    "opening_demand": 1.0,
-   "peak_per_10min": 8.5
+   "peak_per_10min": 8.0
   },
   "latino.pinto_beans": {
    "name": "Pinto Beans",
-   "expected_demand": 90.0,
+   "expected_demand": 94.0,
    "opening_demand": 2.0,
-   "peak_per_10min": 7.5
+   "peak_per_10min": 8.5
+  },
+  "late.grill.black_bean_burger": {
+   "name": "Black Bean Burger",
+   "expected_demand": 88.5,
+   "opening_demand": 18.5,
+   "peak_per_10min": 11.0
+  },
+  "late.grill.halal_burger_patty": {
+   "name": "Halal Burger Patty",
+   "expected_demand": 81.0,
+   "opening_demand": 15.5,
+   "peak_per_10min": 9.0
+  },
+  "late.grill.halal_french_fries": {
+   "name": "Halal French Fries",
+   "expected_demand": 112.5,
+   "opening_demand": 23.5,
+   "peak_per_10min": 14.0
+  },
+  "late.grill.key_west_baked_chicken": {
+   "name": "Key West Baked Chicken",
+   "expected_demand": 82.5,
+   "opening_demand": 14.5,
+   "peak_per_10min": 10.0
+  },
+  "late.grill.roasted_butternut_squash": {
+   "name": "Roasted Butternut Squash",
+   "expected_demand": 70.5,
+   "opening_demand": 12.5,
+   "peak_per_10min": 10.0
+  },
+  "late.display.make_your_own_waffles": {
+   "name": "Make Your Own Waffles",
+   "expected_demand": 245.0,
+   "opening_demand": 80.5,
+   "peak_per_10min": 37.5
+  },
+  "late.display.philly_cheese_steak_grinder": {
+   "name": "Philly Cheese Steak Grinder",
+   "expected_demand": 235.5,
+   "opening_demand": 78.5,
+   "peak_per_10min": 34.0
+  },
+  "late.display.plant_based_pulmuone_steak_mushroom_grinder": {
+   "name": "Plant Based Pulmuone Steak & Mushroom Grinder",
+   "expected_demand": 304.5,
+   "opening_demand": 92.5,
+   "peak_per_10min": 46.0
+  },
+  "late.display.seasoned_curly_fries": {
+   "name": "Seasoned Curly Fries",
+   "expected_demand": 249.0,
+   "opening_demand": 85.0,
+   "peak_per_10min": 36.0
   }
  }
 }

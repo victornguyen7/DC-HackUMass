@@ -33,11 +33,13 @@ class NightMetrics:
     missed_meal: int  # got nothing, or wanted a hot dish and left with no hot food
     wait_p50: float
     wait_p90: float
-    balks: int
+    balks: int  # lines skipped as too long, seen from where the student stood
     empty_seen: int
     dishes: dict[str, DishNight]
     max_queue: dict[str, int]
-    arrivals_per_10min: list[int]
+    arrivals_per_10min: list[int]  # open .. end of service (late night included)
+    late_night_students: int = 0  # arrived after dinner closed
+    in_hall_before_close: int = 0  # students inside 30 min before serving stops (11:30 pm)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -66,7 +68,7 @@ def _stockout(changes: list[tuple[float, int]], open_min: float, close_min: floa
 
 def compute_metrics(night: Night) -> NightMetrics:
     cfg, rec = night.cfg, night.rec
-    o, c = cfg.open_min, cfg.close_min
+    o, c = cfg.open_min, cfg.service_end
     outcomes = rec.outcomes
 
     first_counts = np.zeros(len(cfg.menu), dtype=int)
@@ -77,7 +79,7 @@ def compute_metrics(night: Night) -> NightMetrics:
     dishes = {}
     for i, d in enumerate(cfg.menu):
         pan = night.pans[i]
-        so, runout = (0.0, None) if pan.to_order else _stockout(rec.pan_levels[i], o, c)
+        so, runout = (0.0, None) if pan.to_order else _stockout(rec.pan_levels[i], *cfg.window(d.period))
         dishes[d.id] = DishNight(
             to_order=pan.to_order,
             cooked=pan.cooked,
@@ -109,6 +111,8 @@ def compute_metrics(night: Night) -> NightMetrics:
         dishes=dishes,
         max_queue={s.id: max((n for _, n in rec.queue_lens[i]), default=0) for i, s in enumerate(cfg.stations)},
         arrivals_per_10min=hist,
+        late_night_students=sum(1 for s in night.students if cfg.late_close_min is not None and s.arrive >= cfg.close_min),
+        in_hall_before_close=sum(1 for oc in outcomes if oc.arrive <= c - 30 < oc.exit),
     )
 
 

@@ -4,6 +4,38 @@
   "meal": "dinner",
   "open_min": 990,
   "close_min": 1260,
+  "late_night": {
+    "_note": "Late night 9:00 pm-12:00 am: the interval is sourced (umassdining.com Worcester page, audit fact F03); the days it runs are not (F03 conflict), so it is modeled on every date with a published late-night menu. expected_students 1000 and the taper (fewer than 30 students in the hall at 11:30 pm) are team guesses (2026-11-13). plate_size: late night is a snack, 1-2 items (team, 2026-11-13; shares are a guess). The arrival curve is tuned so fewer than 30 students are inside at 11:30 pm: arrivals peak 9:15 and 9:55 pm, few after 11 (about 20 inside at 11:30 on every date, engine 0.4.1). Serving stops at close_min; seated students may stay.",
+    "close_min": 1440,
+    "crowd": {
+      "expected_students": 1000,
+      "multiplier": 1.0,
+      "shift_min": 0.0,
+      "base_share": 0.01,
+      "waves": [
+        {
+          "peak_min": 1275,
+          "sd_min": 20,
+          "share": 0.45
+        },
+        {
+          "peak_min": 1315,
+          "sd_min": 22,
+          "share": 0.4
+        }
+      ]
+    },
+    "plate_size": [
+      [
+        1,
+        0.6
+      ],
+      [
+        2,
+        0.4
+      ]
+    ]
+  },
   "arrival_cap_per_min": 60,
   "layout": {
     "entrance": [

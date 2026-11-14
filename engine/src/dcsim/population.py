@@ -79,14 +79,25 @@ def build_students(cfg: ScenarioConfig, seed: int, ids: np.ndarray, times: np.nd
         wants[m] = u_sec[m] < p.seconds_prob
         dwell[m] = p.dwell_median_min * np.exp(p.dwell_sigma * z_dwell[m])
 
+    # Late night is a snack: late arrivals draw their plate size from late_plate_size (same uniform draw).
+    if cfg.late_plate_size is not None and cfg.late_close_min is not None:
+        late_m = times >= cfg.close_min
+        if late_m.any():
+            plate[late_m] = _categorical(u_plate[late_m], cfg.late_plate_size)
+
     # Taste: one Gumbel draw per (student, dish id), independent of the rest of the menu.
     dish_keys = np.array([stable_key(d.id) for d in menu], dtype=np.uint64)
     gumbel = -np.log(-np.log(uniform(seed, Stream.TASTE, ids[:, None], dish_keys[None, :])))
     log_w = np.array([[math.log(d.popularity * p.affinity(d)) for d in menu] for p in personas])
     elig = np.array([[eligible(p.diet, d) for d in menu] for p in personas])
-    util = np.where(elig[pidx], log_w[pidx] + gumbel, -np.inf)
+    # A student ranks only the dishes of the service period they arrive in (dinner or late night).
+    late = np.array([d.period == "late_night" for d in menu])
+    arrive_late = (times >= cfg.close_min) if cfg.late_close_min is not None else np.zeros(n, dtype=bool)
+    in_period = late[None, :] == arrive_late[:, None]
+    ok = elig[pidx] & in_period
+    util = np.where(ok, log_w[pidx] + gumbel, -np.inf)
     order = np.argsort(-util, axis=1, kind="stable")
-    n_elig = elig[pidx].sum(axis=1)
+    n_elig = ok.sum(axis=1)
 
     svc_z = std_normal(seed, Stream.SERVICE, ids[:, None], np.arange(MAX_SERVICES)[None, :])
 

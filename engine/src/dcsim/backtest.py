@@ -37,7 +37,8 @@ def _with_crowd(cfg: ScenarioConfig, students: float, expected: float) -> Scenar
 
 
 def _expected_students(cfg: ScenarioConfig) -> float:
-    return cfg.crowd.expected_students * cfg.crowd.multiplier
+    late = cfg.late_crowd.expected_students * cfg.late_crowd.multiplier if cfg.late_crowd is not None else 0.0
+    return cfg.crowd.expected_students * cfg.crowd.multiplier + late
 
 
 def _night_waste(cfg: ScenarioConfig, m: NightMetrics, oz: dict, cost: dict) -> dict:

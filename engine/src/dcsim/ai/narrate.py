@@ -76,12 +76,13 @@ def _event_text(e: dict) -> str:
     return {
         "enter": "arrived at the dining hall",
         "queue_join": f"joined the {st} line for {d} ({_people(n)} ahead)",
-        "balk": f"saw {_people(n)} in the {st} line and walked away (wanted {d})",
+        "balk": f"saw {_people(n)} in the {st} line and chose not to join it (wanted {d})",
         "empty_pan": f"the {d} pan at {st} was empty",
         "served": f"got {d} at {st}",
         "sit": "sat down to eat",
         "seconds": f"went back for seconds: {d}",
-        "retry": f"went back to try for {d} again",
+        "retry": f"looked at the line for {d} again",
+        "closed": f"was still in the {st} line for {d} when that service ended",
         "dish_return": "returned dishes",
         "exit": "left",
     }.get(e["type"], e["type"])
@@ -191,7 +192,7 @@ def template(c: dict) -> str:
         got = any(e["type"] == "served" and e["dish_name"] == d for e in after)
         why = "the line was too long" if any(e["type"] == "balk" for e in after) else "it was gone"
         if retry["type"] == "retry":
-            sentences.append(f"Later I went back for the {d}" + (" and finally got it." if got else f", but {why}."))
+            sentences.append(f"Later I tried for the {d} again" + (" and finally got it." if got else f", but {why}."))
         else:
             sentences.append(f"I went back for seconds of the {d}" + ("." if got else f", but {why}."))
     elif len(others) >= (1 if first in c["got"] else 2):

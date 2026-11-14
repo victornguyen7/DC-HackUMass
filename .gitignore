@@ -3,5 +3,5 @@
 .pytest_cache/
 .venv/
 __pycache__/
-cache/
+/cache/
 trace*.json

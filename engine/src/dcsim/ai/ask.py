@@ -100,11 +100,14 @@ def _tables(date: str) -> str:
     for d in cfg.menu:
         p = cfg.kitchen.get(d.id)
         plan = (f"batch {p.batch_size}, opening pans {p.starting_batches}, reorder at {p.reorder_point}, "
-                f"max extra batches {p.max_batches}, last batch {clock(p.last_batch_min or cfg.close_min)}") if p else "made to order"
+                f"max extra batches {p.max_batches}, last batch {clock(p.last_batch_min or cfg.window(d.period)[1])}") if p else "made to order"
         dishes.append(f"{d.id} | {d.name} | {d.station} | {plan}")
     presets = "\n".join(f"{k} | {(f.__doc__ or k).strip().splitlines()[0]}" for k, f in PRESETS.items())
-    return (f"Date {date}, dinner {clock(cfg.open_min)}-{clock(cfg.close_min)}, about "
-            f"{round(cfg.crowd.expected_students * cfg.crowd.multiplier):,} students.\n\nStations (id | name | staffing):\n{st}"
+    late = f", late night {clock(cfg.close_min)}-{clock(cfg.late_close_min)}" if cfg.late_close_min else ""
+    return (f"Date {date}, dinner {clock(cfg.open_min)}-{clock(cfg.close_min)}{late}, about "
+            f"{round(cfg.crowd.expected_students * cfg.crowd.multiplier):,} dinner students"
+            + (f" and {round(cfg.late_crowd.expected_students * cfg.late_crowd.multiplier):,} late-night students"
+               if cfg.late_crowd is not None else "") + f".\n\nStations (id | name | staffing):\n{st}"
             f"\n\nDishes (id | name | station | batch plan):\n" + "\n".join(dishes) + f"\n\nPresets (id | what it does):\n{presets}")
 
 

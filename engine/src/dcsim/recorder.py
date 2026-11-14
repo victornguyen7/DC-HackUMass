@@ -14,14 +14,15 @@ from typing import NamedTuple
 class Ev(IntEnum):
     ENTER = 0
     QUEUE_JOIN = 1
-    BALK = 2
+    BALK = 2  # saw a line too long from where they stood and chose another station (no walk)
     SERVED = 3
     EMPTY_PAN = 4
     SIT = 5
     SECONDS = 6
     DISH_RETURN = 7
     EXIT = 8
-    RETRY = 9  # going back for the favorite whose line they walked away from
+    RETRY = 9  # going back for the favorite whose line they skipped
+    CLOSED = 10  # still in line when the dish's service period ended (9 pm dinner, 12 am late night)
 
 
 class PanEv(IntEnum):
@@ -45,6 +46,7 @@ class Outcome(NamedTuple):
     got_hot: bool
     wanted_hot: bool  # first choice is a hot dish
     items: int
+    exit: float = 0.0  # left the building
 
 
 class Recorder:
@@ -62,7 +64,7 @@ class Recorder:
 
     def ev(self, t: float, student: int, code: Ev, station: int = -1, dish: int = -1, vessel: int = -1,
            line: int = -1) -> None:
-        """`line`: students already waiting when this one joined or walked away (queue_join / balk)."""
+        """`line`: students already waiting when this one joined or skipped it (queue_join / balk)."""
         if self.trace:
             self.events.append((t, student, code, station, dish, vessel, line))
 

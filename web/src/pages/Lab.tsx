@@ -5,7 +5,7 @@ import {
   apiUp, ask, dishPrior, explain, findEntry, listScenarios, loadApiResult, loadManifest, loadResult, saveScenario, similarDishes, simulate,
   type ApiLevers, type AskReply, type NewDish, type SavedScenario,
 } from "../lib/data";
-import { clock, dateLabel, fmt1, fmtInt, groupFlags, PRESET_LABELS, scenarioLabel, signed, stationName } from "../lib/format";
+import { clock, dateLabel, dishWindow, fmt1, fmtInt, groupFlags, PRESET_LABELS, scenarioLabel, signed, stationName } from "../lib/format";
 import { useApiUp, useAsync } from "../lib/hooks";
 import { useApp, type Scenario } from "../lib/store";
 import type { CookRow, Result, Verdict } from "../lib/types";
@@ -273,14 +273,14 @@ function Builder({ base, date, draft, setDraft, mode, setMode, saved, remote, on
 
       <Accordion id="batch" open={open === "batch"} onToggle={() => toggle("batch")} title="Batch plan" meta={Object.keys(draft.kitchen).length ? `${Object.keys(draft.kitchen).length} dishes changed` : "baseline"}>
         <select className="btn" style={{ width: "100%", marginBottom: 10 }} value={dish} onChange={(e) => setDish(e.target.value)} aria-label="Dish">
-          {batchDishes.map((d) => <option key={d.dish_id} value={d.dish_id}>{d.name}{draft.kitchen[d.dish_id] ? " •" : ""}</option>)}
+          {batchDishes.map((d) => <option key={d.dish_id} value={d.dish_id}>{d.name}{d.period === "late_night" ? " (late night)" : ""}{draft.kitchen[d.dish_id] ? " •" : ""}</option>)}
         </select>
         {cur?.plan && (
           <>
             <Slider label="Batch size" unit="portions" min={5} max={Math.max(80, cur.plan.batch_size * 2)} step={5} base={cur.plan.batch_size} value={edit.batch_size ?? cur.plan.batch_size} onChange={(v) => setK("batch_size", v)} />
             <Slider label="Starting batches" min={0} max={6} step={1} base={cur.plan.starting_batches} value={edit.starting_batches ?? cur.plan.starting_batches} onChange={(v) => setK("starting_batches", v)} />
             <Slider label="Reorder point" unit="portions" min={0} max={Math.max(100, cur.plan.reorder_point * 2)} step={5} base={cur.plan.reorder_point} value={edit.reorder_point ?? cur.plan.reorder_point} onChange={(v) => setK("reorder_point", v)} />
-            <Slider label="Last batch" min={base.open + 30} max={base.close} step={10} base={cur.plan.last_batch_min} value={edit.last_batch_min ?? cur.plan.last_batch_min} onChange={(v) => setK("last_batch_min", v)} fmt={(v) => clock(v)} />
+            <Slider label="Last batch" min={dishWindow(base, cur.period)[0] + 30} max={dishWindow(base, cur.period)[1]} step={10} base={cur.plan.last_batch_min} value={edit.last_batch_min ?? cur.plan.last_batch_min} onChange={(v) => setK("last_batch_min", v)} fmt={(v) => clock(v)} />
           </>
         )}
       </Accordion>

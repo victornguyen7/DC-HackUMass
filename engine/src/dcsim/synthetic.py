@@ -114,7 +114,7 @@ def actual_config(day: dt.date, gt: dict, plan: ScenarioConfig | None = None) ->
         cfg = load_baseline(menu_date_for(day))
         if gt["adopted"]:
             cfg = PRESETS[RECOMMENDED_PLAN](cfg)
-    cfg = cfg.updated(crowd=cfg.crowd.model_dump() | {"multiplier": cfg.crowd.multiplier * gt["crowd_multiplier"]})
+    cfg = cfg.updated(**cfg.crowd_scaled(gt["crowd_multiplier"]))
     return _over_prep(cfg, gt["over_prep"])
 
 
@@ -135,7 +135,7 @@ def pan_windows(night: Night, day: dt.date) -> tuple[list[dict], list[tuple[floa
     (t, dish_index, portions) for every expiry.
     """
     cfg, rec = night.cfg, night.rec
-    o, c = cfg.open_min, cfg.close_min
+    o, c = cfg.open_min, cfg.service_end
     windows = list(range(o, c, WINDOW_MIN))
     batch_ids = {d.id for d in cfg.menu if d.id in cfg.kitchen}
     consumption = []
@@ -175,7 +175,6 @@ def simulate_night(day: dt.date, gt: dict, plan: ScenarioConfig | None = None) -
     cfg = actual_config(day, gt, plan)
     night = Night(cfg, gt["seed"], trace=True).run()
     oz, cost = dish_oz(cfg), dish_cost(cfg)
-    c = cfg.close_min
     batch_ids = {d.id for d in cfg.menu if d.id in cfg.kitchen}
     consumption, expired_events = pan_windows(night, day)
     waste = []
@@ -189,11 +188,11 @@ def simulate_night(day: dt.date, gt: dict, plan: ScenarioConfig | None = None) -
     for i, d in enumerate(cfg.menu):
         p = pans[i]
         if d.id in batch_ids and p.leftover:
-            waste.append({"timestamp": _stamp(day, c + 10), "dc": DC, "station": d.station, "dish_id": d.id, "dish": d.name,
+            waste.append({"timestamp": _stamp(day, cfg.window(d.period)[1] + 10), "dc": DC, "station": d.station, "dish_id": d.id, "dish": d.name,
                           "portions": p.leftover, "weight_lb": round(p.leftover * oz[d.id] / 16, 2), "reason": "close"})
         plate = p.served * oz[d.id] / 16 * gt["plate_waste_share"] * float(rng.uniform(0.6, 1.4))
         if plate >= 0.05:
-            waste.append({"timestamp": _stamp(day, c + 15), "dc": DC, "station": d.station, "dish_id": d.id, "dish": d.name,
+            waste.append({"timestamp": _stamp(day, cfg.window(d.period)[1] + 15), "dc": DC, "station": d.station, "dish_id": d.id, "dish": d.name,
                           "portions": None, "weight_lb": round(plate, 2), "reason": "plate"})
 
     from .metrics import compute_metrics

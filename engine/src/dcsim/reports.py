@@ -35,6 +35,7 @@ def cook_sheet(cfg: ScenarioConfig, summary: dict) -> list[dict]:
             "name": d.name,
             "station": d.station,
             "role": d.role,
+            "period": d.period,
             "diet_tags": list(d.diet_tags),
             "hot": d.hot,
             "to_order": plan is None,
@@ -51,7 +52,7 @@ def cook_sheet(cfg: ScenarioConfig, summary: dict) -> list[dict]:
             "first_choice_demand": s["first_choice_demand"],
         }
         if plan is not None:
-            row["plan"] = plan.model_dump() | {"last_batch_clock": clock(plan.last_batch_min or cfg.close_min)}
+            row["plan"] = plan.model_dump() | {"last_batch_clock": clock(plan.last_batch_min or cfg.window(d.period)[1])}
         rows.append(row)
     rows.sort(key=lambda r: (cfg.station(r["station"]).name, -r["popularity"]))
     return rows
@@ -60,10 +61,11 @@ def cook_sheet(cfg: ScenarioConfig, summary: dict) -> list[dict]:
 def flags(cfg: ScenarioConfig, summary: dict) -> list[dict]:
     out: list[dict] = []
     names = {d.id: d.name for d in cfg.menu}
-    cutoff = cfg.close_min - LATE_GRACE_MIN
+    periods = {d.id: d.period for d in cfg.menu}
 
     for dish_id, s in summary["dishes"].items():
         ro = s["runout_min"]
+        cutoff = cfg.window(periods[dish_id])[1] - LATE_GRACE_MIN  # dinner dishes: 9 pm; late night: 12 am
         if s["runout_share"] >= RUNOUT_SHARE and ro and ro["p50"] < cutoff:
             out.append({
                 "kind": "runout", "severity": "warn", "dish_id": dish_id,

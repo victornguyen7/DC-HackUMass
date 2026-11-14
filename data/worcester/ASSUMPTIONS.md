@@ -1,6 +1,6 @@
 # Worcester data: sources and assumptions
 
-Updated 2026-11-12. Built from the research uploads (attendance, population, waste, tools ecosystem, floor plan) and revised after the public-source audit of this file (`raw/research/worcester_simulation_assumption_evidence.json`, split per assumption in `sources/audit/assumptions/A01…A17`). File index: `data/README.md`. Citations: `data/sources/registry.json`. What to ask UMass Dining for: `sources/audit/data_requests.json` (R01–R08).
+Updated 2026-11-12; late night and the 9 pm switch added 2026-11-13 (engine 0.4.1). Built from the research uploads (attendance, population, waste, tools ecosystem, floor plan) and revised after the public-source audit of this file (`raw/research/worcester_simulation_assumption_evidence.json`, split per assumption in `sources/audit/assumptions/A01…A17`). File index: `data/README.md`. Citations: `data/sources/registry.json`. What to ask UMass Dining for: `sources/audit/data_requests.json` (R01–R08).
 
 ## Sourced inputs the engine uses
 
@@ -13,6 +13,8 @@ Updated 2026-11-12. Built from the research uploads (attendance, population, was
 | **Vegetarian and vegan shares** (closed) | vegetarian 0.083, vegan 0.012 (were 0.12 and 0.03); regular 0.435 absorbs the difference | UMass Dining Customer Satisfaction and Eating Habits Survey, Spring 2022, n = 1,550, 25.8% response (`sources/population/diet_patterns.json`). Historical survey, not a measured 2026 share |
 | Walking speed | 72 m/min | ~1.2 m/s, standard |
 | **Dinner end** (moved from assumptions) | 9:00 pm (`dc.json → close_min` 1260) | Worcester late night is advertised to start at 21:00 (umassdining.com Worcester page, audit fact F03). The page's heading and text disagree on which days have late night, so confirm Fri/Sat |
+| **Late night** (engine 0.4.1) | 9:00 pm–12:00 am (`dc.json → late_night.close_min` 1440), modeled on every date with a published late-night menu (all 8 snapshot dates); serving stops at midnight, seated students may stay | Interval: umassdining.com Worcester page, audit fact F03. **Days not confirmed**: the page heading says Sunday–Saturday, the text says Sunday–Thursday. **Team guesses (2026-11-13):** about 1,000 students; snack plates of 1 item (60%) or 2 (40%); arrivals peak ~9:15 and ~9:55 pm and taper so fewer than 30 students are inside at 11:30 pm (about 20 in the model on every date). Late-night stations reuse dinner staffing (Grill 2, Display 4, Mediterranean 2), unconfirmed |
+| **9:00 pm switch** (engine 0.4.1, model choice) | Dinner dishes take no new students at 9:00; lines already formed are served from what is left for up to 30 minutes | Not observed; chosen so dinner students in line at 9 pm still get food |
 | **Dinner start** (moved, team-confirmed) | 4:30 pm (`open_min` 990) | Team member who eats at Worcester, 2026-11-12. Not yet on an official page |
 | **Street Food service mode** (moved, team-confirmed) | Pre-cooked pans, plated by staff: `to_order: false`, service 0.45 min/item, batch-planned by `dcsim prepare` | Team member, 2026-11-12. Consistent with the 2020 tour (made-to-order stir-fry was the separate Wok station). The 0.45 min service time is still a guess |
 | **Sushi service mode** (moved, team-confirmed) | Made to order (`to_order: true`) | Team member, 2026-11-12; matches the 2020 tour (Nori rolls made to order) |
@@ -80,7 +82,7 @@ No real Worcester waste or production records are available, so `dcsim waste-gen
 | Recommended plan | `smaller_batches` preset | Until the optimizer exists |
 | Adopted nights | 3 in the last two weeks (Oct 29, Nov 2, Nov 6) | Forecast range includes ±12% crowd error |
 
-Back-test result (39 non-adopted nights, 10 simulated nights each; re-run 2026-11-13, engine 0.3.4): **waste 6.4% lower (range 1.3–8.2%)**, plan wins 34 of 39 nights, about 326 lb and $824 per week (range −$11 to $1,285), **but about 16 more stockout-minutes per night than recorded** (75.7 vs 59.6; +1.3 vs the baseline plan cooked to the forecast). All three adopted nights land inside their forecast range. Per-dish results (`backtest.json → dishes`) are mixed: some dishes waste more under the plan (e.g. Halal Burger Patty +15%, Vegetable Spring Rolls +9%) while the total drops.
+Back-test result, engine 0.4.1 with late night (2026-11-13): **waste 5.9% lower (range 2.5–7.3%)**, plan wins 39 of 39, about 404 lb and $1,167 per week; stockouts 93 min/night under the plan vs 77 recorded. Earlier result, engine 0.3.4, dinner only: back-test result (39 non-adopted nights, 10 simulated nights each; re-run 2026-11-13, engine 0.3.4): **waste 6.4% lower (range 1.3–8.2%)**, plan wins 34 of 39 nights, about 326 lb and $824 per week (range −$11 to $1,285), **but about 16 more stockout-minutes per night than recorded** (75.7 vs 59.6; +1.3 vs the baseline plan cooked to the forecast). All three adopted nights land inside their forecast range. Per-dish results (`backtest.json → dishes`) are mixed: some dishes waste more under the plan (e.g. Halal Burger Patty +15%, Vegetable Spring Rolls +9%) while the total drops.
 
 ## Context kept for the dashboard and write-up (not engine inputs)
 

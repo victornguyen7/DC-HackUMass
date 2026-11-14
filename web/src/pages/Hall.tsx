@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { ErrorBox, Loading, TopBar } from "../components/Shell";
 import { Meter, Spark } from "../components/Charts";
 import { apiUp, loadApiHighlights, loadApiTrace, loadNarration, loadTrace, narrateStudent } from "../lib/data";
-import { clock, dateLabel, stationName } from "../lib/format";
+import { clock, dateLabel, dishWindow, stationName } from "../lib/format";
 import { useApiUp, useAsync, useScenarioResult } from "../lib/hooks";
 import {
   counters, levelAt, lineSeries, panTimelines, peakLevel, PLAN_H, PLAN_W, poseAt, toPx, type Pose,
 } from "../lib/playback";
 import { useApp } from "../lib/store";
-import type { Narration, Result, Trace, TraceStudent } from "../lib/types";
+import type { CookRow, Narration, Result, Trace, TraceStudent } from "../lib/types";
 
 // Label anchors on the top-down plan (px), from the measured plan model (render_meta.json).
 const ANCHORS: Record<string, [number, number]> = {
@@ -155,9 +155,18 @@ function HallView({ result, trace, narration, configHash, initialT, onTime }: {
   }, [trace, t, stationPos]);
   const c = counters(poses);
   const longest = Object.entries(c.lines).sort((a, b) => b[1] - a[1])[0];
-  const stationDishes = (sid: string) => result.cook_sheet.filter((d) => d.station === sid && !d.to_order && pans.has(d.dish_id));
-  const emptyNow = [...pans.values()].filter((tl) => t >= result.open && t < result.close && levelAt(tl, t) <= 0);
-  const isEmpty = (sid: string) => emptyNow.filter((tl) => tl.dish.startsWith(sid + ".")).map((tl) => names[tl.dish] ?? tl.dish);
+  // Only the dishes of the service period on at time t (dinner, then late night from 9 pm).
+  const period = t >= (result.dinner_close ?? result.close) ? "late_night" : "dinner";
+  const inPeriod = (d: CookRow) => (d.period ?? "dinner") === period;
+  const stationDishes = (sid: string) => result.cook_sheet.filter((d) => d.station === sid && !d.to_order && pans.has(d.dish_id) && inPeriod(d));
+  const rowOf = useMemo(() => Object.fromEntries(result.cook_sheet.map((d) => [d.dish_id, d])), [result]);
+  const emptyNow = [...pans.values()].filter((tl) => {
+    const d = rowOf[tl.dish];
+    if (!d) return false;
+    const [a, b] = dishWindow(result, d.period);
+    return t >= a && t < b && levelAt(tl, t) <= 0;
+  });
+  const isEmpty = (sid: string) => emptyNow.filter((tl) => rowOf[tl.dish]?.station === sid).map((tl) => names[tl.dish] ?? tl.dish);
 
   const color = (p: Pose) => {
     if (colorBy === "diet") return DIET_COLOR[p.diet] ?? DIET_COLOR.none;
@@ -525,7 +534,7 @@ function collapse(events: TraceStudent["events"], names: Record<string, string>)
       if (j > i) {
         const what = e.type === "balk" ? "lines (too long)" : "empty pans";
         const stations = [...new Set(events.slice(i, j + 1).map((x) => stationName(x.station ?? "")))];
-        out.push({ t: e.t, text: `Walked past ${j - i + 1} ${what}: ${stations.slice(0, 3).join(", ")}${stations.length > 3 ? "…" : ""}` });
+        out.push({ t: e.t, text: `Looked over and skipped ${j - i + 1} ${what}: ${stations.slice(0, 3).join(", ")}${stations.length > 3 ? "…" : ""}` });
         i = j;
         continue;
       }
@@ -542,11 +551,12 @@ function eventText(e: TraceStudent["events"][number], names: Record<string, stri
     case "enter": return "Swiped in";
     case "queue_join": return `Joined ${st} line (${e.line ?? 0} ahead)`;
     case "served": return `${dish} · ${e.vessel ?? "plate"}`;
-    case "balk": return `Walked away from ${st} (${e.line ?? 0} in line)`;
+    case "balk": return `Skipped ${st}: ${e.line ?? 0} in line`;
     case "empty_pan": return `${dish} empty`;
     case "sit": return `Sat down · ${e.seat === "back" ? "back seating" : "main room"}`;
     case "seconds": return `Went back for seconds${dish ? ` (${dish})` : ""}`;
-    case "retry": return `Came back to try ${dish || st}`;
+    case "retry": return `Looked again at the line for ${dish || st}`;
+    case "closed": return `${dish} service ended while in line`;
     case "dish_return": return "Dropped dishes at the return";
     case "exit": return "Left";
   }

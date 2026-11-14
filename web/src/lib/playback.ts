@@ -104,6 +104,15 @@ function spot(e: TraceEvent, seat: P, stationPos: Record<string, P>): P {
   }
 }
 
+/** Where the student is at event i. A skipped line or an empty pan noticed at the same instant as
+ * the previous event is a glance from where they stand (engine 0.4: students decide from a
+ * distance), so it keeps the previous position instead of jumping to that station. */
+function spotAt(ev: TraceEvent[], i: number, seat: P, stationPos: Record<string, P>): P {
+  let j = i;
+  while (j > 0 && (ev[j].type === "balk" || ev[j].type === "empty_pan") && Math.abs(ev[j].t - ev[j - 1].t) < 1e-6) j--;
+  return spot(ev[j], seat, stationPos);
+}
+
 const dist = (a: P, b: P) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 const lerp = (a: P, b: P, f: number): P => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
 
@@ -145,8 +154,8 @@ export function poseAt(s: TraceStudent, t: number, stationPos: Record<string, P>
     return { id: s.id, diet: s.diet, xy: lerp(a, b, slot - Math.floor(slot)), phase: "line", station: e.station, hands, waitedMin: t - e.t };
   }
   // Several items served in one pass have the same timestamp; stay at the counter.
-  const from = spot(e, seat, stationPos);
-  const to = spot(nx, seat, stationPos);
+  const from = spotAt(ev, i, seat, stationPos);
+  const to = spotAt(ev, i + 1, seat, stationPos);
   const gap = nx.t - e.t;
   const walk = Math.min(gap, dist(from, to) / WALK_M_PER_MIN);
   const startWalk = nx.t - walk;

@@ -85,7 +85,7 @@ function Kpis({ nights, b }: { nights: HistoryNight[]; b: Backtest }) {
   return (
     <div className="kpis">
       <div className="card kpi">
-        <div className="label">Recorded waste · {nights.length} dinners</div>
+        <div className="label">Recorded waste · {nights.length} nights</div>
         <div className="value">{fmtInt(lb)} lb</div>
         <div className="range">≈ {fmtInt(portions)} portions · synthetic</div>
         <span className="chip warn">{Math.round((portions / cooked) * 100)}% of cooked</span>
@@ -139,7 +139,7 @@ function WasteChart({ nights: all, b, station }: { nights: HistoryNight[]; b: Ba
     <section className="card">
       <div className="card-head">
         <div>
-          <h2>Waste per dinner{station ? ` at ${stationName(station)}` : ""}: recorded vs. simulated with the plan</h2>
+          <h2>Waste per night{station ? ` at ${stationName(station)}` : ""}: recorded vs. simulated with the plan</h2>
           <div className="hint">
             Each night re-simulated with its own menu and crowd · {station ? "expired + left at close only; plan line = average of 10 simulated nights (adopted nights left out)" : "band = 10th–90th percentile"} · plan: {PRESET_LABELS[b.plan] ?? b.plan}
           </div>
@@ -147,7 +147,7 @@ function WasteChart({ nights: all, b, station }: { nights: HistoryNight[]; b: Ba
         <span className="chip">lb</span>
       </div>
       <div style={{ position: "relative" }}>
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Waste per dinner, recorded bars and simulated line">
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Waste per night, recorded bars and simulated line">
           <defs>
             <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <rect width="6" height="6" fill="var(--good-soft)" /><line x1="0" y1="0" x2="0" y2="6" stroke="#bcd9c4" strokeWidth="2" />
@@ -204,7 +204,7 @@ function Causes({ nights, f }: { nights: HistoryNight[]; f: WasteFacts }) {
   return (
     <section className="card">
       <h2>Where it comes from</h2>
-      <div className="hint" style={{ marginBottom: 12 }}>Share of recorded waste, {nights.length} dinners</div>
+      <div className="hint" style={{ marginBottom: 12 }}>Share of recorded waste, {nights.length} nights</div>
       <div style={{ display: "flex", height: 10, borderRadius: 5, overflow: "hidden", gap: 2, marginBottom: 12 }}>
         {parts.map(([l, , v, c]) => <div key={l} style={{ width: `${(v / tot) * 100}%`, background: c }} />)}
       </div>
@@ -228,10 +228,10 @@ function TopDishes({ h, station }: { h: WasteHistory; station: string | null }) 
   return (
     <section className="card">
       <h2>Top waste dishes</h2>
-      <div className="hint" style={{ marginBottom: 8 }}>Recorded pre-consumer waste per dinner served (all {n} recorded nights)</div>
+      <div className="hint" style={{ marginBottom: 8 }}>Recorded pre-consumer waste per night served (all {n} recorded nights)</div>
       <div className="scroll-x">
         <table className="t">
-          <thead><tr><th>Dish</th><th>Station</th><th className="n">lb / dinner</th><th className="n">Expired</th><th className="n">Left at close</th><th className="n">Plate</th></tr></thead>
+          <thead><tr><th>Dish</th><th>Station</th><th className="n">lb / night</th><th className="n">Expired</th><th className="n">Left at close</th><th className="n">Plate</th></tr></thead>
           <tbody>
             {rows.map((d) => (
               <tr key={d.dish_id}>

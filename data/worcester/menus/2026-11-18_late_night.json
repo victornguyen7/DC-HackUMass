@@ -1,0 +1,318 @@
+{
+ "date": "2026-11-18",
+ "meal": "late_night",
+ "dc": "worcester",
+ "source": {
+  "file": "worcester_menus_2026-11-13_to_2026-11-20.json",
+  "url": "https://www.umassdining.com/foodpro-menu-ajax?tid=1&date=11%2F18%2F2026",
+  "retrieved_at": "2026-11-12T01:39:49.899525+00:00"
+ },
+ "dishes": [
+  {
+   "id": "grill.black_bean_burger",
+   "name": "Black Bean Burger",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR2",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.halal_burger_patty",
+   "name": "Halal Burger Patty",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [],
+   "carbon_rating": "E",
+   "healthfulness": "20",
+   "recipe_webcode": "H H2 CR5",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.halal_french_fries",
+   "name": "Halal French Fries",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGN H1 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.lemon_pepper_chicken_thigh",
+   "name": "Lemon Pepper Chicken Thigh",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 EACH",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [
+    "Corn"
+   ],
+   "carbon_rating": "C",
+   "healthfulness": "30",
+   "recipe_webcode": "H H3 CR3",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.oven_roasted_summer_squash",
+   "name": "Oven Roasted Summer Squash",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H LPR VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.creamy_southern_slaw",
+   "name": "Creamy Southern Slaw",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "2 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Eggs",
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "20",
+   "recipe_webcode": "H VGT H2 CR2",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.local_seasoned_mashed_potatoes",
+   "name": "Local Seasoned Mashed Potatoes",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H LPR VGT H1 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.make_your_own_waffles",
+   "name": "Make Your Own Waffles",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "1 EACH",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGT H1 CR1",
+   "role": "dessert",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "display.nashville_hot_chic_n",
+   "name": "Nashville Hot Chic'n",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local"
+   ],
+   "allergens": [
+    "Milk",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "0",
+   "recipe_webcode": "H LPR H0 CR2",
+   "role": "side",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.nashville_hot_chicken_leg",
+   "name": "Nashville Hot Chicken Leg",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Local"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "C",
+   "healthfulness": "0",
+   "recipe_webcode": "H LPR H0 CR3",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  }
+ ],
+ "addons": [
+  {
+   "id": "display.braised_collards_in_tomato_onion_gravy",
+   "name": "Braised Collards in Tomato Onion Gravy",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "60",
+   "recipe_webcode": "H LPR VGN H6 CR1"
+  },
+  {
+   "id": "display.local_pickle_chips",
+   "name": "Local Pickle Chips",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "1 oz",
+   "dietary_labels": [
+    "Halal",
+    "Local",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "40",
+   "recipe_webcode": "H LPR VGN H4 CR1"
+  },
+  {
+   "id": "mediterranean.fresh_grated_parmesan_cheese",
+   "name": "Fresh Grated Parmesan Cheese",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "1/4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGT H3 CR5"
+  }
+ ]
+}

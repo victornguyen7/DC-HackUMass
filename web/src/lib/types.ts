@@ -40,6 +40,7 @@ export type CookRow = {
   name: string;
   station: string;
   role: string;
+  period?: "dinner" | "late_night";
   diet_tags: string[];
   hot: boolean;
   to_order: boolean;
@@ -95,7 +96,11 @@ export type Result = {
   engine_version: string;
   population_status: string;
   open: number;
+  /** Serving stops (end of late night when there is one). */
   close: number;
+  /** End of dinner; late night runs dinner_close..close. Missing in pre-0.4 bundles. */
+  dinner_close?: number;
+  late_close?: number | null;
   headline: Headline;
   cook_sheet: CookRow[];
   flags: Flag[];
@@ -108,7 +113,7 @@ export type Result = {
 
 export type TraceEvent = {
   t: number;
-  type: "enter" | "queue_join" | "served" | "balk" | "empty_pan" | "sit" | "seconds" | "retry" | "dish_return" | "exit";
+  type: "enter" | "queue_join" | "served" | "balk" | "empty_pan" | "sit" | "seconds" | "retry" | "closed" | "dish_return" | "exit";
   station?: string;
   dish?: string;
   line?: number;

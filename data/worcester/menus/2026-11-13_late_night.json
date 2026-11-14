@@ -1,0 +1,312 @@
+{
+ "date": "2026-11-13",
+ "meal": "late_night",
+ "dc": "worcester",
+ "source": {
+  "file": "worcester_menus_2026-11-13_to_2026-11-20.json",
+  "url": "https://www.umassdining.com/foodpro-menu-ajax?tid=1&date=11%2F13%2F2026",
+  "retrieved_at": "2026-11-12T01:39:46.469043+00:00"
+ },
+ "dishes": [
+  {
+   "id": "grill.black_bean_burger",
+   "name": "Black Bean Burger",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Soy",
+    "Corn"
+   ],
+   "carbon_rating": "B",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR2",
+   "role": "entree",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.halal_burger_patty",
+   "name": "Halal Burger Patty",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [],
+   "carbon_rating": "E",
+   "healthfulness": "20",
+   "recipe_webcode": "H H2 CR5",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.halal_french_fries",
+   "name": "Halal French Fries",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGN H1 CR1",
+   "role": "starch",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.roasted_cauliflower",
+   "name": "Roasted Cauliflower",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based",
+    "Vegetarian"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN VGT H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "grill.savory_baked_chicken_thigh",
+   "name": "Savory Baked Chicken Thigh",
+   "station": "grill",
+   "station_name": "Grill Station",
+   "serving_size": "1 each",
+   "dietary_labels": [
+    "Halal"
+   ],
+   "allergens": [],
+   "carbon_rating": "C",
+   "healthfulness": "30",
+   "recipe_webcode": "H H3 CR3",
+   "role": "entree",
+   "diet_tags": [
+    "halal"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.buffalo_chicken_for_mac_cheese",
+   "name": "Buffalo Chicken for Mac & Cheese",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "2 oz",
+   "dietary_labels": [
+    "None"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "C",
+   "healthfulness": "0",
+   "recipe_webcode": "H0 CR3",
+   "role": "entree",
+   "diet_tags": [],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.homemade_macaroni_cheese",
+   "name": "Homemade Macaroni & Cheese",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "4 oz",
+   "dietary_labels": [
+    "Local",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Gluten",
+    "Wheat"
+   ],
+   "carbon_rating": "C",
+   "healthfulness": "0",
+   "recipe_webcode": "LPR VGT H0 CR3",
+   "role": "entree",
+   "diet_tags": [
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.make_your_own_waffles",
+   "name": "Make Your Own Waffles",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "1 EACH",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "10",
+   "recipe_webcode": "H VGT H1 CR1",
+   "role": "dessert",
+   "diet_tags": [
+    "halal",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  },
+  {
+   "id": "display.plant_based_buffalo_chic_n",
+   "name": "Plant Based Buffalo Chic'n",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "3 oz",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "20",
+   "recipe_webcode": "H VGN H2 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.steamed_broccoli",
+   "name": "Steamed Broccoli",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "3 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Plant Based"
+   ],
+   "allergens": [],
+   "carbon_rating": "A",
+   "healthfulness": "50",
+   "recipe_webcode": "H VGN H5 CR1",
+   "role": "side",
+   "diet_tags": [
+    "halal",
+    "vegan",
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": true
+  },
+  {
+   "id": "display.waffle_fries",
+   "name": "Waffle Fries",
+   "station": "display",
+   "station_name": "Display Station",
+   "serving_size": "3 1/5 OZ",
+   "dietary_labels": [
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Eggs",
+    "Gluten",
+    "Soy",
+    "Corn",
+    "Sesame",
+    "Wheat"
+   ],
+   "carbon_rating": "A",
+   "healthfulness": "20",
+   "recipe_webcode": "VGT H2 CR1",
+   "role": "dessert",
+   "diet_tags": [
+    "vegetarian"
+   ],
+   "vessel": "plate",
+   "hot": false
+  }
+ ],
+ "addons": [
+  {
+   "id": "mediterranean.fresh_grated_parmesan_cheese",
+   "name": "Fresh Grated Parmesan Cheese",
+   "station": "mediterranean",
+   "station_name": "Mediterranean",
+   "serving_size": "1/4 OZ",
+   "dietary_labels": [
+    "Halal",
+    "Vegetarian"
+   ],
+   "allergens": [
+    "Milk",
+    "Corn"
+   ],
+   "carbon_rating": "E",
+   "healthfulness": "30",
+   "recipe_webcode": "H VGT H3 CR5"
+  }
+ ]
+}

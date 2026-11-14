@@ -246,8 +246,9 @@ def main(argv: list[str] | None = None) -> None:
 
         d = default_data_dir()
         for raw in raw_menu_files():
-            for path in import_menus(raw, d / "stations.json", d / "overrides.json", d / "menus"):
-                print(f"menu    {path.relative_to(d.parent.parent)}")
+            for meal in ("dinner", "late_night"):
+                for path in import_menus(raw, d / "stations.json", d / "overrides.json", d / "menus", meal=meal):
+                    print(f"menu    {path.relative_to(d.parent.parent)}")
         for date in available_dates(d):
             print(f"kitchen {plan_kitchen(date, d).relative_to(d.parent.parent)}")
 

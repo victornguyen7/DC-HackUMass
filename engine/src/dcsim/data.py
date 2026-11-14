@@ -3,6 +3,7 @@
 Default data dir is <repo>/data/worcester (override with DCSIM_DATA). It holds:
     dc.json, stations.json, personas.json, kitchen_defaults.json, overrides.json
     menus/<date>_dinner.json      written by `dcsim prepare` from the real menu snapshot
+    menus/<date>_late_night.json  same, late night 9 pm-12 am (dishes get ids "late.<station>.<name>")
     kitchen/<date>_dinner.json    baseline production plan, written by `dcsim prepare`
 
 `data_version` fingerprints every file the config depends on, so editing any of
@@ -20,6 +21,8 @@ from pathlib import Path
 from .config import ScenarioConfig
 
 MEAL = "dinner"
+LATE = "late_night"
+LATE_PREFIX = "late."
 _BASE_FILES = ("dc.json", "stations.json", "personas.json", "overrides.json", "kitchen_defaults.json")
 
 
@@ -88,6 +91,13 @@ def load_baseline(
     defaults = _read(d / "kitchen_defaults.json")
     overrides = _read(d / "overrides.json")
     menu = _read(menu_path)
+    late_cfg = dc.get("late_night")
+    late_path = d / "menus" / f"{date}_{LATE}.json"
+    rows = [x | {"period": "dinner"} for x in menu["dishes"]]
+    if late_cfg and late_path.exists():
+        rows += [x | {"id": LATE_PREFIX + x["id"], "period": LATE} for x in _read(late_path)["dishes"]]
+    else:
+        late_cfg = None
 
     prior = defaults["popularity_prior"]
     staff = {} if neutral else overrides.get("popularity", {})
@@ -95,18 +105,19 @@ def load_baseline(
     station_pop = overrides.get("station_popularity", {})
     # Nest-style correction for the logit model: similar items at one station share demand.
     dilution = float(defaults.get("station_dilution", 0.0))
-    same = Counter((x["station"], x["role"]) for x in menu["dishes"])
+    same = Counter((x["period"], x["station"], x["role"]) for x in rows)
     dishes = [
         {
             "id": x["id"], "name": x["name"], "station": x["station"], "role": x["role"],
             "diet_tags": x["diet_tags"], "vessel": x["vessel"], "hot": x["hot"],
             "serving_size": x.get("serving_size"), "carbon_rating": x.get("carbon_rating"),
+            "period": x["period"],
             "popularity": prior[x["role"]]
             * float(staff.get(x["name"], 1.0))
             * float(station_pop.get(x["station"], 1.0))
-            / same[(x["station"], x["role"])] ** dilution,
+            / same[(x["period"], x["station"], x["role"])] ** dilution,
         }
-        for x in menu["dishes"]
+        for x in rows
     ]
     used = {x["station"] for x in dishes}
     station_rows = [
@@ -117,7 +128,7 @@ def load_baseline(
     to_order = {s["id"] for s in station_rows if s.get("to_order")}
     batch_ids = [x["id"] for x in dishes if x["station"] not in to_order]
 
-    files = [d / f for f in _BASE_FILES] + [menu_path]
+    files = [d / f for f in _BASE_FILES] + [menu_path] + ([late_path] if late_cfg else [])
     if kitchen is None:
         kpath = d / "kitchen" / f"{date}_{MEAL}.json"
         if not kpath.exists():
@@ -135,6 +146,9 @@ def load_baseline(
             "meal": dc["meal"],
             "open_min": dc["open_min"],
             "close_min": dc["close_min"],
+            "late_close_min": late_cfg["close_min"] if late_cfg else None,
+            "late_crowd": late_cfg["crowd"] if late_cfg else None,
+            "late_plate_size": late_cfg.get("plate_size") if late_cfg else None,
             "layout": dc["layout"],
             "stations": station_rows,
             "crowd": dc["crowd"],

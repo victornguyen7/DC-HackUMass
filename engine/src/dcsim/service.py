@@ -88,7 +88,9 @@ class Service:
             "data_version": cfg.data_version,
             "population_status": cfg.population_status,
             "open": cfg.open_min,
-            "close": cfg.close_min,
+            "close": cfg.service_end,  # serving stops (end of late night when there is one)
+            "dinner_close": cfg.close_min,
+            "late_close": cfg.late_close_min,
             "headline": summary["headline"],
             "cook_sheet": cook_sheet(cfg, summary),
             "flags": flags(cfg, summary),

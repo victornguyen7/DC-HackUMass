@@ -65,7 +65,7 @@ def with_inputs(cfg: ScenarioConfig, crowd: float = 1.0, production: float = 1.0
     """Crowd multiplier and production ratio, snapped to 1% so repeated runs hit the cache."""
     crowd, production = round(crowd, 2), round(production, 2)
     if crowd != 1.0:
-        cfg = cfg.updated(crowd=cfg.crowd.model_dump() | {"multiplier": round(cfg.crowd.multiplier * crowd, 4)})
+        cfg = cfg.updated(**cfg.crowd_scaled(crowd))
     return _over_prep(cfg, production) if production != 1.0 else cfg
 
 

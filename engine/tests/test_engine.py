@@ -214,3 +214,79 @@ def test_return_trip_can_clear_missed_first(cfg):
     off = cfg.model_copy(update={"retry_balked_favorite": False})
     on = cfg.model_copy(update={"retry_balked_favorite": True})
     assert run_night(on, 1).metrics.missed_first_choice_rate <= run_night(off, 1).metrics.missed_first_choice_rate
+
+
+# ---------------------------------------------------------------- E1: deciding from a distance
+
+
+def test_students_never_walk_away_from_a_line(cfg):
+    """Students look at lines from where they stand and walk only to the one they join: every
+    walk to a station ends in its line (queue_join), and a skipped line is never joined on the
+    same glance. Nobody tours the hall (old engine: a third skipped 10+ lines)."""
+    trace = run_night(cfg, 3, trace=True).trace
+    skips = []
+    for s in trace["students"]:
+        ev = s["events"]
+        skips.append(sum(e["type"] == "balk" for e in ev))
+        first_trip = ev[: next((i for i, e in enumerate(ev) if e["type"] == "sit"), len(ev))]
+        joins = [e for e in first_trip if e["type"] == "queue_join"]
+        # each walk ends in a line: at most one queue per plate item, plus a retry if a pan ran dry
+        assert len(joins) <= 6, s["id"]
+        # a skipped station is skipped once per trip, not re-announced each glance
+        balked = [e["station"] for e in first_trip if e["type"] == "balk"]
+        assert len(balked) == len(set(balked)), s["id"]
+    assert max(skips) <= len(cfg.stations)
+    assert sum(k >= 10 for k in skips) == 0
+
+
+# ---------------------------------------------------------------- E2: late night 9 pm-12 am
+
+
+def test_late_night_period(cfg):
+    assert cfg.late_close_min == 24 * 60 and cfg.service_end == 24 * 60
+    late = [d for d in cfg.menu if d.period == "late_night"]
+    assert late and all(d.id.startswith("late.") for d in late)
+    trace = run_night(cfg, 2, trace=True).trace
+    period = {d.id: d.period for d in cfg.menu}
+    late_students = 0
+    for s in trace["students"]:
+        arrive = s["events"][0]["t"]
+        late_students += arrive >= cfg.close_min
+        for e in s["events"]:
+            if e["type"] != "served":
+                continue
+            # dinner food is served until the 9 pm lines clear (last call), late-night food only 9 pm-12 am
+            if period[e["dish"]] == "late_night":
+                assert cfg.close_min <= e["t"] <= cfg.late_close_min + 3, (s["id"], e)
+            else:
+                assert e["t"] <= cfg.close_min + 30 + 15, (s["id"], e)  # last call; a sushi order already started may finish
+            # each student eats from the period they arrived in
+            assert (period[e["dish"]] == "late_night") == (arrive >= cfg.close_min), (s["id"], e)
+            # nobody is served after serving stops at midnight (a service already started may finish)
+            assert e["t"] <= cfg.late_close_min + 3
+    assert 800 <= late_students <= 1200
+
+
+@pytest.mark.parametrize("date", available_dates())
+def test_hall_nearly_empty_by_1130(date):
+    """Late-night arrivals taper so that fewer than 30 students are inside at 11:30 pm."""
+    c = load_baseline(date)
+    inside = [run_night(c, seed).metrics.in_hall_before_close for seed in (1, 2, 3)]
+    assert sum(inside) / len(inside) < 30, inside
+
+
+def test_dinner_arrivals_unchanged_by_late_night(cfg):
+    """Late night has its own random stream: the dinner crowd is the same with or without it."""
+    no_late = cfg.updated(late_crowd=None)
+    ids_a, t_a = sample_arrivals(cfg, 5)
+    ids_b, t_b = sample_arrivals(no_late, 5)
+    dinner = t_a < cfg.close_min
+    assert (ids_a[dinner] == ids_b).all() and (t_a[dinner] == t_b).all()
+
+
+def test_crowd_lever_scales_late_night(cfg):
+    from dcsim.levers import Levers, apply_levers
+
+    big = apply_levers(cfg, Levers(crowd_multiplier=1.2))
+    assert big.late_crowd.multiplier == pytest.approx(cfg.late_crowd.multiplier * 1.2)
+    assert big.crowd.multiplier == pytest.approx(cfg.crowd.multiplier * 1.2)

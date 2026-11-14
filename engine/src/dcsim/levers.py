@@ -102,10 +102,10 @@ def apply_levers(cfg: ScenarioConfig, lv: Levers) -> ScenarioConfig:
         raise ValueError(f"made-to-order dishes have no batch plan: {sorted(not_batch)}")
 
     if lv.crowd_multiplier is not None or lv.crowd_shift_min is not None:
-        crowd = cfg.crowd.model_dump()
-        if lv.crowd_multiplier is not None:
-            crowd["multiplier"] = cfg.crowd.multiplier * _snap(lv.crowd_multiplier, CROWD_STEP)
-        if lv.crowd_shift_min is not None:
+        if lv.crowd_multiplier is not None:  # scales dinner and late night alike
+            changes |= cfg.crowd_scaled(_snap(lv.crowd_multiplier, CROWD_STEP))
+        crowd = changes.get("crowd", cfg.crowd.model_dump())
+        if lv.crowd_shift_min is not None:  # dinner class-change waves only
             crowd["shift_min"] = cfg.crowd.shift_min + round(lv.crowd_shift_min / 5) * 5
         changes["crowd"] = crowd
 

@@ -13,9 +13,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-ENGINE_VERSION = "0.3.4"  # bump when model logic changes; invalidates cached results
+ENGINE_VERSION = "0.4.1"  # bump when model logic changes; invalidates cached results
 
 Diet = Literal["none", "vegetarian", "vegan", "halal"]
+Period = Literal["dinner", "late_night"]
 Role = Literal["entree", "starch", "side", "soup", "dessert", "bread"]
 ROLES: tuple[str, ...] = ("entree", "starch", "side", "soup", "dessert", "bread")
 Point = tuple[float, float]
@@ -84,6 +85,7 @@ class Dish(_Frozen):
     serving_size: str | None = None
     carbon_rating: str | None = None
     estimate: bool = False  # new dish: popularity borrowed from "similar to" dishes + AI persona affinities
+    period: Period = "dinner"  # served open..close (dinner) or close..late_close (late night)
 
 
 class BatchPlan(_Frozen):
@@ -137,12 +139,15 @@ class ScenarioConfig(_Frozen):
     date: str  # ISO date of the menu
     meal: Literal["dinner"] = "dinner"
     open_min: int
-    close_min: int
+    close_min: int  # end of dinner
+    late_close_min: int | None = None  # end of late night (serving stops; seated students may stay)
     layout: Layout
     stations: tuple[Station, ...]
     menu: tuple[Dish, ...]
     kitchen: dict[str, BatchPlan]
-    crowd: Crowd
+    crowd: Crowd  # dinner arrivals, open..close
+    late_crowd: Crowd | None = None  # late-night arrivals, close..late_close
+    late_plate_size: tuple[tuple[int, float], ...] | None = None  # (items on first trip, prob) for late arrivals; None = persona's
     personas: tuple[Persona, ...]
     population_status: Literal["uncalibrated", "calibrated"] = "uncalibrated"
     arrival_cap_per_min: float = Field(gt=0)  # thinning bound; fixed so seeds stay comparable
@@ -155,6 +160,10 @@ class ScenarioConfig(_Frozen):
     def _check(self) -> ScenarioConfig:
         if self.close_min <= self.open_min:
             raise ValueError("close_min must be after open_min")
+        if self.late_close_min is not None and self.late_close_min <= self.close_min:
+            raise ValueError("late_close_min must be after close_min")
+        if self.late_close_min is None and any(d.period == "late_night" for d in self.menu):
+            raise ValueError("late-night dishes need late_close_min")
         station_ids = [s.id for s in self.stations]
         dish_ids = [d.id for d in self.menu]
         for name, ids in (("station", station_ids), ("dish", dish_ids)):
@@ -167,6 +176,8 @@ class ScenarioConfig(_Frozen):
         if set(self.kitchen) != batch:
             missing, extra = sorted(batch - set(self.kitchen)), sorted(set(self.kitchen) - batch)
             raise ValueError(f"kitchen needs one BatchPlan per batch-cooked dish; missing={missing} extra={extra}")
+        if self.late_plate_size is not None and abs(sum(prob for _, prob in self.late_plate_size) - 1.0) > 1e-6:
+            raise ValueError("late_plate_size probabilities must sum to 1")
         if not self.personas:
             raise ValueError("at least one persona is required")
         if abs(sum(p.share for p in self.personas) - 1.0) > 1e-6:
@@ -176,6 +187,29 @@ class ScenarioConfig(_Frozen):
                 if abs(sum(prob for _, prob in getattr(p, field)) - 1.0) > 1e-6:
                     raise ValueError(f"persona {p.id!r} {field} probabilities must sum to 1")
         return self
+
+    @property
+    def service_end(self) -> int:
+        """When the last food is served (end of late night if there is one)."""
+        return self.late_close_min if self.late_close_min is not None else self.close_min
+
+    def window(self, period: str) -> tuple[int, int]:
+        """(start, end) minutes of a service period."""
+        if period == "late_night":
+            if self.late_close_min is None:
+                raise ValueError("no late night in this scenario")
+            return self.close_min, self.late_close_min
+        return self.open_min, self.close_min
+
+    def period_at(self, t: float) -> str:
+        return "late_night" if self.late_close_min is not None and t >= self.close_min else "dinner"
+
+    def crowd_scaled(self, factor: float) -> dict[str, Any]:
+        """`updated(**...)` changes that scale both dinner and late-night crowds by `factor`."""
+        out: dict[str, Any] = {"crowd": self.crowd.model_dump() | {"multiplier": round(self.crowd.multiplier * factor, 4)}}
+        if self.late_crowd is not None:
+            out["late_crowd"] = self.late_crowd.model_dump() | {"multiplier": round(self.late_crowd.multiplier * factor, 4)}
+        return out
 
     def station(self, station_id: str) -> Station:
         return next(s for s in self.stations if s.id == station_id)

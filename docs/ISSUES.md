@@ -1,15 +1,15 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
 | ID | Sev | Area | Issue |
 | --- | --- | --- | --- |
-| E1 | High | Engine | Students walk away from far too many lines |
-| E2 | High | Engine | Students keep moving through the hall after close |
+| E1 | ~~High~~ | Engine | ~~Students walk away from far too many lines~~ **Fixed in 0.4.1** |
+| E2 | ~~High~~ | Engine | ~~Students keep moving through the hall after close~~ **Fixed in 0.4.1** (late night 9 pm–12 am) |
 | E3 | Medium | Engine | Stockouts are higher than the team observes |
-| E4 | Medium | Engine | Made-to-order dishes show "empty pan" events after close |
+| E4 | ~~Medium~~ | Engine | ~~Made-to-order dishes show "empty pan" events after close~~ **Fixed in 0.4.1** (`closed` event) |
 | E5 | Medium | Engine | Same crowd every date |
 | E6 | Medium | Engine | Noodle Bowl popularity is set per station, not per dish |
 | E7 | Medium | Engine | Thanksgiving carving (Nov 18) is modeled as pre-made pans |
@@ -26,7 +26,7 @@ Severity: **High** = changes headline numbers or could mislead a viewer · **Med
 | L4 | Low | LLM | Narration check covers names only |
 | D1 | Medium | Docs | ASSUMPTIONS.md has stale planner numbers |
 | D2 | Low | Docs | Version numbers disagree |
-| T1 | Medium | Repo | Not a git repository; 16.7 MB bundle undecided |
+| T1 | Low | Repo | ~~Not a git repository~~ (pushed to GitHub 2026-11-13); bundle size still undecided |
 | T2 | Low | Tests | Starlette deprecation warning |
 | N1–N9 | — | Not built | See §7 |
 | U1–U16 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
@@ -35,33 +35,52 @@ Severity: **High** = changes headline numbers or could mislead a viewer · **Med
 
 ## 1. Engine
 
-### E1 · High · Students walk away from far too many lines
-- **Measured:** a student walks away from a median of 3 lines per visit, 25 at the 90th percentile and 46 at most. **1,000 of 3,059 students (33%) walk away from 10 or more lines.** Example: Student #11103 (vegetarian) walked away from about 20 lines between 7:40 and 7:44 pm.
-- **Cause:** after walking away, `_student` moves on to the next dish in the preference list, often at another station. During the 7:30 rush every staffed line is 13–34 long, so a low-patience student tours almost every station. Each check costs only walking time, a few seconds.
-- **Effect:** inflates `balks` and `empty_seen`. Also likely inflates "never got first choice" and missed meals, makes the 3D replay look frantic, and doesn't match how students behave.
-- **Fix ideas:**
-  - Cap stations tried per trip (e.g. 3), then take the shortest line or a self-serve item.
-  - Let a student see line lengths from a distance and pick a station, instead of walking up to each one.
-  - Add a per-station check time.
-  - Re-check the line-length calibration afterwards. Peak lines currently match the team's 30–40.
+### E1 · Fixed (0.4.1) · Students walked away from far too many lines
+- **Was (0.3.4):** a median of 3 walk-aways per visit, 25 at the 90th percentile and 46 at most; **33% of students walked away from 10 or more lines**. After walking away, a student walked on to the next station in their preference list, so a low-patience student toured almost every station in the 7:30 rush.
+- **Fix:** students decide from where they stand (`model.py` `_choose`).
+  - They look at the line and the pans for every dish they'd eat, best first.
+  - Lines longer than their patience (× 3 for their favorite) and visibly empty pans are skipped **without walking over**. Each skip is one `balk` / `empty_pan` event, logged only for the dishes they came for.
+  - They walk only to the first acceptable station and **stay in that line** until served; there is no walking away at the counter.
+  - With an empty plate and every line too long, they join the shortest. Once they have something, they sit instead.
+  - Seconds and the "retry the favorite" trip are decided from the seat the same way: they go only if the line is acceptable.
+- **Measured (Nov 13, 5 nights, 0.4.1):**
 
-### E2 · High · Students keep moving through the hall after close
-- **Measured:**
-  - 69 students arrive in the last 10 minutes.
-  - **247 students are still joining lines, walking away or finding empty pans after 9:00 pm.**
-  - 17 are served after close.
-  - 171 leave more than 30 minutes after close.
-  - Example: Student #15730 arrives at 8:54 pm, finds every pan empty, and is still walking between stations at 9:05 pm.
-- **Fix:** stop arrivals some minutes before close, and send anyone still in the serving area to seating or the exit at close. Decide whether 9:00 is last entry or doors closing, and whether lines already formed get served. Ask the team.
+  | | 0.3.4 | 0.4.1 |
+  | --- | --- | --- |
+  | Lines skipped per student (p50 / p90 / max) | 2–3 / 22–24 / 43–48 | 1 / 3 / 5 |
+  | Students skipping 10+ lines | 30–33% | 0% |
+  | Dinner wait for a plate (p50 / p90 min) | 8 / 17–18 | 6 / 17 |
+  | Peak dinner lines (Grill, Latino, Sushi, Street Food) | 35, 33, 32, 26 | 36, 33, 33, 27 |
+  | Dinner students who never got their first choice | 21% | 21% |
+  | Dinner students who left with nothing | — | 2 |
+  | Stockout-minutes per night, dinner + late night (after `make prepare`) | 100–160 (dinner only) | 76–138 (dinner 61–96) |
+- At the chosen station a student takes the plate items they came for that are served there; a fallback station gives only its best dish. (An earlier draft took every dish the student would eat there, which lengthened lines 20–30% and pushed "never got first choice" to 33%.)
+- Peak lines and "never got first choice" are back at the 0.3.4 calibration (team: peaks 30–40); waits are slightly shorter because nobody tours.
+- `test_students_never_walk_away_from_a_line` guards this.
+
+### E2 · Fixed (0.4.1) · Students kept moving through the hall after close
+- **Was (0.3.4):** 247 students were still joining lines, walking away or finding empty pans after 9:00 pm; 17 were served after close.
+- **Cause:** the engine ended the night at 9:00 pm, but Worcester runs **late night from 9:00 pm to 12:00 am** (audit fact F03), with its own menu (Grill, Display, Mediterranean; 10–16 items on every snapshot date).
+- **Fix:** a night now has two service periods.
+  - **Dinner 4:30–9:00 pm.** At 9:00 dinner dishes stop taking new students; lines already formed are served from what is left (up to 30 minutes), then the pans close.
+  - **Late night 9:00 pm–12:00 am.** Late-night dishes (ids `late.<station>.<name>`) open with their own starting stock and kitchen plan. About **1,000 students** arrive with their own arrival curve and random stream (dinner arrivals are unchanged). Late-night plates are snacks: 1 item (60%) or 2 (40%). Arrivals peak around 9:15 and 9:55 pm and taper so that **fewer than 30 students are inside at 11:30 pm**.
+  - **Midnight:** serving stops; anyone still in line gets a `closed` event and nothing more. Seated students finish eating and leave when they are done.
+- **Measured (Nov 13, 5 nights, 0.4.1):** 992–1,027 late-night students, wait p50 3 / p90 14 min, 4–18 inside at 11:30 pm (below 30 on average on every date), 0 served after midnight. Late-night stockouts 15–32 minutes per night. The late Grill line still reaches about 60 at the 9:15 pm peak (2 servers).
+- **Open:**
+  - The 1,000 students, the plate sizes and the curve are team guesses; which days late night runs is not confirmed (F03 lists both Sun–Sat and Sun–Thu).
+  - Late-night waste is high: about 1,050 of 2,520 cooked portions (42%). The planner sizes batches for a thin, tapering crowd with dinner batch sizes and hold times. Needs real late-night production numbers.
+- Tests: `test_late_night_period`, `test_hall_nearly_empty_by_1130` (every date), `test_dinner_arrivals_unchanged_by_late_night`, `test_crowd_lever_scales_late_night`.
 
 ### E3 · Medium · Stockouts are higher than the team observes
 - Nov 13 baseline: about 131 stockout-minutes and 26% of cooked portions wasted (2,904 portions). The team says food *rarely* runs out late on a normal day. The planner's `reorder_factor` 1.2 ("setting A") was a compromise.
 - Likely tied to E1 and E2: students who tour stations and stay after close drain and "see" pans that real students wouldn't.
+- **Update (0.4.1):** with E1 and E2 fixed and the plans rebuilt, Nov 13 is about 61–96 dinner stockout-minutes per night (was 100–160). Re-check against the team's "rarely runs out" before closing this.
 - **Fix:** re-tune after E1 and E2 are fixed. Needs R06 (planned vs actual production) to settle.
 
 ### E4 · Medium · Made-to-order dishes show "empty pan" events after close
 - **Measured:** 389 `empty_pan` events for Sushi rolls, all after close. Close sets every pan to 0, made-to-order ones included. The narration and 3D replay show "the California Roll pan was empty".
 - **Fix:** made-to-order dishes should say "station closed" (a new event type) or never appear as pans. E2 removes most of these anyway.
+- **Fixed (0.4.1):** a student still in line when a dish's service period ends gets a `closed` event, not `empty_pan`, so it no longer counts as an empty pan seen. Dinner lines already formed at 9:00 pm are served first (last call, up to 30 min).
 
 ### E5 · Medium · Same crowd every date
 - 3,000 students every night. Weekend and event dates are known from `calendar.json`, but there is no lift or drop for them. Nov 18 looks best only because of E7, not because of attendance.
@@ -94,6 +113,7 @@ Severity: **High** = changes headline numbers or could mislead a viewer · **Med
 - **Fix:**
   - In the UI, lead with the 1.7-point "plan changes" part, and say plainly that the over-prep share is an input of the generator, not a finding.
   - Replace it with real MetaFoodx or LeanPath exports when available (R06, R07).
+- **Engine 0.4.1 (with late night):** the back-test now reads waste 5.9% lower (range 2.5–7.3%), plan wins 39 of 39 nights. About 4.5 points come from cooking to the forecast and 1.4 from the plan's changes; stockouts 93 min/night under the plan vs 77 recorded (91 for the baseline plan cooked to the forecast).
 - **Partly addressed (Nov 13):** `dcsim calibrate` (docs/TIGER.md) fits crowd error and the production ratio on weeks 1–4 only and scores *forecasts* on held-out weeks 5–6 by interval coverage and CRPS. It reads its targets from Tiger, so real exports in the same shape need no code change. On synthetic data it can still only show that the pipeline recovers the generator's settings. It cannot show the engine matches a real kitchen.
 
 ### B2 · Medium · The plan "wins" on waste but loses on stockouts
@@ -187,7 +207,7 @@ Severity: **High** = changes headline numbers or could mislead a viewer · **Med
 ---
 
 ## Suggested order
-1. **E2, then E1.** These are engine behavior fixes and will move every headline number. Bump `ENGINE_VERSION`, run `make cache-clean`, rebuild the bundle.
+1. ~~**E2, then E1.**~~ Done in 0.4.1 (with late night).
 2. **E3 and D1:** re-tune the planner and refresh the docs.
 3. **C1 and B2:** honest verdicts and trade-offs in the comparison and the back-test.
 4. **L1:** the new persona approach.

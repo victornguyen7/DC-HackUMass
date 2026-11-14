@@ -224,7 +224,8 @@ def menu(date: str) -> dict:
         raise HTTPException(404, str(e)) from e
     raw = json.loads((default_data_dir() / "menus" / f"{date}_dinner.json").read_text())
     return {
-        "date": date, "meal": cfg.meal, "open": clock(cfg.open_min), "close": clock(cfg.close_min),
+        "date": date, "meal": cfg.meal, "open": clock(cfg.open_min), "close": clock(cfg.service_end),
+        "dinner_close": clock(cfg.close_min),
         "stations": [{"id": s.id, "name": s.name, "to_order": s.to_order, "self_serve": s.self_serve, "servers": s.servers}
                      for s in cfg.stations],
         "dishes": [d.model_dump() | {"plan": cfg.kitchen[d.id].model_dump() if d.id in cfg.kitchen else None}

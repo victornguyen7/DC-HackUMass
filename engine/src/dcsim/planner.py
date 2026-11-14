@@ -25,10 +25,10 @@ from .data import MEAL, default_data_dir, load_baseline
 from .model import Night
 
 
-def _take_times(changes: list[tuple[float, int]], close_min: float) -> list[float]:
+def _take_times(changes: list[tuple[float, int]], end_min: float) -> list[float]:
     out, prev = [], None
     for t, lvl in changes:
-        if prev is not None and prev - lvl == 1 and t < close_min:
+        if prev is not None and prev - lvl == 1 and t < end_min:
             out.append(t)
         prev = lvl
     return out
@@ -39,8 +39,7 @@ def plan_kitchen(date: str, data_dir: Path | None = None) -> Path:
     defaults = json.loads((d / "kitchen_defaults.json").read_text())
     role_cfg, p = defaults["roles"], defaults["planner"]
     cfg = load_baseline(date, d, neutral=True, kitchen="unlimited")
-    o, c = cfg.open_min, cfg.close_min
-    bins = np.arange(o, c + 10, 10)
+    windows = {d.id: cfg.window(d.period) for d in cfg.menu}  # each dish is planned over its own period
 
     stats: dict[str, dict[str, list[float]]] = {k: {"demand": [], "opening": [], "peak10": []} for k in cfg.kitchen}
     for seed in range(1, p["pilot_nights"] + 1):
@@ -48,18 +47,21 @@ def plan_kitchen(date: str, data_dir: Path | None = None) -> Path:
         for i, dish in enumerate(cfg.menu):
             if dish.id not in cfg.kitchen:
                 continue
+            o, c = windows[dish.id]
             takes = np.array(_take_times(night.rec.pan_levels[i], c))
             s = stats[dish.id]
             s["demand"].append(len(takes))
             s["opening"].append(int(np.sum(takes < o + p["opening_window_min"])) if len(takes) else 0)
+            bins = np.arange(o, c + 10, 10)
             s["peak10"].append(int(np.histogram(takes, bins=bins)[0].max()) if len(takes) else 0)
 
     plans, basis = {}, {}
-    service_min = c - o
-    last_batch = c - p["last_batch_before_close_min"]
     for dish in cfg.menu:
         if dish.id not in cfg.kitchen:
             continue
+        o, c = windows[dish.id]
+        service_min = c - o
+        last_batch = c - p["last_batch_before_close_min"]
         r = role_cfg[dish.role]
         s = {k: float(np.median(v)) for k, v in stats[dish.id].items()}
         demand = s["demand"]

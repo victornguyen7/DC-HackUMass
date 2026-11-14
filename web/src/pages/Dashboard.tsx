@@ -43,7 +43,8 @@ export default function Dashboard() {
         {r && (
           <>
             <div className="row" style={{ fontSize: 12 }}>
-              <span className="chip">Dinner {clock(r.open)}–{clock(r.close)}</span>
+              <span className="chip">Dinner {clock(r.open)}–{clock(r.dinner_close ?? r.close)}</span>
+              {r.late_close != null && <span className="chip">Late night {clock(r.dinner_close ?? r.close)}–{clock(r.late_close)}</span>}
               <span className="chip">{info?.weekday ?? ""}{info?.weekend ? " · weekend" : ""}</span>
               {info?.events_at_or_affecting_worcester.map((e) => <span key={e.name} className="chip info">{e.name}</span>)}
               <span className="chip good">Menu: snapshot ({r.cook_sheet.length} dishes{menu.data?.addons ? `, ${menu.data.addons.length} add-ons` : ""})</span>
@@ -88,7 +89,7 @@ function Kpis({ r }: { r: Result }) {
   const wastePct = cooked ? h.waste_total.p50 / cooked : 0;
   return (
     <div className="kpis">
-      <Kpi label="Expected students" value={fmtInt(h.students.p50)} range={`range ${rangeText(h.students)}`} chip={<span className="chip">dinner</span>} />
+      <Kpi label="Expected students" value={fmtInt(h.students.p50)} range={`range ${rangeText(h.students)}`} chip={<span className="chip">{r.late_close != null ? "dinner + late night" : "dinner"}</span>} />
       <Kpi label="Peak" value={clock(peak.start_min)} range={`${Math.round(peak.expected)} students / 10 min`} chip={<span className="chip warn">rush</span>} />
       <Kpi label="Portions to prepare" value={fmtInt(prep)} range={`${batch.length} batch-cooked · ${r.cook_sheet.length - batch.length} to order`} />
       <Kpi label="Forecast waste" value={fmtInt(h.waste_total.p50)} range={`portions · range ${rangeText(h.waste_total)}`} chip={<span className={`chip ${wastePct > 0.2 ? "warn" : "good"}`}>{Math.round(wastePct * 100)}% of cooked</span>} />
@@ -116,7 +117,7 @@ function ArrivalsCard({ r, onPick }: { r: Result; onPick: (t: number) => void })
       <div className="card-head">
         <div>
           <h2>Expected arrivals</h2>
-          <div className="hint">Per 10 minutes, dinner · from the arrival model ({r.n_nights} simulated nights) · click a bar to watch that moment in the Hall</div>
+          <div className="hint">Per 10 minutes, {r.late_close != null ? "dinner and late night" : "dinner"} · from the arrival model ({r.n_nights} simulated nights) · click a bar to watch that moment in the Hall</div>
         </div>
         <span className="chip info">Dinner only</span>
       </div>

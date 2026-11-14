@@ -12,6 +12,12 @@ export function clock(min: number, withSuffix = true) {
   return withSuffix ? `${h12}:${mm} ${h >= 12 ? "pm" : "am"}` : `${h12}:${mm}`;
 }
 
+/** [start, end) minutes of the service period a dish belongs to (dinner, or late night after dinner_close). */
+export function dishWindow(r: { open: number; close: number; dinner_close?: number }, period?: string): [number, number] {
+  const dinnerEnd = r.dinner_close ?? r.close;
+  return period === "late_night" ? [dinnerEnd, r.close] : [r.open, dinnerEnd];
+}
+
 export const rangeText = (r: Range, f: (n: number) => string = fmtInt) => `${f(r.p10)}–${f(r.p90)}`;
 
 export function signed(n: number, f: (n: number) => string = fmtInt) {

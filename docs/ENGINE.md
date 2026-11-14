@@ -129,6 +129,10 @@ def student(env, s, hall):
     yield env.timeout(walk(seat, DISH_RETURN)); rec.log(EXIT, s)
 ```
 
+**As built (engine 0.4.1): deciding from a distance.** The sketch above walks to each station and balks there; the engine no longer does. `model.py` `_choose` looks at every dish the student would eat (best first) from where they stand: visibly empty pans and lines over their patience (× `favorite_patience_mult` for the favorite) are skipped without walking, the first acceptable station wins, and the student then walks over and **stays in that line**. With an empty plate and every line too long they join the shortest; once they have something they sit. Seconds and the favorite retry are decided from the seat the same way. `balk` now means "saw that line and chose not to join it".
+
+**Service periods (0.4.1).** Each dish has a `period`: `dinner` (`open_min`..`close_min`, 4:30–9:00 pm) or `late_night` (`close_min`..`late_close_min`, 9:00 pm–12:00 am; ids `late.<station>.<name>`, from `menus/<date>_late_night.json`). Pans open with starting stock when their period starts and close at its end. At 9:00 dinner dishes take no new students, and lines already formed are served from what is left (`LAST_CALL_MAX_MIN` 30). At midnight serving stops; students still in line get a `closed` event, and seated students stay until they are done. Late night has its own crowd (`late_crowd`, its own random stream, so dinner arrivals don't move) and snack-sized plates (`late_plate_size`). A student ranks only the dishes of the period they arrive in. The planner sizes each dish over its own period.
+
 **Kitchen is event-driven, not polled.** `Pan.take()` checks the reorder condition and, if met, triggers the kitchen process. When a lot is added, one expiry event is scheduled at `expires_at` that removes whatever is left of that lot and logs it as *expired*. At close, everything left in pans is logged as *leftover*. Nothing ticks every minute, which keeps the event count low.
 
 ### 3.3 The rest of the day
@@ -143,7 +147,7 @@ SimPy is single-threaded Python, so recording has to be cheap. The `Recorder` ap
 
 | Log | Columns | Written when |
 | --- | --- | --- |
-| `events` | t, student_id, event_code, station_id, dish_id, vessel_code | enter, queue_join, balk, served, empty_pan, sit, seconds, dish_return, exit, missed_meal |
+| `events` | t, student_id, event_code, station_id, dish_id, vessel_code | enter, queue_join, balk, served, empty_pan, sit, seconds, retry, closed, dish_return, exit, missed_meal |
 | `pan_changes` | t, dish_id, level, cause_code | every take, batch ready, expiry, close |
 | `queue_changes` | t, station_id, length | every join/leave |
 | `kitchen` | t, dish_id, batch_no, event_code | batch start, batch ready |

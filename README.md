@@ -350,3 +350,5 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | `uv` complains about Python | Needs Python ≥ 3.13: `uv python install 3.13`. |
 | Port 8000 or 5173 is busy | Stop the old server, or `uv run dcsim serve --port 8001` and change the proxy target in `web/vite.config.ts`. |
 | Smoke test can't start a browser | It uses your installed Google Chrome (`playwright-core`, `channel: "chrome"`). Install Chrome. |
+
+Similar Nights now has a search API and reference frontend. See [the frontend handoff](docs/SIMILAR_NIGHTS.md) for its contract, behavior, and verification status.

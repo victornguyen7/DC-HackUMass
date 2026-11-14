@@ -3,7 +3,7 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-14, engine 0.6.2, `main` at `39f5791`: Ask Sam (5-try cap, Tiger lookups, history), Tiger track record, ledger-safe test stack, and the waste outlook (Insights opens on the next 8 nights).
+Last updated: 2026-11-14, engine 0.6.2, `main` at `c7493a4` + this docs pass: Ask Sam (5-try cap, Tiger lookups through the Tiger MCP server, history, setting functions for staffing and menu changes, what-ifs in the Sam box), Gemini function calling for the plain-English box, the waste outlook (Insights opens on the next 8 nights), Tiger track record, ledger-safe test stack, `make serve` → `make server`, image input and breakfast/lunch out of scope.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
@@ -12,8 +12,9 @@ Last updated: 2026-11-14, engine 0.6.2, `main` at `39f5791`: Ask Sam (5-try cap,
 - ✅ **Full test run after the rebuild passed:** engine 149 tests, web 46 tests, browser smoke 23/23 offline and 8/8 with the API, 44 deep offline checks, Similar nights 6/6. Table in [UI_ISSUES.md](UI_ISSUES.md#full-test-run-after-the-062-bundle-2026-11-13).
 - ✅ **Tests after the Tiger dashboard work (2026-11-14):** engine 161 passed, 2 skipped; web 46 passed; typecheck clean; the dashboard opened live from the API with no console errors. The browser smoke script passed 27/27 offline with the dashboard steps; those steps were then removed with the page, so it is back to the earlier 23.
 - ✅ **Tests after Sam and the Tiger track record were merged (`main` at `664bbdd`, 2026-11-14):** engine 179 passed, 2 skipped; web 50 passed; typecheck clean; production build OK; browser smoke 23/23 offline and 10/10 with the API (`make web-test-api`, now including Ask Sam: a question from Tiger, a plan in at most 5 tries, the history panel, Open in the Lab).
-- ✅ **Latest full test run (`main` at `39f5791`, 2026-11-14):** engine 182 passed, 2 skipped (`make test`); web 54 passed in 11 files (`make web-test`); typecheck clean; production build OK; browser smoke 23/23 (`scripts/smoke.mjs`) and 10/10 with the API (`make web-test-api` on the test stack: ask → run, Why?, menu edits, adopt, saved list, Hall replay + narration, lever-grid replay, Ask Sam question and plan); 0 problems, no Tiger ledger writes.
+- ✅ **Latest full test run (`main` at `c7493a4`, 2026-11-14):** engine 191 passed, 2 skipped (`make test`); web 55 passed in 11 files (`make web-test`); typecheck clean; production build OK; browser smoke 23/23 (`scripts/smoke.mjs`) and 10/10 with the API (`make web-test-api` on the test stack: ask → run, Why?, menu edits, adopt, saved list, Hall replay + narration, lever-grid replay, Ask Sam question and plan); 0 problems, no Tiger ledger writes. Also checked in the browser: Sam what-if, a staffing-allowed plan, the waste outlook following a Lab preset and a Sam plan.
 - ✅ **Waste outlook (2026-11-14):** Insights opens on the next 8 nights, simulated with each night's adopted plan (Lab or Ask Sam) vs. tonight's plan, next to the recorded past; `waste_lb` on every result, `GET /api/waste/outlook`, `waste/outlook.json` in the bundle. Outlook flow checked in the browser (Lab preset and Sam plan adopted, both nights updated). `waste/outlook.json` is in the demo bundle (refresh it with `cd engine && uv run dcsim bundle --waste-only` after new runs); plans adopted from API runs need the API or the browser's saved copy.
+- ✅ **Gemini function calling and Sam's setting functions (2026-11-14):** the plain-English box reads questions through 13 lever functions (JSON and keyword fallbacks; the Lab shows which answered); Sam's plans can call the decision functions (servers, shifts, cooks, service time, batches, remove a dish, presets; not crowd, arrivals or popularity), and the Ask Sam box also runs what-ifs. Details: SPONSORS.md §1–2.
 - ✗ Restart `make server` if it was started before the Sam merge (`/api/agent`, `/api/similar-nights`, `/tiger` and `/api/tiger/*` → 404 otherwise; Ask Sam then says "Not Found").
 - ⚠️ **Browser-test the API only on the test stack:** `make server-test` (port 8001, a fresh copy of the cache in `cache-test/`, `DCSIM_LEDGER_WRITES=0`) + `make web-test-ui` (port 5174), then `make web-test-api`. The script now refuses an API that would write test forecasts to the append-only Tiger ledger (ISSUES T8).
 - ✗ **Rotate the tokens in `.dev.vars` and stop tracking it** (ISSUES T6: pushed to GitHub in `e926ea1`).
@@ -40,7 +41,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | Engine, back-test, API, LLM, repo issues | 21 | 2 | 7 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 2 | 5 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
 | Web UI issues | 10 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
-| Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
+| Sponsor prizes | 2 | 1 | 2 | [SPONSORS.md](SPONSORS.md) |
 
 ---
 
@@ -97,7 +98,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | N1 | Animated 3D Hall | ◐ (isometric Canvas replay since PR #1; orbital 3D not built) |
 | N2 | Nav graph and table-level seats | ◐ (seating zones and door routes; 0.5.0 seat counts per zone, limits off until real seats are counted) |
 | N3 | Servers by hour; "servers needed" output | ✅ Built 0.5.0 (`shifts`, lever, `staffing` in results; not on the Dashboard yet, U5) |
-| N4 | Breakfast and lunch | ✗ (late night added in 0.4.1) |
+| N4 | Breakfast and lunch | ✗ Out of scope for the demo (decided 2026-11-14; late night added in 0.4.1; the menu snapshot has both meals) |
 | N5 | Survey calibration of personas | ✗ |
 | N6 | Optimizer | ✗ (also the core of the agent prize, SPONSORS §2) |
 | N7 | Uncertainty sweep | ✗ (Vultr prize, SPONSORS §4) |
@@ -132,7 +133,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | # | Prize | Status |
 | --- | --- | --- |
 | 1 | Gemini API | ✅ Ask box on **function calling** (JSON and keyword fallbacks), Sam's tool loop, narration, explain, dish prior, embeddings; image input out of scope |
-| 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman planning agent built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, web page `/sam`); optimizer N6 still optional |
+| 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, `/sam`): goals in ≤ 5 tries with batch, staffing and menu setting functions, Tiger lookups via the Tiger MCP server, what-ifs and history questions in the same box, History; optimizer N6 still optional |
 | 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (served by the API at `/tiger`, not part of the web app; two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; track record, weather/event fit and MCP question set built 2026-11-14 (TIGER.md §4–6); 500-night demo query open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |

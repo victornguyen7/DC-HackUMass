@@ -1,10 +1,10 @@
 # DC What-If · web
 
-The main navigation is **Simulation**, **Kitchen plan**, and **Insights** (tabs: **Waste history** and **Similar nights**). The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
-React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS: `src/styles.css` (tokens and primitives), `src/guided.css` (the redesign) and `src/similar-nights.css`. New UI follows the "Visual system" in [`docs/FRONTEND_REDESIGN_PLAN.md`](../docs/FRONTEND_REDESIGN_PLAN.md).
+The main navigation is **Simulation**, **Kitchen plan**, **Insights** (tabs: **Waste history** and **Similar nights**) and **Ask Sam**. The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
+React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS: `src/styles.css` (tokens and primitives), `src/guided.css` (the redesign), `src/similar-nights.css` and `src/sam.css` (Ask Sam). New UI follows the "Visual system" in [`docs/FRONTEND_REDESIGN_PLAN.md`](../docs/FRONTEND_REDESIGN_PLAN.md).
 
 The app reads the static demo bundle in `public/cache` (written by `make demo-bundle`), so the demo runs with **no API and no network**.
-If the engine API is running (`make server`, port 8000), Vite proxies `/api` to it and the What-If Lab can also run combinations that aren't in the bundle.
+If the engine API is running (`make server`, port 8000), Vite proxies `/api` to it and the What-If Lab can also run combinations that aren't in the bundle. `DCSIM_API_URL` points the proxy at another API (`make web-test-ui` serves the app on :5174 against the ledger-safe test API from `make server-test`).
 
 ```bash
 cd web
@@ -21,7 +21,9 @@ node scripts/smoke-api.mjs http://localhost:5174         # API-backed features +
 The pages check `/api/health` (the dev/preview proxy answers `{ok:false}` when the API is down) and turn these on when it answers:
 
 - **Hall:** replays any scenario without a bundled trace (`/api/traces/{hash}`), highlight students (`/highlights`), and narrates any student on request (`/api/narrate`).
-- **What-If Lab:** plain-English box (`/api/ask`), menu edits and the new-dish form with *suggest* and **AI estimate** (`/api/ai/similar-dishes`, `/api/ai/dish-prior`), lever combinations (`/api/simulate`), "Why?" (`/api/explain`), and save/adopt on the API (`/api/scenarios`). API runs can be watched and adopted; their results are kept in `localStorage` so an adopted plan still shows offline.
+- **What-If Lab:** plain-English box (`/api/ask`; the answer says whether Gemini function calling, JSON settings or keyword matching read it), menu edits and the new-dish form with *suggest* and **AI estimate** (`/api/ai/similar-dishes`, `/api/ai/dish-prior`), lever combinations (`/api/simulate`), "Why?" (`/api/explain`), and save/adopt on the API (`/api/scenarios`). API runs can be watched and adopted; their results are kept in `localStorage` so an adopted plan still shows offline.
+- **Ask Sam** (`/sam`, `src/pages/Sam.tsx`, `src/lib/agent.ts`): `POST /api/agent` and its SSE stream for goals, what-ifs and history questions; the History panel reads `GET /api/agent/history` and keeps a copy of each final analysis in `localStorage` (last 40) so it opens with the API down. Adopting a Sam plan or what-if also keeps its result locally, for the waste outlook. Without the API the page says Sam needs it.
+- **Insights › Waste history (next 8 nights):** `waste/outlook.json` from the bundle, else `GET /api/waste/outlook`; plans adopted from API runs (Lab, Sam) read `waste_lb` from `/api/results/{hash}` or the saved copy (`src/lib/outlook.ts`, `src/pages/WasteOutlook.tsx`).
 - **Insights › Similar nights:** `GET /api/similar-nights`. This page has no bundle data: without the API it says the search service isn't answering and offers **Try again**.
 
 ## Pages
@@ -30,7 +32,8 @@ The pages check `/api/health` (the dev/preview proxy answers `{ok:false}` when t
 | --- | --- | --- |
 | `/hall` | Guided simulation | `results/<hash>.json`, `traces/<hash>_s<seed>.json.gz`, `narration/…`, `public/plan/*.svg` |
 | `/dashboard` | Kitchen plan | result of the scenario adopted for the date (baseline if none), `ref/dates.json`, `ref/menu/<date>.json` |
-| `/waste` | Insights › Waste history | `waste/history.json`, `waste/backtest.json` (incl. per-dish and per-station back-test), `waste/facts.json` |
+| `/waste` | Insights › Waste history: opens on the next 8 nights (each night's adopted plan, else the recommended plan, vs tonight's plan, next to the last recorded nights); "Last 4 weeks" / "All recorded" show the history and back-test | `waste/outlook.json` (or `GET /api/waste/outlook`), `waste/history.json`, `waste/backtest.json` (incl. per-dish and per-station back-test), `waste/facts.json`; adopted plans from the store |
+| `/sam` | Ask Sam: goal, what-if or history question; live tries, Tiger lookups, plan / what-if / answer, History | `POST /api/agent` + SSE, `GET /api/agent/history[/{id}]`, `localStorage` copy |
 | `/lab` | Advanced scenario settings | presets + lever grid from the manifest; `POST /api/simulate` for anything else |
 | `/similar-nights` | Insights › Similar nights | `manifest.json` (menu dates), `GET /api/similar-nights` |
 

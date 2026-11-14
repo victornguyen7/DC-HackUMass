@@ -81,6 +81,17 @@ Also fixed while testing the second pass:
 - Negative dollar ranges showed as "$-11"; now "−$11".
 - Missing favicon (404 in the console).
 
+## Third pass: Ask Sam, the waste outlook and function calling (2026-11-14)
+
+| Change | Where |
+| --- | --- |
+| **Ask Sam** page (`/sam`, top nav, original tricorn-hat avatar): one box for goals (planned in ≤ 5 simulated tries with a goal check and an unseen-night check), what-ifs (simulated as asked vs tonight's plan) and history questions (answered from Tiger through the Tiger MCP server); live tries with Sam's notes and pass/fail chips, Tiger lookups with their SQL, the plan / what-if / answer card with Adopt, Open in the Lab and Watch a night, and a **History** panel of final analyses labeled with prompt, menu date and time asked (API + `localStorage` copy) | `pages/Sam.tsx`, `lib/agent.ts`, `components/SamAvatar.tsx`, `sam.css` |
+| The Lab accepts a plan from Sam (**Open in the Lab** passes the request as router state) | `pages/Lab.tsx` |
+| The plain-English box shows which method read the question: Gemini function calling, AI JSON settings, or keyword matching | `pages/Lab.tsx` |
+| **Insights › Waste history opens on the next 8 nights**: recorded nights, a "Recorded \| Simulated" divider, then each coming night's tonight's-plan bar and its plan point (maroon = adopted from the Lab or Sam, green = recommended, not adopted); KPI cards and a "Plan per night" table with **Change in the Lab**; Export. "Last 4 weeks" / "All recorded · 6 weeks" show the history as before | `pages/WasteOutlook.tsx`, `lib/outlook.ts`, `pages/Waste.tsx` |
+| Removed: the synthetic-data banner on Insights (the "Synthetic waste data" chip and labels stay) and the rules line under Ask Sam's box | `pages/Waste.tsx`, `pages/Sam.tsx` |
+| Browser test on a ledger-safe stack: `make server-test` + `make web-test-ui`, then `make web-test-api` (10 of 10, incl. two Ask Sam steps); the script refuses an API that would write to the Tiger ledger | `scripts/smoke-api.mjs`, `vite.config.ts` (`DCSIM_API_URL`) |
+
 ## Open issues
 
 | ID | Sev | Page | Issue |
@@ -97,8 +108,9 @@ Also fixed while testing the second pass:
 | U17 | ~~Low~~ | Hall | ~~After the frontend redesign (PR #1) two smoke steps fail~~ **Fixed 2026-11-13:** both were script selectors, not app bugs; smoke passes 23 of 23 |
 | U18 | Low | Hall | Pan level in the replay is line pan + hot-hold cabinet, so during a pan swap (30 s) it shows food in a pan a student just found empty |
 | U14 | Low | Repo | Stack differs from SPEC §9 (no Tailwind, no Recharts) |
+| U19 | ~~Medium~~ | Waste | ~~"Last 8 weeks" never works: it is disabled with only 42 recorded nights and the reason is a hover tooltip~~ **Fixed 2026-11-14:** the period buttons offer only ranges that exist ("Next 8 nights", "Last 4 weeks", "All recorded · 6 weeks") |
 
-Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1). Partly fixed: U4, U7.
+Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1), U19 (2026-11-14). Partly fixed: U4, U7.
 
 ### U1 · High · Figma numbers are placeholders and differ from the real data
 The design mock-ups use made-up values; the built pages show the bundle's real numbers:
@@ -126,6 +138,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - Breakfast and lunch aren't simulated and `ref/arrivals` holds dinner windows only. The Breakfast and Lunch toggles are disabled; the arrivals chart covers 4:30–9:00 pm.
 - Weather shows "not connected".
 - Needs engine work (other meals), not a UI change.
+- **Decided 2026-11-14:** dinner + late night is enough for the demo; breakfast and lunch stay out of scope (the snapshot has their menus if it's picked up later: N4).
 
 ### U5 · Medium · Dashboard: staffing "needed" isn't computed
 - The design compares planned servers with servers needed for p90 wait under 8 min, by hour. The result only has servers and peak line length per station, so the page shows those two columns and a note.
@@ -139,7 +152,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - Dish **swap** is "remove one + add one" (two steps), not a single control.
 
 ### U15 · Medium · Several features need the API
-Offline (bundle only), these are disabled with a message: the plain-English box, menu edits and new dishes, "Why?", combinations of levers, replays of scenarios without a bundled trace, narration of non-highlight students, and Insights › Similar nights (no bundle fallback; it shows "Can't reach the search service" with Try again). An adopted API plan still shows on the Dashboard offline (its result is kept in the browser), but it can't be replayed.
+Offline (bundle only), these are disabled with a message: the plain-English box, menu edits and new dishes, "Why?", combinations of levers, replays of scenarios without a bundled trace, narration of non-highlight students, Insights › Similar nights (no bundle fallback; it shows "Can't reach the search service" with Try again), and **Ask Sam** (says it needs the API; its History still opens from the browser copy). The waste outlook works offline from `waste/outlook.json`, except nights whose adopted plan ran on the API and was never loaded in this browser. An adopted API plan still shows on the Dashboard offline (its result is kept in the browser), but it can't be replayed.
 - **For the demo:** run `make server` next to `make web`, or stick to presets and single levers.
 
 ### U9 · Low · Hall replay geometry is approximate

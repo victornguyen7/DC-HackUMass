@@ -273,7 +273,7 @@ Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s
 | N1 | Animated 3D Hall (React Three Fiber). **Partly:** since the redesign (PR #1) the web app plays the full trace on an illustrated isometric view (Canvas) and the top-down plan; orbital 3D is not built. Remaining UI gaps are in UI_ISSUES.md | SPEC §3–6 |
 | N2 | Nav graph and table-level seats. Seating zones (main / back) and door routes are built (0.3.4) | ENGINE §3 |
 | N3 | ✅ **Built (engine 0.5.0):** `Station.shifts` / lever `stations.<id>.shifts` change servers during the night, and results carry `staffing` (servers needed per station and hour for ≤ 85% busy). ~~Servers by hour, and a "servers needed for p90 wait < 8 min" output~~. The Dashboard doesn't show it yet (UI_ISSUES U5) | SPEC §6.1 |
-| N4 | Breakfast and lunch (full-day arrivals) | SPEC §7 |
+| N4 | Breakfast and lunch (full-day arrivals): **out of scope for the demo** (decided 2026-11-14); the menu snapshot has both meals if it's picked up later | SPEC §7 |
 | N5 | Survey adjustment of personas and dish popularity, held-out check, `POST /personas/calibrate` | ENGINE §7.3 |
 | N6 | Optimizer ("Optimize plan"); the back-test uses `smaller_batches` until then | SPEC §6.1 |
 | N7 | Uncertainty sweep, so ranges widen for guessed inputs and AI-estimated dishes (the Lab's "Holds up if we're wrong?" needs it) | ENGINE §7.3 |

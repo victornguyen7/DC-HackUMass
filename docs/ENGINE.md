@@ -374,7 +374,8 @@ Output: `data/personas_calibrated.json`. Its fingerprint is `ScenarioConfig.popu
 | `narrate.py` | Card (timeline) instantly, then narration **sentence by sentence**; `highlights()` picks students worth clicking (missed meal, came back, vegetarian gap, switched, empty pan, three lines) | Each sentence is checked before it is sent: no dish or station outside the student's events; ≤600 chars | Template narration (also what the mock returns) |
 | `personas.py` | `dcsim personas generate` → `personas_raw.json`; `dcsim personas adopt` → `personas.json` after review; 2 per call, the first three batches each must include a vegetarian, vegan and halal persona | Limits per persona: patience 0–40, seconds 0–0.9, dwell 5–90, affinities 0.1–10, probabilities sum to 1, keys exist | None: generation fails loudly, never writes the hand set as if the model proposed it |
 | `dish_prior.py` | Per-persona affinity for a new dish; level borrowed from "similar to" dishes, range ×0.6–1.5 | All eligible personas, 0.1–10 | Similar-dish average |
-| `ask.py` | Plain English → `ScenarioRequest` + readable settings list + what it couldn't express; nothing runs | The request must build a valid config | Keyword parser |
+| `ask.py` | Plain English → `ScenarioRequest` + readable settings list + what it couldn't express; nothing runs. With Gemini, **function calling** (13 lever functions, 2026-11-14), else JSON schema | The request must build a valid config; bad calls re-asked once with their errors | JSON schema, then keyword parser |
+| `agent.py` (2026-11-14) | **Ask Sam**: goals planned by Gemini function calling over `run_simulation` / `finish`, the decision setting functions and (via `tiger_mcp.py`) Tiger lookups; what-ifs through `ask.py`; history questions from Tiger | `check_goal` is code; ≤ 5 simulations; re-checked on unseen seeds; Tiger SQL guarded to one read-only SELECT | Rule-based search; "needs Gemini" for questions |
 | `explain.py` | 3 sentences on why a scenario won or lost, from the paired comparison | Every number must be in the facts; no "saved / measured / will" | Template from the verdicts |
 
 - **Provider (2026-11-13):** Google Gemini (`google-genai` SDK, `gemini-3.5-flash-lite` on the free tier, JSON-schema output), the default when `GEMINI_API_KEY` is in `engine/.env`. `/ask`, narration and explain verified live. Groq, below, remains available with `LLM_PROVIDER=groq`. Details in LLM.md.
@@ -385,6 +386,7 @@ Output: `data/personas_calibrated.json`. Its fingerprint is `ScenarioConfig.popu
 - **Trace additions:** `queue_join` and `balk` events carry `line` (students already waiting); going back for a favorite after walking away is a `retry` event, separate from `seconds`.
 - **Change from §7.2:** the seconds ceiling is 0.9, not 0.6, because the team confirmed about half of students go back.
 - **Web UI (2026-11-13):** the What-If Lab calls `/ask`, `/ai/similar-dishes`, `/ai/dish-prior` and `/explain`; the Hall calls `/traces/{hash}/highlights` and `/narrate` (non-streaming) for students without a pre-built narration.
+- **Ask Sam and function calling (2026-11-14):** see `docs/SPONSORS.md` §1–2 and `docs/LLM.md`. Image input is out of scope.
 - **Not built yet:** survey adjustment (§7.3), `POST /personas/calibrate`, the uncertainty sweep that would widen ranges for AI estimates.
 
 ---
@@ -395,7 +397,7 @@ As built (engine 0.3.4, `engine/src/dcsim/api.py`). Every route is under `/api`.
 
 | Endpoint | Behavior | Web UI |
 | --- | --- | --- |
-| `GET /health` | `{ok, engine_version, cache}` (the Vite proxy answers `{ok:false}` when the API is down) | all pages |
+| `GET /health` | `{ok, engine_version, cache, ledger_writes}` (the Vite proxy answers `{ok:false}` when the API is down; `ledger_writes` false when Tiger isn't set up or `DCSIM_LEDGER_WRITES=0`) | all pages; `smoke-api.mjs` refuses `ledger_writes: true` |
 | `POST /simulate` | `ScenarioRequest {date, preset, levers, label, n_nights}` → `200 {status: done, result}` if cached, else `202 {job_id, config_hash, stream}` | Lab |
 | `GET /jobs/{id}` | job status + latest result | Lab (polls) |
 | `GET /jobs/{id}/stream` | SSE: `progress`, `provisional`, `final`, `error` | — |
@@ -404,7 +406,11 @@ As built (engine 0.3.4, `engine/src/dcsim/api.py`). Every route is under `/api`.
 | `GET /traces/{hash}` | median-night (or `?seed=`) trace, **gzipped JSON** (`Content-Encoding: gzip`) | Hall (scenarios without a bundled trace) |
 | `GET /traces/{hash}/highlights` | students worth clicking on that night, with the reason | Hall |
 | `GET /narrate/{hash}/{seed}/{student}` | SSE `card` → `sentence`… → `final` (cached; template if the mock is on or the check fails); `?stream=false` for JSON | Hall (student card) |
-| `POST /ask` | `{question, date}` → lever settings + readable list + what it couldn't express (does not run) | Lab (plain-English box) |
+| `POST /ask` | `{question, date}` → lever settings + readable list + what it couldn't express (does not run). With Gemini: function calling (13 lever functions, ids as enums), then JSON schema, then keywords; `method` says which | Lab (plain-English box) |
+| `POST /agent` | **Ask Sam**: `{goal, date, max_tries ≤ 5, n_nights}` → `202 {job_id, stream}`; a goal is planned (simulations + goal check + unseen-seed check), a what-if simulated as asked, a question answered from Tiger | Ask Sam |
+| `GET /agent/{id}/stream`, `GET /agent/{id}` | SSE: `start`, `goal`, `tiger`, `try_start`, `progress`, `try`, `whatif`, `notice`, `thought`, `validate_start`, `final`, `error`; status + result | Ask Sam |
+| `GET /agent/history[/{id}]`, `DELETE /agent/history/{id}` | Sam's final analyses (SQLite `agent_history`); DELETE needs the admin token when set | Ask Sam (History panel) |
+| `GET /waste/outlook` | `?n_nights=` → simulated pre-consumer waste (lb, $, stockouts) of every bundled scenario on the coming dates (`outlook.py`); the bundle has `waste/outlook.json` | Insights › Waste history (next 8 nights) |
 | `POST /ai/similar-dishes` | `{name, date, station, role}` → menu dishes like a new one | Lab (new-dish form, "suggest") |
 | `POST /ai/dish-prior` | `{date, dish}` → persona affinities for a new dish, ready for `levers.add_dishes` | Lab ("AI estimate") |
 | `POST /explain` | `{scenario_hash, baseline_hash?}` → short explanation of the paired comparison | Lab ("Why?") |
@@ -417,9 +423,9 @@ As built (engine 0.3.4, `engine/src/dcsim/api.py`). Every route is under `/api`.
 | `GET /dates`, `/menu/{date}`, `/arrivals/{date}`, `/layout`, `/presets`, `/facts/waste` | reference data (the bundle has static copies) | — |
 | `GET /waste/history`, `/waste/backtest`, `/waste/calibration` | synthetic history, back-test (with per-dish rows and per-station splits), held-out calibration | — (bundle copies) |
 
-**Result fields (engine 0.5.0; `series` only with `?include=series`, 0.6.0):** `open`, `close` (serving stops: end of late night), `dinner_close`, `late_close`; `headline` (p10/p50/p90 of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `seat_wait_min`, `peak_seated`); `cook_sheet` (with `period` per dish); `flags`; `stations`; `arrivals`; `staffing` (station → hour → servers needed for ≤ 85% busy); `median_seed`; `baseline_hash`; `vs_baseline`. Levers added in 0.5.0: `kitchen_staff {cooks, equipment}` and `stations.<id>.shifts [[from_min, servers], ...]`.
+**Result fields (engine 0.5.0; `series` only with `?include=series`, 0.6.0):** `open`, `close` (serving stops: end of late night), `dinner_close`, `late_close`; `headline` (p10/p50/p90 of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `seat_wait_min`, `peak_seated`); `cook_sheet` (with `period` per dish); `flags`; `stations`; `arrivals`; `staffing` (station → hour → servers needed for ≤ 85% busy); `median_seed`; `baseline_hash`; `vs_baseline`; `waste_lb` (added 2026-11-14: pre-consumer lb/$/portions and stockout minutes, 10/50/90%, in the recorded history's units). Levers added in 0.5.0: `kitchen_staff {cooks, equipment}` and `stations.<id>.shifts [[from_min, servers], ...]`.
 
-Built in 0.6.0–0.6.2: `?include=series` on results; `POST/GET /api/warm` and `POST/GET /api/backtest` as admin background jobs; an optional admin token (`DCSIM_ADMIN_TOKEN`) on DELETE scenarios and the admin jobs; a per-IP limit on the AI routes (`DCSIM_AI_RATE`); finished jobs expire (`DCSIM_JOB_TTL_S`). Verdicts in comparisons: `better` / `worse` / `inconclusive` / `same` (below `runner.min_meaningful`). Added after 0.6.2 (no version bump, the simulation didn't change): `GET /api/similar-nights`, `GET /api/tiger/dashboard`, `GET /api/tiger/bench`, and the page `GET /tiger` (outside `/api`, hidden from the OpenAPI docs; the web app doesn't link to it). Planned but **not built:** `POST /personas/calibrate`. Traces are gzipped JSON, not msgpack.
+Built in 0.6.0–0.6.2: `?include=series` on results; `POST/GET /api/warm` and `POST/GET /api/backtest` as admin background jobs; an optional admin token (`DCSIM_ADMIN_TOKEN`) on DELETE scenarios and the admin jobs; a per-IP limit on the AI routes (`DCSIM_AI_RATE`); finished jobs expire (`DCSIM_JOB_TTL_S`). Verdicts in comparisons: `better` / `worse` / `inconclusive` / `same` (below `runner.min_meaningful`). Added after 0.6.2 (no version bump, the simulation didn't change): `GET /api/similar-nights`, `GET /api/tiger/dashboard`, `GET /api/tiger/bench`, and the page `GET /tiger` (outside `/api`, hidden from the OpenAPI docs; the web app doesn't link to it). Added on 2026-11-14 (no version bump): `POST /api/agent` with its stream, status and history routes (Ask Sam), `GET /api/waste/outlook`, `waste_lb` on results, `ledger_writes` in health, and function calling behind `POST /api/ask`. Planned but **not built:** `POST /personas/calibrate`. Traces are gzipped JSON, not msgpack.
 
 ---
 

@@ -18,6 +18,11 @@ DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py   # after an intended c
 uv run dcsim tsdb similar --date 2026-11-14 --weather rain   # past nights most like this one, on Tiger (docs/TIGER.md §7)
 uv run dcsim tsdb bench                                      # raw hypertable vs continuous aggregate timings (docs/TIGER.md §8)
 uv run dcsim tsdb query stack                                # one SQL query across aggregates, nights, plan, forecasts, ledger
+uv run dcsim ask "one more server at Grill and 10% busier"   # plain English -> settings (Gemini function calling)
+uv run dcsim agent "cut waste 20% without any vegetarian dish running out" --tries 5   # Ask Sam: plan (1-5 tries)
+uv run dcsim agent "what if we add a Grill server and it's 10% busier?"               # Ask Sam: what-if
+uv run dcsim agent "Which dishes ran out on rainy Fridays?"                           # Ask Sam: answered from Tiger
+uv run dcsim bundle --waste-only                             # refresh calibration, ledger snapshot and the waste outlook (seconds)
 ```
 
 Presets: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`, `forecast_reorder` (cook to the expected rush, with safety stock).
@@ -27,6 +32,7 @@ Presets: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combine
 ```bash
 uv run dcsim serve                 # http://127.0.0.1:8000, docs at /docs
 uv run dcsim serve --warm          # also precompute baseline + presets for every date in the background
+make server-test                   # test API on :8001: a copy of the cache, Tiger ledger writes off (DCSIM_LEDGER_WRITES=0)
 uv run dcsim cache stats|prune     # results live in <repo>/cache (DCSIM_CACHE to move it)
 ```
 
@@ -46,14 +52,20 @@ uv run dcsim cache stats|prune     # results live in <repo>/cache (DCSIM_CACHE t
 | `GET /api/tiger/bench` | `?repeat=` (1–10) → the same questions timed on the raw hypertables and on their aggregates |
 | `GET /api/similar-nights` | `?date=&students=&weather=&event_night=&menu_date=&limit=` → recorded nights before `date` most like it, with their waste and stockouts. Tiger pgvector, else the local synthetic files; 422 on bad input, 503 if Tiger fails after connecting ([docs/SIMILAR_NIGHTS.md](../docs/SIMILAR_NIGHTS.md)) |
 | `POST /api/backtest`, `GET /api/backtest` | Admin job: re-run the back-test (`{plan?, regenerate_history}`) → `backtest.json`; GET polls |
+| `GET /api/health` | `{ok, engine_version, cache, ledger_writes}`; `ledger_writes` is false when Tiger isn't set up or `DCSIM_LEDGER_WRITES=0` |
+| `POST /api/ask` | `{question, date?}` → settings (not run). With Gemini: **function calling** (13 lever functions, ids as enums, one re-ask), then JSON schema, then keywords; `method` says which answered |
+| `POST /api/agent` | **Ask Sam**: `{goal, date?, max_tries 1-5 (default 5), n_nights 3-60}` → `202 {job_id, stream}`. Goals are planned (≤ 5 simulations, goal check in code, re-checked on unseen seeds), what-ifs simulated as asked, questions answered from Tiger. At most `DCSIM_AGENT_MAX_RUNNING` runs at once (429) |
+| `GET /api/agent/{id}/stream`, `GET /api/agent/{id}` | SSE steps: `start`, `goal`, `tiger`, `try_start`, `progress`, `try`, `whatif`, `notice`, `thought`, `validate_start`, `final` (or `error`); GET = status + result |
+| `GET /api/agent/history`, `GET /api/agent/history/{id}`, `DELETE …/{id}` | Sam's final analyses (prompt, menu date, time asked, plan/answer/what-if; no per-try details); DELETE needs the admin token when set |
+| `GET /api/waste/outlook` | `?n_nights=` → simulated pre-consumer waste (lb, $, stockouts) of every bundled scenario on the coming dates, keyed like the bundle manifest (`outlook.py`) |
 
-AI routes (`/api/ask`, `/api/narrate`, `/api/explain`, `/api/ai/dish-prior`, `/api/ai/similar-dishes`) are limited to `DCSIM_AI_RATE` requests per minute per client IP (default 20 → 429). Comparisons (`vs_baseline`, `/api/compare`) give each metric a verdict: `better`, `worse`, `inconclusive`, or `same` when the median difference is below a per-metric minimum (`runner.min_meaningful`; e.g. 0.5 min of wait).
+AI routes (`/api/ask`, `/api/narrate`, `/api/explain`, `/api/ai/dish-prior`, `/api/ai/similar-dishes`, `POST /api/agent`) are limited to `DCSIM_AI_RATE` requests per minute per client IP (default 20 → 429). Comparisons (`vs_baseline`, `/api/compare`) give each metric a verdict: `better`, `worse`, `inconclusive`, or `same` when the median difference is below a per-metric minimum (`runner.min_meaningful`; e.g. 0.5 min of wait).
 
-A result holds `open`/`close`/`dinner_close`/`late_close`, `headline` (median and 10–90% range of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus kitchen wait, cook busy share, empty-pan wait, seat wait, peak seated), `cook_sheet` (per dish incl. `period`: portions to prepare, batch plan, run-out window), `flags` (run-outs, long lines, diet coverage), `stations`, `arrivals` (expected per 10 min), `staffing` (servers needed per station and hour), `median_seed`, and `vs_baseline` for anything that isn't the baseline. Per night (`NightMetrics`) there are also swipe wait, group students, and allergy students / allergy students with no meal.
+A result holds `open`/`close`/`dinner_close`/`late_close`, `headline` (median and 10–90% range of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus kitchen wait, cook busy share, empty-pan wait, seat wait, peak seated), `cook_sheet` (per dish incl. `period`: portions to prepare, batch plan, run-out window), `flags` (run-outs, long lines, diet coverage), `stations`, `arrivals` (expected per 10 min), `staffing` (servers needed per station and hour), `median_seed`, `waste_lb` (pre-consumer waste in lb, $ and portions with stockout minutes, as 10/50/90% ranges, in the recorded history's units; `outlook.py`), and `vs_baseline` for anything that isn't the baseline. Per night (`NightMetrics`) there are also swipe wait, group students, and allergy students / allergy students with no meal.
 
 Levers (`dcsim/levers.py`): `crowd_multiplier` (snapped to 5%; scales dinner and late night), `crowd_shift_min`, `stations.{id}.servers / service_median_min / shifts` (`[[from_min, servers], ...]`), `kitchen.{dish_id}.{batch_size, starting_batches, reorder_point, max_batches, last_batch_min}`, `kitchen_staff.{cooks, equipment}`, `popularity.{dish_id}` (snapped to 0.1), `remove_dishes`, `add_dishes`. Snapping keeps nearby slider positions on the same cached result.
 
-Storage is one SQLite file (`cache/results.sqlite`: configs, per-seed nights, scenarios) plus gzipped traces. Nights are stored per (config hash, seed), so 30 → 60 nights only runs the new seeds and every comparison reuses the date's baseline. The hash includes the engine and data versions, so editing any input file or engine logic can never serve a stale result. Measured on this laptop: cold preset vs. baseline (60 nights) 2.5 s with a provisional result at 1.7 s; cache hit 60 ms; new preset with cached baseline 1.5 s; trace 0.26 s.
+Storage is one SQLite file (`cache/results.sqlite`: configs, per-seed nights, scenarios, LLM responses, Sam's history `agent_history`) plus gzipped traces. Nights are stored per (config hash, seed), so 30 → 60 nights only runs the new seeds and every comparison reuses the date's baseline. The hash includes the engine and data versions, so editing any input file or engine logic can never serve a stale result. Measured on this laptop: cold preset vs. baseline (60 nights) 2.5 s with a provisional result at 1.7 s; cache hit 60 ms; new preset with cached baseline 1.5 s; trace 0.26 s.
 
 ## Data flow
 
@@ -93,6 +105,10 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 | `store.py` | SQLite + trace files cache, saved/adopted scenarios |
 | `service.py` | Cache-aware orchestration: missing seeds in batches of 8, results, traces |
 | `api.py` | FastAPI app, background jobs with in-flight dedupe, SSE streaming |
+| `outlook.py` | `waste_summary` (pre-consumer lb/$/portions per simulated night, same conversion as the back-test) and `outlook` (every bundled scenario on the coming dates) |
+| `ai/ask.py` | Plain English → settings: Gemini function calling (`ask_tools`, `calls_to_plan`), JSON-schema and keyword fallbacks |
+| `ai/agent.py` | Ask Sam: goal/what-if/question, the tool loop (`run_simulation`, `finish`, setting functions, Tiger tools), `check_goal` in code, rule-based fallback, hold-out check, history entries |
+| `ai/tiger_mcp.py` | Sam's MCP client of `tiger mcp start` (only `db_schema` / `db_query`), `guard_sql` (one read-only SELECT), schema digest |
 | `similar_nights.py` | Similar nights for the page and API: 48-dim condition vectors, cosine ranking, Tiger `dcsim.night_embeddings` or local files |
 | `nightsearch.py` | `dcsim tsdb similar`: 76-dim night vectors in `dcsim.night_vectors` (DiskANN index), held-out check |
 
@@ -115,7 +131,7 @@ make demo-bundle      # = dcsim waste-gen && dcsim backtest && dcsim bundle --gr
 
 - `dcsim waste-gen` (`synthetic.py`): 6 weeks of SYNTHETIC recorded nights in `data/synthetic/worcester/` (MetaFoodX-style `consumption.csv`, LeanPath-style `waste_log.csv`, `nights.csv`). Noise settings are in `ASSUMPTIONS.md`; the per-night values are hidden in `_ground_truth.json`.
 - `dcsim backtest` (`backtest.py`): re-simulates each recorded night's menu and student count under the baseline plan and the recommended plan (10 nights each) → `backtest.json`, with the reduction split into "cooking to the forecast" vs "the plan's changes", stockouts next to it, and predicted-vs-recorded for adopted nights. It also writes per-dish rows (`dishes`: recorded vs. plan lb per night served, change %, $ saved per week) and a per-station split on each night (`by_station`) for the Waste Record page. Served at `GET /api/waste/history` and `/api/waste/backtest`.
-- `dcsim bundle` (`bundle.py`): writes `web/public/cache/` so the frontend works with no API. Look results up in `manifest.json` by key `"<date>|<preset or baseline>|<lever>"`, e.g. `2026-11-13|baseline|`, `2026-11-13|theme_night|`, `2026-11-13|baseline|crowd_multiplier=1.1`, `2026-11-13|baseline|stations.grill.servers=3` (lever grid with `--grid`). Traces are `.json.gz`; decompress in the browser with `DecompressionStream('gzip')`. Full bundle: 254 results + 13 traces + 13 narration files (156 narrations), about 18 MB, about 4 minutes plus narration time (the builder waits for the Gemini rate limit). The committed bundle is from engine 0.4.1; rebuild it once on the final engine.
+- `dcsim bundle` (`bundle.py`): writes `web/public/cache/` so the frontend works with no API, including `waste/outlook.json` (the coming nights' simulated waste for every bundled scenario; `--waste-only` refreshes it with the calibration and ledger snapshot in seconds). Look results up in `manifest.json` by key `"<date>|<preset or baseline>|<lever>"`, e.g. `2026-11-13|baseline|`, `2026-11-13|theme_night|`, `2026-11-13|baseline|crowd_multiplier=1.1`, `2026-11-13|baseline|stations.grill.servers=3` (lever grid with `--grid`). Traces are `.json.gz`; decompress in the browser with `DecompressionStream('gzip')`. Full bundle: 254 results + 13 traces + 13 narration files (156 narrations), about 18 MB, about 4 minutes plus narration time (the builder waits for the Gemini rate limit). The committed bundle is from engine 0.4.1; rebuild it once on the final engine.
 
 ## Tiger Data schema script (for the Tiger console)
 
@@ -123,7 +139,7 @@ make demo-bundle      # = dcsim waste-gen && dcsim backtest && dcsim bundle --gr
 
 ## Web app
 
-The web app in `web/` (Simulation with the What-If Lab, Kitchen plan, Insights) reads this bundle, so it works with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make server` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes, "Why?" and Insights › Similar nights. See `web/README.md` and `docs/UI_ISSUES.md`.
+The web app in `web/` (Simulation with the What-If Lab, Kitchen plan, Insights) reads this bundle, so it works with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make server` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes, "Why?", Insights › Similar nights and **Ask Sam**. See `web/README.md` and `docs/UI_ISSUES.md`.
 
 ## Not built yet
-Nav graph and table-level seats (zones are built; seat limits off until real seat counts) · add-ons consuming stock · breakfast and lunch · survey calibration · LLM personas (paused; narration is built) · optimizer · uncertainty sweep · animated 3D Hall. Built since 0.4: late night, kitchen capacity, staffing by hour, per-minute series, allergies, groups, swipe queue, pan sizes.
+Nav graph and table-level seats (zones are built; seat limits off until real seat counts) · add-ons consuming stock · breakfast and lunch · survey calibration · LLM personas (paused; narration is built) · optimizer · uncertainty sweep · animated 3D Hall. Built since 0.4: late night, kitchen capacity, staffing by hour, per-minute series, allergies, groups, swipe queue, pan sizes; on 2026-11-14 Ask Sam, function calling for the plain-English box and the waste outlook (no engine version change). Out of scope: image input (menu photos).

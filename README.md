@@ -34,16 +34,17 @@ A web app in `web/`. It was first built from the Figma file (*DC What-If — Wor
 | Destination | Route | What a manager sees | Main data |
 | --- | --- | --- | --- |
 | **Simulation** | `/hall` | A guided workspace: **Watch the hall → Try a change → Compare**. The night plays back on an illustrated isometric hall (or the measured top-down plan): every dot is a student entering, queuing, getting a plate or bowl, sitting, leaving. Play / pause, 1×–60× speed, a scrubber, one temporary alert at a time for long lines and empty pans. Select a station for its dishes, pan levels and queue over the night; select a student for their journey and an AI-written story. **Try a change** offers presets (smaller batches, an extra Grill server, a busier night); **Compare** shows waste, waiting and dish availability against the baseline with ranges and verdicts, and works on every bundled date without the API. | Median-night **trace** (per-student events) + result |
-| ↳ **What-If Lab** | `/lab` | The advanced settings behind Simulation: batch-plan sliders per dish, crowd size, servers per station, menu edits (remove a dish, change popularity, **add a new dish with an AI estimate**), or **ask in plain English**. Run 30 paired nights and see results vs. baseline with verdicts, the cook sheet with changed rows, side effects, when pans run empty, where demand moves, and "Why?". Then **Adopt** it for the date or watch the replay. | Bundle, or the API for anything not precomputed |
+| ↳ **What-If Lab** | `/lab` | The advanced settings behind Simulation: batch-plan sliders per dish, crowd size, servers per station, menu edits (remove a dish, change popularity, **add a new dish with an AI estimate**), or **ask in plain English** (with a Gemini key the box reads the question through **Gemini function calling**: one function per setting, real station and dish ids only; JSON and keyword fallbacks). Run 30 paired nights and see results vs. baseline with verdicts, the cook sheet with changed rows, side effects, when pans run empty, where demand moves, and "Why?". Then **Adopt** it for the date or watch the replay. | Bundle, or the API for anything not precomputed |
 | **Kitchen plan** | `/dashboard` | Tonight's plan for the chosen date: expected students, peak time, portions to prepare, forecast waste, dishes at risk, peak wait, all with ranges. Arrivals chart with **View alerts** (links into the replay), a Menu tab (`?view=menu`), and the **production plan** (Print, CSV), staffing and what will be left at close in dialogs. Shows the plan adopted for that date, or the baseline. | Result of the adopted scenario |
 | **Insights › Waste history** | `/waste` | Opens on **the next 8 nights**: simulated waste per night with the plan adopted for that night (from the Lab or Ask Sam; else the recommended plan) against tonight's plan as written, next to the last recorded nights, in the same units (lb, expired + left at close). "Last 4 weeks" / "All recorded" show the recorded history (**synthetic**, clearly labeled) vs. what the recommended plan would have done on each past night: reduction with range, $ per week, stockout trade-off, where waste comes from, top waste dishes with "with plan" numbers, station filters, adopted-plan tracker, CSV export. | Synthetic history + back-test |
+| **Ask Sam** | `/sam` | **Sam the Minuteman**, a Gemini planning agent (the UMass mascot as an original tricorn-hat avatar). Give a **goal** (*"cut waste 20% without any vegetarian dish running out"*): Sam looks up the recorded history in Tiger Data (through the Tiger MCP server), proposes batch, staffing and menu changes, simulates each try (**at most 5**), reads a fixed goal check (code, not AI), adjusts, then hands back a plan with its reasoning, re-checked on 30 unseen nights. Or type a **what-if** (*"what if we add a Grill server and it's 10% busier?"*): simulated as asked against tonight's plan. Or ask a **question** about past nights (*"which dishes ran out on rainy Fridays?"*), answered from Tiger. Live steps, Adopt / Open in the Lab / Watch a night, and a **History** of final analyses labeled with prompt and date. Needs the API. | `POST /api/agent` (SSE steps), `GET /api/agent/history` |
 | **Insights › Similar nights** | `/similar-nights` | Describe a night (date, expected students, weather, event night, optionally a prepared menu) and get the recorded nights before it with the most similar conditions, most similar first, with the waste and stockouts each one actually had (recorded outcomes, not a forecast). Searches Tiger with pgvector, or the local synthetic files when Tiger isn't set up. | `GET /api/similar-nights` ([`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md)) |
 
 There is also a standalone **calibration page** (`web/public/calibration.html`, open `/calibration.html` on the dev server) that checks the forecasts against held-out nights (see `docs/TIGER.md`). The live Tiger dashboard is not part of the web app: the API serves it at `http://127.0.0.1:8000/tiger` (`docs/TIGER.md` §8).
 
 **Two ways to run it:**
 - **Offline (demo-safe):** the pages read a precomputed **static bundle** in `web/public/cache` (results, replays, narrations, back-test). No backend, no network.
-- **With the API** (`make server`): everything above, plus any combination of settings, replays of any scenario, narration of any student, the plain-English box, menu edits, new dishes and "Why?". Similar nights always needs the API. Features that need the API turn themselves off, or offer a retry, when it isn't running.
+- **With the API** (`make server`): everything above, plus any combination of settings, replays of any scenario, narration of any student, the plain-English box, menu edits, new dishes, "Why?" and **Ask Sam**. Similar nights always needs the API. Features that need the API turn themselves off, or offer a retry, when it isn't running.
 
 ---
 
@@ -89,6 +90,10 @@ cd engine
 uv run dcsim run --date 2026-11-13                       # 30 nights: medians and 10–90% ranges
 uv run dcsim compare --preset smaller_batches --date 2026-11-13
 uv run dcsim menu --date 2026-11-13                      # what's on, by station
+uv run dcsim ask "one more server at Grill and 10% busier"                 # plain English -> settings (function calling)
+uv run dcsim agent "cut waste 20% without any vegetarian dish running out" # Sam plans (--tries 1-5)
+uv run dcsim agent "what if we add a Grill server and it's 10% busier?"    # Sam runs a what-if
+uv run dcsim agent "Which dishes ran out on rainy Fridays?"                # Sam answers from Tiger
 ```
 
 ---
@@ -124,7 +129,9 @@ Key ideas:
 - **One night = dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am** (engine 0.4.1). At 9 pm dinner pans stop taking new students, lines already formed are served, and the late-night menu starts.
 - **Students decide from where they stand** (0.4.1): they skip long lines and visible empty pans without walking over, then stay in the line they pick.
 - **The kitchen has limits** (0.5.0): batches wait for a free cook and a free oven, kettle, fryer, etc. (placeholder counts). Servers can change by hour (`shifts`), and results include "servers needed" per station and hour. Seats are counted every night (`peak_seated`); seat limits are off until someone counts the real seats.
-- **The LLM is never inside the simulation.** It writes student stories, turns plain English into settings, estimates how much each type of student would like a new dish (as numbers you can see), and explains results. Every LLM output is checked and has a non-AI fallback. See `docs/LLM.md`.
+- **The LLM is never inside the simulation.** It writes student stories, turns plain English into settings (Gemini function calling), estimates how much each type of student would like a new dish (as numbers you can see), and explains results. Every LLM output is checked and has a non-AI fallback. See `docs/LLM.md`.
+- **Ask Sam proposes, the engine decides.** Sam (Gemini function calling over the simulator and the Tiger MCP server) only proposes settings; every number comes from the engine or a read-only Tiger query, and a fixed check in code says whether the goal is met. Without a key, a rule-based search takes the same steps. See `docs/SPONSORS.md` §2.
+- **The waste page looks ahead.** Insights opens on the next 8 nights, simulated with each night's adopted plan, in the recorded history's units (`outlook.py`), with the recorded past one click away.
 
 Deeper design: `docs/ENGINE.md` (engine and API), `docs/SPEC.md` (product).
 
@@ -151,6 +158,7 @@ HackUMass2026/
 │   │   ├── reports.py       cook sheet, alerts, station table
 │   │   ├── service.py, store.py, api.py   caching, SQLite, FastAPI
 │   │   ├── synthetic.py, backtest.py      synthetic waste history + back-test
+│   │   ├── outlook.py       future waste (lb) per coming night and scenario, for the Insights outlook
 │   │   ├── calibration.py, tsdb.py        held-out calibration, Tiger Data ledger, aggregates, benchmark
 │   │   ├── tiger_sql.py     generates engine/sql/tiger_website.sql (the whole Tiger schema as one console script)
 │   │   ├── static/tiger.html  live Tiger dashboard, served by the API at /tiger (not part of the web app)
@@ -158,15 +166,19 @@ HackUMass2026/
 │   │   ├── nightsearch.py   `dcsim tsdb similar` (76-dim vectors, DiskANN index, held-out check)
 │   │   ├── bundle.py        writes the static demo bundle
 │   │   ├── cli.py           the `dcsim` command
-│   │   └── ai/              LLM client (Gemini/Groq/mock), narration, ask, dish prior, explain, similar dishes
+│   │   └── ai/              LLM client (Gemini/Groq/mock), narration, ask (function calling), dish prior, explain,
+│   │                        similar dishes, agent.py (Ask Sam), tiger_mcp.py (Sam's Tiger MCP client + SQL guard)
 │   ├── tests/               pytest (engine, API, AI with fakes, calibration, bundle, golden baseline, team targets)
 │   └── .env                 your keys (not committed)
 ├── web/                   React app (see web/README.md)
-│   ├── src/pages/           Hall.tsx (Simulation), Lab.tsx, Dashboard.tsx (Kitchen plan), Waste.tsx + SimilarNights.tsx (Insights)
+│   ├── src/pages/           Hall.tsx (Simulation), Lab.tsx, Dashboard.tsx (Kitchen plan), Waste.tsx + WasteOutlook.tsx +
+│   │                        SimilarNights.tsx (Insights), Sam.tsx (Ask Sam)
 │   ├── src/lib/             data.ts (bundle + API client), playback.ts (trace → dots), navigation.ts + hallGeometry.ts (walking paths),
-│   │                        useReplayClock.ts, similarNights.ts, store.ts, format.ts, types.ts
-│   ├── src/components/      Shell (top navigation, Insights tabs, top bar), HallScene (isometric canvas), DetailDialog, ReplayAlert, Charts
-│   ├── src/*.css            styles.css (tokens), guided.css (redesign), similar-nights.css
+│   │                        useReplayClock.ts, similarNights.ts, agent.ts (Sam stream + history), outlook.ts (plan per coming night),
+│   │                        store.ts, format.ts, types.ts
+│   ├── src/components/      Shell (top navigation, Insights tabs, top bar), HallScene (isometric canvas), DetailDialog, ReplayAlert,
+│   │                        Charts, SamAvatar
+│   ├── src/*.css            styles.css (tokens), guided.css (redesign), similar-nights.css, sam.css
 │   ├── public/cache/        STATIC DEMO BUNDLE (committed, ~22 MB)
 │   ├── public/plan/         floor-plan SVGs (top-down + static 3D render)
 │   ├── public/calibration.html   standalone forecast-calibration page
@@ -180,8 +192,8 @@ HackUMass2026/
 ├── survey/                student survey draft (feeds persona calibration)
 ├── work/design/           earlier standalone hall concept (dining-simulation.html), not the app
 ├── codex-skills           empty: a submodule entry with no .gitmodules (ISSUES T4)
-├── my-app/                a separate deepspace app, not used by the engine or web app (ISSUES T7)
-└── cache/                 local results cache (SQLite + traces); not committed
+├── cache/                 local results cache (SQLite + traces + Sam's history); not committed
+└── cache-test/            copy of the cache for `make server-test` (git-ignored, recreated on each start)
 ```
 
 ---
@@ -209,6 +221,8 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 | Live Tiger dashboard | `make server`, then open `http://127.0.0.1:8000/tiger` (needs Tiger; `docs/TIGER.md` §8) |
 | Raw table vs continuous aggregate timings | `make tsdb-bench` |
 | One SQL query across the Tiger stack | `cd engine && uv run dcsim tsdb query stack` |
+| Ask Sam for a plan, a what-if or a history answer | the **Ask Sam** page (needs `make server`), or `cd engine && uv run dcsim agent "<goal, what-if or question>"` |
+| Refresh the waste outlook in the bundle (after new runs or adopting presets) | `cd engine && uv run dcsim bundle --waste-only` (seconds) |
 | Find past nights like a given one | Insights › Similar nights (needs `make server`), or `cd engine && uv run dcsim tsdb similar --date 2026-11-14 --weather rain` |
 
 ### Changing the simulation (important)
@@ -231,11 +245,16 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 
 | Variable | Needed for | Notes |
 | --- | --- | --- |
-| `GEMINI_API_KEY` | narration, plain-English box, AI estimate, Why?, similar dishes | Default provider when set. Free tier: 15 requests/min; the app falls back to templates when busy |
+| `GEMINI_API_KEY` | narration, plain-English box (function calling), Ask Sam, AI estimate, Why?, similar dishes | Default provider when set. Free tier: 15 requests/min; the app falls back to templates, keyword matching or Sam's rule-based search when busy |
 | `GROQ_API_KEY` | alternative LLM provider | use with `LLM_PROVIDER=groq` |
 | `LLM_PROVIDER` | choose `gemini`, `groq` or `mock` | `mock` = no network, deterministic (tests always use it) |
 | `DCSIM_LLM_MODEL` | override the model | see `docs/GEMINI.md` |
-| `TIGER_SERVICE_ID` or `DCSIM_TSDB_URL` | Tiger Data forecast ledger + calibration | optional; adopting still works without it |
+| `TIGER_SERVICE_ID` or `DCSIM_TSDB_URL` | Tiger Data forecast ledger + calibration; Sam's history lookups use `TIGER_SERVICE_ID` with the Tiger CLI login (`tiger mcp start`) | optional; adopting still works without it |
+| `DCSIM_AGENT_MODEL`, `DCSIM_AGENT_EFFORT` | Sam's model and thinking level | default `strong` (`gemini-4-hydrogen`; falls back to the main model) and `low` |
+| `DCSIM_AGENT_MAX_RUNNING` | how many Sam runs the API allows at once | default 2; more → 429 |
+| `DCSIM_TIGER_MCP`, `DCSIM_TIGER_CMD` | Sam's Tiger lookups | `0` turns them off; `DCSIM_TIGER_CMD` = path to the Tiger CLI (default `tiger`) |
+| `DCSIM_LEDGER_WRITES` | `0` stops adopting/saving from logging forecasts to the append-only Tiger ledger (reads keep working) | set by `make server-test`; `/api/health` reports `ledger_writes` |
+| `DCSIM_API_URL` (web) | which API the Vite dev server proxies `/api` to | default `http://127.0.0.1:8000`; `make web-test-ui` points it at :8001 |
 | `DCSIM_CACHE` | move the results cache | default `<repo>/cache` |
 | `DCSIM_ADMIN_TOKEN` | protect deleting scenarios and the admin jobs (`/api/warm`, `/api/backtest`) | **set before hosting publicly** (ISSUES A1). Unset = open (local). Send `Authorization: Bearer <token>` or `X-Admin-Token` |
 | `DCSIM_AI_RATE` | AI requests per minute per client IP (ask, narrate, explain, dish prior, similar dishes) | default 20; `0` = no limit; over it → 429 with `Retry-After` |
@@ -250,9 +269,9 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle, Similar nights search and route; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
-| Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals, Hall playback and walking paths, Similar nights page states (defaults, menu, empty, 422, API down + retry) |
-| Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | Simulation, Kitchen plan, Insights and Lab at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/` |
+| Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers (incl. function calling for the plain-English box), Ask Sam (tool loop, 5-try cap, goal check, setting-function rules, what-ifs, Tiger SQL guard, history), the waste outlook, the ledger-writes switch, calibration, bundle, Similar nights search and route; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
+| Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals, Hall playback and walking paths, Similar nights page states (defaults, menu, empty, 422, API down + retry), Ask Sam's stream and history (incl. what-ifs), the waste outlook (plan per coming night, adopted vs recommended) |
+| Browser, pages | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | Simulation, Kitchen plan, Insights and Lab at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/` |
 | Browser, API up | `make web-test-api` (on the test stack above) | ask → run, Why?, new dish + AI estimate, adopt → Dashboard, saved list, API replay + narration, Ask Sam (question from Tiger, plan in ≤ 5 tries, history, Open in the Lab) |
 
 ---
@@ -277,6 +296,8 @@ Consequences:
 *As of 2026-11-14, engine 0.6.2. The demo bundle was rebuilt 2026-11-14 04:05 UTC on engine **0.6.2** (264 results, 14 replays, 168 Gemini narrations, 22 MB), so the web app shows current numbers; rebuild it again only if the engine or data changes. A full test run after the rebuild passed (see `docs/STATUS.md`). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
 **Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; the redesigned web app (Simulation, Kitchen plan, Insights with Waste history and Similar nights) offline and with the API; synthetic history, back-test and Tiger calibration.
+
+**New on 2026-11-14 (later; the engine version didn't change):** **Ask Sam** (`/sam`): a Gemini planning agent with Tiger lookups through the Tiger MCP server, at most 5 tries, the setting functions for staffing and menu changes, what-ifs and history questions in the same box, and a History of final analyses; the plain-English box answers through **Gemini function calling**; Insights opens on **the next 8 nights** with each night's adopted plan (`waste/outlook.json`, `GET /api/waste/outlook`, `waste_lb` on every result); the "Last 8 weeks" button that could never work is gone; a ledger-safe test stack (`make server-test`, `make web-test-ui`, `DCSIM_LEDGER_WRITES`); `make serve` is now `make server`; image input is out of scope. Details: `docs/SPONSORS.md` §1–2, `docs/STATUS.md`.
 
 **New since 0.6.2 (merged 2026-11-13; the engine version didn't change):** the frontend redesign (PR #1) and Hall fixes (PR #2); **Similar nights** (`/similar-nights` page + `GET /api/similar-nights`, Tiger pgvector with a local fallback; handoff in PR #3); `dcsim tsdb similar` from the command line (DiskANN, held-out check); `dcsim bundle` narration times out after `DCSIM_LLM_TIMEOUT` seconds and prints one progress line per student (ISSUES L5). Branch by branch: §14.
 
@@ -305,6 +326,7 @@ Consequences:
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
 | **`.dev.vars` with app tokens is on GitHub** (`e926ea1`): rotate the tokens, stop tracking the file | ISSUES T6 |
+| 6 test forecasts for Nov 13 are in the append-only Tiger ledger; read the Nov 13 scorecard without them | ISSUES T8 |
 | The Hall's pan level counts the hot-hold cabinet too, so for the 30 s of a pan swap it shows food in a pan a student just found empty | UI_ISSUES U18 |
 | Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 
@@ -329,7 +351,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`docs/FRONTEND_REDESIGN_PLAN.md`](docs/FRONTEND_REDESIGN_PLAN.md) | The redesign's navigation, interaction stages and visual system (follow it for new UI) |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |
 | [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) | Planning what to build next |
-| [`docs/SPONSORS.md`](docs/SPONSORS.md) | Picking up a sponsor-prize feature (Gemini, agent, Tiger Data, Vultr, domain): status and build steps |
+| [`docs/SPONSORS.md`](docs/SPONSORS.md) | Sponsor-prize features: Gemini function calling (§1), **Ask Sam** as built (§2), Tiger Data, Vultr, domain |
 | [`survey/student_survey.md`](survey/student_survey.md) | Running the student survey |
 
 ---
@@ -340,8 +362,12 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | --- | --- |
 | **Night / seed** | One simulated service (dinner + late night). Seed *n* fixes all randomness, so the same seed gives the same night. |
 | **Baseline** | The date's menu cooked with the default batch plan, nothing changed. |
-| **Preset** | A ready-made what-if: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`. |
-| **Lever** | One setting in the Lab: crowd multiplier, arrival shift, servers, batch plan per dish, popularity, remove/add dishes. |
+| **Preset** | A ready-made what-if: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`, `forecast_reorder`. |
+| **Ask Sam / Sam** | The planning agent page (`/sam`): goals, what-ifs and history questions, at most 5 simulations per plan. |
+| **Goal check** | Sam's pass/fail test in code: waste cut, protected dishes not running out more, missed meals and the long wait not worse. |
+| **Setting function** | One Gemini function per lever (`set_servers`, `scale_batch`, …), used by the plain-English box and by Sam. |
+| **Waste outlook** | The coming nights' simulated waste with each night's adopted plan, on Insights › Waste history. |
+| **Lever** | One setting in the Lab: crowd multiplier, arrival shift, servers (and shifts), cooks, batch plan per dish, popularity, remove/add dishes. |
 | **Config hash** | ID of a full scenario config; the cache key for results and traces. |
 | **Result** | Summary over N nights: `headline` ranges (p10/p50/p90), `cook_sheet`, `flags`, `stations`, `vs_baseline`. |
 | **Median night** | The night whose results are closest to the median; it's the one replayed in the Hall. |
@@ -362,6 +388,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 - **Bump `ENGINE_VERSION`** when simulation logic changes, then rebuild the bundle.
 - **Keep the demo offline-safe.** Anything new in the UI must work (or explain itself) without the API.
 - **Secrets stay in `engine/.env`.** No keys in code, commits or chat.
+- **Don't test against the real ledger.** The Tiger forecast ledger is append-only: Adopt / Save on an API with Tiger set up logs forecasts that can't be deleted. Browser-test with `make server-test` + `make web-test-ui` (ledger writes off, a copy of the cache); `smoke-api.mjs` refuses a ledger-writing API (ISSUES T8).
 - **Photos:** no faces; front-of-house only.
 - **Docs:** when you change behavior or numbers, update the relevant doc and the issue lists.
 
@@ -377,7 +404,11 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | Narration says "(template)" | No LLM key, or the free-tier limit was hit. Add `GEMINI_API_KEY` to `engine/.env`, or wait a minute. |
 | Numbers in the app don't match the engine CLI | The bundle is older than the engine. `make cache-clean && make demo-bundle`. |
 | `uv` complains about Python | Needs Python ≥ 3.13: `uv python install 3.13`. |
-| Port 8000 or 5173 is busy | Stop the old server, or `uv run dcsim serve --port 8001` and change the proxy target in `web/vite.config.ts`. |
+| Port 8000 or 5173 is busy | Stop the old server, or run the API on another port (`cd engine && uv run dcsim serve --port 8002`) and start the app with `DCSIM_API_URL=http://127.0.0.1:8002 npx vite` in `web/`. |
+| Ask Sam says "Not Found" | The API was started before Ask Sam was pulled (`/api/agent` → 404). Restart `make server`. |
+| Ask Sam says "Sam is already planning for someone" | Two runs are already going (`DCSIM_AGENT_MAX_RUNNING`). Wait for one to finish. |
+| Sam's history lookups fail ("Tiger isn't reachable") | Set `TIGER_SERVICE_ID` in `engine/.env` and log in once with `tiger auth login`; plans still work without Tiger. |
+| Insights says "The coming nights aren't available yet" | No `waste/outlook.json` in the bundle and no API: `cd engine && uv run dcsim bundle --waste-only`, or start `make server`. |
 | Insights › Similar nights says "Can't reach the search service" | The API isn't running, or it was started before you pulled this feature (`/api/similar-nights` → 404). Restart `make server`. |
 | `http://127.0.0.1:8000/tiger` is 404, or says "Tiger not configured" | 404: the API was started before 2026-11-14, restart `make server`. "Not configured": set `DCSIM_TSDB_URL` in `engine/.env` (`docs/TIGER.md`). |
 | `git pull` says "You have divergent branches" | You committed locally while someone pushed or merged a PR. Run `git pull --rebase` (or set `git config pull.rebase true` once). See §14. |

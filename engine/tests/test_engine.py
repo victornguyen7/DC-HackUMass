@@ -290,3 +290,202 @@ def test_crowd_lever_scales_late_night(cfg):
     big = apply_levers(cfg, Levers(crowd_multiplier=1.2))
     assert big.late_crowd.multiplier == pytest.approx(cfg.late_crowd.multiplier * 1.2)
     assert big.crowd.multiplier == pytest.approx(cfg.crowd.multiplier * 1.2)
+
+
+# ---------------------------------------------------------------- E5: crowd by date
+
+
+def test_crowd_by_date():
+    from dcsim.data import crowd_factors
+
+    fri, wed_event = load_baseline("2026-11-13"), load_baseline("2026-11-18")
+    assert fri.crowd.multiplier == pytest.approx(crowd_factors("2026-11-13")[0])
+    assert crowd_factors("2026-11-13")[0] < 1.0  # Friday dinner guess
+    # Friendsgiving lifts only its own date; the synthetic history (events=False) keeps the weekday factor
+    assert wed_event.crowd.multiplier > load_baseline("2026-11-18", events=False).crowd.multiplier
+    assert load_baseline("2026-11-17").crowd.multiplier == pytest.approx(1.0)
+
+
+# ---------------------------------------------------------------- E7: Nov 18 carving line
+
+
+def test_nov18_carving_line():
+    c = load_baseline("2026-11-18")
+    turkey = next(d for d in c.menu if "Turkey" in d.name and d.period == "dinner")
+    assert turkey.station == "carving"
+    st = c.station("carving")
+    assert not st.self_serve and not st.to_order and turkey.id in c.kitchen  # staffed line, roasts in batches
+    assert all(d.station != "carving" for d in load_baseline("2026-11-17").menu)
+
+
+# ---------------------------------------------------------------- late-night waste taper
+
+
+def test_late_night_taper_cuts_waste():
+    c = load_baseline(DATE)
+    late = [d.id for d in c.menu if d.period == "late_night" and d.id in c.kitchen]
+    assert all(c.kitchen[k].taper_from_min is not None for k in late)
+    assert all(c.kitchen[k].taper_from_min is None for k in c.kitchen if k not in late)  # dinner unchanged
+    waste = cooked = 0
+    for seed in (1, 2):
+        m = run_night(c, seed).metrics
+        waste += sum(m.dishes[k].waste for k in late)
+        cooked += sum(m.dishes[k].cooked for k in late)
+    assert waste / cooked < 0.3  # was ~41% before the taper
+
+
+# ---------------------------------------------------------------- 1.3: kitchen capacity
+
+
+def test_kitchen_capacity_binds_and_lever_works(cfg):
+    from dcsim.levers import KitchenStaffLever, Levers, apply_levers
+
+    assert cfg.kitchen_resources is not None
+    few = apply_levers(cfg, Levers(kitchen_staff=KitchenStaffLever(cooks={"dinner": 6, "late_night": 2})))
+    many = apply_levers(cfg, Levers(kitchen_staff=KitchenStaffLever(cooks={"dinner": 40, "late_night": 10})))
+    assert few.kitchen_resources.cooks == {"dinner": 6, "late_night": 2}
+    w_few = run_night(few, 1).metrics.batch_wait_min
+    w_base = run_night(cfg, 1).metrics.batch_wait_min
+    w_many = run_night(many, 1).metrics.batch_wait_min
+    assert w_few > w_base > w_many
+    # without contention a batch takes exactly cook_min: unlimited kitchen = old behavior
+    assert run_night(cfg.updated(kitchen_resources=None), 1).metrics.batch_wait_min == 0
+
+
+def test_smaller_batches_pay_for_kitchen_time(cfg):
+    from dcsim.presets import PRESETS
+
+    base = sum(run_night(cfg, s).metrics.batch_wait_min for s in (1, 2))
+    small = sum(run_night(PRESETS["smaller_batches"](cfg), s).metrics.batch_wait_min for s in (1, 2))
+    assert small > base
+
+
+# ---------------------------------------------------------------- 1.2: wait at an empty pan
+
+
+def test_wait_at_empty_pan(cfg):
+    assert cfg.empty_pan_wait_min > 0
+    waited = sum(run_night(cfg, s).metrics.empty_wait_min for s in (1, 2, 3))
+    assert waited > 0
+    assert run_night(cfg.updated(empty_pan_wait_min=0.0), 1).metrics.empty_wait_min == 0
+
+
+# ---------------------------------------------------------------- N3: staffing by hour, 2.4: seats
+
+
+def test_staffing_shift_lever(cfg):
+    from dcsim.levers import Levers, StationLever, apply_levers
+
+    shifted = apply_levers(cfg, Levers(stations={"grill": StationLever(shifts=[(1110, 4), (1200, 2)])}))
+    assert shifted.station("grill").shifts == ((1110, 4), (1200, 2))
+    base = [run_night(cfg, s).metrics for s in (1, 2, 3)]
+    more = [run_night(shifted, s).metrics for s in (1, 2, 3)]
+    assert sum(m.wait_p90 for m in more) < sum(m.wait_p90 for m in base)
+    # fewer servers than staffed: a 1-server Grill after 6:30 pm makes its line longer
+    fewer = apply_levers(cfg, Levers(stations={"grill": StationLever(shifts=[(1110, 1)])}))
+    assert sum(run_night(fewer, s).metrics.wait_p90 for s in (1, 2, 3)) > sum(m.wait_p90 for m in base)
+
+
+def test_servers_needed_and_seats(cfg):
+    m = run_night(cfg, 1).metrics
+    assert m.servers_needed["grill"]["19"] >= 1
+    assert m.peak_seated > 300 and m.seat_wait_min == 0  # seats unlimited by default, but counted
+    limited = run_night(cfg.updated(seat_limits=True), 1).metrics
+    assert limited.peak_seated <= sum(z.seats for z in cfg.layout.seating_zones) and limited.seat_wait_min > 0
+
+
+def test_package_version_matches_engine_version():
+    """ISSUES D2: pyproject.toml and ENGINE_VERSION must agree."""
+    import tomllib
+    from pathlib import Path
+
+    from dcsim.config import ENGINE_VERSION
+
+    meta = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())
+    assert meta["project"]["version"] == ENGINE_VERSION
+
+
+# ---------------------------------------------------------------- 1.1: pans as SimPy Containers
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_night_ends_clean(cfg, seed):
+    """Nobody still holds a server or waits for food at the end, and every pan's lots add up to its
+    Container level (catches a student leaving a line without releasing it)."""
+    from dcsim.model import Night
+
+    n = Night(cfg, seed).run()
+    for st in n.stations:
+        assert st.res.count == len(st.off_duty) and st.line() == 0, st.cfg.id
+    for p in n.pans:
+        assert sum(lot.portions for lot in p.lots) == p.level and not p.stock.get_queue
+        assert p.cooked == p.served + p.expired + p.leftover
+
+
+# ---------------------------------------------------------------- 0.6.0 realism items
+
+
+def test_noodle_popularity_is_per_dish():
+    """ISSUES E6: Hot Pot draws a crowd, ramen doesn't."""
+    hot_pot = next(d for d in load_baseline("2026-11-13").menu if d.station == "noodle_bowl")
+    ramen = next(d for d in load_baseline("2026-11-14").menu if d.station == "noodle_bowl")
+    assert "Hot Pot" in hot_pot.name and "Ramen" in ramen.name
+    assert hot_pot.popularity == pytest.approx(2 * ramen.popularity)
+
+
+def test_allergies_and_pescetarians_are_respected(cfg):
+    from dcsim.model import Night
+    from dcsim.recorder import Ev
+
+    n = Night(cfg, 1, trace=True).run()
+    by_id = {s.id: s for s in n.students}
+    labels = {a.id: set(a.labels) for a in cfg.allergies}
+    allergic = sum(1 for s in n.students if s.allergies)
+    assert 0.07 < allergic / len(n.students) < 0.12  # survey: ~10% (independent draws)
+    for t, sid, code, st, dish, *_ in n.rec.events:
+        if code != Ev.SERVED:
+            continue
+        d, s = cfg.menu[dish], by_id[sid]
+        for a in s.allergies:
+            assert not labels[a] & set(d.allergens), (sid, a, d.name)
+        if s.diet == "pescetarian":
+            assert "pescetarian" in d.diet_tags, d.name
+    assert any("pescetarian" in d.diet_tags and "vegetarian" not in d.diet_tags for d in cfg.menu)
+
+
+def test_groups_arrive_and_sit_together(cfg):
+    m = run_night(cfg, 1, trace=True)
+    from dcsim.arrivals import sample_arrivals
+    from dcsim.population import build_students
+
+    ids, times = sample_arrivals(cfg, 1)
+    studs = build_students(cfg, 1, ids, times)
+    groups: dict[int, list] = {}
+    for s in studs:
+        if s.group >= 0:
+            groups.setdefault(s.group, []).append(s)
+    assert groups and all(2 <= len(g) <= 4 for g in groups.values())
+    seat = {s["id"]: next(e["seat"] for e in s["events"] if e["type"] == "sit") for s in m.trace["students"]
+            if any(e["type"] == "sit" for e in s["events"])}
+    for g in groups.values():
+        assert len({s.arrive for s in g}) == 1
+        assert len({seat[s.id] for s in g if s.id in seat}) <= 1
+
+
+def test_swipe_queue_and_pan_sizes(cfg):
+    m = run_night(cfg, 1).metrics
+    assert cfg.swipe_readers == 2 and m.swipe_queue_max >= 1 and m.swipe_wait_min > 0
+    assert run_night(cfg.updated(swipe_readers=0), 1).metrics.swipe_wait_min == 0
+    # smaller line pans mean more swaps, so students see an empty pan more often
+    tiny = cfg.updated(pan_capacity={r: 8 for r in cfg.pan_capacity})
+    assert run_night(tiny, 1).metrics.empty_seen > m.empty_seen
+
+
+def test_forecast_reorder_preset(cfg):
+    from dcsim.presets import PRESETS
+
+    fc = PRESETS["forecast_reorder"](cfg)
+    assert all(p.forecast_reorder for p in fc.kitchen.values() if p.expected_demand is not None)
+    base = sum(run_night(cfg, s).metrics.waste_total for s in (1, 2, 3))
+    fore = sum(run_night(fc, s).metrics.waste_total for s in (1, 2, 3))
+    assert fore < base  # cooks to the expected rush: less left over

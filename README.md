@@ -120,6 +120,8 @@ Key ideas:
 - **Paired comparisons.** A scenario and its baseline run on the same seeds (same students, same arrival times), so a difference is the decision's effect, not luck. Each metric gets a win rate and a verdict: *better*, *worse* or *inconclusive*.
 - **Everything is cached by config hash.** The hash covers the config, the engine version and the data version, so a stale result can't be served. Slider values snap to steps (crowd 5%, popularity 0.1) so nearby positions reuse cached results.
 - **One night = dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am** (engine 0.4.1). At 9 pm dinner pans stop taking new students, lines already formed are served, and the late-night menu starts.
+- **Students decide from where they stand** (0.4.1): they skip long lines and visible empty pans without walking over, then stay in the line they pick.
+- **The kitchen has limits** (0.5.0): batches wait for a free cook and a free oven, kettle, fryer, etc. (placeholder counts). Servers can change by hour (`shifts`), and results include "servers needed" per station and hour. Seats are counted every night (`peak_seated`); seat limits are off until someone counts the real seats.
 - **The LLM is never inside the simulation.** It writes student stories, turns plain English into settings, estimates how much each type of student would like a new dish (as numbers you can see), and explains results. Every LLM output is checked and has a non-AI fallback. See `docs/LLM.md`.
 
 Deeper design: `docs/ENGINE.md` (engine and API), `docs/SPEC.md` (product).
@@ -151,7 +153,7 @@ HackUMass2026/
 │   │   ├── bundle.py        writes the static demo bundle
 │   │   ├── cli.py           the `dcsim` command
 │   │   └── ai/              LLM client (Gemini/Groq/mock), narration, ask, dish prior, explain, similar dishes
-│   ├── tests/               pytest (engine, API, AI with fakes, calibration, bundle)
+│   ├── tests/               pytest (engine, API, AI with fakes, calibration, bundle, golden baseline, team targets)
 │   └── .env                 your keys (not committed)
 ├── web/                   React app (see web/README.md)
 │   ├── src/pages/           Hall.tsx, Dashboard.tsx, Waste.tsx, Lab.tsx
@@ -219,6 +221,7 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 | `DCSIM_LLM_MODEL` | override the model | see `docs/GEMINI.md` |
 | `TIGER_SERVICE_ID` or `DCSIM_TSDB_URL` | Tiger Data forecast ledger + calibration | optional; adopting still works without it |
 | `DCSIM_CACHE` | move the results cache | default `<repo>/cache` |
+| `DCSIM_LLM_TIMEOUT` | how long an LLM request may stall before falling back to the template | seconds, default 60 (ISSUES L5; in the working tree, not committed yet) |
 
 **Without any keys everything still runs:** the LLM features use templates or keyword matching, and the static bundle already contains AI narrations.
 
@@ -228,7 +231,7 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 
 | Suite | Command | What it covers |
 | --- | --- | --- |
-| Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle |
+| Engine | `make test` | determinism, conservation (cooked = served + expired + leftover), common random numbers, diet rules, all 8 menus load, every API route (mock LLM), AI checks with fake providers, calibration, bundle; **golden baseline** (`tests/golden/nov13.json`: any change that moves Nov 13's numbers fails until you run `DCSIM_UPDATE_GOLDEN=1 uv run pytest tests/test_golden.py` on purpose) and **calibration targets** (the team's observations, `data/worcester/calibration_targets.json`) |
 | Web unit | `make web-test` | playback against the real bundle (no dot outside the building, pan levels, "missed first choice" matches the engine), lever mapping, plain-English settings → API request, grouped alerts, back-test totals |
 | Browser, API down | `cd web && node scripts/smoke.mjs http://localhost:5173 smoke-out` | all 4 pages at desktop / tablet / phone width, main clicks, no console errors, no horizontal scroll on phones; screenshots in `smoke-out/` |
 | Browser, API up | `make web-test-api` | ask → run, Why?, new dish + AI estimate, adopt → Dashboard, saved list, API replay + narration |
@@ -252,23 +255,32 @@ Consequences:
 
 ## 9. Current status and known issues
 
-*As of 2026-11-13, engine 0.4.1, bundle generated 2026-11-14 00:54 UTC.*
+*As of 2026-11-13, engine 0.6.1. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
 **Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; all four web pages offline and with the API; synthetic history, back-test and Tiger calibration.
 
+**New in 0.6.1 (review fixes):** late run-outs fixed against the team's targets (last dinner batch 15 min before close, ISSUES E3); late-night kitchen retuned for the cook limit (50% top-up batches, 5 late cooks); a rare expiry bookkeeping bug fixed; "Why?" and the plain-English box now handle cooks, server shifts and forecast reordering. All calibration targets pass. Details: `docs/ISSUES.md` §6b.
+
+**New in 0.6.0:** pans are SimPy Containers (same results); per-minute series via `GET /api/results/{hash}?include=series`; Noodle Bowl popularity per dish (Hot Pot, Pho, Tom Yum, Taiwan Pork draw a crowd; ramen doesn't); allergies at survey shares and a 2% pescetarian diet; an entrance swipe queue, friends who arrive and sit together, and hotel-pan size limits with a hot-hold cabinet (placeholders); a **Forecast reorder** preset (cooks to the expected rush; Nov 13 waste −15% but more stockouts, Nov 17 better on both).
+
+**New in 0.5.0 (simulation core):** cooks and equipment as limited resources (`kitchen_defaults.json → resources`, placeholders: 12 dinner / 5 late-night cooks since 0.6.1, ovens, steamers, kettles, flat-tops, woks, fryers, tandoors); students wait up to 2 min at an empty pan when a batch is cooking; staffing by hour (`shifts`) with a "servers needed" table; seats counted per night (limits off); golden baseline and calibration-target tests. New result fields: `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `peak_seated`, `staffing`.
+
+**New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey. **In progress (not committed):** similar-night search on Tiger (`dcsim tsdb similar`, see `docs/TIGER.md` §7); timeout and progress lines for the bundle's narration step (ISSUES L5).
+
 **Headline numbers right now** (they change whenever the engine changes, so check the app):
-- Fri Nov 13 baseline: about 4,000 students across dinner + late night, wait p90 about 16 min, about 27% miss their first choice.
-- Back-test of *Smaller batches of favorites* over 39 past nights: **waste about 6% lower (2.5–7.3%)**, wins 39 of 39 nights, about 400 lb and $1,170 per week, but **more stockout minutes** than recorded (93 vs 77 per night).
+- Fri Nov 13 baseline (engine 0.6.1, median of 10 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 38 stockout-minutes per night (dinner 14, late night 20), about 3,360 portions wasted (dinner ~29% of cooked, late night ~24%). The web app still shows 0.4.1 numbers until the bundle is rebuilt.
+- Back-test of *Smaller batches of favorites* over 39 past nights (engine 0.6.1, `data/synthetic/worcester/backtest.json`): **waste about 8.8% lower (5.6–10.4%)**, wins 38 of 39 nights, about 542 lb and $1,821 per week. Stockouts: about 53 min per night under the plan vs 48 for the baseline plan and **41 recorded**, so the plan saves waste at some cost in run-outs.
 
 **Biggest open items:**
 | Item | Where |
 | --- | --- |
 | Figma frames and pitch use placeholder numbers (e.g. "−18% waste") that don't match the data | `docs/UI_ISSUES.md` U1 |
 | No animated 3D yet: the Hall is a top-down 2D replay; "3D overview" is a still image | U2 / ISSUES N1 |
-| Dashboard staffing doesn't compute "servers needed"; no breakfast/lunch | U4, U5 |
+| Dashboard doesn't show "servers needed" yet (the engine computes it since 0.5.0); no breakfast/lunch | U4, U5 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
-| Stockouts higher than the team observes | ISSUES E3 |
 | API has no auth; don't host it publicly as is | ISSUES A1 |
+| The committed demo bundle is engine 0.4.1; rebuild once on the final engine (`make demo-bundle`) | `docs/STATUS.md` |
+| Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 
 Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.md`** (web app). Ideas ranked by value: `docs/IMPROVEMENTS.md`.
 
@@ -278,6 +290,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 
 | Doc | Read it when |
 | --- | --- |
+| [`docs/STATUS.md`](docs/STATUS.md) | You want one page of what's done and open across every tracker (start here) |
 | [`docs/SPEC.md`](docs/SPEC.md) | You want the product: pages, scope (P0/P1/P2), architecture, **3-minute demo script (§12)** |
 | [`docs/ENGINE.md`](docs/ENGINE.md) | You touch the simulation, caching or API (§8 lists every route and which page uses it) |
 | [`engine/README.md`](engine/README.md) | You use the `dcsim` CLI, levers, or the data flow |
@@ -288,6 +301,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |
 | [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) | Planning what to build next |
+| [`docs/SPONSORS.md`](docs/SPONSORS.md) | Picking up a sponsor-prize feature (Gemini, agent, Tiger Data, Vultr, domain): status and build steps |
 | [`survey/student_survey.md`](survey/student_survey.md) | Running the student survey |
 
 ---
@@ -330,6 +344,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | --- | --- |
 | Web app shows "Couldn't load … run `make demo-bundle`" | The bundle is missing or partial: `make demo-bundle` (or pull it from git). |
 | Lab says "Start the API (`make serve`)" | That combination isn't precomputed. Run `make serve` in another terminal, then reload the page. |
+| `make demo-bundle` seems stuck after "bundle --grid" | It is writing AI narrations (rate-limited to 15 calls/min, so this step can take 15–30 min). Wait, or run `LLM_PROVIDER=mock make demo-bundle` for template text in a few minutes. Don't press Ctrl+C. |
 | Narration says "(template)" | No LLM key, or the free-tier limit was hit. Add `GEMINI_API_KEY` to `engine/.env`, or wait a minute. |
 | Numbers in the app don't match the engine CLI | The bundle is older than the engine. `make cache-clean && make demo-bundle`. |
 | `uv` complains about Python | Needs Python ≥ 3.13: `uv python install 3.13`. |

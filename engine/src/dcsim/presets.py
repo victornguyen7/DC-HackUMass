@@ -57,6 +57,14 @@ def extra_server_busiest(cfg: ScenarioConfig) -> ScenarioConfig:
     return cfg.updated(stations=stations, label=f"extra server at {busiest}")
 
 
+def forecast_reorder(cfg: ScenarioConfig) -> ScenarioConfig:
+    """Start each batch from the expected rush (planner demand x arrival curve), not only from
+    the pan level: cook ahead before 6 pm and 7:30 pm, slow down as the crowd thins."""
+    kitchen = {k: v.model_dump() | ({"forecast_reorder": True} if v.expected_demand is not None else {})
+               for k, v in cfg.kitchen.items()}
+    return cfg.updated(kitchen=kitchen, label="forecast reorder")
+
+
 def theme_night(cfg: ScenarioConfig, multiplier: float = 1.25) -> ScenarioConfig:
     crowd = cfg.crowd.model_dump() | {"multiplier": cfg.crowd.multiplier * multiplier}
     return cfg.updated(crowd=crowd, label="theme night (+25% crowd)")
@@ -73,4 +81,5 @@ PRESETS: dict[str, Callable[[ScenarioConfig], ScenarioConfig]] = {
     "extra_server": extra_server_busiest,
     "theme_night": theme_night,
     "combined": combined_plan,
+    "forecast_reorder": forecast_reorder,
 }

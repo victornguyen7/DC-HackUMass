@@ -80,7 +80,10 @@ class FakeAPI:
 def test_template_never_names_unseen_dishes(night):
     svc, cfg, h, trace = night
     picks = highlights(cfg, trace, 20)
-    assert {p["reason"] for p in picks} >= {"switched", "missed_meal"}
+    reasons = {p["reason"] for p in picks}
+    assert "switched" in reasons
+    if any(not any(e["type"] == "served" for e in s["events"]) for s in trace["students"]):
+        assert "missed_meal" in reasons  # only when someone on this night left with nothing
     for p in picks:
         c = card(cfg, trace["_by_id"][p["student_id"]])
         text = template(c)
@@ -475,3 +478,23 @@ def test_dish_prior_reasons_are_short_and_use_the_strong_model():
     out = estimate(LLM(None, provider="gemini", client=fake), DATE, nd)
     assert fake.calls[0]["model"] == "gemini-4-hydrogen" and len(fake.calls) == 2  # re-asked for short reasons
     assert out["source"] == "llm" and all(len(r.split()) <= 8 for r in out["reasons"].values())
+
+
+def test_describe_and_ask_cover_engine_06_settings():
+    """Kitchen staff, shifts and forecast reordering are described, and /ask can set cooks and shifts."""
+    from dcsim import load_baseline
+    from dcsim.ai.ask import AskPlan, CookChange, ShiftChange, _empty, to_request
+    from dcsim.ai.describe import config_changes
+    from dcsim.levers import build_config
+    from dcsim.presets import PRESETS
+
+    base = load_baseline("2026-11-13")
+    plan: AskPlan = _empty(cooks=[CookChange(period="dinner", cooks=13)],
+                           shifts=[ShiftChange(station_id="grill", from_time="18:30", servers=3),
+                                   ShiftChange(station_id="grill", from_time="20:00", servers=2)])
+    cfg = build_config(to_request("2026-11-13", plan))
+    assert cfg.kitchen_resources.cooks["dinner"] == 13
+    assert cfg.station("grill").shifts == ((1110, 3), (1200, 2))
+    text = " | ".join(config_changes(base, cfg))
+    assert "Cooks (dinner): 12 -> 13" in text and "servers by hour" in text
+    assert any("Forecast reordering" in c for c in config_changes(base, PRESETS["forecast_reorder"](base)))

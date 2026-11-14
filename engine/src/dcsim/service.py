@@ -96,6 +96,7 @@ class Service:
             "flags": flags(cfg, summary),
             "stations": stations(cfg, summary),
             "arrivals": arrivals(cfg),
+            "staffing": summary.get("staffing", {}),  # station -> hour -> servers needed (N3)
             "median_seed": median_night(nights),
         }
         base = baseline_of(cfg)

@@ -3,7 +3,7 @@
     POST /api/simulate            -> 200 {status: done, result} if cached, else 202 {status: running, job_id}
     GET  /api/jobs/{id}/stream    -> Server-Sent Events: progress, provisional, final, error
     GET  /api/jobs/{id}           -> job status + latest result
-    GET  /api/results/{hash}      -> result from cached nights
+    GET  /api/results/{hash}      -> result from cached nights (?include=series: per-minute bands)
     POST /api/compare             -> paired comparison of two cached configs
     GET  /api/traces/{hash}       -> median-night (or ?seed=) trace for 3D, gzipped JSON
     GET  /api/dates | /api/menu/{date} | /api/arrivals/{date} | /api/layout | /api/presets | /api/facts/waste
@@ -343,7 +343,12 @@ async def job_stream(job_id: str, request: Request):
 
 
 @app.get("/api/results/{config_hash}")
-def result(config_hash: str, request: Request, n_nights: int = Query(30, ge=1, le=200)) -> dict:
+def result(
+    config_hash: str, request: Request, n_nights: int = Query(30, ge=1, le=200),
+    include: str | None = Query(None, pattern="^series$"),
+) -> dict:
+    """`?include=series` adds per-minute p10/p50/p90 lines, pan levels and students inside
+    (IMPROVEMENTS 1.4). It re-runs the nights, so it takes a second or two."""
     svc = _svc(request)
     cfg = _cfg_or_404(svc, config_hash)
     nights = svc.cached_nights(cfg, n_nights)
@@ -351,7 +356,12 @@ def result(config_hash: str, request: Request, n_nights: int = Query(30, ge=1, l
         raise HTTPException(404, f"only {len(nights)} of {n_nights} nights cached; POST /api/simulate first")
     base = baseline_of(cfg)
     base_n = svc.cached_nights(base, n_nights) if config_hash != hash_of(base) else None
-    return svc.result(cfg, nights, base_n or None)
+    out = svc.result(cfg, nights, base_n or None)
+    if include == "series":
+        from .runner import series_summary
+
+        out["series"] = series_summary(cfg, [m.seed for m in nights])
+    return out
 
 
 class CompareRequest(BaseModel):

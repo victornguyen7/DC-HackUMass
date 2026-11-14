@@ -31,6 +31,9 @@ class Student:
     dwell: float
     prefs: list[int]  # eligible dish indices, best first
     svc_z: list[float]  # standard-normal draws for service times
+    allergies: tuple[str, ...] = ()  # allergy ids (ScenarioConfig.allergies)
+    group: int = -1  # id of the group's first member, -1 if alone
+    seat_key: int = -1  # id used to pick the seat zone (the group's first member: they sit together)
 
 
 def eligible(diet: str, dish: Dish) -> bool:
@@ -39,6 +42,8 @@ def eligible(diet: str, dish: Dish) -> bool:
         return "vegan" in tags
     if diet == "vegetarian":
         return bool(tags & {"vegetarian", "vegan"})
+    if diet == "pescetarian":  # vegetarian dishes, plus fish/seafood with no meat (tag set by data.py)
+        return bool(tags & {"vegetarian", "vegan", "pescetarian"})
     if diet == "halal":  # UMass labels Halal explicitly; plant-based items are also fine
         return bool(tags & {"halal", "vegan"})
     return True
@@ -95,13 +100,22 @@ def build_students(cfg: ScenarioConfig, seed: int, ids: np.ndarray, times: np.nd
     arrive_late = (times >= cfg.close_min) if cfg.late_close_min is not None else np.zeros(n, dtype=bool)
     in_period = late[None, :] == arrive_late[:, None]
     ok = elig[pidx] & in_period
+    # Allergies (ISSUES N8): each student independently has each allergy at its survey share and
+    # never picks a dish labeled with it. Keyed by (student, allergy id), so menus don't reshuffle it.
+    has = np.zeros((n, len(cfg.allergies)), dtype=bool)
+    if cfg.allergies:
+        akeys = np.array([stable_key(a.id) for a in cfg.allergies], dtype=np.uint64)
+        shares = np.array([a.share for a in cfg.allergies])
+        has = uniform(seed, Stream.ALLERGY, ids[:, None], akeys[None, :]) < shares[None, :]
+        avoid = np.array([[bool(set(a.labels) & set(d.allergens)) for d in menu] for a in cfg.allergies])
+        ok &= ~(has.astype(int) @ avoid.astype(int)).astype(bool)
     util = np.where(ok, log_w[pidx] + gumbel, -np.inf)
     order = np.argsort(-util, axis=1, kind="stable")
     n_elig = ok.sum(axis=1)
 
     svc_z = std_normal(seed, Stream.SERVICE, ids[:, None], np.arange(MAX_SERVICES)[None, :])
 
-    return [
+    students = [
         Student(
             id=int(ids[i]),
             arrive=float(times[i]),
@@ -113,6 +127,40 @@ def build_students(cfg: ScenarioConfig, seed: int, ids: np.ndarray, times: np.nd
             dwell=float(dwell[i]),
             prefs=order[i, : n_elig[i]].tolist(),
             svc_z=svc_z[i].tolist(),
+            allergies=tuple(cfg.allergies[k].id for k in np.nonzero(has[i])[0]),
         )
         for i in range(n)
     ]
+    for st in students:
+        st.seat_key = st.id
+    if cfg.groups is not None:
+        _form_groups(cfg, seed, students, ids)
+    return students
+
+
+def _form_groups(cfg: ScenarioConfig, seed: int, students: list[Student], ids: np.ndarray) -> None:
+    """Friends arrive together (the first member's time) and sit in the same zone. Uses its own
+    random stream keyed by student id, so groups don't move other draws."""
+    g = cfg.groups
+    pid = next((k for k, p in enumerate(cfg.personas) if p.id == g.persona), None)
+    if pid is None:
+        return
+    u_join = uniform(seed, Stream.GROUP, ids)
+    u_size = uniform(seed, Stream.GROUP, ids, np.full(len(ids), 1, dtype=np.uint64))
+    pool = sorted((st for k, st in enumerate(students) if st.persona == pid and u_join[k] < g.share), key=lambda st: st.arrive)
+    index = {st.id: k for k, st in enumerate(students)}
+    i = 0
+    while i < len(pool):
+        lead = pool[i]
+        size = int(_categorical(np.array([u_size[index[lead.id]]]), g.sizes)[0])
+        members = [lead]
+        j = i + 1
+        while j < len(pool) and len(members) < size and pool[j].arrive - lead.arrive <= g.window_min \
+                and (pool[j].arrive >= cfg.close_min) == (lead.arrive >= cfg.close_min):  # same service period
+            members.append(pool[j])
+            j += 1
+        if len(members) > 1:
+            for m in members:
+                m.arrive, m.group, m.seat_key = lead.arrive, lead.id, lead.id
+        i = j
+    students.sort(key=lambda st: (st.arrive, st.id))

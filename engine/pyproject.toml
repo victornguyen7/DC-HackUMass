@@ -1,6 +1,6 @@
 [project]
 name = "dcsim"
-version = "0.1.0"
+version = "0.6.1"  # keep equal to dcsim.config.ENGINE_VERSION (tests/test_engine.py checks)
 description = "DC What-If simulation engine (SimPy) for a UMass dining common"
 requires-python = ">=3.13"
 dependencies = [

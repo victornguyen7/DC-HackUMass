@@ -32,7 +32,7 @@ export function dateLabel(iso: string, opts: Intl.DateTimeFormatOptions = { week
 export const STATION_NAMES: Record<string, string> = {
   grill: "Grill", tandoor: "Tandoor", mediterranean: "Mediterranean", seasons: "Seasons", latino: "Latino",
   street_food: "Street Food", noodle_bowl: "Noodle Bowl", sushi: "Sushi", display: "Display", soups: "Soups",
-  breads: "Breads", desserts: "Desserts",
+  breads: "Breads", desserts: "Desserts", carving: "Carving",
 };
 export const stationName = (id: string) => STATION_NAMES[id] ?? id.replace(/_/g, " ");
 
@@ -42,6 +42,7 @@ export const PRESET_LABELS: Record<string, string> = {
   extra_server: "Extra server at busiest",
   theme_night: "Theme night +25%",
   combined: "Combined plan",
+  forecast_reorder: "Forecast reorder",
 };
 
 export function scenarioLabel(preset: string | null, lever: string, label?: string) {

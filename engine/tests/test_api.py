@@ -73,6 +73,13 @@ def test_simulate_then_cache_hit(client):
     assert again.json()["result"]["headline"] == first["headline"]
     # Same result from the results endpoint.
     assert client.get(f"/api/results/{first['config_hash']}?n_nights={N}").json()["headline"] == first["headline"]
+    # Per-minute series on request (IMPROVEMENTS 1.4): bands for lines, pans and students inside.
+    ser = client.get(f"/api/results/{first['config_hash']}?n_nights={N}&include=series").json()["series"]
+    n_points = len(ser["inside"]["p50"])
+    assert ser["step"] == 1 and ser["n_nights"] == N and n_points > 400
+    assert len(ser["queue"]["grill"]["p90"]) == n_points and max(ser["queue"]["grill"]["p50"]) > 5
+    assert any(max(b["p50"]) > 0 for b in ser["pans"].values()) and max(ser["inside"]["p50"]) > 300
+    assert client.get(f"/api/results/{first['config_hash']}?include=other").status_code == 422
 
 
 def test_preset_compares_against_baseline_on_paired_seeds(client):
@@ -110,7 +117,8 @@ def test_levers_and_validation(client):
 def test_crowd_lever_snaps_to_steps():
     a = build_config(ScenarioRequest(date=DATE, levers=Levers(crowd_multiplier=1.11)))
     b = build_config(ScenarioRequest(date=DATE, levers=Levers(crowd_multiplier=1.09)))
-    assert a.crowd.multiplier == b.crowd.multiplier == pytest.approx(1.1)
+    base = load_baseline(DATE).crowd.multiplier  # the date's weekday/event factor (crowd_by_date.json)
+    assert a.crowd.multiplier == b.crowd.multiplier == pytest.approx(base * 1.1)
 
 
 def test_remove_dish_drops_its_plan():

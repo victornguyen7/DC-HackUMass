@@ -1,5 +1,5 @@
 {
-  "_note": "Hand corrections, keyed by the exact item name on the menu. roles: fix an automatic classification (entree | starch | side | soup | dessert | bread | addon); re-run `dcsim prepare` after editing. popularity: multiplier on the role prior from staff experience (e.g. 1.8 = runs out, 0.5 = left over); applies at load time, and the baseline kitchen plan deliberately does NOT know about it. station_popularity: multiplier on every dish at a station; unlike item-level popularity, the baseline kitchen plan knows it (team member 2026-11-12: Street Food, Noodle Bowl, Grill, Latino are about 2x an ordinary station).",
+  "_note": "Hand corrections, keyed by the exact item name on the menu. roles: fix an automatic classification (entree | starch | side | soup | dessert | bread | addon); re-run `dcsim prepare` after editing. popularity: multiplier on the role prior from staff experience (e.g. 1.8 = runs out, 0.5 = left over); applies at load time, and the baseline kitchen plan deliberately does NOT know about it. station_popularity: multiplier on every dish at a station; unlike item-level popularity, the baseline kitchen plan knows it (team member 2026-11-12: Street Food, Noodle Bowl, Grill, Latino are about 2x an ordinary station; since engine 0.6.0 Noodle Bowl's 2x is per dish in dish_popularity, ISSUES E6). dish_popularity: a crowd-drawing dish the kitchen knows about.",
   "roles": {
     "10": "addon",
     "Herb Dressing": "starch",
@@ -22,8 +22,22 @@
   "popularity": {},
   "station_popularity": {
     "street_food": 2.0,
-    "noodle_bowl": 2.0,
     "grill": 2.0,
     "latino": 2.0
+  },
+  "station_by_date": {
+    "_note": "Per-date station moves (E7): a dish named here is served at that station on that date instead of its published one. Nov 18 (Friendsgiving): the carved turkey gets a staffed carving line (roasts still cooked in batches, so leftovers still count); its sides stay self-serve at Display. Confirm with the team.",
+    "2026-11-18": {
+      "Carved Local Roast Turkey": "carving"
+    }
+  },
+  "dish_popularity": {
+    "_note": "ISSUES E6 (2026-11-13, team): crowd-drawing dishes, by exact menu name. Like station_popularity, the baseline kitchen plan knows these (unlike `popularity`, which is a surprise to the plan). Noodle Bowl: Hot Pot, Pho, Tom Yum and Taiwan Pork draw a crowd (2x, the old station-wide factor); ramen does not (1x).",
+    "Hot Pot (Chicken, Beef, Pork, Fish, Shellfish)": 2.0,
+    "Chicken Pho Broth (Fish)": 2.0,
+    "Green Curry Pho Broth (Anchovies)": 2.0,
+    "Vegetarian Pho Base": 2.0,
+    "Shrimp Tom Yum Soup (Chicken Broth)": 2.0,
+    "Taiwan Pork & Pickled Vegetables": 2.0
   }
 }

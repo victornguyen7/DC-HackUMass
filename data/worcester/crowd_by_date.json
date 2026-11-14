@@ -1,0 +1,31 @@
+{
+  "_note": "Per-date crowd multipliers (engine 0.4.2, issue E5). ALL VALUES ARE PLACEHOLDER GUESSES (2026-11-13) until UMass Dining shares meal swipes by date (data requests R01/R08); calendar.json keeps crowd_modifier null because no lift is measured. The loader multiplies dc.json's crowd (dinner) and late_night.crowd by weekday x event. Weekday factors apply to every night with that weekday, including the synthetic history; event factors apply only to their own date. Late night has no weekday or event effect yet (which days it runs is unconfirmed, F03).",
+  "dinner_by_weekday": {
+    "Monday": 1.0,
+    "Tuesday": 1.0,
+    "Wednesday": 1.0,
+    "Thursday": 1.0,
+    "Friday": 0.9,
+    "Saturday": 0.85,
+    "Sunday": 0.95
+  },
+  "late_night_by_weekday": {
+    "Monday": 1.0,
+    "Tuesday": 1.0,
+    "Wednesday": 1.0,
+    "Thursday": 1.0,
+    "Friday": 1.0,
+    "Saturday": 1.0,
+    "Sunday": 1.0
+  },
+  "events": {
+    "2026-11-18": {
+      "dinner": 1.15,
+      "why": "Friendsgiving dinner at all dining commons (calendar.json). 1.15 is the same lift the synthetic history uses for an event night. The UMass vs Akron home game the same day has no kickoff time, so it is not modeled."
+    },
+    "2026-11-20": {
+      "dinner": 1.1,
+      "why": "TCSA dinner at Worcester (calendar.json). Guess."
+    }
+  }
+}

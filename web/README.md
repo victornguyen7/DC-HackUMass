@@ -48,6 +48,9 @@ The main app is at `http://localhost:5173/hall`. `work/design/dining-simulation.
 `src/lib/playback.ts` turns the engine trace (SPEC §8.3) into positions on the top-down plan (`public/plan/worcester-2f-plan.svg`, 849×465 px, 13.37 px/m, same frame as `data/worcester/layout`).
 
 - A student dwells at an event's spot and follows a cached path to the next spot at the end of the gap (normally 70 m/min, fitted to the recorded event times). `hallGeometry.ts` shares counters, rooms, stairs, partitions, and tables with both views; `navigation.ts` routes around them with body clearance and uses the three back-room doorways. No straight-line fallback crosses a blocked area.
+- A student dwells at an event's spot and walks to the next spot at the end of the gap (70 m/min, straight line).
+- A `balk` or `empty_pan` at the same instant as the previous event is a glance from where the student stands (engine 0.4.1: students choose lines from a distance), so it keeps their position instead of jumping to that station.
+- Late night (engine 0.4.1+): the timeline runs to `result.close` (12 am); station cards and empty-pan flags show only the dishes of the period on at that time (`dishWindow` in `lib/format.ts`). The Nov 18 `carving` line has an assumed queue spot beside Display.
 - In a line, they move from their slot at join time to the counter at service time. Queue heads and directions come from the measured plan model (Tandoor's line runs east from the east frontage of the center island).
 - Seats: deterministic 4-top seat in the zone the engine chose (`main` or `back`); table positions are the assumed ones in `src/lib/zones.json`.
 - Pan levels: engine pan events carry the level after the event; single takes aren't exported, so the UI subtracts the trace's `served` events.
@@ -55,5 +58,10 @@ The main app is at `http://localhost:5173/hall`. `work/design/dining-simulation.
 ## Kitchen plan and Insights
 
 Kitchen plan opens on Overview, with one service-hours line. Its Menu tab (`/dashboard?view=menu`) contains the station menu. Production plan, Staffing, and Left at close open in accessible dialogs; the full tables, print, and CSV controls are retained. Expected arrivals includes **View alerts**, with links into the replay at the relevant time. Insights' Top waste dishes table has three columns: Dish, Change, and $ / week.
+## Engine fields the pages don't show yet
+
+Typed in `src/lib/types.ts` (optional, so the 0.4.1 bundle still works): `headline.batch_wait_min / cook_busy_share / empty_wait_min / seat_wait_min / peak_seated` (engine 0.5.0), `staffing` (servers needed per station and hour, UI_ISSUES U5) and `series` (per-minute bands, only from `GET /api/results/{hash}?include=series`, engine 0.6.0). The preset list includes **Forecast reorder**; it has data in the Lab once the bundle is rebuilt (or with the API).
+
+The committed bundle in `public/cache` is from engine **0.4.1**; run `make demo-bundle` once on the final engine.
 
 Known gaps and issues found while testing: **[docs/UI_ISSUES.md](../docs/UI_ISSUES.md)**.

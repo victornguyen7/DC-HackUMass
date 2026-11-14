@@ -133,6 +133,26 @@ def student(env, s, hall):
 
 **Service periods (0.4.1).** Each dish has a `period`: `dinner` (`open_min`..`close_min`, 4:30–9:00 pm) or `late_night` (`close_min`..`late_close_min`, 9:00 pm–12:00 am; ids `late.<station>.<name>`, from `menus/<date>_late_night.json`). Pans open with starting stock when their period starts and close at its end. At 9:00 dinner dishes take no new students, and lines already formed are served from what is left (`LAST_CALL_MAX_MIN` 30). At midnight serving stops; students still in line get a `closed` event, and seated students stay until they are done. Late night has its own crowd (`late_crowd`, its own random stream, so dinner arrivals don't move) and snack-sized plates (`late_plate_size`). A student ranks only the dishes of the period they arrive in. The planner sizes each dish over its own period.
 
+**Late-night taper (0.4.2).** A `BatchPlan` may carry `taper_from_min`, `taper_batch_size` and `taper_reorder_point`: from that time the kitchen cooks the smaller batch with the lower reorder point (one re-check is scheduled at the taper time). The planner sets them for late-night dishes (`kitchen_defaults.json → planner_by_period.late_night`): the taper starts once fewer than `taper_fill` × batch portions are still to be eaten in the pilot runs.
+
+**Crowd by date (0.4.2).** `crowd_by_date.json` scales the dinner and late-night crowds by weekday and date events (placeholders, E5). `overrides.json → station_by_date` moves a dish to another station on one date (Nov 18 carving line, E7).
+
+**Simulation core (0.5.0).**
+- **Kitchen capacity:** `ScenarioConfig.kitchen_resources` (from `kitchen_defaults.json → resources`). `_cook` takes a cook from the period's pool for `prep_min` (role), then one unit of the dish's equipment (role / station / name keyword) for `cook_min − prep_min`. Without contention a batch takes `cook_min`, as before. Records `batch_wait_min`, cook busy minutes and equipment peaks. `kitchen_resources=None` (planner pilot runs) is the old unlimited kitchen.
+- **Empty-pan wait:** in `_visit`, a student whose dish is empty while a batch cooks waits on the pan's refill event or `empty_pan_wait_min` (× favorite multiplier), whichever comes first.
+- **Seats:** one `simpy.Resource` per seating zone; capacity = seats when `seat_limits`, else unlimited but counted (`peak_seated`). SIT events carry the zone actually used.
+- **Staffing by hour:** a station with `shifts` uses a `PriorityResource` sized to its largest shift; `_staffing` holds "off duty" tokens (priority 0, ahead of students) for servers not on shift. A token waits for the current student, so a server leaves after serving them. Visible line lengths ignore tokens. `staffing` in results = servers needed per station and hour for ≤ 85% busy.
+- **Guards:** `tests/test_golden.py` (Nov 13 pinned) and `tests/test_calibration_targets.py` (team observations).
+
+**Engine 0.6.0.**
+- **Pans as Containers:** `PanStock(simpy.Container)` holds portions on the line; `_do_get` takes from the oldest lots, so hold times stay exact. Pan size: at most `pan_capacity[role]` on the line, the rest in the hot-hold `cabinet`; when the line pan runs out, a swap (`pan_swap_min`) refills it and the pan looks empty meanwhile. `pan.level` = line + cabinet (what stockouts and series use); `pan.on_line` is what students see.
+- **Series:** `metrics.night_series` samples the exact step functions per minute; `runner.series_summary` → `?include=series`.
+- **Population:** allergies (`ScenarioConfig.allergies`, survey shares, `Stream.ALLERGY`) remove labeled dishes from a student's list; pescetarian diet (data.py tags meat-free fish/seafood dishes `pescetarian`); groups (`ScenarioConfig.groups`, `Stream.GROUP`) share the first member's arrival time and seat zone.
+- **Entrance:** `swipe_readers` card readers (`simpy.Resource`) before `enter`.
+- **Stockout vs empty pan:** stockout-minutes and series use `pan.level` (line + cabinet), so a pan swap is not a stockout; students see `on_line`, so a swap does count in `empty_seen` (ISSUES R5).
+- **0.6.1 tuning:** dinner plans stop 15 min before close (`planner_by_period.dinner`, E3); late-night taper batches are 50% and there are 5 late-night cooks (ISSUES R2).
+- **Kitchen:** preset `forecast_reorder` sets `BatchPlan.forecast_reorder`: threshold = 1.2 × expected portions over the next `cook_min + 5` min (planner `expected_demand` × the period's arrival curve) + 1.65·√that; a 5-min re-check cooks ahead of a rush.
+
 **Kitchen is event-driven, not polled.** `Pan.take()` checks the reorder condition and, if met, triggers the kitchen process. When a lot is added, one expiry event is scheduled at `expires_at` that removes whatever is left of that lot and logs it as *expired*. At close, everything left in pans is logged as *leftover*. Nothing ticks every minute, which keeps the event count low.
 
 ### 3.3 The rest of the day
@@ -393,6 +413,8 @@ As built (engine 0.3.4, `engine/src/dcsim/api.py`). Every route is under `/api`.
 | `GET /forecasts` | forecast ledger, scored once the night is observed | `web/public/calibration.html` |
 | `GET /dates`, `/menu/{date}`, `/arrivals/{date}`, `/layout`, `/presets`, `/facts/waste` | reference data (the bundle has static copies) | — |
 | `GET /waste/history`, `/waste/backtest`, `/waste/calibration` | synthetic history, back-test (with per-dish rows and per-station splits), held-out calibration | — (bundle copies) |
+
+**Result fields (engine 0.5.0; `series` only with `?include=series`, 0.6.0):** `open`, `close` (serving stops: end of late night), `dinner_close`, `late_close`; `headline` (p10/p50/p90 of waste, stockout-minutes, missed first choice, wait p90, missed meal, students, plus `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `seat_wait_min`, `peak_seated`); `cook_sheet` (with `period` per dish); `flags`; `stations`; `arrivals`; `staffing` (station → hour → servers needed for ≤ 85% busy); `median_seed`; `baseline_hash`; `vs_baseline`. Levers added in 0.5.0: `kitchen_staff {cooks, equipment}` and `stations.<id>.shifts [[from_min, servers], ...]`.
 
 Planned but **not built:** `?include=series` on results, `POST /warm`, `POST /backtest` as a job (the back-test is `dcsim backtest`), `POST /personas/calibrate`. Traces are gzipped JSON, not msgpack.
 

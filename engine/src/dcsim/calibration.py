@@ -57,7 +57,7 @@ METRICS = ("waste_lb", "stockout_min", "students", "cooked_portions")
 # ------------------------------------------------------------------ configs
 
 def executed_plan(menu_date: str, adopted: bool, plan: str = RECOMMENDED_PLAN) -> ScenarioConfig:
-    base = load_baseline(menu_date)
+    base = load_baseline(menu_date, events=False)  # a past night: its weekday, not the snapshot date's events
     return PRESETS[plan](base) if adopted else base
 
 

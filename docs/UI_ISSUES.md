@@ -1,6 +1,6 @@
 # Web UI: test results and known issues
 
-Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), engine 0.3.4.
+Status as of 2026-11-13, `web/` built from the Figma file (*DC What-If — Worcester*), first written for engine 0.3.4; updated for engine 0.6.1. The committed demo bundle is engine 0.4.1, so the pages show 0.4.1 numbers until `make demo-bundle` is re-run. New engine outputs not shown on any page yet: kitchen wait and cook busy share, empty-pan wait, peak seated, `staffing` (U5) and per-minute `series` (`?include=series`, for line/pan-level charts).
 Second pass (same day): the UI now uses the engine API features it ignored before, and the back-test exports per-dish and per-station numbers. See [Second pass](#second-pass-connecting-the-ui-to-the-backend).
 
 Severity: **High** = misleads a viewer or breaks the demo story · **Medium** = a designed feature that is missing or only partly works · **Low** = cleanup.
@@ -87,16 +87,16 @@ Also fixed while testing the second pass:
 | --- | --- | --- | --- |
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
 | U2 | Medium | Hall | Only the top-down view is live; no animated 3D |
-| U4 | Medium | Dashboard | Dinner only; no full-day arrivals |
-| U5 | Medium | Dashboard | Staffing "needed" isn't computed |
+| U4 | Medium | Dashboard | ~~Dinner only~~ **Partly fixed:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch still missing |
+| U5 | Medium | Dashboard | Staffing "needed": ◐ engine computes it (0.5.0, `result.staffing`); the page doesn't show it yet |
 | U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
 | U15 | Medium | All | Several features need the API; offline they explain why and stay disabled |
 | U9 | Low | Hall | Replay geometry is approximate |
-| U11 | Low | Hall | Engine issues E1/E2 are visible in the replay |
+| U11 | ~~Low~~ | Hall | ~~Engine issues E1/E2 are visible in the replay~~ **Fixed** with E1/E2 in engine 0.4.1 |
 | U16 | Low | Waste | Per-dish "$ / week" doesn't add up exactly to the headline |
 | U14 | Low | Repo | Stack differs from SPEC §9 (no Tailwind, no Recharts) |
 
-Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above).
+Closed in the second pass: U3, U6, U8, U10, U12, U13 (see the table above). Closed later: U11 (engine 0.4.1). Partly fixed: U4, U7.
 
 ### U1 · High · Figma numbers are placeholders and differ from the real data
 The design mock-ups use made-up values; the built pages show the bundle's real numbers:
@@ -119,7 +119,8 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - Presets load their own replay and show paired 30-night comparisons. Advanced controls remain in the Lab. Split-screen comparison (SPEC P2) isn't built.
 - The scene is an illustrated isometric view. Orbital WebGL/React Three Fiber and the serving-line camera remain future work.
 
-### U4 · Medium · Dashboard: dinner only
+### U4 · Partly fixed · Dashboard: dinner only
+- **Partly fixed (engine 0.4.1):** the Dashboard shows dinner + late night (KPI chip, arrivals chart, "late" tags on dishes and in the production plan). Breakfast and lunch below are still open.
 - Breakfast and lunch aren't simulated and `ref/arrivals` holds dinner windows only. The Breakfast and Lunch toggles are disabled; the arrivals chart covers 4:30–9:00 pm.
 - Weather shows "not connected".
 - Needs engine work (other meals), not a UI change.
@@ -127,6 +128,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 ### U5 · Medium · Dashboard: staffing "needed" isn't computed
 - The design compares planned servers with servers needed for p90 wait under 8 min, by hour. The result only has servers and peak line length per station, so the page shows those two columns and a note.
 - Needs an engine output (per-hour queue or needed servers). Computing it in the browser would be a guess, so it was left out.
+- **Update (engine 0.5.0):** results now carry `staffing`: servers needed per station and hour ("19" = 7–8 pm) for servers ≤ 85% busy, from the items each station actually served (ISSUES N3). Typed as `Result.staffing?` in `web/src/lib/types.ts`. Still to do: a "needed" column per hour in the Dashboard staffing card, after the bundle is rebuilt with 0.5.0. Shifts can already be tried through the API lever `stations.<id>.shifts`.
 
 ### U7 · Medium · What-If Lab: Optimize and uncertainty sweep
 - **Optimize** stays disabled: the engine has no optimizer.
@@ -143,7 +145,8 @@ Offline (bundle only), these are disabled with a message: the plain-English box,
 - Pan levels are rebuilt from `served` events. They match the engine's empty-pan events more than 95% of the time.
 - "Missed 1st choice" coloring infers the first choice from the first line joined (21.2% vs the engine's 21.0%).
 
-### U11 · Low · Engine issues are visible in the replay
+### U11 · Fixed (engine 0.4.1) · Engine issues were visible in the replay
+- **Fixed:** E1 (touring lines) and E2 (activity after close) are fixed in engine 0.4.1; after 9 pm the replay now shows the late-night service instead of leftover dinner students.
 - E1, students touring too many lines: one student walks past 20+ lines.
 - E2, activity after close: dots stay on the map until about 9:30 pm, and some students arrive at 8:53 pm and leave at 10:24 pm. The scrubber runs to close + 30 min.
 - These are engine issues (docs/ISSUES.md), not UI bugs, but a viewer will notice them.
@@ -153,4 +156,4 @@ Offline (bundle only), these are disabled with a message: the plain-English box,
 
 ### U14 · Low · Stack differs from SPEC §9
 - No Tailwind or Recharts. Plain CSS with the Figma tokens and small SVG charts keep the JS at about 100 KB gzipped.
-- `dist/` is about 17 MB because it copies `public/cache` (16.7 MB, see T1 in ISSUES.md).
+- `dist/` is about 17 MB because it copies `public/cache` (16.7 MB). The bundle is now committed to git (ISSUES T1, fixed).

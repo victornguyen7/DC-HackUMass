@@ -34,6 +34,7 @@ const QUEUES: Record<string, { head: P; dir: P; fold?: number }> = {
   sushi: { head: [47.0, 18.3], dir: [-1, 0], fold: 9 },
   noodle_bowl: { head: [52.6, 22.4], dir: [0, 1] },
   display: { head: [55.4, 11.9], dir: [0, -1] },
+  carving: { head: [53.4, 11.9], dir: [0, -1] }, // Nov 18 carving line beside Display (assumed spot)
   soups: { head: [28.6, 13.1], dir: [0, -1] },
   desserts: { head: [18.0, 23.6], dir: [0, -1] },
   breads: { head: [20.5, 23.6], dir: [0, -1] },

@@ -13,9 +13,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-ENGINE_VERSION = "0.4.1"  # bump when model logic changes; invalidates cached results
+ENGINE_VERSION = "0.6.1"  # bump when model logic changes; invalidates cached results
 
-Diet = Literal["none", "vegetarian", "vegan", "halal"]
+Diet = Literal["none", "vegetarian", "vegan", "halal", "pescetarian"]
 Period = Literal["dinner", "late_night"]
 Role = Literal["entree", "starch", "side", "soup", "dessert", "bread"]
 ROLES: tuple[str, ...] = ("entree", "starch", "side", "soup", "dessert", "bread")
@@ -71,6 +71,12 @@ class Station(_Frozen):
     to_order: bool = False  # cooked per order: no pans, no expiry waste, slower service
     service_median_min: float = Field(gt=0)  # per item
     service_sigma: float = Field(0.35, ge=0)  # lognormal spread
+    # Staffing by hour (ISSUES N3): (from minute, servers) steps; before the first step, `servers`.
+    shifts: tuple[tuple[int, int], ...] = ()
+
+    @property
+    def max_servers(self) -> int:
+        return max([self.servers, *(n for _, n in self.shifts)])
 
 
 class Dish(_Frozen):
@@ -86,6 +92,7 @@ class Dish(_Frozen):
     carbon_rating: str | None = None
     estimate: bool = False  # new dish: popularity borrowed from "similar to" dishes + AI persona affinities
     period: Period = "dinner"  # served open..close (dinner) or close..late_close (late night)
+    allergens: tuple[str, ...] = ()  # menu labels, e.g. "Peanuts", "Wheat" (umassdining.com)
 
 
 class BatchPlan(_Frozen):
@@ -96,6 +103,70 @@ class BatchPlan(_Frozen):
     hold_min: float = Field(gt=0)  # max time on the line before it's expired
     max_batches: int = Field(ge=0)  # batches after the starting ones
     last_batch_min: int | None = None  # latest a batch may be ready; default close
+    # When the crowd thins (late night after ~10:30 pm), cook small top-up batches instead:
+    taper_from_min: int | None = None  # from this time on, batches use the taper size and reorder point
+    taper_batch_size: int | None = Field(None, ge=1)
+    taper_reorder_point: int | None = Field(None, ge=0)
+    # Forecast-based reordering (IMPROVEMENTS A, preset "forecast_reorder"): start a batch when
+    # ready + cooking won't cover forecast_factor x the portions expected over the next
+    # cook_min + forecast_extra_min, from expected_demand spread over the arrival curve.
+    expected_demand: float | None = Field(None, ge=0)  # planner's expected portions over the dish's period
+    forecast_reorder: bool = False
+    forecast_factor: float = Field(1.2, gt=0)
+    forecast_extra_min: float = Field(5.0, ge=0)
+    forecast_safety_z: float = Field(1.65, ge=0)  # safety stock: + z x sqrt(forecast) (Poisson bursts; 1.65 ~ 95%)
+
+    def batch_at(self, t: float) -> int:
+        return self.taper_batch_size if self.taper_from_min is not None and self.taper_batch_size and t >= self.taper_from_min else self.batch_size
+
+    def reorder_at(self, t: float) -> int:
+        if self.taper_from_min is not None and self.taper_reorder_point is not None and t >= self.taper_from_min:
+            return self.taper_reorder_point
+        return self.reorder_point
+
+
+class KitchenResources(_Frozen):
+    """Cooks and equipment as limited resources (IMPROVEMENTS 1.3). A batch needs a cook for its
+    hands-on prep (the first prep_min of cook_min), then one unit of its equipment for the rest.
+    Without contention a batch still takes cook_min; it gets later only when cooks or equipment
+    are busy. Placeholder counts (kitchen_defaults.json -> resources)."""
+
+    cooks: dict[str, int]  # service period -> cooks on the line
+    equipment: dict[str, int]  # equipment type -> units (each holds one batch)
+    role_prep_min: dict[str, float]  # hands-on minutes per batch, by dish role
+    role_equipment: dict[str, str]  # equipment type by dish role ("none" = no equipment)
+    station_equipment: dict[str, str] = {}  # overrides role_equipment for a station (grill -> flat_top)
+    keyword_equipment: dict[str, str] = {}  # overrides both when the dish name contains the keyword (fries -> fryer)
+
+    def equipment_for(self, dish: Dish) -> str | None:
+        name = dish.name.lower()
+        for kw, eq in self.keyword_equipment.items():
+            if kw in name:
+                return None if eq == "none" else eq
+        eq = self.station_equipment.get(dish.station) or self.role_equipment.get(dish.role, "none")
+        return None if eq == "none" else eq
+
+    def prep_for(self, dish: Dish, cook_min: float) -> float:
+        return min(float(self.role_prep_min.get(dish.role, 0.0)), cook_min)
+
+
+class Groups(_Frozen):
+    """Friends who arrive together and sit in the same zone (IMPROVEMENTS A). Each member still
+    gets their own food. A student of `persona` joins a group with probability `share`; groups
+    form from such students arriving within `window_min` of the first one."""
+
+    persona: str
+    share: float = Field(ge=0, le=1)
+    sizes: tuple[tuple[int, float], ...]  # (group size, prob)
+    window_min: float = Field(10.0, gt=0)
+
+
+class Allergy(_Frozen):
+    """A share of students who avoid every dish labeled with any of `labels` (ISSUES N8)."""
+
+    id: str
+    share: float = Field(ge=0, le=1)
+    labels: tuple[str, ...]
 
 
 class Wave(_Frozen):
@@ -147,11 +218,20 @@ class ScenarioConfig(_Frozen):
     kitchen: dict[str, BatchPlan]
     crowd: Crowd  # dinner arrivals, open..close
     late_crowd: Crowd | None = None  # late-night arrivals, close..late_close
+    pan_capacity: dict[str, int] = {}  # role -> portions one line pan holds (hotel pan); {} = unlimited
+    pan_swap_min: float = Field(0.5, ge=0)  # minutes to swap in a full pan from the hot-hold cabinet
+    allergies: tuple[Allergy, ...] = ()
+    groups: Groups | None = None
+    swipe_readers: int = Field(0, ge=0)  # card readers at the entrance; 0 = no swipe queue
+    swipe_min: float = Field(0.067, gt=0)  # minutes per swipe (~4 s)  # drawn independently per student (survey shares)
+    kitchen_resources: KitchenResources | None = None  # None: unlimited cooks and equipment
     late_plate_size: tuple[tuple[int, float], ...] | None = None  # (items on first trip, prob) for late arrivals; None = persona's
     personas: tuple[Persona, ...]
     population_status: Literal["uncalibrated", "calibrated"] = "uncalibrated"
     arrival_cap_per_min: float = Field(gt=0)  # thinning bound; fixed so seeds stay comparable
     favorite_patience_mult: float = Field(1.0, ge=1)  # patience x this when the line serves the student's first choice
+    seat_limits: bool = False  # True: seating zones hold layout seats (students wait for a seat); False: unlimited, counted
+    empty_pan_wait_min: float = Field(0.0, ge=0)  # at an empty pan with a batch cooking, wait up to this (x favorite_patience_mult for the favorite)
     retry_balked_favorite: bool = False  # after leaving their favorite's line, students sit, then try it once more
     engine_version: str = ENGINE_VERSION
     data_version: str = "dev"
@@ -178,6 +258,12 @@ class ScenarioConfig(_Frozen):
             raise ValueError(f"kitchen needs one BatchPlan per batch-cooked dish; missing={missing} extra={extra}")
         if self.late_plate_size is not None and abs(sum(prob for _, prob in self.late_plate_size) - 1.0) > 1e-6:
             raise ValueError("late_plate_size probabilities must sum to 1")
+        if self.kitchen_resources is not None:
+            kr = self.kitchen_resources
+            used = {kr.equipment_for(d) for d in self.menu if d.id in self.kitchen} - {None}
+            missing = sorted(used - set(kr.equipment))
+            if missing:
+                raise ValueError(f"kitchen_resources has no units for equipment {missing}")
         if not self.personas:
             raise ValueError("at least one persona is required")
         if abs(sum(p.share for p in self.personas) - 1.0) > 1e-6:

@@ -474,10 +474,10 @@
    "hot": true
   },
   {
-   "id": "display.carved_local_roast_turkey",
+   "id": "carving.carved_local_roast_turkey",
    "name": "Carved Local Roast Turkey",
-   "station": "display",
-   "station_name": "Display Station",
+   "station": "carving",
+   "station_name": "Carving",
    "serving_size": "3 OZ",
    "dietary_labels": [
     "Local"

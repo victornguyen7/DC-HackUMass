@@ -1,56 +1,383 @@
 {
-  "_note": "Hand-written stand-in for the frozen LLM persona set (ENGINE.md §7.2). Diet shares for vegetarian/vegan are sourced (see _sources); the other shares are guesses until the survey adjustment runs. category_affinity keys are item roles; station_affinity keys are station ids.",
+  "_note": "Hand-written stand-in for the frozen LLM persona set (ENGINE.md \u00a77.2). Diet shares for vegetarian/vegan are sourced (see _sources); the other shares are guesses until the survey adjustment runs. category_affinity keys are item roles; station_affinity keys are station ids. pescetarian (engine 0.6.0, ISSUES N8): 2.0% from the same Spring 2022 UMass Dining survey (sources/population/diet_patterns.json), taken out of regular (0.435 -> 0.415); behaves like regular but eats only vegetarian and meat-free fish/seafood dishes.",
   "status": "uncalibrated",
   "_sources": "vegetarian 0.083 and vegan 0.012 = UMass Dining Customer Satisfaction and Eating Habits Survey, Spring 2022 (n=1550, 25.8% response), sources/population/diet_patterns.json. Pescetarian (2.0%), pollotarian (5.7%) and flexitarian (8.9%) have no matching diet rule and stay in non-restricted personas. The 0.055 freed went to regular. seconds_prob raised 2026-11-12 so ~50% go back (team member: students often go back); per-persona split is a guess. Halal, athlete, rushed and social shares are still guesses.",
   "personas": [
     {
-      "id": "regular", "label": "Regular diner", "share": 0.435, "diet": "none",
-      "patience": [[0, 0.05], [5, 0.30], [10, 0.40], [20, 0.20], [40, 0.05]],
-      "plate_size": [[1, 0.10], [2, 0.45], [3, 0.35], [4, 0.10]],
-      "seconds_prob": 0.5, "dwell_median_min": 25
+      "id": "regular",
+      "label": "Regular diner",
+      "share": 0.415,
+      "diet": "none",
+      "patience": [
+        [
+          0,
+          0.05
+        ],
+        [
+          5,
+          0.3
+        ],
+        [
+          10,
+          0.4
+        ],
+        [
+          20,
+          0.2
+        ],
+        [
+          40,
+          0.05
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.1
+        ],
+        [
+          2,
+          0.45
+        ],
+        [
+          3,
+          0.35
+        ],
+        [
+          4,
+          0.1
+        ]
+      ],
+      "seconds_prob": 0.5,
+      "dwell_median_min": 25
     },
     {
-      "id": "athlete", "label": "Athlete, high protein", "share": 0.1, "diet": "none",
-      "patience": [[5, 0.15], [10, 0.35], [20, 0.35], [40, 0.15]],
-      "plate_size": [[2, 0.20], [3, 0.45], [4, 0.35]],
-      "seconds_prob": 0.8, "dwell_median_min": 30,
-      "category_affinity": {"entree": 1.5, "starch": 1.2, "dessert": 0.6, "bread": 0.6},
-      "station_affinity": {"grill": 1.4}
+      "id": "athlete",
+      "label": "Athlete, high protein",
+      "share": 0.1,
+      "diet": "none",
+      "patience": [
+        [
+          5,
+          0.15
+        ],
+        [
+          10,
+          0.35
+        ],
+        [
+          20,
+          0.35
+        ],
+        [
+          40,
+          0.15
+        ]
+      ],
+      "plate_size": [
+        [
+          2,
+          0.2
+        ],
+        [
+          3,
+          0.45
+        ],
+        [
+          4,
+          0.35
+        ]
+      ],
+      "seconds_prob": 0.8,
+      "dwell_median_min": 30,
+      "category_affinity": {
+        "entree": 1.5,
+        "starch": 1.2,
+        "dessert": 0.6,
+        "bread": 0.6
+      },
+      "station_affinity": {
+        "grill": 1.4
+      }
     },
     {
-      "id": "rushed", "label": "Between classes, in a hurry", "share": 0.16, "diet": "none",
-      "patience": [[0, 0.20], [5, 0.50], [10, 0.25], [20, 0.05]],
-      "plate_size": [[1, 0.35], [2, 0.50], [3, 0.15]],
-      "seconds_prob": 0.15, "dwell_median_min": 12,
-      "station_affinity": {"grill": 1.3, "street_food": 0.5, "sushi": 0.6, "display": 0.3}
+      "id": "rushed",
+      "label": "Between classes, in a hurry",
+      "share": 0.16,
+      "diet": "none",
+      "patience": [
+        [
+          0,
+          0.2
+        ],
+        [
+          5,
+          0.5
+        ],
+        [
+          10,
+          0.25
+        ],
+        [
+          20,
+          0.05
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.35
+        ],
+        [
+          2,
+          0.5
+        ],
+        [
+          3,
+          0.15
+        ]
+      ],
+      "seconds_prob": 0.15,
+      "dwell_median_min": 12,
+      "station_affinity": {
+        "grill": 1.3,
+        "street_food": 0.5,
+        "sushi": 0.6,
+        "display": 0.3
+      }
     },
     {
-      "id": "social", "label": "Eats with a big group", "share": 0.14, "diet": "none",
-      "patience": [[5, 0.20], [10, 0.40], [20, 0.30], [40, 0.10]],
-      "plate_size": [[1, 0.10], [2, 0.40], [3, 0.35], [4, 0.15]],
-      "seconds_prob": 0.7, "dwell_median_min": 45,
-      "category_affinity": {"dessert": 1.4},
-      "station_affinity": {"display": 1.3}
+      "id": "social",
+      "label": "Eats with a big group",
+      "share": 0.14,
+      "diet": "none",
+      "patience": [
+        [
+          5,
+          0.2
+        ],
+        [
+          10,
+          0.4
+        ],
+        [
+          20,
+          0.3
+        ],
+        [
+          40,
+          0.1
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.1
+        ],
+        [
+          2,
+          0.4
+        ],
+        [
+          3,
+          0.35
+        ],
+        [
+          4,
+          0.15
+        ]
+      ],
+      "seconds_prob": 0.7,
+      "dwell_median_min": 45,
+      "category_affinity": {
+        "dessert": 1.4
+      },
+      "station_affinity": {
+        "display": 1.3
+      }
     },
     {
-      "id": "vegetarian", "label": "Vegetarian", "share": 0.083, "diet": "vegetarian",
-      "patience": [[0, 0.05], [5, 0.30], [10, 0.40], [20, 0.20], [40, 0.05]],
-      "plate_size": [[1, 0.10], [2, 0.45], [3, 0.35], [4, 0.10]],
-      "seconds_prob": 0.45, "dwell_median_min": 25,
-      "category_affinity": {"side": 1.3}
+      "id": "pescetarian",
+      "label": "Pescetarian",
+      "share": 0.02,
+      "diet": "pescetarian",
+      "patience": [
+        [
+          0,
+          0.05
+        ],
+        [
+          5,
+          0.3
+        ],
+        [
+          10,
+          0.4
+        ],
+        [
+          20,
+          0.2
+        ],
+        [
+          40,
+          0.05
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.1
+        ],
+        [
+          2,
+          0.45
+        ],
+        [
+          3,
+          0.35
+        ],
+        [
+          4,
+          0.1
+        ]
+      ],
+      "seconds_prob": 0.5,
+      "dwell_median_min": 25,
+      "description": "Eats vegetarian dishes and fish or seafood, but no meat."
     },
     {
-      "id": "vegan", "label": "Vegan", "share": 0.012, "diet": "vegan",
-      "patience": [[5, 0.30], [10, 0.40], [20, 0.30]],
-      "plate_size": [[1, 0.20], [2, 0.50], [3, 0.30]],
-      "seconds_prob": 0.35, "dwell_median_min": 25
+      "id": "vegetarian",
+      "label": "Vegetarian",
+      "share": 0.083,
+      "diet": "vegetarian",
+      "patience": [
+        [
+          0,
+          0.05
+        ],
+        [
+          5,
+          0.3
+        ],
+        [
+          10,
+          0.4
+        ],
+        [
+          20,
+          0.2
+        ],
+        [
+          40,
+          0.05
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.1
+        ],
+        [
+          2,
+          0.45
+        ],
+        [
+          3,
+          0.35
+        ],
+        [
+          4,
+          0.1
+        ]
+      ],
+      "seconds_prob": 0.45,
+      "dwell_median_min": 25,
+      "category_affinity": {
+        "side": 1.3
+      }
     },
     {
-      "id": "halal", "label": "Halal", "share": 0.07, "diet": "halal",
-      "patience": [[5, 0.30], [10, 0.40], [20, 0.25], [40, 0.05]],
-      "plate_size": [[1, 0.10], [2, 0.45], [3, 0.35], [4, 0.10]],
-      "seconds_prob": 0.5, "dwell_median_min": 25,
-      "station_affinity": {"tandoor": 1.3}
+      "id": "vegan",
+      "label": "Vegan",
+      "share": 0.012,
+      "diet": "vegan",
+      "patience": [
+        [
+          5,
+          0.3
+        ],
+        [
+          10,
+          0.4
+        ],
+        [
+          20,
+          0.3
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.2
+        ],
+        [
+          2,
+          0.5
+        ],
+        [
+          3,
+          0.3
+        ]
+      ],
+      "seconds_prob": 0.35,
+      "dwell_median_min": 25
+    },
+    {
+      "id": "halal",
+      "label": "Halal",
+      "share": 0.07,
+      "diet": "halal",
+      "patience": [
+        [
+          5,
+          0.3
+        ],
+        [
+          10,
+          0.4
+        ],
+        [
+          20,
+          0.25
+        ],
+        [
+          40,
+          0.05
+        ]
+      ],
+      "plate_size": [
+        [
+          1,
+          0.1
+        ],
+        [
+          2,
+          0.45
+        ],
+        [
+          3,
+          0.35
+        ],
+        [
+          4,
+          0.1
+        ]
+      ],
+      "seconds_prob": 0.5,
+      "dwell_median_min": 25,
+      "station_affinity": {
+        "tandoor": 1.3
+      }
     }
   ]
 }

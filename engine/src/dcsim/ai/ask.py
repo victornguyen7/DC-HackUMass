@@ -14,19 +14,30 @@ from pydantic import BaseModel, Field # pyright: ignore[reportMissingImports]
 
 from ..config import config_hash
 from ..data import load_baseline
-from ..levers import KitchenLever, Levers, ScenarioRequest, StationLever, build_config
+from ..levers import KitchenLever, KitchenStaffLever, Levers, ScenarioRequest, StationLever, build_config
 from ..presets import PRESETS
 from ..reports import clock
 from .describe import config_changes
 from .llm import LLM
 
-PROMPT_VERSION = "ask-v2"
+PROMPT_VERSION = "ask-v3"  # v3 (engine 0.6.0): cooks per period and server shifts
 
 
 class StationChange(BaseModel):
     station_id: str
     servers: int | None = Field(description="new total servers, or null to keep")
     service_median_min: float | None = Field(description="minutes per item, or null to keep")
+
+
+class ShiftChange(BaseModel):
+    station_id: str
+    from_time: str = Field(description="24-hour HH:MM when this staffing starts")
+    servers: int = Field(description="servers from that time on (until the next shift for this station)")
+
+
+class CookChange(BaseModel):
+    period: str = Field(description="dinner or late_night")
+    cooks: int = Field(description="new total cooks for that period")
 
 
 class KitchenChange(BaseModel):
@@ -53,13 +64,17 @@ class AskPlan(BaseModel):
     kitchen: list[KitchenChange]
     popularity: list[PopularityChange]
     remove_dishes: list[str]
+    shifts: list[ShiftChange] = Field(default_factory=list, description="servers by time of night, e.g. one more Grill server 18:30-20:00 "
+                                      "= two shifts: 18:30 -> current+1, 20:00 -> current")
+    cooks: list[CookChange] = Field(default_factory=list, description="cooks in the kitchen per period")
     explanation: str = Field(description="one or two sentences: which settings you chose and why")
     unsupported: list[str] = Field(description="parts of the question no setting can express")
 
 
 def _empty(**kw) -> AskPlan:
     return AskPlan(**({"preset": None, "crowd_multiplier": None, "crowd_shift_min": None, "stations": [], "kitchen": [],
-                       "popularity": [], "remove_dishes": [], "explanation": "", "unsupported": []} | kw))
+                       "popularity": [], "remove_dishes": [], "shifts": [], "cooks": [], "explanation": "",
+                       "unsupported": []} | kw))
 
 
 SYSTEM = """You turn a dining manager's what-if question into settings for a dinner simulation.
@@ -82,11 +97,15 @@ def to_request(date: str, plan: AskPlan) -> ScenarioRequest:
         if k.last_batch_time:
             f["last_batch_min"] = _hhmm_to_min(k.last_batch_time)
         kitchen[k.dish_id] = KitchenLever(**f)
+    stations = {s.station_id: s.model_dump(exclude={"station_id"}, exclude_none=True) for s in plan.stations}
+    for sh in plan.shifts:
+        stations.setdefault(sh.station_id, {}).setdefault("shifts", []).append((_hhmm_to_min(sh.from_time), sh.servers))
     lv = Levers(
         crowd_multiplier=plan.crowd_multiplier, crowd_shift_min=plan.crowd_shift_min,
-        stations={s.station_id: StationLever(**s.model_dump(exclude={"station_id"}, exclude_none=True)) for s in plan.stations},
+        stations={k: StationLever(**v) for k, v in stations.items()},
         kitchen=kitchen, popularity={p.dish_id: p.multiplier for p in plan.popularity},
         remove_dishes=plan.remove_dishes,
+        kitchen_staff=KitchenStaffLever(cooks={c.period: c.cooks for c in plan.cooks}) if plan.cooks else None,
     )
     empty = lv == Levers()
     return ScenarioRequest(date=date, preset=plan.preset or None, levers=None if empty else lv)
@@ -103,12 +122,16 @@ def _tables(date: str) -> str:
                 f"max extra batches {p.max_batches}, last batch {clock(p.last_batch_min or cfg.window(d.period)[1])}") if p else "made to order"
         dishes.append(f"{d.id} | {d.name} | {d.station} | {plan}")
     presets = "\n".join(f"{k} | {(f.__doc__ or k).strip().splitlines()[0]}" for k, f in PRESETS.items())
+    kr = cfg.kitchen_resources
+    kitchen_staff = (f"\n\nKitchen: cooks {', '.join(f'{p} {n}' for p, n in kr.cooks.items())}; equipment "
+                     + ", ".join(f"{k} {n}" for k, n in kr.equipment.items())) if kr else ""
     late = f", late night {clock(cfg.close_min)}-{clock(cfg.late_close_min)}" if cfg.late_close_min else ""
     return (f"Date {date}, dinner {clock(cfg.open_min)}-{clock(cfg.close_min)}{late}, about "
             f"{round(cfg.crowd.expected_students * cfg.crowd.multiplier):,} dinner students"
             + (f" and {round(cfg.late_crowd.expected_students * cfg.late_crowd.multiplier):,} late-night students"
                if cfg.late_crowd is not None else "") + f".\n\nStations (id | name | staffing):\n{st}"
-            f"\n\nDishes (id | name | station | batch plan):\n" + "\n".join(dishes) + f"\n\nPresets (id | what it does):\n{presets}")
+            f"\n\nDishes (id | name | station | batch plan):\n" + "\n".join(dishes) + f"\n\nPresets (id | what it does):\n{presets}"
+            + kitchen_staff)
 
 
 # ---------------------------------------------------------------- mock: keyword matching
@@ -131,6 +154,11 @@ def _mock(question: str, date: str) -> AskPlan:
             plan.stations.append(StationChange(station_id=s.id, servers=s.servers + 1, service_median_min=None))
         elif m := re.search(rf"(\d+) servers? (at|to|for) (the )?{re.escape(name)}", q):
             plan.stations.append(StationChange(station_id=s.id, servers=int(m.group(1)), service_median_min=None))
+    kr = cfg.kitchen_resources
+    if kr and (m := re.search(r"(one more|another|an extra|extra|add (a|one)|(\d+) more) cooks?", q)):
+        extra = int(m.group(3)) if m.group(3) else 1
+        period = "late_night" if "late" in q else "dinner"
+        plan.cooks.append(CookChange(period=period, cooks=kr.cooks.get(period, 0) + extra))
     for d in cfg.menu:
         name = d.name.lower()
         if re.search(rf"(remove|drop|without|no more) (the )?{re.escape(name)}", q):

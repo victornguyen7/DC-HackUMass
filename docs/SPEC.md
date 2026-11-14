@@ -344,7 +344,8 @@ Four pages plus 3D is more than the original MVP, so each page has a **P0** (mus
 
 **Status 2026-11-13** (details in [UI_ISSUES.md](UI_ISSUES.md)):
 - **Hall:** P0 and P1 built on a top-down 2D replay (not 3D). Station and student detail, narration on click, color overlays. Split-screen compare (P2) not built.
-- **Dashboard:** P0 and P1 built for **dinner only** (no full-day arrivals); the staffing table shows servers and peak lines, not "servers needed".
+- **Dashboard:** P0 and P1 built for **dinner + late night** (engine 0.4.1; no breakfast/lunch); the staffing table shows servers and peak lines. "Servers needed" per hour is computed by the engine since 0.5.0 (`result.staffing`) but not shown yet (UI_ISSUES U5).
+- **Engine (0.6.0) beyond this spec:** late night 9 pm–12 am, students choosing lines from a distance, cooks and equipment as limited resources, staffing by hour, waits at empty pans, hotel-pan sizes with a hot-hold cabinet, entrance swipe queue, groups, allergies and a pescetarian diet, crowd by date, a forecast-reorder preset, per-minute series. See ENGINE.md §3 and IMPROVEMENTS.md.
 - **Waste Record:** P0 and P1 built, including per-dish "with plan" and $ per week.
 - **What-If Lab:** P0 and P1 built (new-dish form with AI estimate and demand shift, save/adopt, Watch in 3D), plus the P2 plain-English box. Optimizer and order risk curve not built. Menu edits, new dishes and lever combinations need the API (`make serve`).
 
@@ -375,7 +376,7 @@ Four pages plus 3D is more than the original MVP, so each page has a **P0** (mus
 
 ## 12. Demo flow (3 minutes)
 
-Updated 2026-11-13 to what the built app and the Nov 13 bundle actually show (the first draft used placeholder dishes and an "≈18%" waste figure the data doesn't support; see UI_ISSUES U1).
+**Numbers below are from the engine 0.3.4–0.4.1 bundle.** The engine is now 0.6.1 (Friday Nov 13 crowd ×0.9: about 3,720 students across dinner + late night; back-test waste about 8.8% lower, 38 of 39 nights), so re-read every number from the app after `make demo-bundle` before presenting (UI_ISSUES U1). Updated 2026-11-13 to what the built app and the Nov 13 bundle actually show (the first draft used placeholder dishes and an "≈18%" waste figure the data doesn't support; see UI_ISSUES U1).
 
 1. **Story (20 s)** on the Hall page: Worcester at about 7:30 pm, the busiest 10 minutes (about 220 students arriving). The Grill line reaches about 36 people and the Paneer Jalfrezi pan at Tandoor goes red around 8:25 pm. Click one student: their timeline and story appear (pre-generated for 12 highlight students per night; any student with the API running).
 2. **Dashboard (30 s):** Friday's real menu by station, the dinner arrival chart (click the 7:30 bar to jump the Hall there), about 3,000 expected students, 11,005 portions to prepare, the alert that Paneer Jalfrezi runs out in every simulated night, and what's expected to be left at close (waffles, clam chowder) for donation pickup.

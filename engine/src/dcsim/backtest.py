@@ -88,7 +88,7 @@ def run_backtest(svc: Service, plan: str = RECOMMENDED_PLAN, seeds: int = SEEDS)
     dishes: dict[str, dict] = {}
 
     for n in nights:
-        base = load_baseline(n["menu_source_date"])
+        base = load_baseline(n["menu_source_date"], events=False)  # history night: no snapshot-date events
         oz, cost = dish_oz(base), dish_cost(base)
         if n["adopted"]:
             planned = PRESETS[plan](base)  # forecast before the night: expected crowd

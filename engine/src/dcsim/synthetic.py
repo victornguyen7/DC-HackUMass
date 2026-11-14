@@ -123,6 +123,15 @@ def _hhmm(minutes: float) -> str:
     return f"{h:02d}:{m:02d}"
 
 
+NIGHT_ENDS_HOUR = 6  # a service night runs past midnight (late night ends 12 am); rows before 6 am belong to the previous night
+
+
+def night_of(timestamp: str) -> str:
+    """Service night (ISO date) of a log timestamp: late-night waste logged at 12:10 am counts for the night before."""
+    t = dt.datetime.fromisoformat(timestamp) - dt.timedelta(hours=NIGHT_ENDS_HOUR)
+    return t.date().isoformat()
+
+
 def _stamp(day: dt.date, minutes: float) -> str:
     return (dt.datetime.combine(day, dt.time()) + dt.timedelta(minutes=minutes)).isoformat(timespec="seconds")
 

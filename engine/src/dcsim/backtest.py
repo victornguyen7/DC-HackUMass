@@ -25,7 +25,7 @@ from .data import load_baseline
 from .metrics import NightMetrics
 from .presets import PRESETS
 from .service import Service
-from .synthetic import RECOMMENDED_PLAN, dish_cost, dish_oz, load_nights, out_dir
+from .synthetic import RECOMMENDED_PLAN, dish_cost, dish_oz, load_nights, night_of, out_dir
 
 SEEDS = 10
 FORECAST_CROWD = (0.88, 1.0, 1.12)  # about +/-1.5 sd of night-to-night crowd swings
@@ -64,7 +64,7 @@ def _recorded_by_dish() -> dict[tuple[str, str], dict]:
     for w in load_waste_log():
         if w["reason"] not in ("expired", "close"):
             continue
-        r = out.setdefault((w["timestamp"][:10], w["dish_id"]), {"dish": w["dish"], "station": w["station"], "lb": 0.0})
+        r = out.setdefault((night_of(w["timestamp"]), w["dish_id"]), {"dish": w["dish"], "station": w["station"], "lb": 0.0})
         r["lb"] += float(w["weight_lb"])
     return out
 

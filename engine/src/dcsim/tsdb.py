@@ -346,7 +346,7 @@ def observed_context() -> dict[str, dict]:
     Only these two fields are read from the generator's ground truth; crowd multiplier,
     over-prep and plate-waste share stay hidden and are never loaded into the database.
     """
-    from .synthetic import out_dir
+    from .synthetic import night_of, out_dir
 
     p = out_dir() / "_ground_truth.json"
     if not p.exists():
@@ -357,7 +357,7 @@ def observed_context() -> dict[str, dict]:
 
 def load_observed(conn, test_from: dt.date = TEST_FROM) -> dict:
     """data/synthetic/worcester/*.csv -> nights / pan_windows / waste_log (source='observed')."""
-    from .synthetic import out_dir
+    from .synthetic import night_of, out_dir
 
     d = out_dir()
     if not (d / "nights.csv").exists():
@@ -392,7 +392,7 @@ def load_observed(conn, test_from: dt.date = TEST_FROM) -> dict:
         "portions_left": int(r["portions_left"]),
     } for r in csv.DictReader((d / "consumption.csv").open()))
     waste = ({
-        "ts": dt.datetime.fromisoformat(r["timestamp"]).replace(tzinfo=TZ), "night": r["timestamp"][:10],
+        "ts": dt.datetime.fromisoformat(r["timestamp"]).replace(tzinfo=TZ), "night": night_of(r["timestamp"]),
         "station": r["station"], "dish_id": r["dish_id"], "dish": r["dish"],
         "portions": int(r["portions"]) if r["portions"] else None, "weight_lb": float(r["weight_lb"]),
         "reason": r["reason"],

@@ -3,7 +3,7 @@
  "_note": "SYNTHETIC history; simulated savings, not measured. Pre-consumer waste only (expired + left at close).",
  "plan": "smaller_batches",
  "seeds_per_night": 10,
- "generated_at": "2026-11-14T00:37:33+00:00",
+ "generated_at": "2026-11-14T00:55:40+00:00",
  "headline": {
   "nights": 39,
   "plan_wins": 39,
@@ -80,11 +80,11 @@
      "plan_lb": 6.5
     },
     "display": {
-     "recorded_lb": 44.4,
+     "recorded_lb": 108.6,
      "plan_lb": 104.8
     },
     "grill": {
-     "recorded_lb": 158.7,
+     "recorded_lb": 204.9,
      "plan_lb": 220.2
     },
     "latino": {
@@ -112,7 +112,7 @@
      "plan_lb": 87.2
     },
     "tandoor": {
-     "recorded_lb": 68.9,
+     "recorded_lb": 68.8,
      "plan_lb": 63.3
     }
    }
@@ -149,11 +149,11 @@
      "plan_lb": 37.8
     },
     "display": {
-     "recorded_lb": 178.4,
+     "recorded_lb": 229.3,
      "plan_lb": 181.7
     },
     "grill": {
-     "recorded_lb": 149.9,
+     "recorded_lb": 178.7,
      "plan_lb": 230.1
     },
     "latino": {
@@ -218,11 +218,11 @@
      "plan_lb": 15.1
     },
     "display": {
-     "recorded_lb": 152.3,
+     "recorded_lb": 198.1,
      "plan_lb": 191.0
     },
     "grill": {
-     "recorded_lb": 192.0,
+     "recorded_lb": 221.2,
      "plan_lb": 222.0
     },
     "latino": {
@@ -287,11 +287,11 @@
      "plan_lb": 41.0
     },
     "display": {
-     "recorded_lb": 169.7,
+     "recorded_lb": 187.7,
      "plan_lb": 159.0
     },
     "grill": {
-     "recorded_lb": 181.6,
+     "recorded_lb": 195.0,
      "plan_lb": 233.2
     },
     "latino": {
@@ -356,11 +356,11 @@
      "plan_lb": 0.0
     },
     "display": {
-     "recorded_lb": 97.7,
+     "recorded_lb": 153.0,
      "plan_lb": 147.7
     },
     "grill": {
-     "recorded_lb": 148.0,
+     "recorded_lb": 209.2,
      "plan_lb": 211.8
     },
     "latino": {
@@ -425,11 +425,11 @@
      "plan_lb": 22.0
     },
     "display": {
-     "recorded_lb": 143.3,
+     "recorded_lb": 177.7,
      "plan_lb": 185.7
     },
     "grill": {
-     "recorded_lb": 190.0,
+     "recorded_lb": 224.7,
      "plan_lb": 218.5
     },
     "latino": {
@@ -437,7 +437,7 @@
      "plan_lb": 31.4
     },
     "mediterranean": {
-     "recorded_lb": 63.5,
+     "recorded_lb": 63.4,
      "plan_lb": 68.4
     },
     "noodle_bowl": {
@@ -494,11 +494,11 @@
      "plan_lb": 58.2
     },
     "display": {
-     "recorded_lb": 248.6,
+     "recorded_lb": 310.6,
      "plan_lb": 303.6
     },
     "grill": {
-     "recorded_lb": 196.4,
+     "recorded_lb": 203.9,
      "plan_lb": 199.3
     },
     "mediterranean": {
@@ -559,11 +559,11 @@
      "plan_lb": 11.4
     },
     "display": {
-     "recorded_lb": 87.4,
+     "recorded_lb": 120.6,
      "plan_lb": 111.7
     },
     "grill": {
-     "recorded_lb": 171.0,
+     "recorded_lb": 216.9,
      "plan_lb": 221.7
     },
     "latino": {
@@ -628,11 +628,11 @@
      "plan_lb": 32.4
     },
     "display": {
-     "recorded_lb": 180.7,
+     "recorded_lb": 196.8,
      "plan_lb": 178.9
     },
     "grill": {
-     "recorded_lb": 183.7,
+     "recorded_lb": 227.5,
      "plan_lb": 228.4
     },
     "latino": {
@@ -697,11 +697,11 @@
      "plan_lb": 15.3
     },
     "display": {
-     "recorded_lb": 155.7,
+     "recorded_lb": 247.7,
      "plan_lb": 192.5
     },
     "grill": {
-     "recorded_lb": 218.2,
+     "recorded_lb": 232.9,
      "plan_lb": 221.0
     },
     "latino": {
@@ -766,11 +766,11 @@
      "plan_lb": 36.6
     },
     "display": {
-     "recorded_lb": 150.2,
+     "recorded_lb": 185.4,
      "plan_lb": 155.8
     },
     "grill": {
-     "recorded_lb": 202.8,
+     "recorded_lb": 212.6,
      "plan_lb": 233.7
     },
     "latino": {
@@ -835,11 +835,11 @@
      "plan_lb": 24.4
     },
     "display": {
-     "recorded_lb": 120.3,
+     "recorded_lb": 186.7,
      "plan_lb": 161.3
     },
     "grill": {
-     "recorded_lb": 178.2,
+     "recorded_lb": 219.6,
      "plan_lb": 221.3
     },
     "latino": {
@@ -904,11 +904,11 @@
      "plan_lb": 4.2
     },
     "display": {
-     "recorded_lb": 119.8,
+     "recorded_lb": 184.6,
      "plan_lb": 173.4
     },
     "grill": {
-     "recorded_lb": 229.8,
+     "recorded_lb": 249.9,
      "plan_lb": 215.0
     },
     "latino": {
@@ -973,11 +973,11 @@
      "plan_lb": 32.2
     },
     "display": {
-     "recorded_lb": 231.0,
+     "recorded_lb": 314.8,
      "plan_lb": 285.5
     },
     "grill": {
-     "recorded_lb": 173.9,
+     "recorded_lb": 190.6,
      "plan_lb": 195.5
     },
     "mediterranean": {
@@ -1001,7 +1001,7 @@
      "plan_lb": 117.6
     },
     "tandoor": {
-     "recorded_lb": 103.7,
+     "recorded_lb": 103.8,
      "plan_lb": 73.1
     }
    }
@@ -1038,11 +1038,11 @@
      "plan_lb": 14.7
     },
     "display": {
-     "recorded_lb": 94.9,
+     "recorded_lb": 136.3,
      "plan_lb": 115.7
     },
     "grill": {
-     "recorded_lb": 180.3,
+     "recorded_lb": 204.1,
      "plan_lb": 223.5
     },
     "latino": {
@@ -1107,11 +1107,11 @@
      "plan_lb": 32.6
     },
     "display": {
-     "recorded_lb": 183.1,
+     "recorded_lb": 233.6,
      "plan_lb": 176.4
     },
     "grill": {
-     "recorded_lb": 157.6,
+     "recorded_lb": 184.8,
      "plan_lb": 229.2
     },
     "latino": {
@@ -1176,16 +1176,16 @@
      "plan_lb": 7.9
     },
     "display": {
-     "recorded_lb": 176.0,
+     "recorded_lb": 209.4,
      "plan_lb": 184.1
     },
     "grill": {
-     "recorded_lb": 190.7,
+     "recorded_lb": 214.3,
      "plan_lb": 219.0
     },
     "latino": {
      "recorded_lb": 76.9,
-     "plan_lb": 71.5
+     "plan_lb": 71.4
     },
     "mediterranean": {
      "recorded_lb": 120.8,
@@ -1204,7 +1204,7 @@
      "plan_lb": 21.7
     },
     "street_food": {
-     "recorded_lb": 113.3,
+     "recorded_lb": 113.2,
      "plan_lb": 117.5
     },
     "tandoor": {
@@ -1245,11 +1245,11 @@
      "plan_lb": 29.9
     },
     "display": {
-     "recorded_lb": 153.1,
+     "recorded_lb": 192.7,
      "plan_lb": 155.2
     },
     "grill": {
-     "recorded_lb": 164.1,
+     "recorded_lb": 158.3,
      "plan_lb": 233.0
     },
     "latino": {
@@ -1314,11 +1314,11 @@
      "plan_lb": 30.5
     },
     "display": {
-     "recorded_lb": 113.4,
+     "recorded_lb": 171.6,
      "plan_lb": 168.6
     },
     "grill": {
-     "recorded_lb": 189.2,
+     "recorded_lb": 236.4,
      "plan_lb": 222.1
     },
     "latino": {
@@ -1383,11 +1383,11 @@
      "plan_lb": 5.3
     },
     "display": {
-     "recorded_lb": 121.4,
+     "recorded_lb": 163.1,
      "plan_lb": 175.1
     },
     "grill": {
-     "recorded_lb": 187.1,
+     "recorded_lb": 206.8,
      "plan_lb": 216.2
     },
     "latino": {
@@ -1452,11 +1452,11 @@
      "plan_lb": 32.2
     },
     "display": {
-     "recorded_lb": 232.3,
+     "recorded_lb": 291.1,
      "plan_lb": 285.5
     },
     "grill": {
-     "recorded_lb": 157.0,
+     "recorded_lb": 176.2,
      "plan_lb": 195.5
     },
     "mediterranean": {
@@ -1517,11 +1517,11 @@
      "plan_lb": 18.3
     },
     "display": {
-     "recorded_lb": 88.0,
+     "recorded_lb": 133.5,
      "plan_lb": 119.4
     },
     "grill": {
-     "recorded_lb": 162.6,
+     "recorded_lb": 215.9,
      "plan_lb": 222.5
     },
     "latino": {
@@ -1550,7 +1550,7 @@
     },
     "tandoor": {
      "recorded_lb": 73.8,
-     "plan_lb": 65.8
+     "plan_lb": 65.9
     }
    }
   },
@@ -1586,11 +1586,11 @@
      "plan_lb": 26.1
     },
     "display": {
-     "recorded_lb": 175.7,
+     "recorded_lb": 172.9,
      "plan_lb": 167.8
     },
     "grill": {
-     "recorded_lb": 183.4,
+     "recorded_lb": 212.8,
      "plan_lb": 225.6
     },
     "latino": {
@@ -1655,11 +1655,11 @@
      "plan_lb": 10.6
     },
     "display": {
-     "recorded_lb": 162.4,
+     "recorded_lb": 204.7,
      "plan_lb": 185.3
     },
     "grill": {
-     "recorded_lb": 211.0,
+     "recorded_lb": 217.0,
      "plan_lb": 220.1
     },
     "latino": {
@@ -1724,11 +1724,11 @@
      "plan_lb": 27.4
     },
     "display": {
-     "recorded_lb": 154.5,
+     "recorded_lb": 156.4,
      "plan_lb": 150.7
     },
     "grill": {
-     "recorded_lb": 219.6,
+     "recorded_lb": 224.9,
      "plan_lb": 232.8
     },
     "latino": {
@@ -1793,11 +1793,11 @@
      "plan_lb": 18.2
     },
     "display": {
-     "recorded_lb": 116.8,
+     "recorded_lb": 195.3,
      "plan_lb": 158.3
     },
     "grill": {
-     "recorded_lb": 173.4,
+     "recorded_lb": 208.4,
      "plan_lb": 220.5
     },
     "latino": {
@@ -1862,11 +1862,11 @@
      "plan_lb": 32.0
     },
     "display": {
-     "recorded_lb": 148.8,
+     "recorded_lb": 212.6,
      "plan_lb": 192.7
     },
     "grill": {
-     "recorded_lb": 198.5,
+     "recorded_lb": 237.8,
      "plan_lb": 221.0
     },
     "latino": {
@@ -1931,11 +1931,11 @@
      "plan_lb": 32.2
     },
     "display": {
-     "recorded_lb": 249.2,
+     "recorded_lb": 299.7,
      "plan_lb": 285.5
     },
     "grill": {
-     "recorded_lb": 164.6,
+     "recorded_lb": 167.8,
      "plan_lb": 195.5
     },
     "mediterranean": {
@@ -1996,11 +1996,11 @@
      "plan_lb": 45.7
     },
     "display": {
-     "recorded_lb": 202.6,
+     "recorded_lb": 231.4,
      "plan_lb": 190.0
     },
     "grill": {
-     "recorded_lb": 168.2,
+     "recorded_lb": 197.9,
      "plan_lb": 229.7
     },
     "latino": {
@@ -2065,11 +2065,11 @@
      "plan_lb": 30.2
     },
     "display": {
-     "recorded_lb": 186.6,
+     "recorded_lb": 246.2,
      "plan_lb": 200.9
     },
     "grill": {
-     "recorded_lb": 225.1,
+     "recorded_lb": 246.4,
      "plan_lb": 224.5
     },
     "latino": {
@@ -2134,11 +2134,11 @@
      "plan_lb": 29.4
     },
     "display": {
-     "recorded_lb": 152.2,
+     "recorded_lb": 189.4,
      "plan_lb": 152.2
     },
     "grill": {
-     "recorded_lb": 192.7,
+     "recorded_lb": 172.1,
      "plan_lb": 232.7
     },
     "latino": {
@@ -2203,11 +2203,11 @@
      "plan_lb": 30.6
     },
     "display": {
-     "recorded_lb": 170.2,
+     "recorded_lb": 221.8,
      "plan_lb": 191.9
     },
     "grill": {
-     "recorded_lb": 187.3,
+     "recorded_lb": 209.6,
      "plan_lb": 220.7
     },
     "latino": {
@@ -2272,11 +2272,11 @@
      "plan_lb": 81.6
     },
     "display": {
-     "recorded_lb": 230.3,
+     "recorded_lb": 308.5,
      "plan_lb": 319.6
     },
     "grill": {
-     "recorded_lb": 195.1,
+     "recorded_lb": 209.5,
      "plan_lb": 198.7
     },
     "mediterranean": {
@@ -2337,11 +2337,11 @@
      "plan_lb": 9.7
     },
     "display": {
-     "recorded_lb": 91.5,
+     "recorded_lb": 120.6,
      "plan_lb": 110.9
     },
     "grill": {
-     "recorded_lb": 173.4,
+     "recorded_lb": 192.9,
      "plan_lb": 220.8
     },
     "latino": {
@@ -2406,11 +2406,11 @@
      "plan_lb": 29.6
     },
     "display": {
-     "recorded_lb": 204.8,
+     "recorded_lb": 269.7,
      "plan_lb": 202.2
     },
     "grill": {
-     "recorded_lb": 220.4,
+     "recorded_lb": 247.3,
      "plan_lb": 225.2
     },
     "latino": {
@@ -2475,16 +2475,16 @@
      "plan_lb": 25.3
     },
     "display": {
-     "recorded_lb": 152.2,
+     "recorded_lb": 191.0,
      "plan_lb": 149.2
     },
     "grill": {
-     "recorded_lb": 189.1,
+     "recorded_lb": 158.8,
      "plan_lb": 232.4
     },
     "latino": {
      "recorded_lb": 51.8,
-     "plan_lb": 32.4
+     "plan_lb": 32.5
     },
     "mediterranean": {
      "recorded_lb": 143.9,
@@ -2544,11 +2544,11 @@
      "plan_lb": 12.6
     },
     "display": {
-     "recorded_lb": 120.2,
-     "plan_lb": 154.9
+     "recorded_lb": 172.3,
+     "plan_lb": 155.0
     },
     "grill": {
-     "recorded_lb": 165.5,
+     "recorded_lb": 233.6,
      "plan_lb": 217.5
     },
     "latino": {
@@ -2613,11 +2613,11 @@
      "plan_lb": 31.0
     },
     "display": {
-     "recorded_lb": 147.2,
+     "recorded_lb": 214.4,
      "plan_lb": 194.7
     },
     "grill": {
-     "recorded_lb": 225.8,
+     "recorded_lb": 254.0,
      "plan_lb": 220.5
     },
     "latino": {
@@ -2682,11 +2682,11 @@
      "plan_lb": 22.4
     },
     "display": {
-     "recorded_lb": 217.8,
+     "recorded_lb": 281.9,
      "plan_lb": 275.3
     },
     "grill": {
-     "recorded_lb": 178.2,
+     "recorded_lb": 176.9,
      "plan_lb": 193.9
     },
     "mediterranean": {
@@ -2785,10 +2785,10 @@
    "dish": "Make Your Own Waffles",
    "station": "display",
    "nights": 39,
-   "recorded_lb_per_night": 28.65,
+   "recorded_lb_per_night": 29.47,
    "plan_lb_per_night": 27.19,
-   "change_pct": -5.1,
-   "usd_saved_per_week": 32.6
+   "change_pct": -7.7,
+   "usd_saved_per_week": 51.0
   },
   {
    "dish_id": "street_food.vegetable_spring_rolls",
@@ -2815,10 +2815,20 @@
    "dish": "Halal Burger Patty",
    "station": "grill",
    "nights": 39,
-   "recorded_lb_per_night": 24.21,
+   "recorded_lb_per_night": 23.95,
    "plan_lb_per_night": 23.98,
-   "change_pct": -1.0,
-   "usd_saved_per_week": 8.5
+   "change_pct": 0.1,
+   "usd_saved_per_week": -1.0
+  },
+  {
+   "dish_id": "late.grill.black_bean_burger",
+   "dish": "Black Bean Burger",
+   "station": "grill",
+   "nights": 29,
+   "recorded_lb_per_night": 26.99,
+   "plan_lb_per_night": 29.18,
+   "change_pct": 8.1,
+   "usd_saved_per_week": -58.4
   },
   {
    "dish_id": "grill.black_bean_burger",
@@ -2829,16 +2839,6 @@
    "plan_lb_per_night": 37.58,
    "change_pct": 15.0,
    "usd_saved_per_week": -103.6
-  },
-  {
-   "dish_id": "late.grill.black_bean_burger",
-   "dish": "Black Bean Burger",
-   "station": "grill",
-   "nights": 29,
-   "recorded_lb_per_night": 23.17,
-   "plan_lb_per_night": 29.18,
-   "change_pct": 26.0,
-   "usd_saved_per_week": -160.3
   },
   {
    "dish_id": "seasons.gf_penne_pasta",
@@ -2859,6 +2859,16 @@
    "plan_lb_per_night": 12.0,
    "change_pct": -15.9,
    "usd_saved_per_week": 51.0
+  },
+  {
+   "dish_id": "late.display.nashville_hot_chicken_leg",
+   "dish": "Nashville Hot Chicken Leg",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 74.64,
+   "plan_lb_per_night": 49.82,
+   "change_pct": -33.3,
+   "usd_saved_per_week": 136.8
   },
   {
    "dish_id": "noodle_bowl.vegetarian_pho_base",
@@ -2901,16 +2911,6 @@
    "usd_saved_per_week": 23.9
   },
   {
-   "dish_id": "late.grill.halal_french_fries",
-   "dish": "Halal French Fries",
-   "station": "grill",
-   "nights": 39,
-   "recorded_lb_per_night": 9.28,
-   "plan_lb_per_night": 11.4,
-   "change_pct": 22.8,
-   "usd_saved_per_week": -27.6
-  },
-  {
    "dish_id": "soups.spicy_lentil_veggie_soup",
    "dish": "Spicy Lentil Veggie Soup",
    "station": "soups",
@@ -2919,6 +2919,16 @@
    "plan_lb_per_night": 30.91,
    "change_pct": -13.9,
    "usd_saved_per_week": 15.7
+  },
+  {
+   "dish_id": "late.grill.halal_french_fries",
+   "dish": "Halal French Fries",
+   "station": "grill",
+   "nights": 39,
+   "recorded_lb_per_night": 9.08,
+   "plan_lb_per_night": 11.4,
+   "change_pct": 25.5,
+   "usd_saved_per_week": -30.2
   },
   {
    "dish_id": "noodle_bowl.green_curry_pho_broth_anchovies",
@@ -2931,6 +2941,16 @@
    "usd_saved_per_week": -21.1
   },
   {
+   "dish_id": "late.grill.kelp_burger",
+   "dish": "Kelp Burger",
+   "station": "grill",
+   "nights": 10,
+   "recorded_lb_per_night": 34.18,
+   "plan_lb_per_night": 28.66,
+   "change_pct": -16.1,
+   "usd_saved_per_week": 50.7
+  },
+  {
    "dish_id": "grill.hand_cut_sweet_potato_fries",
    "dish": "Hand Cut Sweet Potato Fries",
    "station": "grill",
@@ -2941,6 +2961,16 @@
    "usd_saved_per_week": 26.8
   },
   {
+   "dish_id": "late.display.plant_based_pulmuone_steak_mushroom_grinder",
+   "dish": "Plant Based Pulmuone Steak & Mushroom Grinder",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 55.36,
+   "plan_lb_per_night": 44.11,
+   "change_pct": -20.3,
+   "usd_saved_per_week": 62.0
+  },
+  {
    "dish_id": "noodle_bowl.taiwan_pork_pickled_vegetables",
    "dish": "Taiwan Pork & Pickled Vegetables",
    "station": "noodle_bowl",
@@ -2949,6 +2979,16 @@
    "plan_lb_per_night": 46.74,
    "change_pct": -14.0,
    "usd_saved_per_week": 26.2
+  },
+  {
+   "dish_id": "late.display.tomato_basil_soup",
+   "dish": "Tomato Basil Soup",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 53.75,
+   "plan_lb_per_night": 41.04,
+   "change_pct": -23.6,
+   "usd_saved_per_week": 70.1
   },
   {
    "dish_id": "mediterranean.plant_based_spinach_pie",
@@ -2971,6 +3011,16 @@
    "usd_saved_per_week": 17.9
   },
   {
+   "dish_id": "late.display.plant_based_chorizo_torta",
+   "dish": "Plant Based Chorizo Torta",
+   "station": "display",
+   "nights": 5,
+   "recorded_lb_per_night": 60.94,
+   "plan_lb_per_night": 43.69,
+   "change_pct": -28.3,
+   "usd_saved_per_week": 79.3
+  },
+  {
    "dish_id": "tandoor.moroccan_beef_kefta_in_tomato_onion_sauce",
    "dish": "Moroccan Beef Kefta in Tomato Onion Sauce",
    "station": "tandoor",
@@ -2981,14 +3031,14 @@
    "usd_saved_per_week": 63.3
   },
   {
-   "dish_id": "late.display.nashville_hot_chicken_leg",
-   "dish": "Nashville Hot Chicken Leg",
+   "dish_id": "late.display.philly_cheese_steak_grinder",
+   "dish": "Philly Cheese Steak Grinder",
    "station": "display",
    "nights": 6,
-   "recorded_lb_per_night": 48.96,
-   "plan_lb_per_night": 49.82,
-   "change_pct": 1.8,
-   "usd_saved_per_week": -4.7
+   "recorded_lb_per_night": 48.17,
+   "plan_lb_per_night": 39.85,
+   "change_pct": -17.3,
+   "usd_saved_per_week": 45.9
   },
   {
    "dish_id": "soups.tomato_basil_soup",
@@ -3011,14 +3061,14 @@
    "usd_saved_per_week": 28.6
   },
   {
-   "dish_id": "late.display.plant_based_pulmuone_steak_mushroom_grinder",
-   "dish": "Plant Based Pulmuone Steak & Mushroom Grinder",
+   "dish_id": "late.display.spicy_fried_chicken_wings",
+   "dish": "Spicy Fried Chicken Wings",
    "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 46.09,
-   "plan_lb_per_night": 44.11,
-   "change_pct": -4.3,
-   "usd_saved_per_week": 10.9
+   "nights": 5,
+   "recorded_lb_per_night": 55.94,
+   "plan_lb_per_night": 46.32,
+   "change_pct": -17.2,
+   "usd_saved_per_week": 44.2
   },
   {
    "dish_id": "street_food.stir_fry_green_vegetables",
@@ -3031,6 +3081,16 @@
    "usd_saved_per_week": 14.8
   },
   {
+   "dish_id": "late.display.local_seasoned_mashed_potatoes",
+   "dish": "Local Seasoned Mashed Potatoes",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 44.71,
+   "plan_lb_per_night": 36.75,
+   "change_pct": -17.8,
+   "usd_saved_per_week": 12.0
+  },
+  {
    "dish_id": "seasons.saffron_rice_pilaf_jain",
    "dish": "Saffron Rice Pilaf Jain",
    "station": "seasons",
@@ -3041,6 +3101,16 @@
    "usd_saved_per_week": 21.2
   },
   {
+   "dish_id": "late.display.violife_grilled_cheese_sandwich",
+   "dish": "VIOLIFE Grilled Cheese Sandwich",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 44.32,
+   "plan_lb_per_night": 34.06,
+   "change_pct": -23.1,
+   "usd_saved_per_week": 56.6
+  },
+  {
    "dish_id": "tandoor.savory_baked_chicken_leg",
    "dish": "Savory Baked Chicken Leg",
    "station": "tandoor",
@@ -3049,6 +3119,16 @@
    "plan_lb_per_night": 29.92,
    "change_pct": -31.0,
    "usd_saved_per_week": 74.2
+  },
+  {
+   "dish_id": "late.display.grilled_cheese_sandwich",
+   "dish": "Grilled Cheese Sandwich",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 43.12,
+   "plan_lb_per_night": 37.11,
+   "change_pct": -13.9,
+   "usd_saved_per_week": 33.1
   },
   {
    "dish_id": "mediterranean.penne_pasta",
@@ -3071,16 +3151,6 @@
    "usd_saved_per_week": -25.0
   },
   {
-   "dish_id": "late.display.spicy_fried_chicken_wings",
-   "dish": "Spicy Fried Chicken Wings",
-   "station": "display",
-   "nights": 5,
-   "recorded_lb_per_night": 50.38,
-   "plan_lb_per_night": 46.32,
-   "change_pct": -8.1,
-   "usd_saved_per_week": 18.7
-  },
-  {
    "dish_id": "seasons.chickpea_kelp_meatballs",
    "dish": "Chickpea & Kelp Meatballs",
    "station": "seasons",
@@ -3089,6 +3159,16 @@
    "plan_lb_per_night": 43.95,
    "change_pct": -12.8,
    "usd_saved_per_week": 29.5
+  },
+  {
+   "dish_id": "late.display.ancho_chile_pork_torta",
+   "dish": "Ancho Chile Pork Torta",
+   "station": "display",
+   "nights": 5,
+   "recorded_lb_per_night": 50.31,
+   "plan_lb_per_night": 40.49,
+   "change_pct": -19.5,
+   "usd_saved_per_week": 45.1
   },
   {
    "dish_id": "soups.santa_fe_tortilla_soup",
@@ -3101,6 +3181,16 @@
    "usd_saved_per_week": 4.7
   },
   {
+   "dish_id": "late.display.vegetable_spring_rolls",
+   "dish": "Vegetable Spring Rolls",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 41.09,
+   "plan_lb_per_night": 37.51,
+   "change_pct": -8.7,
+   "usd_saved_per_week": 19.7
+  },
+  {
    "dish_id": "mediterranean.fettuccini_pasta",
    "dish": "Fettuccini Pasta",
    "station": "mediterranean",
@@ -3111,14 +3201,14 @@
    "usd_saved_per_week": 12.7
   },
   {
-   "dish_id": "late.display.tomato_basil_soup",
-   "dish": "Tomato Basil Soup",
+   "dish_id": "late.display.chicken_noodle",
+   "dish": "Chicken Noodle",
    "station": "display",
    "nights": 6,
-   "recorded_lb_per_night": 37.76,
-   "plan_lb_per_night": 41.04,
-   "change_pct": 8.7,
-   "usd_saved_per_week": -18.1
+   "recorded_lb_per_night": 39.84,
+   "plan_lb_per_night": 35.78,
+   "change_pct": -10.2,
+   "usd_saved_per_week": 22.4
   },
   {
    "dish_id": "soups.roasted_chicken_noodle_soup_w_herbs",
@@ -3141,24 +3231,14 @@
    "usd_saved_per_week": -10.7
   },
   {
-   "dish_id": "late.display.philly_cheese_steak_grinder",
-   "dish": "Philly Cheese Steak Grinder",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 36.72,
-   "plan_lb_per_night": 39.85,
-   "change_pct": 8.5,
-   "usd_saved_per_week": -17.3
-  },
-  {
-   "dish_id": "late.display.plant_based_chorizo_torta",
-   "dish": "Plant Based Chorizo Torta",
+   "dish_id": "late.display.baked_waffle_fries",
+   "dish": "Baked Waffle Fries",
    "station": "display",
    "nights": 5,
-   "recorded_lb_per_night": 43.94,
-   "plan_lb_per_night": 43.69,
-   "change_pct": -0.6,
-   "usd_saved_per_week": 1.2
+   "recorded_lb_per_night": 43.88,
+   "plan_lb_per_night": 41.69,
+   "change_pct": -5.0,
+   "usd_saved_per_week": 3.8
   },
   {
    "dish_id": "grill.kelp_burger",
@@ -3189,6 +3269,16 @@
    "plan_lb_per_night": 33.69,
    "change_pct": -6.7,
    "usd_saved_per_week": 13.3
+  },
+  {
+   "dish_id": "late.display.zesty_orange_chicken",
+   "dish": "Zesty Orange Chicken",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 36.04,
+   "plan_lb_per_night": 33.09,
+   "change_pct": -8.2,
+   "usd_saved_per_week": 20.4
   },
   {
    "dish_id": "latino.yellow_rice",
@@ -3231,14 +3321,14 @@
    "usd_saved_per_week": 15.2
   },
   {
-   "dish_id": "late.display.ancho_chile_pork_torta",
-   "dish": "Ancho Chile Pork Torta",
+   "dish_id": "late.display.yellow_rice",
+   "dish": "Yellow Rice",
    "station": "display",
    "nights": 5,
-   "recorded_lb_per_night": 41.69,
-   "plan_lb_per_night": 40.49,
-   "change_pct": -2.9,
-   "usd_saved_per_week": 5.5
+   "recorded_lb_per_night": 41.33,
+   "plan_lb_per_night": 38.95,
+   "change_pct": -5.8,
+   "usd_saved_per_week": 4.0
   },
   {
    "dish_id": "seasons.eggplant_donburi",
@@ -3291,16 +3381,6 @@
    "usd_saved_per_week": 8.3
   },
   {
-   "dish_id": "late.display.vegetable_spring_rolls",
-   "dish": "Vegetable Spring Rolls",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 32.13,
-   "plan_lb_per_night": 37.51,
-   "change_pct": 16.7,
-   "usd_saved_per_week": -29.6
-  },
-  {
    "dish_id": "mediterranean.spaghetti_alla_nerano",
    "dish": "Spaghetti alla Nerano",
    "station": "mediterranean",
@@ -3351,14 +3431,14 @@
    "usd_saved_per_week": -15.4
   },
   {
-   "dish_id": "late.display.chicken_noodle",
-   "dish": "Chicken Noodle",
+   "dish_id": "late.display.zesty_orange_tofu",
+   "dish": "Zesty Orange Tofu",
    "station": "display",
    "nights": 6,
-   "recorded_lb_per_night": 30.88,
-   "plan_lb_per_night": 35.78,
-   "change_pct": 15.9,
-   "usd_saved_per_week": -27.0
+   "recorded_lb_per_night": 30.79,
+   "plan_lb_per_night": 29.89,
+   "change_pct": -2.9,
+   "usd_saved_per_week": 6.2
   },
   {
    "dish_id": "latino.mole_amarillo_chicken",
@@ -3369,16 +3449,6 @@
    "plan_lb_per_night": 12.86,
    "change_pct": -65.2,
    "usd_saved_per_week": 110.7
-  },
-  {
-   "dish_id": "late.display.violife_grilled_cheese_sandwich",
-   "dish": "VIOLIFE Grilled Cheese Sandwich",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 30.73,
-   "plan_lb_per_night": 34.06,
-   "change_pct": 10.9,
-   "usd_saved_per_week": -18.4
   },
   {
    "dish_id": "grill.key_west_baked_chicken",
@@ -3431,16 +3501,6 @@
    "usd_saved_per_week": -22.9
   },
   {
-   "dish_id": "late.display.grilled_cheese_sandwich",
-   "dish": "Grilled Cheese Sandwich",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 29.42,
-   "plan_lb_per_night": 37.11,
-   "change_pct": 26.1,
-   "usd_saved_per_week": -42.4
-  },
-  {
    "dish_id": "tandoor.lavash_bread",
    "dish": "Lavash Bread",
    "station": "tandoor",
@@ -3489,6 +3549,26 @@
    "plan_lb_per_night": 25.58,
    "change_pct": -10.3,
    "usd_saved_per_week": 27.1
+  },
+  {
+   "dish_id": "late.display.seasoned_curly_fries",
+   "dish": "Seasoned Curly Fries",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 28.0,
+   "plan_lb_per_night": 27.59,
+   "change_pct": -1.5,
+   "usd_saved_per_week": 0.8
+  },
+  {
+   "dish_id": "late.display.jasmine_rice",
+   "dish": "Jasmine Rice",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 27.84,
+   "plan_lb_per_night": 26.57,
+   "change_pct": -4.6,
+   "usd_saved_per_week": 2.5
   },
   {
    "dish_id": "noodle_bowl.birria_ramen_beef",
@@ -3551,6 +3631,26 @@
    "usd_saved_per_week": 7.2
   },
   {
+   "dish_id": "late.display.fried_yuca_fries",
+   "dish": "Fried Yuca Fries",
+   "station": "display",
+   "nights": 5,
+   "recorded_lb_per_night": 31.83,
+   "plan_lb_per_night": 26.78,
+   "change_pct": -15.9,
+   "usd_saved_per_week": 8.5
+  },
+  {
+   "dish_id": "late.grill.baked_herbs_de_provence_chicken",
+   "dish": "Baked Herbs de Provence Chicken",
+   "station": "grill",
+   "nights": 6,
+   "recorded_lb_per_night": 26.45,
+   "plan_lb_per_night": 22.47,
+   "change_pct": -15.1,
+   "usd_saved_per_week": 22.0
+  },
+  {
    "dish_id": "grill.lemon_pepper_chicken_thigh",
    "dish": "Lemon Pepper Chicken Thigh",
    "station": "grill",
@@ -3559,6 +3659,26 @@
    "plan_lb_per_night": 40.95,
    "change_pct": 56.0,
    "usd_saved_per_week": -81.1
+  },
+  {
+   "dish_id": "late.grill.jerk_chicken_thigh",
+   "dish": "Jerk Chicken Thigh",
+   "station": "grill",
+   "nights": 6,
+   "recorded_lb_per_night": 26.2,
+   "plan_lb_per_night": 25.46,
+   "change_pct": -2.8,
+   "usd_saved_per_week": 4.1
+  },
+  {
+   "dish_id": "late.display.pinto_beans",
+   "dish": "Pinto Beans",
+   "station": "display",
+   "nights": 5,
+   "recorded_lb_per_night": 31.2,
+   "plan_lb_per_night": 28.2,
+   "change_pct": -9.6,
+   "usd_saved_per_week": 6.5
   },
   {
    "dish_id": "tandoor.slow_roasted_turkish_chicken_vegetables",
@@ -3621,6 +3741,16 @@
    "usd_saved_per_week": -73.5
   },
   {
+   "dish_id": "late.grill.lemon_pepper_chicken_thigh",
+   "dish": "Lemon Pepper Chicken Thigh",
+   "station": "grill",
+   "nights": 6,
+   "recorded_lb_per_night": 24.27,
+   "plan_lb_per_night": 24.12,
+   "change_pct": -0.6,
+   "usd_saved_per_week": 0.8
+  },
+  {
    "dish_id": "seasons.eggplant_parmesan",
    "dish": "Eggplant Parmesan",
    "station": "seasons",
@@ -3639,6 +3769,16 @@
    "plan_lb_per_night": 30.21,
    "change_pct": 4.4,
    "usd_saved_per_week": -7.3
+  },
+  {
+   "dish_id": "late.grill.savory_baked_chicken_thigh",
+   "dish": "Savory Baked Chicken Thigh",
+   "station": "grill",
+   "nights": 5,
+   "recorded_lb_per_night": 28.87,
+   "plan_lb_per_night": 25.58,
+   "change_pct": -11.4,
+   "usd_saved_per_week": 15.1
   },
   {
    "dish_id": "desserts.pecan_pie",
@@ -3701,16 +3841,6 @@
    "usd_saved_per_week": 6.4
   },
   {
-   "dish_id": "late.grill.kelp_burger",
-   "dish": "Kelp Burger",
-   "station": "grill",
-   "nights": 10,
-   "recorded_lb_per_night": 13.84,
-   "plan_lb_per_night": 28.66,
-   "change_pct": 107.1,
-   "usd_saved_per_week": -136.2
-  },
-  {
    "dish_id": "street_food.plant_based_pulmuone_bulgogi_w_peppers_and_onions",
    "dish": "Plant Based Pulmuone Bulgogi w/Peppers and Onions",
    "station": "street_food",
@@ -3771,16 +3901,6 @@
    "usd_saved_per_week": -27.7
   },
   {
-   "dish_id": "late.display.zesty_orange_tofu",
-   "dish": "Zesty Orange Tofu",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 21.83,
-   "plan_lb_per_night": 29.89,
-   "change_pct": 36.9,
-   "usd_saved_per_week": -55.5
-  },
-  {
    "dish_id": "tandoor.cumin_basmati_rice",
    "dish": "Cumin Basmati Rice",
    "station": "tandoor",
@@ -3801,14 +3921,14 @@
    "usd_saved_per_week": -70.0
   },
   {
-   "dish_id": "late.display.local_seasoned_mashed_potatoes",
-   "dish": "Local Seasoned Mashed Potatoes",
+   "dish_id": "late.display.steamed_broccoli",
+   "dish": "Steamed Broccoli",
    "station": "display",
    "nights": 6,
-   "recorded_lb_per_night": 21.5,
-   "plan_lb_per_night": 36.75,
-   "change_pct": 70.9,
-   "usd_saved_per_week": -23.0
+   "recorded_lb_per_night": 21.51,
+   "plan_lb_per_night": 21.63,
+   "change_pct": 0.6,
+   "usd_saved_per_week": -0.3
   },
   {
    "dish_id": "desserts.fudge_brownie_w_sesame",
@@ -3821,14 +3941,44 @@
    "usd_saved_per_week": 15.1
   },
   {
-   "dish_id": "late.display.yellow_rice",
-   "dish": "Yellow Rice",
+   "dish_id": "late.display.plant_based_buffalo_chic_n",
+   "dish": "Plant Based Buffalo Chic'n",
    "station": "display",
    "nights": 5,
-   "recorded_lb_per_night": 25.01,
-   "plan_lb_per_night": 38.95,
-   "change_pct": 55.7,
-   "usd_saved_per_week": -23.3
+   "recorded_lb_per_night": 25.39,
+   "plan_lb_per_night": 21.92,
+   "change_pct": -13.6,
+   "usd_saved_per_week": 7.5
+  },
+  {
+   "dish_id": "late.grill.cajun_chicken_thigh",
+   "dish": "Cajun Chicken Thigh",
+   "station": "grill",
+   "nights": 5,
+   "recorded_lb_per_night": 25.38,
+   "plan_lb_per_night": 21.79,
+   "change_pct": -14.1,
+   "usd_saved_per_week": 16.5
+  },
+  {
+   "dish_id": "late.grill.key_west_baked_chicken",
+   "dish": "Key West Baked Chicken",
+   "station": "grill",
+   "nights": 6,
+   "recorded_lb_per_night": 21.04,
+   "plan_lb_per_night": 26.79,
+   "change_pct": 27.3,
+   "usd_saved_per_week": -31.7
+  },
+  {
+   "dish_id": "late.grill.montreal_chicken_thigh",
+   "dish": "Montreal Chicken Thigh",
+   "station": "grill",
+   "nights": 5,
+   "recorded_lb_per_night": 25.13,
+   "plan_lb_per_night": 24.05,
+   "change_pct": -4.3,
+   "usd_saved_per_week": 5.0
   },
   {
    "dish_id": "street_food.korean_chili_mussels",
@@ -3839,16 +3989,6 @@
    "plan_lb_per_night": 27.68,
    "change_pct": 37.8,
    "usd_saved_per_week": -52.3
-  },
-  {
-   "dish_id": "late.display.zesty_orange_chicken",
-   "dish": "Zesty Orange Chicken",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 19.96,
-   "plan_lb_per_night": 33.09,
-   "change_pct": 65.8,
-   "usd_saved_per_week": -90.5
   },
   {
    "dish_id": "seasons.corn",
@@ -3931,16 +4071,6 @@
    "usd_saved_per_week": -52.9
   },
   {
-   "dish_id": "late.display.seasoned_curly_fries",
-   "dish": "Seasoned Curly Fries",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 17.81,
-   "plan_lb_per_night": 27.59,
-   "change_pct": 54.9,
-   "usd_saved_per_week": -19.7
-  },
-  {
    "dish_id": "desserts.bread_pudding",
    "dish": "Bread Pudding",
    "station": "desserts",
@@ -4001,16 +4131,6 @@
    "usd_saved_per_week": -0.2
   },
   {
-   "dish_id": "late.display.fried_yuca_fries",
-   "dish": "Fried Yuca Fries",
-   "station": "display",
-   "nights": 5,
-   "recorded_lb_per_night": 19.46,
-   "plan_lb_per_night": 26.78,
-   "change_pct": 37.6,
-   "usd_saved_per_week": -12.3
-  },
-  {
    "dish_id": "desserts.churro_bread_pudding",
    "dish": "Churro Bread Pudding",
    "station": "desserts",
@@ -4021,14 +4141,14 @@
    "usd_saved_per_week": 5.1
   },
   {
-   "dish_id": "late.display.jasmine_rice",
-   "dish": "Jasmine Rice",
+   "dish_id": "late.display.nashville_hot_chic_n",
+   "dish": "Nashville Hot Chic'n",
    "station": "display",
    "nights": 6,
    "recorded_lb_per_night": 16.19,
-   "plan_lb_per_night": 26.57,
-   "change_pct": 64.2,
-   "usd_saved_per_week": -20.9
+   "plan_lb_per_night": 14.25,
+   "change_pct": -12.0,
+   "usd_saved_per_week": 5.0
   },
   {
    "dish_id": "display.sauteed_kale",
@@ -4091,16 +4211,6 @@
    "usd_saved_per_week": 8.2
   },
   {
-   "dish_id": "late.display.steamed_broccoli",
-   "dish": "Steamed Broccoli",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 15.04,
-   "plan_lb_per_night": 21.63,
-   "change_pct": 43.9,
-   "usd_saved_per_week": -17.0
-  },
-  {
    "dish_id": "tandoor.moroccan_rice_w_almonds",
    "dish": "Moroccan Rice w/Almonds",
    "station": "tandoor",
@@ -4149,16 +4259,6 @@
    "plan_lb_per_night": 4.21,
    "change_pct": -11.6,
    "usd_saved_per_week": 6.5
-  },
-  {
-   "dish_id": "late.display.pinto_beans",
-   "dish": "Pinto Beans",
-   "station": "display",
-   "nights": 5,
-   "recorded_lb_per_night": 16.92,
-   "plan_lb_per_night": 28.2,
-   "change_pct": 66.7,
-   "usd_saved_per_week": -24.3
   },
   {
    "dish_id": "mediterranean.beef_bolognese_sauce_w_pancetta_pork",
@@ -4241,6 +4341,26 @@
    "usd_saved_per_week": -5.5
   },
   {
+   "dish_id": "late.grill.oven_roasted_summer_squash",
+   "dish": "Oven Roasted Summer Squash",
+   "station": "grill",
+   "nights": 12,
+   "recorded_lb_per_night": 6.34,
+   "plan_lb_per_night": 5.58,
+   "change_pct": -12.0,
+   "usd_saved_per_week": 3.9
+  },
+  {
+   "dish_id": "late.grill.roasted_butternut_squash",
+   "dish": "Roasted Butternut Squash",
+   "station": "grill",
+   "nights": 11,
+   "recorded_lb_per_night": 6.78,
+   "plan_lb_per_night": 6.4,
+   "change_pct": -5.7,
+   "usd_saved_per_week": 1.8
+  },
+  {
    "dish_id": "grill.roasted_zucchini",
    "dish": "Roasted Zucchini",
    "station": "grill",
@@ -4261,6 +4381,16 @@
    "usd_saved_per_week": 6.0
   },
   {
+   "dish_id": "late.display.celery_sticks",
+   "dish": "Celery Sticks",
+   "station": "display",
+   "nights": 5,
+   "recorded_lb_per_night": 14.83,
+   "plan_lb_per_night": 15.07,
+   "change_pct": 1.7,
+   "usd_saved_per_week": -0.8
+  },
+  {
    "dish_id": "grill.roasted_butternut_squash",
    "dish": "Roasted Butternut Squash",
    "station": "grill",
@@ -4279,6 +4409,16 @@
    "plan_lb_per_night": 13.82,
    "change_pct": -5.2,
    "usd_saved_per_week": 2.2
+  },
+  {
+   "dish_id": "late.display.creamy_southern_slaw",
+   "dish": "Creamy Southern Slaw",
+   "station": "display",
+   "nights": 6,
+   "recorded_lb_per_night": 12.06,
+   "plan_lb_per_night": 10.36,
+   "change_pct": -14.1,
+   "usd_saved_per_week": 6.6
   },
   {
    "dish_id": "tandoor.lemon_feta_roasted_potatoes",
@@ -4331,16 +4471,6 @@
    "usd_saved_per_week": 2.7
   },
   {
-   "dish_id": "late.grill.savory_baked_chicken_thigh",
-   "dish": "Savory Baked Chicken Thigh",
-   "station": "grill",
-   "nights": 5,
-   "recorded_lb_per_night": 13.94,
-   "plan_lb_per_night": 25.58,
-   "change_pct": 83.6,
-   "usd_saved_per_week": -53.5
-  },
-  {
    "dish_id": "street_food.kimchi_fried_rice",
    "dish": "Kimchi Fried Rice",
    "station": "street_food",
@@ -4359,16 +4489,6 @@
    "plan_lb_per_night": 8.87,
    "change_pct": -23.1,
    "usd_saved_per_week": 9.2
-  },
-  {
-   "dish_id": "late.grill.jerk_chicken_thigh",
-   "dish": "Jerk Chicken Thigh",
-   "station": "grill",
-   "nights": 6,
-   "recorded_lb_per_night": 11.46,
-   "plan_lb_per_night": 25.46,
-   "change_pct": 122.2,
-   "usd_saved_per_week": -77.2
   },
   {
    "dish_id": "grill.herb_roasted_mushrooms",
@@ -4451,16 +4571,6 @@
    "usd_saved_per_week": 6.5
   },
   {
-   "dish_id": "late.grill.lemon_pepper_chicken_thigh",
-   "dish": "Lemon Pepper Chicken Thigh",
-   "station": "grill",
-   "nights": 6,
-   "recorded_lb_per_night": 10.99,
-   "plan_lb_per_night": 24.12,
-   "change_pct": 119.5,
-   "usd_saved_per_week": -72.4
-  },
-  {
    "dish_id": "desserts.oreo_cheesecake",
    "dish": "Oreo Cheesecake",
    "station": "desserts",
@@ -4471,16 +4581,6 @@
    "usd_saved_per_week": -3.5
   },
   {
-   "dish_id": "late.grill.oven_roasted_summer_squash",
-   "dish": "Oven Roasted Summer Squash",
-   "station": "grill",
-   "nights": 12,
-   "recorded_lb_per_night": 5.47,
-   "plan_lb_per_night": 5.58,
-   "change_pct": 2.1,
-   "usd_saved_per_week": -0.6
-  },
-  {
    "dish_id": "seasons.thai_stir_fried_green_beans_jain",
    "dish": "Thai Stir Fried Green Beans Jain",
    "station": "seasons",
@@ -4489,26 +4589,6 @@
    "plan_lb_per_night": 9.41,
    "change_pct": -13.7,
    "usd_saved_per_week": 3.9
-  },
-  {
-   "dish_id": "late.grill.baked_herbs_de_provence_chicken",
-   "dish": "Baked Herbs de Provence Chicken",
-   "station": "grill",
-   "nights": 6,
-   "recorded_lb_per_night": 10.83,
-   "plan_lb_per_night": 22.47,
-   "change_pct": 107.5,
-   "usd_saved_per_week": -64.2
-  },
-  {
-   "dish_id": "late.grill.montreal_chicken_thigh",
-   "dish": "Montreal Chicken Thigh",
-   "station": "grill",
-   "nights": 5,
-   "recorded_lb_per_night": 12.88,
-   "plan_lb_per_night": 24.05,
-   "change_pct": 86.8,
-   "usd_saved_per_week": -51.3
   },
   {
    "dish_id": "display.mango_sago",
@@ -4561,26 +4641,6 @@
    "usd_saved_per_week": 3.7
   },
   {
-   "dish_id": "late.display.plant_based_buffalo_chic_n",
-   "dish": "Plant Based Buffalo Chic'n",
-   "station": "display",
-   "nights": 5,
-   "recorded_lb_per_night": 12.23,
-   "plan_lb_per_night": 21.92,
-   "change_pct": 79.3,
-   "usd_saved_per_week": -20.9
-  },
-  {
-   "dish_id": "late.grill.cajun_chicken_thigh",
-   "dish": "Cajun Chicken Thigh",
-   "station": "grill",
-   "nights": 5,
-   "recorded_lb_per_night": 12.19,
-   "plan_lb_per_night": 21.79,
-   "change_pct": 78.8,
-   "usd_saved_per_week": -44.1
-  },
-  {
    "dish_id": "soups.aged_cheddar_cauliflower_bisque",
    "dish": "Aged Cheddar & Cauliflower Bisque",
    "station": "soups",
@@ -4611,14 +4671,14 @@
    "usd_saved_per_week": 2.3
   },
   {
-   "dish_id": "late.display.nashville_hot_chic_n",
-   "dish": "Nashville Hot Chic'n",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 9.94,
-   "plan_lb_per_night": 14.25,
-   "change_pct": 43.4,
-   "usd_saved_per_week": -11.1
+   "dish_id": "late.grill.roasted_zucchini",
+   "dish": "Roasted Zucchini",
+   "station": "grill",
+   "nights": 11,
+   "recorded_lb_per_night": 5.39,
+   "plan_lb_per_night": 4.68,
+   "change_pct": -13.0,
+   "usd_saved_per_week": 4.0
   },
   {
    "dish_id": "street_food.baguette",
@@ -4649,16 +4709,6 @@
    "plan_lb_per_night": 9.17,
    "change_pct": -19.3,
    "usd_saved_per_week": 3.7
-  },
-  {
-   "dish_id": "late.grill.key_west_baked_chicken",
-   "dish": "Key West Baked Chicken",
-   "station": "grill",
-   "nights": 6,
-   "recorded_lb_per_night": 9.11,
-   "plan_lb_per_night": 26.79,
-   "change_pct": 193.9,
-   "usd_saved_per_week": -97.5
   },
   {
    "dish_id": "seasons.jasmine_rice",
@@ -4741,6 +4791,16 @@
    "usd_saved_per_week": -5.3
   },
   {
+   "dish_id": "late.grill.roasted_diced_sweet_potato",
+   "dish": "Roasted Diced Sweet Potato",
+   "station": "grill",
+   "nights": 5,
+   "recorded_lb_per_night": 8.74,
+   "plan_lb_per_night": 8.87,
+   "change_pct": 1.5,
+   "usd_saved_per_week": -0.2
+  },
+  {
    "dish_id": "mediterranean.sauteed_kale",
    "dish": "Sauteed Kale",
    "station": "mediterranean",
@@ -4781,16 +4841,6 @@
    "usd_saved_per_week": 2.2
   },
   {
-   "dish_id": "late.display.celery_sticks",
-   "dish": "Celery Sticks",
-   "station": "display",
-   "nights": 5,
-   "recorded_lb_per_night": 8.33,
-   "plan_lb_per_night": 15.07,
-   "change_pct": 81.1,
-   "usd_saved_per_week": -21.8
-  },
-  {
    "dish_id": "tandoor.charmoula_zucchini_summer_squash",
    "dish": "Charmoula Zucchini & Summer Squash",
    "station": "tandoor",
@@ -4801,16 +4851,6 @@
    "usd_saved_per_week": 4.5
   },
   {
-   "dish_id": "late.grill.roasted_butternut_squash",
-   "dish": "Roasted Butternut Squash",
-   "station": "grill",
-   "nights": 11,
-   "recorded_lb_per_night": 3.71,
-   "plan_lb_per_night": 6.4,
-   "change_pct": 72.3,
-   "usd_saved_per_week": -12.7
-  },
-  {
    "dish_id": "tandoor.stir_fried_cabbage_w_curry_leaves_tamarind_chutney",
    "dish": "Stir Fried Cabbage w/Curry Leaves & Tamarind Chutney",
    "station": "tandoor",
@@ -4819,26 +4859,6 @@
    "plan_lb_per_night": 6.78,
    "change_pct": -14.3,
    "usd_saved_per_week": 2.4
-  },
-  {
-   "dish_id": "late.grill.roasted_zucchini",
-   "dish": "Roasted Zucchini",
-   "station": "grill",
-   "nights": 11,
-   "recorded_lb_per_night": 3.55,
-   "plan_lb_per_night": 4.68,
-   "change_pct": 31.9,
-   "usd_saved_per_week": -6.4
-  },
-  {
-   "dish_id": "late.display.creamy_southern_slaw",
-   "dish": "Creamy Southern Slaw",
-   "station": "display",
-   "nights": 6,
-   "recorded_lb_per_night": 6.46,
-   "plan_lb_per_night": 10.36,
-   "change_pct": 60.5,
-   "usd_saved_per_week": -15.1
   },
   {
    "dish_id": "tandoor.braised_kale_tomatoes",
@@ -5041,16 +5061,6 @@
    "usd_saved_per_week": 3.1
   },
   {
-   "dish_id": "late.grill.roasted_diced_sweet_potato",
-   "dish": "Roasted Diced Sweet Potato",
-   "station": "grill",
-   "nights": 5,
-   "recorded_lb_per_night": 4.39,
-   "plan_lb_per_night": 8.87,
-   "change_pct": 102.2,
-   "usd_saved_per_week": -7.5
-  },
-  {
    "dish_id": "tandoor.cucumber_feta_dill_mint_salad",
    "dish": "Cucumber, Feta, Dill & Mint Salad",
    "station": "tandoor",
@@ -5159,16 +5169,6 @@
    "plan_lb_per_night": 0.1,
    "change_pct": null,
    "usd_saved_per_week": -0.1
-  },
-  {
-   "dish_id": "late.display.baked_waffle_fries",
-   "dish": "Baked Waffle Fries",
-   "station": "display",
-   "nights": 5,
-   "recorded_lb_per_night": 0.0,
-   "plan_lb_per_night": 41.69,
-   "change_pct": null,
-   "usd_saved_per_week": -71.8
   },
   {
    "dish_id": "breads.sour_cream_cornbread",

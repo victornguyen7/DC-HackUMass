@@ -119,7 +119,7 @@ function ArrivalsCard({ r, onPick }: { r: Result; onPick: (t: number) => void })
           <h2>Expected arrivals</h2>
           <div className="hint">Per 10 minutes, {r.late_close != null ? "dinner and late night" : "dinner"} · from the arrival model ({r.n_nights} simulated nights) · click a bar to watch that moment in the Hall</div>
         </div>
-        <span className="chip info">Dinner only</span>
+        <span className="chip info">{r.late_close != null ? "Dinner + late night" : "Dinner only"}</span>
       </div>
       <Bars
         bars={r.arrivals.map((a) => ({ label: a.start.replace(" pm", ""), value: a.expected, color: a === peak ? "var(--maroon)" : undefined, title: `${a.start}: ~${Math.round(a.expected)} students` }))}
@@ -168,7 +168,7 @@ function MenuByStation({ r }: { r: Result }) {
               {s.to_order && <span className="chip info">to order</span>}
               {s.self_serve && <span className="chip">self-serve</span>}
             </div>
-            {[...dishes].sort((a, b) => b.served.p50 - a.served.p50).slice(0, showAll ? 99 : 7).map((d) => <DishLine key={d.dish_id} d={d} />)}
+            {[...dishes].sort((a, b) => Number(a.period === "late_night") - Number(b.period === "late_night") || b.served.p50 - a.served.p50).slice(0, showAll ? 99 : 7).map((d) => <DishLine key={d.dish_id} d={d} />)}
           </div>
         ))}
       </div>
@@ -185,7 +185,9 @@ function DishLine({ d }: { d: CookRow }) {
   const risk = d.runout_window && d.runout_share >= 0.3;
   return (
     <div className="row" style={{ flexWrap: "nowrap", fontSize: 12, padding: "3px 0" }}>
-      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>{d.name}</span>
+      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>
+        {d.period === "late_night" && <span className="chip info" style={{ padding: "0 5px", marginRight: 4 }} title="Late night, 9 pm–12 am">late</span>}{d.name}
+      </span>
       <DietTags tags={d.diet_tags} />
       <span className="num" style={{ width: 34, textAlign: "right" }}>{Math.round(d.served.p50)}</span>
       <span style={{ width: 56, textAlign: "right" }}>
@@ -225,7 +227,7 @@ function ProductionPlan({ r, date }: { r: Result; date: string }) {
           <tbody>
             {rows.slice(0, all ? rows.length : 10).map((d) => (
               <tr key={d.dish_id}>
-                <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>{d.name}</td>
+                <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>{d.name}{d.period === "late_night" ? " (late night)" : ""}</td>
                 <td className="muted">{stationName(d.station)}</td>
                 <td className="n">{d.plan!.starting_batches}×{d.plan!.batch_size}</td>
                 <td className="n">{d.plan!.reorder_point}</td>

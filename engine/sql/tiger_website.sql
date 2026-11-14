@@ -110,6 +110,9 @@ ALTER TABLE dcsim.planned_batches
   ADD COLUMN IF NOT EXISTS taper_batch_size int,
   ADD COLUMN IF NOT EXISTS taper_reorder_point int,
   ADD COLUMN IF NOT EXISTS forecast_reorder boolean;
+ALTER TABLE dcsim.forecasts
+  ADD COLUMN IF NOT EXISTS weather text,
+  ADD COLUMN IF NOT EXISTS event_night boolean;
 
 -- ============ 3. New fact tables (engine 0.4+) ============
 
@@ -140,6 +143,21 @@ CREATE TABLE IF NOT EXISTS dcsim.night_vectors (
   weekday text, weather text, event_night boolean, n_dishes int,
   embedding vector(76) NOT NULL,
   PRIMARY KEY (run_id, night)
+);
+
+CREATE TABLE IF NOT EXISTS dcsim.forecast_results (
+  night date NOT NULL,
+  origin text NOT NULL CHECK (origin IN ('backtest', 'ledger')),
+  method text NOT NULL,             -- naive | calibrated
+  forecast_id text, issued_at timestamptz, calibration_id text,   -- ledger rows only
+  weekday text, weather text, event_night boolean, adopted boolean, split text,
+  students int, students_p50 double precision,
+  waste_lb double precision, waste_p10 double precision, waste_p50 double precision, waste_p90 double precision,
+  waste_inside boolean,
+  stockout_min double precision, stockout_p10 double precision, stockout_p50 double precision,
+  stockout_p90 double precision, stockout_inside boolean,
+  scored_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (night, origin, method)
 );
 
 -- ============ 4. Category tables ============
@@ -204,6 +222,8 @@ SELECT create_hypertable('dcsim.waste_log', by_range('ts', INTERVAL '7 days'), i
 SELECT create_hypertable('dcsim.dish_nights', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
 SELECT create_hypertable('dcsim.station_hours', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
 SELECT create_hypertable('dcsim.minute_series', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
+
+SELECT create_hypertable('dcsim.forecast_results', by_range('night', INTERVAL '28 days'), if_not_exists => TRUE);
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM timescaledb_information.hypertables
                  WHERE hypertable_schema = 'dcsim' AND hypertable_name = 'nights' AND compression_enabled) THEN
@@ -361,7 +381,106 @@ FROM dcsim.dishes d
 JOIN dcsim.periods p ON p.period = d.period
 LEFT JOIN dcsim.stations s ON s.station = d.station;
 
--- ============ 7. Category rows (from the current data files) ============
+-- ============ 7. Track record: scoring procedure, nightly job, weekly aggregate ============
+-- Fill it once with CALL dcsim.score_forecasts(); the job then runs it every morning.
+
+CREATE OR REPLACE PROCEDURE dcsim.score_forecasts(job_id int DEFAULT NULL, config jsonb DEFAULT NULL)
+LANGUAGE sql AS $$
+-- a re-calibration replaces the back-test, so its old rows go first; ledger rows are only ever upserted
+DELETE FROM dcsim.forecast_results WHERE origin = 'backtest';
+INSERT INTO dcsim.forecast_results (night, origin, method, forecast_id, issued_at, calibration_id,
+    weekday, weather, event_night, adopted, split, students, students_p50,
+    waste_lb, waste_p10, waste_p50, waste_p90, waste_inside,
+    stockout_min, stockout_p10, stockout_p50, stockout_p90, stockout_inside, scored_at)
+SELECT c.night, 'backtest', replace(c.scenario, 'forecast_', ''), NULL, NULL, NULL,
+       c.weekday, c.weather, c.event_night, c.adopted, c.split, c.students, c.students_p50,
+       c.waste_lb, c.waste_p10, c.waste_p50, c.waste_p90, c.waste_inside,
+       c.stockout_min, c.stockout_p10, c.stockout_p50, c.stockout_p90, c.stockout_inside, now()
+FROM dcsim.forecast_check c
+WHERE c.scenario IN ('forecast_naive', 'forecast_calibrated')
+UNION ALL
+SELECT * FROM (
+  SELECT DISTINCT ON (s.for_night, s.method)
+         s.for_night, 'ledger', s.method, s.forecast_id, s.issued_at, s.calibration_id,
+         o.weekday, o.weather, o.event_night, o.adopted, o.split, s.observed_students, s.students_p50,
+         s.observed_waste_lb, s.waste_p10, s.waste_p50, s.waste_p90, s.waste_result = 'inside',
+         s.observed_stockout_min, s.stockout_p10, s.stockout_p50, s.stockout_p90, s.stockout_result = 'inside', now()
+  FROM dcsim.forecast_scorecard s
+  JOIN dcsim.nights o ON o.night = s.for_night AND o.source = 'observed'
+  WHERE s.waste_result <> 'awaiting' AND s.issued_before_open   -- only forecasts made before the night count
+  ORDER BY s.for_night, s.method, s.issued_at DESC
+) latest
+ON CONFLICT (night, origin, method) DO UPDATE SET
+  forecast_id = EXCLUDED.forecast_id, issued_at = EXCLUDED.issued_at, calibration_id = EXCLUDED.calibration_id,
+  weekday = EXCLUDED.weekday, weather = EXCLUDED.weather, event_night = EXCLUDED.event_night,
+  adopted = EXCLUDED.adopted, split = EXCLUDED.split, students = EXCLUDED.students,
+  students_p50 = EXCLUDED.students_p50, waste_lb = EXCLUDED.waste_lb, waste_p10 = EXCLUDED.waste_p10,
+  waste_p50 = EXCLUDED.waste_p50, waste_p90 = EXCLUDED.waste_p90, waste_inside = EXCLUDED.waste_inside,
+  stockout_min = EXCLUDED.stockout_min, stockout_p10 = EXCLUDED.stockout_p10, stockout_p50 = EXCLUDED.stockout_p50,
+  stockout_p90 = EXCLUDED.stockout_p90, stockout_inside = EXCLUDED.stockout_inside, scored_at = EXCLUDED.scored_at;
+$$;
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS dcsim.forecast_weekly
+WITH (timescaledb.continuous, timescaledb.materialized_only = false) AS
+SELECT time_bucket(INTERVAL '7 days', night, DATE '2026-10-01') AS week, origin, method,
+       count(*) AS nights,
+       count(*) FILTER (WHERE waste_inside) AS waste_inside,
+       avg(waste_lb - waste_p50) AS waste_bias_lb,
+       avg(abs(waste_lb - waste_p50)) AS waste_mae_lb,
+       count(*) FILTER (WHERE stockout_inside) AS stockout_inside,
+       avg(stockout_min - stockout_p50) AS stockout_bias_min,
+       avg(students - students_p50) AS students_bias
+FROM dcsim.forecast_results
+GROUP BY 1, 2, 3
+WITH NO DATA;
+SELECT add_continuous_aggregate_policy('dcsim.forecast_weekly', start_offset => NULL, end_offset => NULL,
+       schedule_interval => INTERVAL '1 hour', if_not_exists => true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM timescaledb_information.jobs
+                 WHERE proc_schema = 'dcsim' AND proc_name = 'score_forecasts') THEN
+    -- every morning at 6 am Eastern, after the night's close-out weigh-ins
+    PERFORM add_job('dcsim.score_forecasts', INTERVAL '1 day',
+                    initial_start => (date_trunc('day', now() AT TIME ZONE 'America/New_York')
+                                      + INTERVAL '1 day 6 hours') AT TIME ZONE 'America/New_York');
+  END IF;
+END $$;
+
+-- ============ 8. Comments (what an assistant reading the schema, e.g. the Tiger MCP, sees) ============
+
+COMMENT ON SCHEMA dcsim IS 'DC What-If: one dining hall (Worcester, UMass Amherst). Every recorded ("observed") night and every simulated night side by side. Observed data is SYNTHETIC until real MetaFoodX/LeanPath exports arrive.';
+COMMENT ON TABLE dcsim.nights IS 'One row per night (observed) or per simulated night (one scenario x draw x seed). Filter source/scenario before averaging. A service night runs 4:30 pm to midnight Eastern.';
+COMMENT ON COLUMN dcsim.nights.source IS 'observed = the recorded night (one row per night); simulated = an engine run';
+COMMENT ON COLUMN dcsim.nights.scenario IS 'observed | forecast_naive (plan as written, expected crowd) | forecast_calibrated (crowd and production drawn from the fitted errors; held-out nights only) | replay (after the night: actual crowd and production)';
+COMMENT ON COLUMN dcsim.nights.run_id IS 'observed = recorded history, observed:live = a night observed after its forecast was logged; simulated: <scenario>:<night>';
+COMMENT ON COLUMN dcsim.nights.split IS 'train = nights the calibration was fitted on (before 2026-10-29), test = held-out nights, live = observed after a logged forecast';
+COMMENT ON COLUMN dcsim.nights.weather IS 'clear | rain | cold | snow, as known on the day';
+COMMENT ON COLUMN dcsim.nights.event_night IS 'true on nights with a campus event (bigger crowd)';
+COMMENT ON COLUMN dcsim.nights.adopted IS 'true when the kitchen followed the recommended plan that night instead of the baseline';
+COMMENT ON COLUMN dcsim.nights.crowd_multiplier IS 'simulated rows: crowd used, relative to the engine''s expected students';
+COMMENT ON COLUMN dcsim.nights.over_prep IS 'simulated rows: production ratio used (batches cooked / batch size planned)';
+COMMENT ON COLUMN dcsim.nights.waste_lb IS 'food thrown away that night in pounds (expired in the pan + left at close + plate waste)';
+COMMENT ON COLUMN dcsim.nights.stockout_min IS 'minutes summed over dishes that a dish was out (empty pan) while serving';
+COMMENT ON TABLE dcsim.pan_windows IS 'Pan levels per dish per 30-minute window (MetaFoodX shape). A dish ran out in a window when portions_left = 0, except its last window of the night: that is the close-out, when pans are pulled.';
+COMMENT ON TABLE dcsim.waste_log IS 'Observed weigh-ins (LeanPath shape), one row per bin weighed. reason: expired (held too long) | close (left at close) | plate (left on plates). Labels in cat_values (category waste_reason).';
+COMMENT ON TABLE dcsim.dish_nights IS 'Per dish per simulated replay night: cooked, served, waste, minutes out of stock (stockout_min) and when it first ran out (runout_min, minutes after open).';
+COMMENT ON TABLE dcsim.planned_batches IS 'The production plan per menu date and plan (baseline | recommended | cfg:<hash>): batch size, starting batches, reorder point per dish.';
+COMMENT ON TABLE dcsim.forecasts IS 'Append-only forecast ledger: every forecast logged before its night (issued_at is the database clock). Updates and deletes are blocked by trigger. Scored in forecast_scorecard.';
+COMMENT ON COLUMN dcsim.forecasts.weather IS 'situation the forecast assumed (NULL = not given: pooled crowd error)';
+COMMENT ON TABLE dcsim.calibrations IS 'One row per calibration run: fitted crowd error (params.crowd, incl. params.crowd.situational by weather/event), production ratio, and held-out scores (scores).';
+COMMENT ON TABLE dcsim.forecast_results IS 'Track record: one scored row per observed night and method (naive | calibrated). origin backtest = held-out back-test, ledger = latest live forecast issued before doors opened. Filled by dcsim.score_forecasts() (nightly Tiger job).';
+COMMENT ON COLUMN dcsim.forecast_results.waste_inside IS 'observed waste fell inside the forecast 10-90% range (target: about 80% of nights)';
+COMMENT ON VIEW dcsim.forecast_check IS 'Per observed night and simulated scenario: the 10/50/90% range of waste and stockout and whether the observation fell inside.';
+COMMENT ON VIEW dcsim.forecast_scorecard IS 'Every logged forecast next to what happened: waste_result inside | outside | awaiting (night not observed yet).';
+COMMENT ON TABLE dcsim.dishes IS 'Menu: one row per dish per menu date. Past nights reuse a same-weekday menu (nights.menu_date).';
+COMMENT ON TABLE dcsim.date_context IS 'Per date: weekday, crowd factors and named campus events.';
+COMMENT ON TABLE dcsim.cat_values IS 'Code -> label lookup by category (source, waste_reason, weather, role, diet, ...).';
+
+COMMENT ON VIEW dcsim.forecast_weekly IS 'Continuous aggregate (real-time) of forecast_results by week (weeks start Thursday 2026-10-01; weeks of 2026-10-29 and 2026-11-05 are the held-out split): nights, nights inside the 10-90% range, bias (observed minus median).';
+COMMENT ON VIEW dcsim.waste_daily_by_dish IS 'Continuous aggregate (real-time) of waste_log per night, dish and reason.';
+COMMENT ON VIEW dcsim.pan_hourly IS 'Continuous aggregate (real-time) of pan_windows per clock hour, dish and scenario. A dish''s final hour includes the close-out (0 left).';
+COMMENT ON VIEW dcsim.dish_nightly IS 'Continuous aggregate of pan_windows per dish per day and run (materialized only: refreshed by `dcsim tsdb refresh` after each load).';
+
+-- ============ 9. Category rows (from the current data files) ============
 INSERT INTO dcsim.cat_values (category, code, label, sort) VALUES
   ('source', 'observed', 'Recorded (synthetic history until real exports)', 1),
   ('source', 'simulated', 'Simulated by the engine', 2),

@@ -25,8 +25,9 @@ import json
 from .config import ENGINE_VERSION
 from .data import available_dates, crowd_factors, default_data_dir, load_baseline
 from .tsdb import (  # noqa: F401  (NEW_COLUMNS re-exported for tests)
-    CAGG, CATEGORY_TABLES, COLUMNSTORE, COLUMNSTORE_AFTER, FORECAST_CHECK, HYPERTABLES, NEW_COLUMNS, NEW_HYPERTABLES,
-    NEW_TABLES, SCORECARD, TABLES, VECTOR_TABLE, WEB_VIEWS, alter_columns_sql, dash_caggs_script,
+    CAGG, CATEGORY_TABLES, COLUMNSTORE, COLUMNSTORE_AFTER, COMMENTS, COMMENTS_TIMESCALE, FORECAST_CHECK, HYPERTABLES,
+    NEW_COLUMNS, NEW_HYPERTABLES, NEW_TABLES, SCORE_PROC, SCORECARD, TABLES, TRACK_CAGG, TRACK_HYPERTABLE, TRACK_TABLE,
+    VECTOR_TABLE, WEB_VIEWS, alter_columns_sql, dash_caggs_script,
 )
 
 
@@ -176,17 +177,22 @@ CREATE EXTENSION IF NOT EXISTS vector;
         head,
         "\n-- ============ 1. Existing tables (as tsdb.py creates them) ============\n", TABLES,
         "\n-- ============ 2. New columns on existing tables (engine 0.4+) ============\n", alter_columns_sql(),
-        "\n-- ============ 3. New fact tables (engine 0.4+) ============\n", NEW_TABLES, VECTOR_TABLE,
+        "\n-- ============ 3. New fact tables (engine 0.4+) ============\n", NEW_TABLES, VECTOR_TABLE, TRACK_TABLE,
         "\n-- ============ 4. Category tables ============\n", CATEGORY_TABLES,
         "\n-- ============ 5. Hypertables, columnstore, continuous aggregate ============\n",
-        HYPERTABLES, NEW_HYPERTABLES, columnstore_sql(COLUMNSTORE), CAGG + ";\n",
+        HYPERTABLES, NEW_HYPERTABLES, TRACK_HYPERTABLE, columnstore_sql(COLUMNSTORE), CAGG + ";\n",
         "\n-- Dashboard aggregates: real-time, with refresh policies. They are created empty; fill them once with\n"
         "--   CALL refresh_continuous_aggregate('dcsim.waste_daily_by_dish', NULL, NULL);\n"
         "--   CALL refresh_continuous_aggregate('dcsim.pan_hourly', NULL, NULL);\n"
         "-- (each as its own statement, outside a transaction; `dcsim tsdb refresh` does both).\n",
         dash_caggs_script(),
         "\n-- ============ 6. Views (forecast checks + website views) ============\n", FORECAST_CHECK, SCORECARD, WEB_VIEWS,
-        "\n-- ============ 7. Category rows (from the current data files) ============\n", category_rows(),
+        "\n-- ============ 7. Track record: scoring procedure, nightly job, weekly aggregate ============\n"
+        "-- Fill it once with CALL dcsim.score_forecasts(); the job then runs it every morning.\n",
+        SCORE_PROC, TRACK_CAGG,
+        "\n-- ============ 8. Comments (what an assistant reading the schema, e.g. the Tiger MCP, sees) ============\n",
+        COMMENTS, COMMENTS_TIMESCALE,
+        "\n-- ============ 9. Category rows (from the current data files) ============\n", category_rows(),
     ]
     return "".join(parts)
 

@@ -147,17 +147,20 @@ Full details: [`TIGER.md`](TIGER.md). Code: `engine/src/dcsim/tsdb.py`, `engine/
 | Calibration page (`/calibration.html`) | ✅ built |
 | Columnstore compression | ✅ built (`make tsdb-compress`) |
 | **Similar-night search**: pgvector + pgvectorscale DiskANN index over 76-dim night vectors (weekday, weather, event, menu), with a held-out check (`uv run dcsim tsdb similar --date 2026-11-14 --weather rain`) | ✅ built (`nightsearch.py`, TIGER.md §7) |
-| **Similar nights in the app**: Insights › Similar nights (`/similar-nights`) and `GET /api/similar-nights`. 48-dim condition vectors in `dcsim.night_embeddings`, exact cosine ranking in Postgres, local fallback when Tiger isn't set up | ✅ built (`similar_nights.py`, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)); Tiger's copy of the history is stale until `dcsim tsdb load` (ISSUES T3) |
-| **Live dashboard** (`/tiger.html`): waste by night and pans by hour from two real-time continuous aggregates with refresh policies, raw-vs-aggregate timings (`dcsim tsdb bench`: 557 ms → 82 ms on the by-hour question; the columnstore wins the per-dish one), one SQL query across aggregates + hypertable + plan + forecasts + ledger, columnstore 76 MB → 9.6 MB | ✅ built 2026-11-14 (TIGER.md §8: demo script, pitch, what is left) |
-| Calibration over time, weather/event flags, Tiger MCP for live questions | ✗ ideas (TIGER.md "Not built yet"; MCP not installed) |
+| **Similar nights in the app**: Insights › Similar nights (`/similar-nights`) and `GET /api/similar-nights`. 48-dim condition vectors in `dcsim.night_embeddings`, exact cosine ranking in Postgres, local fallback when Tiger isn't set up | ✅ built (`similar_nights.py`, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)); Tiger's copy of the history is current (ISSUES T3 fixed 2026-11-14) |
+| **Live dashboard** (API page `http://127.0.0.1:8000/tiger`, not in the web app): waste by night and pans by hour from two real-time continuous aggregates with refresh policies, raw-vs-aggregate timings (`dcsim tsdb bench`: 557 ms → 82 ms on the by-hour question; the columnstore wins the per-dish one), one SQL query across aggregates + hypertable + plan + forecasts + ledger, columnstore 76 MB → 9.6 MB | ✅ built 2026-11-14 (TIGER.md §8: demo script, pitch, what is left) |
+| **Calibration over time**: every night scored into hypertable `forecast_results` by a nightly Tiger job (`add_job`), weekly real-time continuous aggregate `forecast_weekly` (`uv run dcsim tsdb track`) | ✅ built 2026-11-14 (TIGER.md §4) |
+| **Weather/event flags** in the crowd error, kept only if held-out CRPS improves (`uv run dcsim calibrate --situations-only`) | ✅ built 2026-11-14; not kept on this history (205.8 vs 200.0), TIGER.md §5 |
+| **Tiger MCP for live questions**: schema comments for the assistant, question set answered live (*"which dishes ran out on rainy Fridays?"*) | ✅ built 2026-11-14 (TIGER.md §6); service is DEV, so the MCP is not read-only |
 
 Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql://...` in `engine/.env`.
 
 ### To build or polish (S)
 1. **Demo query from the pitch:** "average empty-pan minutes for General Tso's across 500 nights". Add it as a named query in `tsdb.QUERIES` (`uv run dcsim tsdb query <name>`) built on `dish_nightly`, and run enough simulated nights (≥ 500) for that date.
-2. **Tiger MCP server** (TIGER.md #6): `tiger mcp start`, then judges ask questions in plain English against the tables live. Keep `read_only` on.
-3. **Similar nights on stage:** "Which past nights look like tonight, and what happened on them?" is a good live demo of pgvector + pgvectorscale on Tiger. Show it in the app (Insights › Similar nights, the source chip reads "Searched in Tiger · pgvector"), then the CLI's held-out check. Run `dcsim tsdb load` first (ISSUES T3), and say plainly that it's a hand-built feature vector, not a learned embedding.
-4. **Show it in the app:** link the calibration page from Insights › Waste history, and show "forecast logged to Tiger ✓" after **Adopt**.
+2. **Tiger MCP on stage** (TIGER.md §6): ask the question set there live. The MCP's read-only mode covers PROD services only; this one is DEV, so keep per-call approval on and deny the `service_*` tools.
+3. **Similar nights on stage:** "Which past nights look like tonight, and what happened on them?" is a good live demo of pgvector + pgvectorscale on Tiger. Show it in the app (Insights › Similar nights, the source chip reads "Searched in Tiger · pgvector"), then the CLI's held-out check. Tiger's history matches the local files (re-run `dcsim tsdb load` after any `make waste`), and say plainly that it's a hand-built feature vector, not a learned embedding.
+4. **Show the aggregates:** open `http://127.0.0.1:8000/tiger` (API page, not in the web app) and follow the 2-minute script in TIGER.md §8: a new night appears within 5 s, then raw vs aggregate timings.
+5. **Show it in the app:** link the calibration page from Insights › Waste history, and show "forecast logged to Tiger ✓" after **Adopt**.
 5. **Be honest on stage:** the "observed" nights are **synthetic**. Say so (README §8).
 
 ---
@@ -210,7 +213,7 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 1. **Domain (§5)** and **Vultr server (§4)** early. DNS and certificates take a while to take effect, and every later demo benefits.
 2. **Agent (§2)**: the biggest new feature, and it enters two prizes. Start with 3 tools and the loop. Add `optimize` only if there's time.
 3. **Gemini extras (§1)**: function calling falls out of the agent work. The menu photo import is separate and quick to demo.
-4. **Tiger polish (§3)**: the 500-night query and the MCP server.
+4. **Tiger polish (§3)**: the 500-night query (track record, situational fit and MCP questions are done).
 5. **Uncertainty sweep on Vultr (§4.6)** if there's time left.
 
 ## One demo story that hits all five

@@ -89,12 +89,17 @@ def _over_prep(cfg: ScenarioConfig, factor: float) -> ScenarioConfig:
     return cfg.updated(kitchen=kitchen)
 
 
+# Hidden crowd effects of the situation (the calibration's situational fit should find these; never loaded to Tiger).
+WEATHER_CROWD = {"clear": 1.0, "rain": 0.94, "cold": 0.97}
+EVENT_CROWD = 1.15
+
+
 def ground_truth(day: dt.date, adopted: bool) -> dict:
     rng = np.random.default_rng([GEN_SEED, day.toordinal()])
     weather = rng.choice(["clear", "rain", "cold"], p=[0.6, 0.25, 0.15])
     event = bool(rng.random() < 0.07)
     crowd = float(np.exp(rng.normal(0, 0.08)))
-    crowd *= {"clear": 1.0, "rain": 0.94, "cold": 0.97}[weather] * (1.15 if event else 1.0)
+    crowd *= WEATHER_CROWD[weather] * (EVENT_CROWD if event else 1.0)
     return {
         "date": day.isoformat(),
         "crowd_multiplier": round(crowd, 4),

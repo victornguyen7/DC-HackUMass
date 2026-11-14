@@ -3,14 +3,22 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-13, engine 0.6.2, after merging PRs #1–#3 and adding Similar nights (`main` at `9e01ec7` + this docs pass).
+Last updated: 2026-11-14, engine 0.6.2: Tiger dashboard work (continuous aggregates, benchmark, API page `/tiger`), T3 fixed, T6–T7 found.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
 ## Before the demo
 - ✅ **Demo bundle rebuilt on engine 0.6.2** (2026-11-14 04:05 UTC: 264 results, 14 replays, 168 Gemini narrations, 22 MB; about 17 min). Rebuild again only if the engine or data changes: `make demo-bundle`, or `LLM_PROVIDER=mock make demo-bundle` for template text in a few minutes.
 - ✅ **Full test run after the rebuild passed:** engine 149 tests, web 46 tests, browser smoke 23/23 offline and 8/8 with the API, 44 deep offline checks, Similar nights 6/6. Table in [UI_ISSUES.md](UI_ISSUES.md#full-test-run-after-the-062-bundle-2026-11-13).
-- ✗ Restart `make serve` if it was started before the Similar nights commit (`/api/similar-nights` → 404 otherwise).
+- ✅ **Tests after the Tiger dashboard work (2026-11-14):** engine 161 passed, 2 skipped; web 46 passed; typecheck clean; the dashboard opened live from the API with no console errors. The browser smoke script passed 27/27 offline with the dashboard steps; those steps were then removed with the page, so it is back to the earlier 23.
+- ✗ Restart `make serve` if it was started before 2026-11-14 (`/api/similar-nights`, `/tiger` and `/api/tiger/*` → 404 otherwise).
+- ✗ **Rotate the tokens in `.dev.vars` and stop tracking it** (ISSUES T6: pushed to GitHub in `e926ea1`).
+
+## Recently built (2026-11-14)
+- ✅ Tiger: two real-time continuous aggregates (`waste_daily_by_dish`, `pan_hourly`) with refresh policies, `dcsim tsdb bench` (raw vs aggregate), `dcsim tsdb query stack` (one query across the stack), columnstore on all six hypertables (76 MB → 9.6 MB). Details: [TIGER.md §8](TIGER.md).
+- ✅ Live Tiger dashboard, served by the API at `http://127.0.0.1:8000/tiger` only (not part of the web app).
+- ✅ Tiger items 4–6 (2026-11-14): weekly track record (`forecast_results` hypertable, nightly `score_forecasts` job, real-time aggregate `forecast_weekly`, `dcsim tsdb track`); weather/event crowd fit (`dcsim calibrate --situations-only`; not kept, held-out CRPS 205.8 vs 200.0); schema comments and a verified question set for the Tiger MCP. TIGER.md §4–6.
+- ✅ Tiger loader fills the engine 0.4+ columns and category tables (`1ab7e16`, `4a5d6fb`, `094dbc4`); T3 fixed.
 
 ## Recently merged (2026-11-13)
 All branches are merged into `main`; details in [README §14](../README.md#14-branches-and-merges).
@@ -25,7 +33,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 18 | 2 | 6 | [ISSUES.md](ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 19 | 2 | 7 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 2 | 5 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
 | Web UI issues | 10 | 4 | 4 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
@@ -59,9 +67,11 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | D2 | Version numbers disagree | ✅ Fixed 2026-11-13 (both 0.5.0; test keeps them equal) |
 | T1 | Not a git repo; bundle size undecided | ✅ Fixed 2026-11-13 (GitHub; bundle committed) |
 | T2 | Starlette deprecation warning | ✅ Fixed |
-| T3 | Tiger's copy of the synthetic history is stale (24 of 43 nights) | ✗ Open (`uv run dcsim tsdb load`) |
+| T3 | Tiger's copy of the synthetic history was stale | ✅ Fixed 2026-11-14 (0 of 42 nights differ) |
 | T4 | `codex-skills` is an empty submodule (no `.gitmodules`) | ✗ Open (owner of PR #1) |
 | T5 | Two similar-night searches (page/API and CLI) | ✗ Open (a decision; both work) |
+| T6 | `.dev.vars` with app tokens pushed to GitHub (`e926ea1`) | ✗ Open, **high**: rotate the tokens, `git rm --cached .dev.vars`, ignore it |
+| T7 | `my-app/` (separate deepspace app) committed without docs | ✗ Open (whoever added it) |
 
 ## 0.6.1 review ([ISSUES.md §6b](ISSUES.md))
 
@@ -118,14 +128,14 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | --- | --- | --- |
 | 1 | Gemini API | ◐ Ask box, narration, explain, dish prior, embeddings on Gemini; function calling and menu photo open |
 | 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman planning agent built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, web page `/sam`); optimizer N6 still optional |
-| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (Insights › Live data, `/tiger.html`, two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; 500-night demo query and MCP open |
+| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (served by the API at `/tiger`, not part of the web app; two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; track record, weather/event fit and MCP question set built 2026-11-14 (TIGER.md §4–6); 500-night demo query open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 
 ## Other docs
 - [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 and Tier 1 all ✅ (1.1 Container pans and 1.4 per-minute series in 0.6.0); 2.4 seats ◐ (built, limits off); model-realism table all ✅ (item-level popularity, swipe queue, groups, pan sizes, forecast-reorder preset, allergens in 0.6.0; staffing by hour, per-date crowd, carving earlier); calibration targets ✅; optimizer, sweep, sensitivity analysis ✗.
 - [LLM.md](LLM.md) §5 and [GEMINI.md](GEMINI.md) §7: their own ~~done~~ lists are current.
-- [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–3, 7 and 8 built; 4–6 ideas; MCP not installed). §8 ends with what is left for the dashboard work (restart the API, refresh the snapshot, rehearsal reset).
+- [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–8 built; 5 built but not kept on this history). §8 ends with what is left for the dashboard work (restart the API, rehearsal reset).
 
 ## How to keep this current
 1. Fix something → mark it in its own doc (strike through + **Fixed** with the engine version or date).

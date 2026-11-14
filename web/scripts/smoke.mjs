@@ -54,24 +54,6 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
       await p.keyboard.press("ArrowRight");
     });
   }
-  // Runs before the app pages below, so the Lab steps still start on /lab.
-  await step(`${tag} tiger dashboard loads`, async () => {
-    await p.goto(`${base}/tiger.html`);
-    await p.locator("#waste-chart svg").waitFor({ timeout: 20000 });
-    await p.locator("#bench .bar-row").first().waitFor({ timeout: 40000 });
-    for (const id of ["tiles", "pans", "stack", "ledger", "hypertables", "aggregates"])
-      if (!(await p.locator(`#${id} > *`).count())) throw new Error(`#${id} is empty`);
-    await p.screenshot({ path: `${out}/tiger-${tag}.png`, fullPage: true });
-  });
-  if (tag === "desktop") {
-    await step("insights tabs link to the tiger dashboard", async () => {
-      await p.goto(`${base}/waste`);
-      await p.getByRole("link", { name: "Live data" }).click();
-      await p.locator("#waste-chart svg").waitFor({ timeout: 20000 });
-      await p.getByRole("link", { name: "← Insights" }).click();
-      await p.getByText("Adopted-plan tracker").first().waitFor({ timeout: 20000 });
-    });
-  }
   for (const [path, text] of [["dashboard", "Production plan"], ["waste", "Adopted-plan tracker"], ["lab", "Results vs. baseline"]]) {
     await step(`${tag} ${path} loads`, async () => {
       await p.goto(`${base}/${path}`);
@@ -123,7 +105,7 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
     });
   }
   if (tag === "phone") {
-    for (const path of ["hall", "dashboard", "waste", "lab", "tiger.html"]) {
+    for (const path of ["hall", "dashboard", "waste", "lab"]) {
       await p.goto(`${base}/${path}`);
       await p.waitForTimeout(1500);
       const sw = await p.evaluate(() => document.documentElement.scrollWidth);

@@ -1,6 +1,6 @@
 # DC What-If · web
 
-The main navigation is **Simulation**, **Kitchen plan**, and **Insights** (tabs: **Waste history**, **Similar nights**, and **Live data**, a link to the standalone Tiger dashboard). The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
+The main navigation is **Simulation**, **Kitchen plan**, and **Insights** (tabs: **Waste history** and **Similar nights**). The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
 React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS: `src/styles.css` (tokens and primitives), `src/guided.css` (the redesign) and `src/similar-nights.css`. New UI follows the "Visual system" in [`docs/FRONTEND_REDESIGN_PLAN.md`](../docs/FRONTEND_REDESIGN_PLAN.md).
 
 The app reads the static demo bundle in `public/cache` (written by `make demo-bundle`), so the demo runs with **no API and no network**.
@@ -33,7 +33,6 @@ The pages check `/api/health` (the dev/preview proxy answers `{ok:false}` when t
 | `/waste` | Insights › Waste history | `waste/history.json`, `waste/backtest.json` (incl. per-dish and per-station back-test), `waste/facts.json` |
 | `/lab` | Advanced scenario settings | presets + lever grid from the manifest; `POST /api/simulate` for anything else |
 | `/similar-nights` | Insights › Similar nights | `manifest.json` (menu dates), `GET /api/similar-nights` |
-| `/tiger.html` | Insights › Live data (standalone page, `public/tiger.html`) | `GET /api/tiger/dashboard` every 5 s and `GET /api/tiger/bench`; falls back to `cache/waste/tiger.json` and says it is a snapshot ([`docs/TIGER.md`](../docs/TIGER.md) §8) |
 
 Landscape tablets use a viewport-height Guided workspace: station details scroll independently, and the hall, playback controls, and scrubber stay together. **Replay options & legend** opens the scenario selector and metadata without adding a permanent panel. The scene fits its actual floor bounds and keeps station labels apart in short viewports. Touch controls are at least 44px for primary actions; touch selects use 16px text to avoid focus zoom.
 

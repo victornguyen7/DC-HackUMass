@@ -70,8 +70,8 @@ await step("adopt API run → dashboard", async () => {
   await p.getByRole("button", { name: /^Adopt for/ }).click();
   await p.getByText(/Adopted/).first().waitFor();
   await p.goto(`${base}/dashboard`);
-  await p.locator(".chip", { hasText: "Adopted" }).first().waitFor({ timeout: 20000 });
-  const chip = await p.locator(".chip", { hasText: "Adopted" }).first().textContent();
+  await p.locator(".kitchen-model-note", { hasText: "Adopted plan" }).first().waitFor({ timeout: 20000 });
+  const chip = await p.locator(".kitchen-model-note", { hasText: "Adopted plan" }).first().textContent();
   if (!/Butter Chicken|new dish|add/i.test(chip ?? "")) problems.push(`[check] dashboard chip doesn't name the API run: ${chip}`);
   await p.screenshot({ path: `${out}/dashboard-adopted-api.png` });
 });
@@ -87,10 +87,12 @@ await step("watch API run in Hall (API replay + narration)", async () => {
   await p.getByRole("button", { name: "Saved", exact: true }).click();
   await p.getByText("· API").first().click();
   await p.getByText("simulated on the API").waitFor({ timeout: 30000 });
-  await p.getByRole("button", { name: "Watch in 3D" }).click();
+  await p.getByRole("button", { name: "Watch replay" }).click();
   await p.waitForURL(/\/hall/);
-  await p.getByText("Replayed on the API", { exact: false }).waitFor({ timeout: 120000 });
-  await p.locator("g.student").first().waitFor({ timeout: 20000 });
+  await p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 120000 });
+  await p.getByText("Student stories", { exact: true }).click();
+  await p.locator(".student-directory .link").first().click();
+  await p.getByRole("button", { name: "Top-down view" }).click();
   await p.locator(".narration").first().waitFor({ timeout: 90000 });
   await p.screenshot({ path: `${out}/hall-api.png`, fullPage: true });
 });
@@ -112,10 +114,10 @@ await step("bundle lever-grid scenario replays from the API", async () => {
   await p.locator('input[type="range"]').first().fill("1.1");
   await p.getByRole("button", { name: "Run 30 nights" }).click();
   await p.getByText("from the offline bundle").waitFor();
-  await p.getByRole("button", { name: "Watch in 3D" }).click();
+  await p.getByRole("button", { name: "Watch replay" }).click();
   await p.waitForURL(/\/hall/);
   await Promise.race([
-    p.getByText("Replayed on the API", { exact: false }).waitFor({ timeout: 120000 }),
+    p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 120000 }),
     p.getByText(/couldn't replay/).waitFor({ timeout: 120000 }).then(() => { throw new Error("API couldn't replay the lever-grid hash"); }),
   ]);
 });

@@ -25,28 +25,28 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
   const p = await page(w, h);
   await step(`${tag} hall loads`, async () => {
     await p.goto(`${base}/hall`);
-    await p.getByText("Right now").waitFor({ timeout: 20000 });
-    await p.locator("g.student").first().waitFor({ timeout: 20000 });
+    await p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 20000 });
+    await p.getByRole("button", { name: "Inspect Latino" }).waitFor({ timeout: 20000 });
     await p.screenshot({ path: `${out}/hall-${tag}.png`, fullPage: true });
   });
   if (tag === "desktop") {
     await step("hall play 2s", async () => {
-      const before = await p.locator(".topbar ~ .content b.tnum").first().textContent();
+      const before = await p.getByTestId("playback-clock").textContent();
       await p.getByRole("button", { name: "Play", exact: true }).click();
       await p.waitForTimeout(2000);
       await p.getByRole("button", { name: "Pause", exact: true }).click();
-      const after = await p.locator(".topbar ~ .content b.tnum").first().textContent();
+      const after = await p.getByTestId("playback-clock").textContent();
       if (before === after) throw new Error(`clock did not advance (${before})`);
     });
-    await step("hall color by wait", async () => { await p.getByRole("button", { name: "Wait time" }).click(); });
+    await step("hall color by wait", async () => { await p.getByLabel("Color by").selectOption("wait"); });
     await step("hall station click", async () => {
       await p.getByRole("button", { name: /^Grill:/ }).click();
       await p.getByRole("heading", { name: "Grill" }).waitFor();
     });
-    await step("hall 3D overview", async () => {
-      await p.getByRole("button", { name: "3D overview" }).click();
-      await p.getByAltText(/3D overview/).waitFor();
-      await p.getByRole("button", { name: "Top-down" }).click();
+    await step("hall camera views", async () => {
+      await p.getByRole("button", { name: "Top-down view" }).click();
+      await p.getByRole("img", { name: /^Top-down plan/ }).waitFor();
+      await p.getByRole("button", { name: "Isometric view" }).click();
     });
     await step("hall scrub keyboard", async () => {
       await p.getByRole("slider", { name: "Playback time" }).focus();
@@ -81,24 +81,24 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
       await p.getByText("smaller batches of favorites").first().waitFor();
       await p.getByRole("button", { name: /^Adopt for/ }).click();
       await p.goto(`${base}/dashboard`);
-      await p.locator(".chip", { hasText: "Adopted" }).first().waitFor({ timeout: 10000 });
+      await p.locator(".kitchen-model-note", { hasText: "Adopted plan" }).first().waitFor({ timeout: 10000 });
     });
-    await step("lab watch in 3D", async () => {
+    await step("lab watch replay", async () => {
       await p.goto(`${base}/lab`);
       await p.getByText("Results vs. baseline").waitFor();
-      await p.getByRole("button", { name: "Watch in 3D" }).click();
+      await p.getByRole("button", { name: "Watch replay" }).click();
       await p.waitForURL(/\/hall/);
-      await p.getByText("Right now").waitFor({ timeout: 20000 });
+      await p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 20000 });
     });
     await step("dashboard date switch", async () => {
       await p.goto(`${base}/dashboard`);
       await p.getByLabel("Date").selectOption("2026-11-18");
-      await p.locator(".chip", { hasText: "Friendsgiving" }).first().waitFor({ timeout: 10000 });
+      await p.getByLabel("Date").locator("option:checked", { hasText: "Friendsgiving" }).waitFor({ state: "attached", timeout: 10000 });
       await p.screenshot({ path: `${out}/dashboard-nov18.png`, fullPage: true });
     });
     await step("hall other date baseline", async () => {
       await p.goto(`${base}/hall`);
-      await p.locator("g.student").first().waitFor({ timeout: 20000 });
+      await p.getByRole("button", { name: "Inspect Latino" }).waitFor({ timeout: 20000 });
     });
   }
   if (tag === "phone") {

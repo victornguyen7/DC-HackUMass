@@ -20,25 +20,34 @@ export default function Waste() {
   const first = nights[0]?.date, last = nights[nights.length - 1]?.date;
   return (
     <>
-      <TopBar title="Waste Record" sub="Recorded waste vs. what the recommended plan would have done"
+      <TopBar title="Insights" sub="Recorded waste vs. what the recommended plan would have done"
         scenario={d ? { preset: d.b.plan, lever: "" } : undefined} scenarioPrefix="Plan"
         dateControl={first ? <span className="chip" style={{ padding: "6px 10px", borderRadius: 8 }}>{dateLabel(first, { month: "short", day: "numeric" })} – {dateLabel(last!, { month: "short", day: "numeric" })}</span> : undefined} />
-      <div className="content">
+      <div className="content insights-content">
         <div className="banner"><span className="chip warn">Synthetic</span>Recorded numbers are synthetic, shaped like MetaFoodX / LeanPath exports, until UMass Dining shares real data. Simulated numbers always come with a range.</div>
         {data.error && <ErrorBox error={data.error} />}
         {data.loading && <Loading />}
         {d && (
           <>
-            <div className="row">
+            <div className="row insights-filters">
+              <div className="row insights-period" role="group" aria-label="Time range">
               {([[28, "Last 4 weeks"], [56, "Last 8 weeks"], [0, "All recorded"]] as const).map(([w, l]) => (
                 <button key={l} className="pill" aria-pressed={win === w} onClick={() => setWin(w)}
                   disabled={w === 56 && d.h.nights.length < 56} title={w === 56 && d.h.nights.length < 56 ? `Only ${d.h.nights.length} nights recorded` : undefined}>{l}</button>
               ))}
-              <span className="faint">·</span>
+              </div>
+              <label className="insights-station-select">Station
+                <select className="btn" value={station ?? ""} onChange={(e) => setStation(e.target.value || null)}>
+                  <option value="">All stations</option>
+                  {stationsOf(d.b, d.h).map((s) => <option key={s} value={s}>{stationName(s)}</option>)}
+                </select>
+              </label>
+              <div className="row insights-station-pills" role="group" aria-label="Station">
               <button className="pill" aria-pressed={station === null} onClick={() => setStation(null)}>All stations</button>
               {stationsOf(d.b, d.h).map((s) => (
                 <button key={s} className="pill" aria-pressed={station === s} onClick={() => setStation(s)}>{stationName(s)}</button>
               ))}
+              </div>
               <span className="spacer" />
               <button className="btn" onClick={() => exportSummary(nights, d.b)}>Export summary</button>
             </div>
@@ -230,20 +239,17 @@ function TopDishes({ h, station }: { h: WasteHistory; station: string | null }) 
       <h2>Top waste dishes</h2>
       <div className="hint" style={{ marginBottom: 8 }}>Recorded pre-consumer waste per night served (all {n} recorded nights)</div>
       <div className="scroll-x">
-        <table className="t">
-          <thead><tr><th>Dish</th><th>Station</th><th className="n">lb / night</th><th className="n">Expired</th><th className="n">Left at close</th><th className="n">Plate</th></tr></thead>
+        <table className="t top-waste-table">
+          <thead><tr><th>Dish</th><th className="n">Change</th><th className="n">$ / week</th></tr></thead>
           <tbody>
             {rows.map((d) => (
               <tr key={d.dish_id}>
                 <td>{d.dish}</td>
-                <td className="muted">{stationName(d.station)}</td>
-                <td className="n">{fmt1(d.pre_consumer_lb / n)}</td>
-                <td className="n">{fmtInt(d.expired_lb)}</td>
-                <td className="n">{fmtInt(d.close_lb)}</td>
-                <td className="n">{fmtInt(d.plate_lb)}</td>
+                <td className="n">—</td>
+                <td className="n">—</td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={6} className="muted">No top-waste dishes at this station.</td></tr>}
+            {!rows.length && <tr><td colSpan={3} className="muted">No top-waste dishes at this station.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -259,26 +265,23 @@ function TopDishesPlan({ b, station }: { b: Backtest; station: string | null }) 
   return (
     <section className="card">
       <h2>Top waste dishes</h2>
-      <div className="hint" style={{ marginBottom: 8 }}>Expired + left at close, per night the dish was served · {b.headline.nights} back-tested nights · plan = average of 10 simulated nights</div>
+      <div className="hint" style={{ marginBottom: 8 }}>Estimated change in waste and weekly cost with the recommended plan.</div>
       <div className="scroll-x">
-        <table className="t">
-          <thead><tr><th>Dish</th><th>Station</th><th className="n">Recorded lb</th><th className="n">With plan</th><th className="n">Change</th><th className="n">$ / week</th></tr></thead>
+        <table className="t top-waste-table">
+          <thead><tr><th>Dish</th><th className="n">Change</th><th className="n">$ / week</th></tr></thead>
           <tbody>
             {rows.map((d) => (
               <tr key={d.dish_id}>
                 <td title={`served on ${d.nights} of ${b.headline.nights} nights`}>{d.dish}</td>
-                <td className="muted">{stationName(d.station)}</td>
-                <td className="n">{fmt1(d.recorded_lb_per_night)}</td>
-                <td className="n">{fmt1(d.plan_lb_per_night)}</td>
                 <td className="n">{d.change_pct == null ? "—" : <span className={d.change_pct < -1 ? "good-text" : d.change_pct > 1 ? "bad-text" : ""}>{d.change_pct > 0 ? "+" : d.change_pct < 0 ? "−" : "±"}{fmt1(Math.abs(d.change_pct))}%</span>}</td>
                 <td className="n">{d.usd_saved_per_week >= 0 ? `$${fmtInt(d.usd_saved_per_week)} saved` : `$${fmtInt(-d.usd_saved_per_week)} more`}</td>
               </tr>
             ))}
-            {!rows.length && <tr><td colSpan={6} className="muted">No recorded waste at this station.</td></tr>}
+            {!rows.length && <tr><td colSpan={3} className="muted">No recorded waste at this station.</td></tr>}
           </tbody>
         </table>
       </div>
-      <div className="hint" style={{ marginTop: 6 }}>Recorded numbers are synthetic. Some dishes waste more under the plan; the total still drops.</div>
+      <div className="hint" style={{ marginTop: 6 }}>Negative change means less waste. Estimates use synthetic records across {b.headline.nights} back-tested nights.</div>
     </section>
   );
 }

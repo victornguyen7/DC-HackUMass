@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { niceMax } from "../components/Charts";
-import { ErrorBox, Loading, TopBar } from "../components/Shell";
+import { ErrorBox, InsightsTabs, Loading, TopBar } from "../components/Shell";
 import { loadBacktest, loadFacts, loadHistory } from "../lib/data";
 import { dateLabel, downloadCSV, fmt1, fmtInt, PRESET_LABELS, stationName } from "../lib/format";
 import { useAsync } from "../lib/hooks";
@@ -24,6 +24,7 @@ export default function Waste() {
         scenario={d ? { preset: d.b.plan, lever: "" } : undefined} scenarioPrefix="Plan"
         dateControl={first ? <span className="chip" style={{ padding: "6px 10px", borderRadius: 8 }}>{dateLabel(first, { month: "short", day: "numeric" })} – {dateLabel(last!, { month: "short", day: "numeric" })}</span> : undefined} />
       <div className="content insights-content">
+        <InsightsTabs />
         <div className="banner"><span className="chip warn">Synthetic</span>Recorded numbers are synthetic, shaped like MetaFoodX / LeanPath exports, until UMass Dining shares real data. Simulated numbers always come with a range.</div>
         {data.error && <ErrorBox error={data.error} />}
         {data.loading && <Loading />}

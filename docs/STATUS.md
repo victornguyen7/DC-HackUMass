@@ -106,7 +106,7 @@ Last updated: 2026-11-13, engine 0.6.2.
 | --- | --- | --- |
 | 1 | Gemini API | ◐ Ask box, narration, explain, dish prior, embeddings on Gemini; function calling and menu photo open |
 | 2 | Agentic hack (Sentient) | ✗ Planning agent not built (needs tools + loop; optimizer N6 optional) |
-| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **similar-night search (pgvector + DiskANN) built ⚠️ not committed**; 500-night demo query and MCP open |
+| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built ⚠️ not committed; 500-night demo query and MCP open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 

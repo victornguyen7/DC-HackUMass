@@ -1,0 +1,137 @@
+/* Insights › Similar nights. Reading surface from FRONTEND_REDESIGN_PLAN.md "Visual system":
+   opaque high-contrast panels, burgundy for the primary action, amber for provenance/attention,
+   green paired with a text label, tabular numerals, 4/8 px rhythm, 8–12 px radii. */
+
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------------------------------------------------------------- Insights sub-navigation */
+.insights-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.insights-tabs a { position: relative; padding: 10px 14px 12px; text-decoration: none; color: var(--text-2); font-weight: 500; font-size: 14px; border-radius: 8px 8px 0 0; }
+.insights-tabs a:hover { color: var(--text); background: var(--bg-muted); }
+.insights-tabs a.active { color: var(--text); }
+.insights-tabs a.active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--maroon); }
+
+.similar-provenance { padding: 6px 10px; border-radius: 8px; }
+
+/* ---------------------------------------------------------------- layout */
+.similar-layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 24px; align-items: start; }
+.similar-results { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* ---------------------------------------------------------------- form */
+.similar-form { position: sticky; top: 16px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.similar-form h2 { font-size: 19px; line-height: 26px; letter-spacing: -.3px; }
+.similar-lede { margin: -12px 0 0; color: var(--text-2); font-size: 13px; line-height: 1.55; }
+.similar-field { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.similar-field > label, .similar-field > legend { font-size: 12px; font-weight: 600; color: var(--text); padding: 0; margin-bottom: 6px; }
+.similar-field > label { margin-bottom: 0; }
+.similar-field input[type="date"], .similar-field input[type="number"], .similar-field select {
+  height: 40px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--bg-surface, #fff);
+  color: var(--text); font: inherit; font-size: 14px; font-variant-numeric: tabular-nums; width: 100%;
+}
+.similar-field input:focus-visible, .similar-field select:focus-visible { outline: 2px solid var(--maroon); outline-offset: 1px; border-color: var(--maroon); }
+.similar-field input[aria-invalid="true"] { border-color: var(--bad); }
+.similar-field-hint { margin: 0; color: var(--text-2); font-size: 12px; line-height: 1.45; }
+.similar-field-error { margin: 0; color: var(--bad); font-size: 12px; line-height: 1.45; font-weight: 500; }
+.similar-offline-hint { margin-top: -8px; }
+
+.similar-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.similar-choice { position: relative; }
+.similar-choice input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.similar-choice span {
+  display: flex; align-items: center; justify-content: center; min-height: 36px; padding: 6px 8px; border-radius: 8px;
+  border: 1px solid var(--border-strong); background: var(--bg-surface, #fff); color: var(--text-2); font-size: 13px; font-weight: 500;
+}
+.similar-choice input:hover + span { background: var(--bg-muted); color: var(--text); }
+.similar-choice input:checked + span { background: var(--maroon-soft); border-color: var(--maroon); color: var(--maroon); }
+.similar-choice input:focus-visible + span { outline: 2px solid var(--maroon); outline-offset: 2px; }
+
+.similar-toggle { position: relative; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.similar-toggle input { position: absolute; opacity: 0; width: 36px; height: 22px; margin: 0; cursor: pointer; }
+.similar-switch { flex: none; position: relative; width: 36px; height: 22px; border-radius: 999px; background: var(--border-strong); transition: background .15s; }
+.similar-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px #0003; transition: transform .15s; }
+.similar-toggle input:checked + .similar-switch { background: var(--maroon); }
+.similar-toggle input:checked + .similar-switch::after { transform: translateX(14px); }
+.similar-toggle input:focus-visible + .similar-switch { outline: 2px solid var(--maroon); outline-offset: 2px; }
+.similar-toggle b { display: block; font-size: 13px; font-weight: 600; line-height: 22px; }
+.similar-toggle small { display: block; color: var(--text-2); font-size: 12px; line-height: 1.4; }
+
+.similar-form .seg { width: 100%; }
+.similar-form .seg button { flex: 1; padding: 6px 10px; font-size: 13px; }
+.similar-submit { justify-content: center; width: 100%; height: 44px; font-size: 14px; }
+.similar-spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ffffff66; border-top-color: #fff; animation: similar-spin .8s linear infinite; }
+@keyframes similar-spin { to { transform: rotate(360deg); } }
+
+/* ---------------------------------------------------------------- states */
+.similar-empty { padding: 40px 32px; text-align: center; color: var(--text-2); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.similar-empty svg { color: var(--text-3); }
+.similar-empty h2 { color: var(--text); font-size: 18px; }
+.similar-empty p { margin: 0; max-width: 46ch; line-height: 1.6; }
+.similar-skeleton { display: flex; flex-direction: column; gap: 12px; }
+.similar-skeleton-row { height: 96px; background: linear-gradient(90deg, var(--bg-surface, #fff) 0%, var(--bg-muted) 50%, var(--bg-surface, #fff) 100%); background-size: 200% 100%; animation: similar-shimmer 1.4s ease-in-out infinite; }
+.similar-skeleton-row:first-child { height: 150px; }
+@keyframes similar-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.similar-alert { padding: 16px 18px; font-size: 13px; line-height: 1.5; }
+.similar-alert b { font-size: 14px; margin-bottom: 4px; }
+.similar-alert p { margin: 0 0 12px; }
+
+/* ---------------------------------------------------------------- summary */
+.similar-summary { padding: 20px 24px; }
+.similar-summary .overline { margin: 0; }
+.similar-summary h2 { font-size: 24px; line-height: 30px; letter-spacing: -.5px; margin-top: 2px; }
+.similar-conditions { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
+.similar-meta { margin-top: 12px; gap: 8px; font-size: 12px; }
+.similar-outcomes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 18px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.similar-outcome { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; background: var(--bg-surface, #fff); min-width: 0; }
+.similar-outcome-label { font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--text-2); }
+.similar-outcome strong { font-size: 24px; line-height: 30px; font-weight: 600; letter-spacing: -.4px; }
+.similar-outcome strong small { font-size: 13px; font-weight: 500; color: var(--text-2); letter-spacing: 0; }
+.similar-outcome-range { font-size: 12px; color: var(--text-2); }
+.similar-caption { margin: 10px 0 0; font-size: 12px; color: var(--text-2); }
+
+/* ---------------------------------------------------------------- matches */
+.similar-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.similar-match {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr) 132px minmax(0, 300px); gap: 8px 20px; align-items: center; padding: 16px 20px;
+}
+.similar-rank { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--bg-muted); color: var(--text-2); font-size: 13px; font-weight: 600; }
+.similar-match:first-child .similar-rank { background: var(--maroon); color: #fff; }
+.similar-match-main { min-width: 0; }
+.similar-match h3 { font-size: 15px; line-height: 22px; }
+.similar-tags { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.similar-tags .chip { gap: 4px; }
+.similar-score { display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 6px; row-gap: 6px; }
+.similar-score-value { font-size: 22px; line-height: 26px; font-weight: 600; letter-spacing: -.4px; }
+.similar-score-label { font-size: 12px; color: var(--text-2); }
+.similar-score .bar-track { grid-column: 1 / -1; display: block; height: 5px; }
+.similar-score .bar-fill { display: block; background: var(--maroon); }
+.similar-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.similar-facts dt { font-size: 11px; color: var(--text-2); }
+.similar-facts dd { margin: 2px 0 0; font-size: 14px; font-weight: 500; white-space: nowrap; }
+
+.similar-method { font-size: 13px; color: var(--text-2); padding: 4px 2px; }
+.similar-method summary { cursor: pointer; color: var(--text); font-weight: 500; width: fit-content; }
+.similar-method p { margin: 8px 0 0; max-width: 80ch; line-height: 1.6; }
+
+/* ---------------------------------------------------------------- responsive */
+@media (max-width: 1280px) {
+  .similar-match { grid-template-columns: 32px minmax(0, 1fr) 120px; }
+  .similar-facts { grid-column: 2 / -1; }
+}
+@media (max-width: 960px) {
+  .similar-layout { grid-template-columns: minmax(0, 1fr); }
+  .similar-form { position: static; }
+}
+@media (max-width: 600px) {
+  .similar-form { padding: 18px 16px; }
+  .similar-summary { padding: 18px 16px; }
+  .similar-outcomes { grid-template-columns: minmax(0, 1fr); }
+  .similar-match { grid-template-columns: 28px minmax(0, 1fr); padding: 14px 16px; }
+  .similar-score { grid-column: 2; }
+  .similar-facts { grid-column: 1 / -1; }
+  .insights-tabs a { padding: 10px 10px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .similar-spinner, .similar-skeleton-row { animation: none; }
+  .similar-switch, .similar-switch::after { transition: none; }
+}
+@media print { .similar-form, .insights-tabs { display: none; } .similar-layout { grid-template-columns: 1fr; } }

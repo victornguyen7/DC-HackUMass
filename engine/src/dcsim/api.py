@@ -11,6 +11,8 @@
     GET  /api/waste/calibration                         held-out forecast check (`dcsim calibrate`, Tiger Data)
     GET/POST/DELETE /api/scenarios, POST /api/scenarios/{id}/adopt   (adopting logs a forecast to the Tiger ledger)
     GET  /api/forecasts?date=                           forecast ledger, scored once the night is observed
+    GET  /api/similar-nights?date=&students=&weather=&event_night=&menu_date=&limit=
+                                                        recorded nights most like a target night (pgvector)
     LLM layer (ENGINE.md §7; LLM_PROVIDER=gemini|groq|mock, template fallbacks):
     GET  /api/ai/status                              provider, models, backups, load limits
     POST /api/ai/similar-dishes                     menu dishes like a new one (Gemini embeddings, keyword fallback)
@@ -540,6 +542,22 @@ def forecasts(date: str | None = None) -> list[dict]:
             return tsdb.scorecard(conn, date)
     except Exception as e:
         raise HTTPException(503, f"Tiger unreachable: {str(e)[:200]}") from e
+
+
+@app.get("/api/similar-nights")
+def similar_nights_endpoint(
+    date: str, students: int, weather: str = "clear", event_night: bool = False,
+    menu_date: str | None = None, limit: int = 5,
+) -> dict:
+    """Recorded nights before `date` most like it (docs/SIMILAR_NIGHTS.md). Tiger pgvector, else local files."""
+    from . import similar_nights as sn
+
+    try:
+        return sn.search(date, students, weather, event_night, menu_date, limit)
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e
+    except sn.SearchUnavailable as e:
+        raise HTTPException(503, sn.UNAVAILABLE) from e
 
 
 @app.delete("/api/scenarios/{scenario_id}", status_code=204, dependencies=[Depends(require_admin)])

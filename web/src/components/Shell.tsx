@@ -25,7 +25,7 @@ export function Sidebar() {
       <nav className="app-links" aria-label="Pages">
         <NavLink to="/hall" className={({ isActive }) => isActive || location.pathname === "/lab" ? "active" : ""}><Icon name="hall" /><span>Simulation</span></NavLink>
         <NavLink to="/dashboard"><Icon name="dashboard" /><span>Kitchen plan</span></NavLink>
-        <NavLink to="/waste"><Icon name="waste" /><span>Insights</span></NavLink>
+        <NavLink to="/waste" className={({ isActive }) => isActive || location.pathname === "/similar-nights" ? "active" : ""}><Icon name="waste" /><span>Insights</span></NavLink>
       </nav>
       <details className="model-information"><summary>Model information</summary><div>
         <h3>Know what the model knows</h3>
@@ -34,6 +34,16 @@ export function Sidebar() {
         <p>The replay shows one representative night. Comparison ranges describe variation across simulated nights.</p>
       </div></details>
     </header>
+  );
+}
+
+/** Insights sections: recorded waste history and the similar-night search. */
+export function InsightsTabs() {
+  return (
+    <nav className="insights-tabs no-print" aria-label="Insights sections">
+      <NavLink to="/waste" end>Waste history</NavLink>
+      <NavLink to="/similar-nights">Similar nights</NavLink>
+    </nav>
   );
 }
 

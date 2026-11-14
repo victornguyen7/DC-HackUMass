@@ -16,6 +16,17 @@ HEADLINE = ("waste_total", "stockout_min_total", "missed_first_choice_rate", "wa
 WIN_THRESHOLD = 0.6  # a change is "better" only if it wins in >= 60% of nights
 
 
+def min_meaningful(metric: str, baseline_median: float) -> float:
+    """Smallest median paired difference worth a verdict (ISSUES C1); below it the verdict is "same"."""
+    return {
+        "waste_total": max(5.0, 0.01 * abs(baseline_median)),  # portions
+        "stockout_min_total": 1.0,  # minutes
+        "missed_first_choice_rate": 0.005,  # half a percentage point
+        "wait_p90": 0.5,  # minutes
+        "missed_meal": max(2.0, 0.01 * abs(baseline_median)),  # students
+    }.get(metric, 0.0)
+
+
 @dataclass
 class NightResult:
     metrics: NightMetrics
@@ -142,13 +153,17 @@ def compare(baseline: ScenarioResult, scenario: ScenarioResult) -> dict:
         win = float(np.mean(diffs < 0))
         lose = float(np.mean(diffs > 0))
         med = float(np.median(diffs))
-        if win >= WIN_THRESHOLD and med < 0:
+        floor = min_meaningful(k, float(np.median([getattr(b, k) for b, _ in pairs])))
+        if abs(med) < floor:
+            verdict = "same"  # a real but too-small difference (e.g. 0.1 min of wait) isn't "worse"
+        elif win >= WIN_THRESHOLD and med < 0:
             verdict = "better"
         elif lose >= WIN_THRESHOLD and med > 0:
             verdict = "worse"
         else:
             verdict = "inconclusive"
-        out["metrics"][k] = {"diff": _pct(diffs), "win_rate": round(win, 3), "verdict": verdict}
+        out["metrics"][k] = {"diff": _pct(diffs), "win_rate": round(win, 3), "verdict": verdict,
+                             "min_meaningful": round(floor, 4)}
     return out
 
 

@@ -17,7 +17,7 @@ Last updated: 2026-11-13, engine 0.6.1.
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 14 | 2 | 7 | [ISSUES.md](ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 18 | 1 | 4 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 1 | 6 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
 | Web UI issues | 7 | 4 | 5 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
@@ -38,10 +38,10 @@ Last updated: 2026-11-13, engine 0.6.1.
 | E8 | Seats are zones; personas can't overlap; add-ons use no stock | ◐ Partly (0.6.0: pescetarian diet and allergies added; seat zones, overlap, add-ons open) |
 | B1 | Back-test grades the engine against itself | ✗ Open (needs real data) |
 | B2 | Plan wins on waste, loses on stockouts | ◐ Partly (0.5.0 back-test: waste 8.5% lower, but 83 stockout-min/night under the plan vs 76 baseline plan and 69 recorded; UI shows the trade-off; optimizer objective open) |
-| C1 | Tiny differences labeled "worse" | ✗ Open |
-| A1 | No authentication on admin / LLM routes | ✗ Open — **do before hosting publicly** |
-| A2 | Memory grows with jobs and cached traces | ✗ Open |
-| A3 | Trace format differs from the spec | ◐ Partly (`?include=series` built 0.6.0; `POST /warm`, `/backtest` job not built) |
+| C1 | Tiny differences labeled "worse" | ✅ Fixed (verdict "same" below a per-metric minimum: waste max(5, 1%), stockouts 1 min, missed first 0.5 pp, wait p90 0.5 min, missed meal max(2, 1%)) |
+| A1 | No authentication on admin / LLM routes | ✅ Fixed (`DCSIM_ADMIN_TOKEN` guards DELETE scenarios, `/api/warm`, `/api/backtest`; AI routes rate-limited per IP, `DCSIM_AI_RATE`, default 20/min) |
+| A2 | Memory grows with jobs and cached traces | ✅ Fixed (finished jobs expire after `DCSIM_JOB_TTL_S`=900 s, max 200 kept; trace cache 2, `DCSIM_TRACE_CACHE`) |
+| A3 | Trace format differs from the spec | ✅ Fixed (`?include=series`, `POST/GET /api/warm`, `POST/GET /api/backtest` background jobs) |
 | L1 | Persona generation paused | ✗ Open |
 | L2 | Groq free-tier output limit | ✅ Mitigated (Gemini default, load gate, bundle narrations) |
 | L3 | Groq key pasted into a chat | ✗ Open — rotate after the hackathon |

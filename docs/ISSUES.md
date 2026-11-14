@@ -18,10 +18,10 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | E8 | Low | Engine | Seats are zones, not tables; personas can't overlap; add-ons use no stock |
 | B1 | High | Back-test | The back-test grades the engine against itself |
 | B2 | Medium | Back-test | The plan "wins" on waste but loses on stockouts |
-| C1 | Medium | Compare | Tiny differences get labeled "worse" |
-| A1 | Medium | API | Admin actions have no authentication |
-| A2 | Medium | API | Memory grows with jobs and cached traces |
-| A3 | Low | API | Trace format differs from the spec (`?include=series` built in 0.6.0; `POST /warm`, `/backtest` job not) |
+| C1 | ~~Medium~~ | Compare | ~~Tiny differences get labeled "worse"~~ **Fixed 2026-11-13 (see STATUS.md)** |
+| A1 | ~~Medium~~ | API | ~~Admin actions have no authentication~~ **Fixed 2026-11-13 (see STATUS.md)** |
+| A2 | ~~Medium~~ | API | ~~Memory grows with jobs and cached traces~~ **Fixed 2026-11-13 (see STATUS.md)** |
+| A3 | ~~Low~~ | API | ~~Trace format differs from the spec (`?include=series` built in 0.6.0; `POST /warm`, `/backtest` job not)~~ **Fixed 2026-11-13 (see STATUS.md)** |
 | L1 | High | LLM | Persona generation is paused (bad output on Qwen 27B) |
 | L2 | ~~Medium~~ | LLM | ~~Groq free-tier limit: 1,000 output tokens per minute~~ **Mitigated:** Gemini is the default provider; load gate + bundle narrations |
 | L3 | Medium | LLM | The Groq key was pasted into a chat |

@@ -7,3 +7,6 @@ os.environ["LLM_PROVIDER"] = "mock"
 # whose loader only sets missing keys. The DB round-trip test connects via DCSIM_TSDB_TEST_URL itself.
 os.environ["DCSIM_TSDB_URL"] = ""
 os.environ["TIGER_SERVICE_ID"] = ""
+
+# Admin routes stay open in tests even if engine/.env sets a token (tests that need one set it themselves).
+os.environ["DCSIM_ADMIN_TOKEN"] = ""

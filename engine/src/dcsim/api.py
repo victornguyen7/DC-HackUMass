@@ -19,6 +19,11 @@
     POST /api/ask                                   plain English -> lever settings (not run)
     POST /api/ai/dish-prior                         persona affinities for a new dish ("AI estimate")
     POST /api/explain                               why a scenario won or lost (from cached nights)
+    Admin (DCSIM_ADMIN_TOKEN, if set: header `Authorization: Bearer <token>` or `X-Admin-Token`):
+    DELETE /api/scenarios/{id}
+    POST /api/warm  | GET /api/warm                 precompute baseline + presets per date (background job)
+    POST /api/backtest | GET /api/backtest          re-run the back-test on the synthetic history (background job)
+    The AI routes are limited per client IP (DCSIM_AI_RATE per minute, default 20) -> 429 with Retry-After.
 
 The browser never simulates; it plays back results. Identical in-flight
 requests join one job (ENGINE.md §5.5).
@@ -27,14 +32,17 @@ requests join one job (ENGINE.md §5.5).
 from __future__ import annotations
 
 import asyncio
+import hmac
 import json
 import os
+import time
 import uuid
+from collections import deque
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
@@ -65,6 +73,7 @@ class Job:
         self.events: list[dict] = []
         self.result: dict | None = None
         self.error: str | None = None
+        self.finished_at: float | None = None  # monotonic time the job ended; expired after JOB_TTL_S
         self._changed = asyncio.Condition()
 
     async def emit(self, event: str, data: dict) -> None:
@@ -91,13 +100,29 @@ class Job:
                 "result": self.result, "error": self.error}
 
 
+JOB_TTL_S = float(os.environ.get("DCSIM_JOB_TTL_S", 900))  # finished jobs are kept this long (ISSUES A2)
+JOB_KEEP_MAX = 200  # and at most this many finished jobs
+
+
 class Jobs:
     def __init__(self, svc: Service):
         self.svc = svc
         self.by_id: dict[str, Job] = {}
         self.running: dict[tuple[str, int], Job] = {}
 
+    def prune(self, now: float | None = None) -> None:
+        """Forget finished jobs older than JOB_TTL_S, and all but the newest JOB_KEEP_MAX finished
+        ones (results stay in the store; only the job record and its event log go)."""
+        now = time.monotonic() if now is None else now
+        done = [j for j in self.by_id.values() if j.finished_at is not None]
+        drop = {j.id for j in done if now - j.finished_at > JOB_TTL_S}
+        keep = sorted((j for j in done if j.id not in drop), key=lambda j: j.finished_at)
+        drop |= {j.id for j in keep[:-JOB_KEEP_MAX]} if len(keep) > JOB_KEEP_MAX else set()
+        for jid in drop:
+            del self.by_id[jid]
+
     def start(self, cfg: ScenarioConfig, n: int) -> Job:
+        self.prune()
         key = (hash_of(cfg), n)
         if key in self.running:  # in-flight dedupe
             return self.running[key]
@@ -136,6 +161,7 @@ class Jobs:
             job.status, job.error = "error", f"{type(e).__name__}: {e}"
             await job.emit("error", {"message": job.error})
         finally:
+            job.finished_at = time.monotonic()
             self.running.pop(key, None)
 
 
@@ -154,6 +180,9 @@ async def lifespan(app: FastAPI):
     app.state.svc, app.state.jobs = svc, Jobs(svc)
     app.state.llm = LLM(store)
     app.state.narrator = Narrator(svc, app.state.llm)
+    app.state.admin = {}  # name -> admin job status (warm, backtest)
+    app.state.ai_limit = RateLimit(int(os.environ.get("DCSIM_AI_RATE", "20")))
+    TRACES.size = int(os.environ.get("DCSIM_TRACE_CACHE", "2"))  # decompressed traces kept for narration (ISSUES A2)
     warm = None
     if os.environ.get("DCSIM_WARM") == "1":  # precompute baseline + presets for every date (ENGINE.md §6.1)
         warm = asyncio.create_task(_warm(svc))
@@ -180,6 +209,54 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------- admin token and AI rate limit (ISSUES A1)
+
+
+def require_admin(request: Request) -> None:
+    """Admin routes need DCSIM_ADMIN_TOKEN when it is set (read at request time, so engine/.env works).
+    Unset: open, for local development."""
+    token = os.environ.get("DCSIM_ADMIN_TOKEN")
+    if not token:
+        return
+    auth = request.headers.get("authorization", "")
+    given = auth[7:] if auth.lower().startswith("bearer ") else request.headers.get("x-admin-token", "")
+    if not hmac.compare_digest(given.encode(), token.encode()):
+        raise HTTPException(401, "admin token required (Authorization: Bearer <DCSIM_ADMIN_TOKEN>)")
+
+
+class RateLimit:
+    """Sliding one-minute window per client IP, so a hosted demo can't burn the LLM quota."""
+
+    def __init__(self, per_minute: int):
+        self.per_minute = per_minute
+        self.hits: dict[str, deque] = {}
+
+    def check(self, key: str, now: float | None = None) -> float | None:
+        """None if allowed (and counted), else seconds until the next call is allowed."""
+        if self.per_minute <= 0:
+            return None
+        now = time.monotonic() if now is None else now
+        q = self.hits.setdefault(key, deque())
+        while q and now - q[0] >= 60:
+            q.popleft()
+        if len(q) >= self.per_minute:
+            return round(60 - (now - q[0]), 1)
+        q.append(now)
+        if len(self.hits) > 10_000:  # drop idle clients
+            for k in [k for k, v in self.hits.items() if not v or now - v[-1] >= 60]:
+                del self.hits[k]
+        return None
+
+
+def limit_ai(request: Request) -> None:
+    lim: RateLimit | None = getattr(request.app.state, "ai_limit", None)
+    if lim is None:
+        return
+    wait = lim.check(request.client.host if request.client else "unknown")
+    if wait is not None:
+        raise HTTPException(429, f"too many AI requests; try again in {wait:.0f} s", headers={"Retry-After": str(int(wait) + 1)})
 
 
 def _svc(request: Request) -> Service:
@@ -465,7 +542,7 @@ def forecasts(date: str | None = None) -> list[dict]:
         raise HTTPException(503, f"Tiger unreachable: {str(e)[:200]}") from e
 
 
-@app.delete("/api/scenarios/{scenario_id}", status_code=204)
+@app.delete("/api/scenarios/{scenario_id}", status_code=204, dependencies=[Depends(require_admin)])
 def delete_scenario(scenario_id: str, request: Request) -> Response:
     if not _svc(request).store.delete_scenario(scenario_id):
         raise HTTPException(404, "unknown scenario")
@@ -506,7 +583,7 @@ async def trace_highlights(config_hash: str, request: Request, seed: int | None 
     return {"config_hash": config_hash, "seed": seed, "students": night_highlights(cfg, trace, k)}
 
 
-@app.get("/api/narrate/{config_hash}/{seed}/{student_id}")
+@app.get("/api/narrate/{config_hash}/{seed}/{student_id}", dependencies=[Depends(limit_ai)])
 async def narrate(config_hash: str, seed: int, student_id: int, request: Request, stream: bool = True):
     narrator: Narrator = request.app.state.narrator
     try:
@@ -534,7 +611,7 @@ class AskRequest(BaseModel):
     date: str | None = None
 
 
-@app.post("/api/ask")
+@app.post("/api/ask", dependencies=[Depends(limit_ai)])
 def ask_endpoint(body: AskRequest, request: Request) -> dict:
     from .ai.ask import ask
 
@@ -552,7 +629,7 @@ class DishPriorRequest(BaseModel):
     dish: NewDish
 
 
-@app.post("/api/ai/dish-prior")
+@app.post("/api/ai/dish-prior", dependencies=[Depends(limit_ai)])
 def dish_prior_endpoint(body: DishPriorRequest, request: Request) -> dict:
     from .ai.dish_prior import estimate
 
@@ -572,7 +649,7 @@ class SimilarRequest(BaseModel):
     k: int = Field(3, ge=1, le=10)
 
 
-@app.post("/api/ai/similar-dishes")
+@app.post("/api/ai/similar-dishes", dependencies=[Depends(limit_ai)])
 def similar_dishes_endpoint(body: SimilarRequest, request: Request) -> dict:
     from .ai.similar import similar_dishes
 
@@ -588,7 +665,7 @@ class ExplainRequest(BaseModel):
     n_nights: int = Field(30, ge=1, le=200)
 
 
-@app.post("/api/explain")
+@app.post("/api/explain", dependencies=[Depends(limit_ai)])
 def explain_endpoint(body: ExplainRequest, request: Request) -> dict:
     from .ai.explain import default_baseline, explain
 
@@ -602,3 +679,99 @@ def explain_endpoint(body: ExplainRequest, request: Request) -> dict:
         raise HTTPException(404, str(e).strip("'")) from e
     except LLMError as e:
         raise HTTPException(503, f"LLM unavailable: {e}") from e
+
+
+# ---------------------------------------------------------------- admin jobs (ISSUES A3)
+
+
+class WarmRequest(BaseModel):
+    dates: list[str] | None = None  # default: every prepared date
+    presets: bool = True  # also every preset, not just the baseline
+    n_nights: int = Field(30, ge=1, le=200)
+
+
+class BacktestRequest(BaseModel):
+    plan: str | None = None  # default: the recommended plan
+    regenerate_history: bool = False  # also re-run `dcsim waste-gen` first
+
+
+def _admin_status(request: Request, name: str) -> dict:
+    return request.app.state.admin.get(name) or {"name": name, "status": "idle"}
+
+
+def _admin_start(request: Request, name: str, total: int, work) -> dict:
+    """Run `work(progress)` in a thread once at a time; status is polled with GET."""
+    state = request.app.state.admin
+    if state.get(name, {}).get("status") == "running":
+        return state[name]
+    st = state[name] = {"name": name, "status": "running", "done": 0, "total": total, "started": time.time()}
+
+    def progress(k: int = 1) -> None:
+        st["done"] += k
+
+    async def run() -> None:
+        try:
+            st["result"] = await asyncio.to_thread(work, progress)
+            st["status"] = "done"
+        except Exception as e:  # reported by GET
+            st["status"], st["error"] = "error", f"{type(e).__name__}: {e}"
+        st["finished"] = time.time()
+
+    asyncio.create_task(run())
+    return st
+
+
+@app.post("/api/warm", status_code=202, dependencies=[Depends(require_admin)])
+async def warm(body: WarmRequest, request: Request) -> dict:
+    """Precompute baseline (+ presets) results for dates, so the pages answer from cache."""
+    svc = _svc(request)
+    dates = body.dates or available_dates()
+    unknown = sorted(set(dates) - set(available_dates()))
+    if unknown:
+        raise HTTPException(404, f"no menu for {unknown}")
+    cfgs = [build_config(ScenarioRequest(date=d, preset=p)) for d in dates for p in [None, *(PRESETS if body.presets else [])]]
+
+    def work(progress) -> dict:
+        ran = 0
+        for cfg in cfgs:
+            for b in svc.batches(cfg, body.n_nights):
+                svc.run_batch(cfg, b)
+                ran += len(b)
+            progress()
+        return {"configs": len(cfgs), "nights_run": ran}
+
+    return _admin_start(request, "warm", len(cfgs), work)
+
+
+@app.get("/api/warm")
+def warm_status(request: Request) -> dict:
+    return _admin_status(request, "warm")
+
+
+@app.post("/api/backtest", status_code=202, dependencies=[Depends(require_admin)])
+async def backtest_job(body: BacktestRequest, request: Request) -> dict:
+    """Re-run the back-test (and optionally the synthetic history) as a background job; the result
+    replaces data/synthetic/worcester/backtest.json, served by GET /api/waste/backtest."""
+    from .backtest import RECOMMENDED_PLAN, write_backtest
+
+    plan = body.plan or RECOMMENDED_PLAN
+    if plan not in PRESETS:
+        raise HTTPException(422, f"unknown plan {plan!r}")
+    svc = _svc(request)
+
+    def work(progress) -> dict:
+        if body.regenerate_history:
+            from .synthetic import generate
+
+            generate()
+        progress()
+        path = write_backtest(svc, plan)
+        progress()
+        return {"plan": plan, "headline": json.loads(path.read_text())["headline"]}
+
+    return _admin_start(request, "backtest", 2, work)
+
+
+@app.get("/api/backtest")
+def backtest_status(request: Request) -> dict:
+    return _admin_status(request, "backtest")

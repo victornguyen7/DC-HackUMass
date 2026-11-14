@@ -489,3 +489,15 @@ def test_forecast_reorder_preset(cfg):
     base = sum(run_night(cfg, s).metrics.waste_total for s in (1, 2, 3))
     fore = sum(run_night(fc, s).metrics.waste_total for s in (1, 2, 3))
     assert fore < base  # cooks to the expected rush: less left over
+
+
+def test_tiny_differences_are_same_not_worse(cfg):
+    """ISSUES C1: a difference below the metric's minimum that matters gets verdict "same"."""
+    from dcsim.runner import compare, min_meaningful, run_scenario
+
+    base = run_scenario(cfg, 4, workers=1)
+    tweak = run_scenario(cfg.updated(label="tiny", empty_pan_wait_min=cfg.empty_pan_wait_min + 0.01), 4, workers=1)
+    out = compare(base, tweak)["metrics"]
+    assert all("min_meaningful" in m for m in out.values())
+    assert out["wait_p90"]["verdict"] in ("same", "inconclusive")
+    assert min_meaningful("waste_total", 3000) == 30 and min_meaningful("stockout_min_total", 50) == 1.0

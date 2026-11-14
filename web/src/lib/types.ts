@@ -71,10 +71,10 @@ export type StationResult = {
   max_queue: Range;
 };
 
-export type Verdict = "better" | "worse" | "inconclusive";
+export type Verdict = "better" | "worse" | "inconclusive" | "same"; // "same": difference below the minimum that matters (engine 0.6.2)
 export type Compare = {
   n_pairs: number;
-  metrics: Record<string, { diff: Range; win_rate: number; verdict: Verdict }>;
+  metrics: Record<string, { diff: Range; win_rate: number; verdict: Verdict; min_meaningful?: number }>;
 };
 
 export type Headline = {

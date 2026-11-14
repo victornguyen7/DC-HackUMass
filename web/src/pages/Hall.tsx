@@ -201,7 +201,7 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
               {result.vs_baseline ? <>
                 {([["waste_total", "Waste", "portions"], ["wait_p90", "Long waits (p90)", "min"], ["stockout_min_total", "Dish unavailability", "dish-min"]] as const).map(([id, label, unit]) => {
                   const metric = result.vs_baseline!.metrics[id];
-                  return <div className="guided-metric" key={id}><div><span>{label}</span><b className={`chip ${metric.verdict === "better" ? "good" : metric.verdict === "worse" ? "warn" : ""}`}>{metric.verdict === "inconclusive" ? "Unclear" : metric.verdict}</b></div>
+                  return <div className="guided-metric" key={id}><div><span>{label}</span><b className={`chip ${metric.verdict === "better" ? "good" : metric.verdict === "worse" ? "warn" : ""}`}>{metric.verdict === "inconclusive" ? "Unclear" : metric.verdict === "same" ? "No real difference" : metric.verdict}</b></div>
                     <strong>{signed(metric.diff.p50, fmt1)} <small>{unit}</small></strong><p>Range {signed(metric.diff.p10, fmt1)} to {signed(metric.diff.p90, fmt1)}</p></div>;
                 })}
                 <p className="guide-footnote">Paired changes from baseline, with 10–90% ranges. Dish-minutes sum unavailable time across dishes.</p>

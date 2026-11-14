@@ -142,3 +142,63 @@ def test_trace_and_scenarios(client):
     assert client.post(f"/api/scenarios/{sid}/adopt").json()["status"] == "adopted"
     assert any(s["scenario_id"] == sid for s in client.get(f"/api/scenarios?date={DATE}").json())
     assert client.delete(f"/api/scenarios/{sid}").status_code == 204
+
+
+# ---------------------------------------------------------------- ISSUES A1-A3
+
+
+def test_admin_token_guards_delete_and_admin_jobs(client, monkeypatch):
+    res = _simulate(client, {"date": DATE, "n_nights": N})
+    sid = client.post("/api/scenarios", json={"name": "to delete", "config_hash": res["config_hash"]}).json()["scenario_id"]
+    monkeypatch.setenv("DCSIM_ADMIN_TOKEN", "s3cret")
+    assert client.delete(f"/api/scenarios/{sid}").status_code == 401
+    assert client.delete(f"/api/scenarios/{sid}", headers={"X-Admin-Token": "wrong"}).status_code == 401
+    assert client.post("/api/warm", json={"dates": [DATE], "presets": False, "n_nights": N}).status_code == 401
+    # save and adopt stay open (judges use the Lab)
+    assert client.post("/api/scenarios", json={"name": "open", "config_hash": res["config_hash"]}).status_code == 201
+    assert client.delete(f"/api/scenarios/{sid}", headers={"Authorization": "Bearer s3cret"}).status_code == 204
+
+
+def test_ai_routes_are_rate_limited(client):
+    from dcsim.api import RateLimit
+
+    old = client.app.state.ai_limit
+    client.app.state.ai_limit = RateLimit(2)
+    try:
+        codes = [client.post("/api/ask", json={"question": "10% busier", "date": DATE}).status_code for _ in range(3)]
+        assert codes[:2] == [200, 200] and codes[2] == 429
+        r = client.post("/api/explain", json={"config_hash": "x"})
+        assert r.status_code == 429 and int(r.headers["retry-after"]) >= 1
+    finally:
+        client.app.state.ai_limit = old
+    lim = RateLimit(1)
+    assert lim.check("a", now=0) is None and lim.check("a", now=10) == 50.0 and lim.check("a", now=61) is None
+
+
+def test_finished_jobs_expire(client):
+    import time as _t
+
+    from dcsim.api import JOB_KEEP_MAX, JOB_TTL_S
+
+    jobs = client.app.state.jobs
+    r = client.post("/api/simulate", json={"date": DATE, "preset": "trim_slow", "n_nights": N})
+    job_id = r.json().get("job_id")
+    if job_id:
+        _wait(client, job_id)
+        assert job_id in jobs.by_id
+        jobs.prune(now=_t.monotonic() + JOB_TTL_S + 1)
+        assert job_id not in jobs.by_id
+    assert JOB_KEEP_MAX >= 10
+
+
+def test_warm_and_backtest_admin_jobs(client):
+    r = client.post("/api/warm", json={"dates": [DATE], "presets": False, "n_nights": N})
+    assert r.status_code == 202 and r.json()["total"] == 1
+    end = time.time() + 120
+    while client.get("/api/warm").json()["status"] == "running" and time.time() < end:
+        time.sleep(0.1)
+    st = client.get("/api/warm").json()
+    assert st["status"] == "done" and st["done"] == 1 and st["result"]["configs"] == 1
+    assert client.post("/api/warm", json={"dates": ["2030-01-01"]}).status_code == 404
+    assert client.post("/api/backtest", json={"plan": "nope"}).status_code == 422
+    assert client.get("/api/backtest").json()["status"] in ("idle", "running", "done", "error")

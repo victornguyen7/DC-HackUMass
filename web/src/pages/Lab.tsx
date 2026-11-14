@@ -600,7 +600,8 @@ function Slider({ label, unit, min, max, step, base, value, onChange, fmt }: {
 const verdictChip = (v: Verdict | undefined, wr: number | undefined, n: number) =>
   v === "better" ? <span className="chip good">better · {Math.round((wr ?? 0) * n)}/{n}</span>
     : v === "worse" ? <span className="chip bad">worse · {Math.round((1 - (wr ?? 0)) * n)}/{n}</span>
-      : <span className="chip">inconclusive</span>;
+      : v === "same" ? <span className="chip" title="The difference is smaller than what matters for this metric">no real difference</span>
+        : <span className="chip">inconclusive</span>;
 
 function ResultsCard({ run, date, adopted, apiUp, onWatch, onAdopt }: { run: Run; date: string; adopted?: Scenario; apiUp: boolean; onWatch?: () => void; onAdopt?: () => void }) {
   const r = run.result, b = run.base, vs = r.vs_baseline;

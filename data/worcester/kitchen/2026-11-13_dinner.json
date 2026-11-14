@@ -10,7 +10,7 @@
    "cook_min": 30,
    "hold_min": 150,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 295.0
   },
   "soups.spicy_lentil_veggie_soup": {
@@ -20,7 +20,7 @@
    "cook_min": 30,
    "hold_min": 150,
    "max_batches": 9,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 369.5
   },
   "grill.black_bean_burger": {
@@ -30,7 +30,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 142.5
   },
   "grill.halal_burger_patty": {
@@ -40,7 +40,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 122.5
   },
   "grill.halal_french_fries": {
@@ -50,7 +50,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 122.0
   },
   "grill.hand_cut_sweet_potato_fries": {
@@ -60,7 +60,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 101.0
   },
   "grill.herb_roasted_mushrooms": {
@@ -70,7 +70,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 82.0
   },
   "grill.roasted_cauliflower": {
@@ -80,7 +80,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 82.0
   },
   "grill.savory_baked_chicken_thigh": {
@@ -90,7 +90,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 125.0
   },
   "desserts.blueberry_crisp": {
@@ -100,7 +100,7 @@
    "cook_min": 30,
    "hold_min": 180,
    "max_batches": 12,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 430.5
   },
   "desserts.orange_cake_w_cream_cheese_frosting": {
@@ -110,7 +110,7 @@
    "cook_min": 30,
    "hold_min": 180,
    "max_batches": 9,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 319.0
   },
   "breads.multigrain_bread": {
@@ -120,7 +120,7 @@
    "cook_min": 5,
    "hold_min": 180,
    "max_batches": 9,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 277.0
   },
   "noodle_bowl.hot_pot_chicken_beef_pork_fish_shellfish": {
@@ -130,7 +130,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 17,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 531.5
   },
   "display.make_your_own_waffles": {
@@ -140,7 +140,7 @@
    "cook_min": 30,
    "hold_min": 180,
    "max_batches": 14,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 508.5
   },
   "street_food.plain_sushi_rice": {
@@ -150,7 +150,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 222.0
   },
   "street_food.stir_fry_green_vegetables": {
@@ -160,7 +160,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 145.5
   },
   "street_food.teriyaki_salmon": {
@@ -170,7 +170,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 171.5
   },
   "street_food.teriyaki_tofu_w_sesame_seeds": {
@@ -180,7 +180,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 191.5
   },
   "tandoor.chicken_tikka_masala_rasoi": {
@@ -190,7 +190,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 106.0
   },
   "tandoor.cumin_basmati_rice": {
@@ -200,7 +200,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 110.0
   },
   "tandoor.naan": {
@@ -210,7 +210,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 98.5
   },
   "tandoor.paneer_jalfrezi_cheese": {
@@ -220,7 +220,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 111.0
   },
   "tandoor.stir_fried_cabbage_w_curry_leaves_tamarind_chutney": {
@@ -230,7 +230,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 81.5
   },
   "tandoor.vegetable_curry_samosa": {
@@ -240,7 +240,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 121.5
   },
   "tandoor.watermelon_curry_salad": {
@@ -250,7 +250,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 81.5
   },
   "mediterranean.beef_bolognese_sauce_w_pancetta_pork": {
@@ -260,7 +260,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 140.5
   },
   "mediterranean.fish_w_almond_romesco_scallions": {
@@ -270,7 +270,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 153.0
   },
   "mediterranean.linguini_pasta": {
@@ -280,7 +280,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 94.5
   },
   "mediterranean.orecchiette_pasta": {
@@ -290,7 +290,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 109.0
   },
   "mediterranean.orecchiette_w_peas_pancetta_pork": {
@@ -300,7 +300,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 5,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 69.5
   },
   "mediterranean.roasted_root_vegetables_w_balsamic": {
@@ -310,7 +310,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 134.5
   },
   "seasons.agrodolce_honeynut_squash": {
@@ -320,7 +320,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 78.5
   },
   "seasons.eggplant_parmesan": {
@@ -330,7 +330,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 168.5
   },
   "seasons.gf_garlic_bread": {
@@ -340,7 +340,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 106.0
   },
   "seasons.gf_penne_pasta": {
@@ -350,7 +350,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 117.0
   },
   "seasons.plant_based_gnocchi_mushrooms": {
@@ -360,7 +360,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 152.5
   },
   "seasons.sauteed_broccoli": {
@@ -370,7 +370,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 86.0
   },
   "latino.chicken_taco_filling": {
@@ -380,7 +380,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 164.0
   },
   "latino.corn_w_red_peppers": {
@@ -390,7 +390,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 101.0
   },
   "latino.filling_for_beef_tacos": {
@@ -400,7 +400,7 @@
    "cook_min": 25,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 141.5
   },
   "latino.pinto_beans": {
@@ -410,7 +410,7 @@
    "cook_min": 15,
    "hold_min": 60,
    "max_batches": 7,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 94.5
   },
   "latino.quinoa_mango_salad": {
@@ -420,7 +420,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 134.5
   },
   "latino.yellow_rice": {
@@ -430,7 +430,7 @@
    "cook_min": 20,
    "hold_min": 75,
    "max_batches": 6,
-   "last_batch_min": 1240,
+   "last_batch_min": 1245,
    "expected_demand": 132.0
   },
   "late.grill.black_bean_burger": {
@@ -439,11 +439,11 @@
    "reorder_point": 33,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 10,
+   "max_batches": 8,
    "last_batch_min": 1420,
    "expected_demand": 85.5,
    "taper_from_min": 1325,
-   "taper_batch_size": 8,
+   "taper_batch_size": 15,
    "taper_reorder_point": 13
   },
   "late.grill.halal_burger_patty": {
@@ -452,11 +452,11 @@
    "reorder_point": 30,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 10,
+   "max_batches": 7,
    "last_batch_min": 1420,
    "expected_demand": 80.0,
    "taper_from_min": 1325,
-   "taper_batch_size": 7,
+   "taper_batch_size": 14,
    "taper_reorder_point": 11
   },
   "late.grill.halal_french_fries": {
@@ -465,11 +465,11 @@
    "reorder_point": 35,
    "cook_min": 20,
    "hold_min": 75,
-   "max_batches": 9,
+   "max_batches": 7,
    "last_batch_min": 1420,
    "expected_demand": 106.5,
    "taper_from_min": 1305,
-   "taper_batch_size": 12,
+   "taper_batch_size": 23,
    "taper_reorder_point": 13
   },
   "late.grill.roasted_cauliflower": {
@@ -478,11 +478,11 @@
    "reorder_point": 20,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 11,
+   "max_batches": 8,
    "last_batch_min": 1420,
    "expected_demand": 79.0,
    "taper_from_min": 1315,
-   "taper_batch_size": 7,
+   "taper_batch_size": 14,
    "taper_reorder_point": 7
   },
   "late.grill.savory_baked_chicken_thigh": {
@@ -491,11 +491,11 @@
    "reorder_point": 27,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 10,
+   "max_batches": 7,
    "last_batch_min": 1420,
    "expected_demand": 75.0,
    "taper_from_min": 1325,
-   "taper_batch_size": 7,
+   "taper_batch_size": 13,
    "taper_reorder_point": 10
   },
   "late.display.buffalo_chicken_for_mac_cheese": {
@@ -504,11 +504,11 @@
    "reorder_point": 92,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 12,
+   "max_batches": 9,
    "last_batch_min": 1420,
    "expected_demand": 208.0,
    "taper_from_min": 1320,
-   "taper_batch_size": 10,
+   "taper_batch_size": 20,
    "taper_reorder_point": 16
   },
   "late.display.homemade_macaroni_cheese": {
@@ -517,11 +517,11 @@
    "reorder_point": 105,
    "cook_min": 25,
    "hold_min": 60,
-   "max_batches": 12,
+   "max_batches": 9,
    "last_batch_min": 1420,
    "expected_demand": 234.0,
    "taper_from_min": 1325,
-   "taper_batch_size": 10,
+   "taper_batch_size": 20,
    "taper_reorder_point": 16
   },
   "late.display.make_your_own_waffles": {
@@ -530,11 +530,11 @@
    "reorder_point": 87,
    "cook_min": 30,
    "hold_min": 180,
-   "max_batches": 10,
+   "max_batches": 7,
    "last_batch_min": 1420,
    "expected_demand": 155.5,
    "taper_from_min": 1305,
-   "taper_batch_size": 12,
+   "taper_batch_size": 24,
    "taper_reorder_point": 21
   },
   "late.display.plant_based_buffalo_chic_n": {
@@ -543,11 +543,11 @@
    "reorder_point": 42,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 11,
+   "max_batches": 8,
    "last_batch_min": 1420,
    "expected_demand": 145.0,
    "taper_from_min": 1310,
-   "taper_batch_size": 10,
+   "taper_batch_size": 20,
    "taper_reorder_point": 10
   },
   "late.display.steamed_broccoli": {
@@ -556,11 +556,11 @@
    "reorder_point": 45,
    "cook_min": 15,
    "hold_min": 60,
-   "max_batches": 11,
+   "max_batches": 8,
    "last_batch_min": 1420,
    "expected_demand": 158.5,
    "taper_from_min": 1310,
-   "taper_batch_size": 10,
+   "taper_batch_size": 20,
    "taper_reorder_point": 10
   },
   "late.display.waffle_fries": {
@@ -569,11 +569,11 @@
    "reorder_point": 76,
    "cook_min": 30,
    "hold_min": 180,
-   "max_batches": 11,
+   "max_batches": 8,
    "last_batch_min": 1420,
    "expected_demand": 126.0,
    "taper_from_min": 1300,
-   "taper_batch_size": 12,
+   "taper_batch_size": 24,
    "taper_reorder_point": 19
   }
  },

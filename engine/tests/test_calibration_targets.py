@@ -47,10 +47,9 @@ def test_busiest_arrivals(nights):
     assert _min(t["from"]) <= busiest < _min(t["to"]), busiest
 
 
-@pytest.mark.xfail(reason="ISSUES E3, borderline: 0.5.0 gives 12-16% on Nov 13 but ~21% on Nov 17", strict=False)
 def test_rarely_runs_out_late(nights):
-    # 0.4.2: 23-49% of dinner dishes ran out after 8:30 pm (ISSUES E3). 0.5.0's kitchen capacity
-    # makes batches that wait for a cook finish nearer 9 pm: 12-16% (Nov 13), ~21% (Nov 17).
+    # 0.4.2: 23-49% of dinner dishes ran out after 8:30 pm (ISSUES E3); 0.5.0: 12-21%; 0.6.1 (last
+    # dinner batch 15 min before close instead of 20): 5-15% on all 8 dates.
     cfg, runs = nights
     t = T["late_runouts"]
     dinner = [d.id for d in cfg.menu if d.period == "dinner" and d.id in cfg.kitchen]

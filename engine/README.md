@@ -1,6 +1,6 @@
 # dcsim: DC What-If simulation engine
 
-SimPy model of a Worcester night, **dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am**, on the **real menu** (see `../docs/SPEC.md` §7 and `../docs/ENGINE.md`). Engine 0.6.0.
+SimPy model of a Worcester night, **dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am**, on the **real menu** (see `../docs/SPEC.md` §7 and `../docs/ENGINE.md`). Engine 0.6.1.
 
 What one night includes: arrivals by date (weekday and event multipliers), an entrance swipe queue, friends who arrive and sit together, students with diets (incl. pescetarian) and allergies, who pick lines from where they stand and stay in them; staffed and self-serve stations (servers can change by hour); pans as SimPy Containers with hold times, hotel-pan size limits and a hot-hold cabinet; a kitchen with limited cooks and equipment; seats counted per zone.
 
@@ -85,7 +85,7 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 
 ## Guarantees (tested)
 - **Golden baseline:** Nov 13 headline numbers (seeds 1–10) are pinned in `tests/golden/nov13.json`; any change that moves them fails until the file is rewritten on purpose.
-- **Calibration targets** (`data/worcester/calibration_targets.json`): peak dinner line 30–45, busiest arrivals 7–8 pm, fewer than 30 inside at 11:30 pm; "rarely runs out late" is a known borderline failure (ISSUES E3).
+- **Calibration targets** (`data/worcester/calibration_targets.json`): peak dinner line 30–45, busiest arrivals 7–8 pm, fewer than 30 inside at 11:30 pm, and few dinner dishes running out after 8:30 pm (all pass since 0.6.1).
 - **Clean nights:** no server held, nobody waiting, lots equal to the pan level at the end of every night.
 - Same config + seed → identical metrics; a no-op change gives a paired difference of exactly 0.
 - Cooked = served + expired + leftover, for every dish and night; to-order dishes never waste or run out.

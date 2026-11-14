@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.1 (review of the simulation-core work: E3 fixed, late-night kitchen retune, an expiry bug, describer and /ask gaps), 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -10,7 +10,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | --- | --- | --- | --- |
 | E1 | ~~High~~ | Engine | ~~Students walk away from far too many lines~~ **Fixed in 0.4.1** |
 | E2 | ~~High~~ | Engine | ~~Students keep moving through the hall after close~~ **Fixed in 0.4.1** (late night 9 pm–12 am) |
-| E3 | Medium | Engine | Stockouts are higher than the team observes |
+| E3 | ~~Medium~~ | Engine | ~~Stockouts are higher than the team observes~~ **Fixed in 0.6.1** against the team's targets (confirm with R06 data) |
 | E4 | ~~Medium~~ | Engine | ~~Made-to-order dishes show "empty pan" events after close~~ **Fixed in 0.4.1** (`closed` event) |
 | E5 | Low | Engine | ~~Same crowd every date~~ **Fixed in 0.4.2** with placeholder multipliers; needs real swipe data |
 | E6 | ~~Medium~~ | Engine | ~~Noodle Bowl popularity is set per station, not per dish~~ **Fixed in 0.6.0** (per dish, team list) |
@@ -74,12 +74,13 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
   - ~~Late-night waste is high (42%)~~ **Fixed in 0.4.2:** late-night demand collapses after ~10:30 pm but the plan kept cooking full batches until 11:40. The planner now tapers (`kitchen_defaults.json → planner_by_period.late_night`): once fewer than 1.5 batches are still to be eaten, the kitchen cooks top-up batches of 25% with a matching reorder point (`BatchPlan.taper_*`), and keeps no spare batches. Late-night waste fell from 38–42% to 18–23% of cooked portions on every date; late stockout-minutes are 17–48 a night (were 9–40). A tuning choice, not staff-confirmed; real late-night production numbers would settle it.
 - Tests: `test_late_night_period`, `test_hall_nearly_empty_by_1130` (every date), `test_dinner_arrivals_unchanged_by_late_night`, `test_crowd_lever_scales_late_night`.
 
-### E3 · Medium · Stockouts are higher than the team observes
+### E3 · Fixed (0.6.1; confirm with real data) · Stockouts are higher than the team observes
 - Nov 13 baseline: about 131 stockout-minutes and 26% of cooked portions wasted (2,904 portions). The team says food *rarely* runs out late on a normal day. The planner's `reorder_factor` 1.2 ("setting A") was a compromise.
 - Likely tied to E1 and E2: students who tour stations and stay after close drain and "see" pans that real students wouldn't.
 - **Update (0.4.1):** with E1 and E2 fixed and the plans rebuilt, Nov 13 is about 61–96 dinner stockout-minutes per night (was 100–160). Re-check against the team's "rarely runs out" before closing this.
 - **Update (0.5.0):** kitchen capacity makes batches that wait for a cook finish nearer 9 pm, so fewer pans run dry at the very end: Nov 13 dinner+late stockouts ~74 min/night (golden baseline), dinner dishes running out after 8:30 pm 12–16% on Nov 13 but ~21% on Nov 17 (team target ≤ 20%). Checked by `tests/test_calibration_targets.py::test_rarely_runs_out_late`, marked as a known borderline failure.
-- **Fix:** re-tune after E1 and E2 are fixed. Needs R06 (planned vs actual production) to settle.
+- **Fixed (0.6.1):** the dinner plan's last batch is now 15 min before close (was 20; `kitchen_defaults.json → planner_by_period.dinner`): dinner dishes running out after 8:30 pm are 5–15% on all 8 dates (team target ≤ 20%; 10 min would give 2–8% for 11% more waste). Late night was also retuned for kitchen limits (below, "0.6.1 review"). Nov 13 now: about 38 stockout-minutes per night (dinner 14, late night 20), dinner waste ~29% of cooked portions. `test_rarely_runs_out_late` is a regular test again.
+- **Still open:** the targets are the team's observations, not data. R06 (planned vs actual production) would settle it.
 
 ### E4 · Fixed (0.4.1) · Made-to-order dishes show "empty pan" events after close
 - **Measured:** 389 `empty_pan` events for Sushi rolls, all after close. Close sets every pan to 0, made-to-order ones included. The narration and 3D replay show "the California Roll pan was empty".
@@ -209,6 +210,24 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 ### T2 · Fixed · Starlette deprecation warning
 - **Fixed:** `uv run pytest` shows no warnings (checked 2026-11-13).
 - The FastAPI test client warns "Using `httpx` with `starlette.testclient` is deprecated; install `httpx2`". Harmless today.
+
+---
+
+## 6b. Review of the simulation-core work (engine 0.6.1, 2026-11-13)
+
+Found while checking engines 0.5.0–0.6.0; all fixed in 0.6.1 unless noted.
+
+| ID | Kind | Issue | Fix |
+| --- | --- | --- | --- |
+| R1 | Bug (rare) | A student waiting at an empty pan when a lot expired could take a portion without the lot bookkeeping (`PanStock.skip_lots` was on during the expiry) | `_expire` lets waiting students take their portions first, then expires the rest. `test_night_ends_clean` checks lots = pan level every night |
+| R2 | Calibration | Late-night stockouts rose to ~49 min/night (Nov 13; 69 on Nov 17) once kitchen limits existed: the 0.4.2 taper cooks many 25% top-up batches and each costs a cook its full prep time; 4 late-night cooks queue | Taper batches 50% and 5 late-night cooks: Nov 13 late stockouts 19–20 min, Nov 17 38, late-night waste unchanged (~20–24%) |
+| R3 | Gap | "Why?" and the /ask settings list described kitchen staff, shifts and forecast reordering as no change | `ai/describe.py` lists cooks, equipment, servers by hour, forecast reordering and a separate late-night crowd |
+| R4 | Gap | The plain-English box couldn't set cooks or server shifts | `ai/ask.py` (prompt `ask-v3`): `cooks` and `shifts` in the plan (optional, so cached v2 replies stay valid); the mock understands "one more cook" |
+| R5 | Model note (open) | Stockout-minutes count food on hand (line + hot-hold cabinet), so a 0.5-min pan swap isn't a stockout, though students see an empty pan and it counts in `empty_seen` | By design; documented in ENGINE.md |
+| R6 | Model note (open) | The mock (no-AI) /ask parser matches preset names inside questions: "an extra server at grill" also picks the `extra_server` preset. Gemini doesn't | Low; only the offline fallback |
+| R7 | Trade-off (open) | The `forecast_reorder` preset saves waste but can cost run-outs: Nov 13 waste −13%, stockouts 36 → 107 min; Nov 17 waste −6%, stockouts 66 → 57 | Shown as a choice in the Lab; an optimizer (N6) could tune its factor and safety stock per dish |
+
+Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s without kitchen limits, pans, swipe and groups); the forecast preset ~0.26 s.
 
 ---
 

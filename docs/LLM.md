@@ -1,6 +1,6 @@
 # LLM layer
 
-Status as of 2026-11-13 (engine 0.6.0; the LLM layer itself last changed at 0.3.4, plus narration wording for 0.4.1 events). **Provider: Google Gemini** (switched from Groq on 2026-11-13; Groq still works with `LLM_PROVIDER=groq`). Models, tested features and ideas: [GEMINI.md](GEMINI.md). Code: `engine/src/dcsim/ai/`. Design background: ENGINE.md §7 (plan) and §7.6 (as built).
+Status as of 2026-11-13 (engine 0.6.1; the LLM layer last changed in 0.6.1: `/ask` prompt `ask-v3` can set cooks per period and server shifts, and `describe.py` lists kitchen staff, shifts and forecast reordering; narration wording changed for 0.4.1 events). **Provider: Google Gemini** (switched from Groq on 2026-11-13; Groq still works with `LLM_PROVIDER=groq`). Models, tested features and ideas: [GEMINI.md](GEMINI.md). Code: `engine/src/dcsim/ai/`. Design background: ENGINE.md §7 (plan) and §7.6 (as built).
 
 **Personas are paused.** The engine uses the hand-written `data/worcester/personas.json`. LLM persona generation is turned off until a different approach replaces it (see [Personas](#personas-paused)). Everything else in this file is live.
 

@@ -20,7 +20,12 @@ def config_changes(base: ScenarioConfig, cfg: ScenarioConfig) -> list[str]:
     out = []
     bc, cc = base.crowd, cfg.crowd
     if abs(cc.multiplier - bc.multiplier) > 1e-9:
-        out.append(f"Crowd: x{cc.multiplier / bc.multiplier:.2f} (about {round(cc.expected_students * cc.multiplier):,} students)")
+        out.append(f"Crowd: x{cc.multiplier / bc.multiplier:.2f} (about {round(cc.expected_students * cc.multiplier):,} dinner students)")
+    bl, cl = base.late_crowd, cfg.late_crowd
+    if bl is not None and cl is not None and abs(cl.multiplier - bl.multiplier) > 1e-9 and abs(
+        cl.multiplier / bl.multiplier - cc.multiplier / bc.multiplier
+    ) > 1e-9:  # only when late night moves differently from dinner
+        out.append(f"Late-night crowd: x{cl.multiplier / bl.multiplier:.2f}")
     if cc.shift_min != bc.shift_min:
         out.append(f"Arrival waves shifted {cc.shift_min - bc.shift_min:+g} min")
     bs = {s.id: s for s in base.stations}
@@ -30,6 +35,17 @@ def config_changes(base: ScenarioConfig, cfg: ScenarioConfig) -> list[str]:
             out.append(f"{s.name} servers: {b.servers} -> {s.servers}")
         if b and s.service_median_min != b.service_median_min:
             out.append(f"{s.name} time per item: {b.service_median_min:g} -> {s.service_median_min:g} min")
+        if b and s.shifts != b.shifts:
+            steps = ", ".join(f"{n} from {clock(t)}" for t, n in s.shifts) or f"{s.servers} all night"
+            out.append(f"{s.name} servers by hour: {steps}")
+    bk, ck = base.kitchen_resources, cfg.kitchen_resources
+    if bk is not None and ck is not None:
+        for period, n in ck.cooks.items():
+            if n != bk.cooks.get(period):
+                out.append(f"Cooks ({period.replace('_', ' ')}): {bk.cooks.get(period)} -> {n}")
+        for name, n in ck.equipment.items():
+            if n != bk.equipment.get(name):
+                out.append(f"{name.replace('_', ' ').capitalize()} units: {bk.equipment.get(name)} -> {n}")
     bm, cm = {d.id: d for d in base.menu}, {d.id: d for d in cfg.menu}
     names = {**{k: d.name for k, d in bm.items()}, **{k: d.name for k, d in cm.items()}}
     for k in bm.keys() - cm.keys():
@@ -44,4 +60,8 @@ def config_changes(base: ScenarioConfig, cfg: ScenarioConfig) -> list[str]:
         diffs = [f"{label} {_fmt(f, a[f])} -> {_fmt(f, b[f])}" for f, label in _PLAN_FIELDS.items() if a[f] != b[f]]
         if diffs:
             out.append(f"{names[k]}: " + ", ".join(diffs))
+    fc = [k for k in cfg.kitchen.keys() & base.kitchen.keys()
+          if cfg.kitchen[k].forecast_reorder and not base.kitchen[k].forecast_reorder]
+    if fc:
+        out.append(f"Forecast reordering for {len(fc)} dishes: cook to the expected rush, with safety stock")
     return sorted(out)

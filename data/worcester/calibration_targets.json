@@ -24,8 +24,7 @@
   "late_runouts": {
     "after": "20:30",
     "max_share_of_dinner_dishes": 0.2,
-    "known_issue": "E3",
-    "why": "Food rarely runs out late on a normal day (team). 0.4.2: 23-49% of dinner dishes ran out after 8:30 pm (ISSUES E3). 0.5.0 (kitchen capacity): 12-16% on Nov 13, ~21% on Nov 17, so still a known, borderline failure."
+    "why": "Food rarely runs out late on a normal day (team). 0.4.2: 23-49% of dinner dishes ran out after 8:30 pm (ISSUES E3); 0.5.0: 12-21%; 0.6.1 (last dinner batch 15 min before close): 5-15% on all 8 dates."
   },
   "in_hall_at_1130": {
     "max": 30,

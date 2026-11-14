@@ -149,6 +149,8 @@ def student(env, s, hall):
 - **Series:** `metrics.night_series` samples the exact step functions per minute; `runner.series_summary` → `?include=series`.
 - **Population:** allergies (`ScenarioConfig.allergies`, survey shares, `Stream.ALLERGY`) remove labeled dishes from a student's list; pescetarian diet (data.py tags meat-free fish/seafood dishes `pescetarian`); groups (`ScenarioConfig.groups`, `Stream.GROUP`) share the first member's arrival time and seat zone.
 - **Entrance:** `swipe_readers` card readers (`simpy.Resource`) before `enter`.
+- **Stockout vs empty pan:** stockout-minutes and series use `pan.level` (line + cabinet), so a pan swap is not a stockout; students see `on_line`, so a swap does count in `empty_seen` (ISSUES R5).
+- **0.6.1 tuning:** dinner plans stop 15 min before close (`planner_by_period.dinner`, E3); late-night taper batches are 50% and there are 5 late-night cooks (ISSUES R2).
 - **Kitchen:** preset `forecast_reorder` sets `BatchPlan.forecast_reorder`: threshold = 1.2 × expected portions over the next `cook_min + 5` min (planner `expected_demand` × the period's arrival curve) + 1.65·√that; a 5-min re-check cooks ahead of a rush.
 
 **Kitchen is event-driven, not polled.** `Pan.take()` checks the reorder condition and, if met, triggers the kitchen process. When a lot is added, one expiry event is scheduled at `expires_at` that removes whatever is left of that lot and logs it as *expired*. At close, everything left in pans is logged as *leftover*. Nothing ticks every minute, which keeps the event count low.

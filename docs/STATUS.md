@@ -3,12 +3,12 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-13, engine 0.6.0.
+Last updated: 2026-11-13, engine 0.6.1.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
 ## Before the demo
-- ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.0, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
+- ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.1, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
 - ⚠️ Commit the narration timeout fix (L5) and the similar-night search (Tiger) once they're finished.
 
 ---
@@ -17,7 +17,7 @@ Last updated: 2026-11-13, engine 0.6.0.
 
 | Tracker | ✅ Done | ◐ Partly | ✗ Open | Doc |
 | --- | --- | --- | --- | --- |
-| Engine, back-test, API, LLM, repo issues | 13 | 3 | 7 | [ISSUES.md](ISSUES.md) |
+| Engine, back-test, API, LLM, repo issues | 14 | 2 | 7 | [ISSUES.md](ISSUES.md) |
 | Not built yet (N1–N9) | 2 | 1 | 6 | [ISSUES.md §7](ISSUES.md#7-not-built-yet-n) |
 | Web UI issues | 7 | 4 | 5 | [UI_ISSUES.md](UI_ISSUES.md) |
 | Sponsor prizes | 0 | 2 | 3 | [SPONSORS.md](SPONSORS.md) |
@@ -30,7 +30,7 @@ Last updated: 2026-11-13, engine 0.6.0.
 | --- | --- | --- |
 | E1 | Students walked away from far too many lines | ✅ Fixed 0.4.1 |
 | E2 | Students kept moving through the hall after close | ✅ Fixed 0.4.1 (late night 9 pm–12 am) |
-| E3 | Stockouts higher than the team observes | ◐ Better (0.5.0: Nov 13 ~74 stockout-min; late run-outs 12–16% of dinner dishes on Nov 13 but ~21% on Nov 17 vs the team's ≤ 20%); needs R06 data |
+| E3 | Stockouts higher than the team observes | ✅ Fixed 0.6.1 vs the team targets (last dinner batch 15 min before close; late run-outs 5–15% of dinner dishes on all dates; Nov 13 ~38 stockout-min/night); confirm with R06 |
 | E4 | Made-to-order dishes showed "empty pan" after close | ✅ Fixed 0.4.1 |
 | E5 | Same crowd every date | ✅ Fixed 0.4.2 (`crowd_by_date.json`, placeholder multipliers; needs real swipe data) |
 | E6 | Noodle Bowl popularity per station, not per dish | ✅ Fixed 0.6.0 (Hot Pot, Pho, Tom Yum, Taiwan Pork 2×; ramen 1×) |
@@ -51,6 +51,18 @@ Last updated: 2026-11-13, engine 0.6.0.
 | D2 | Version numbers disagree | ✅ Fixed 2026-11-13 (both 0.5.0; test keeps them equal) |
 | T1 | Not a git repo; bundle size undecided | ✅ Fixed 2026-11-13 (GitHub; bundle committed) |
 | T2 | Starlette deprecation warning | ✅ Fixed |
+
+## 0.6.1 review ([ISSUES.md §6b](ISSUES.md))
+
+| ID | Item | Status |
+| --- | --- | --- |
+| R1 | Expiry while a student waits at the pan skipped lot bookkeeping | ✅ Fixed 0.6.1 |
+| R2 | Late-night stockouts up with kitchen limits | ✅ Fixed 0.6.1 (taper 50%, 5 late cooks) |
+| R3 | "Why?" / settings list missed kitchen staff, shifts, forecast | ✅ Fixed 0.6.1 |
+| R4 | Plain-English box couldn't set cooks or shifts | ✅ Fixed 0.6.1 (`ask-v3`) |
+| R5 | Pan swaps not counted as stockouts | ✗ By design, documented |
+| R6 | Mock /ask matches preset names in questions | ✗ Low (offline fallback only) |
+| R7 | Forecast reorder trades waste for run-outs | ✗ Open (optimizer could tune it) |
 
 ## Not built yet ([ISSUES.md §7](ISSUES.md#7-not-built-yet-n))
 

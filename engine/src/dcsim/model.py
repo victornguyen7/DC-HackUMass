@@ -305,6 +305,10 @@ class Night:
             yield self.env.timeout(lead)
         else:
             yield self.env.timeout(pan.plan.hold_min)
+        if not pan.closed:
+            # Students already waiting for this pan take their portions first (oldest lots, so
+            # possibly this one); only what is left of the lot expires. With no waiter this is a no-op.
+            pan.stock._trigger_get(None)
         if lot.portions and not pan.closed:
             pan.expired += lot.portions
             p, lot.portions = lot.portions, 0

@@ -13,7 +13,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-ENGINE_VERSION = "0.6.0"  # bump when model logic changes; invalidates cached results
+ENGINE_VERSION = "0.6.1"  # bump when model logic changes; invalidates cached results
 
 Diet = Literal["none", "vegetarian", "vegan", "halal", "pescetarian"]
 Period = Literal["dinner", "late_night"]

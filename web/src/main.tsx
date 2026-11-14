@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Waste from "./pages/Waste";
 import Lab from "./pages/Lab";
 import "./styles.css";
+import "./guided.css";
 
 function Layout() {
   return (

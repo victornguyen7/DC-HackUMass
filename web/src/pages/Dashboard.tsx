@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Bars } from "../components/Charts";
 import { ErrorBox, Loading, TopBar } from "../components/Shell";
-import { loadDates, loadMenu } from "../lib/data";
-import { clock, dateLabel, downloadCSV, fmt1, fmtInt, groupFlags, rangeText, stationName } from "../lib/format";
-import { useAsync, useScenarioResult } from "../lib/hooks";
+import { DetailDialog } from "../components/DetailDialog";
+import { clock, dateLabel, downloadCSV, fmt1, fmtInt, groupFlags, rangeText, scenarioLabel, stationName } from "../lib/format";
+import { useScenarioResult } from "../lib/hooks";
 import { BASELINE, useApp } from "../lib/store";
 import type { CookRow, Result } from "../lib/types";
 
@@ -27,46 +27,58 @@ export default function Dashboard() {
   const sc = adopted[date] ?? BASELINE;
   const res = useScenarioResult(date, sc);
   const nav = useNavigate();
-  const dates = useAsync(loadDates, []);
-  const menu = useAsync(() => loadMenu(date), [date]);
-  const info = dates.data?.find((d) => d.date === date);
+  const [params, setParams] = useSearchParams();
+  const menuTab = params.get("view") === "menu";
+  const [detail, setDetail] = useState<"production" | "staffing" | "leftovers" | "alerts" | null>(null);
+  const watch = (t: number) => { setScenario(sc); setHallTime(t); nav("/hall"); };
   const r = res.data?.result;
 
   return (
     <>
-      <TopBar title="Dashboard" sub={`Plan for tonight · ${dateLabel(date, { weekday: "short", month: "short", day: "numeric" })}`}
-        scenario={sc} scenarioPrefix={adopted[date] ? "Adopted" : "Scenario"} />
-      <div className="content">
+      <TopBar title="Kitchen plan" sub={`Plan for tonight · ${dateLabel(date, { weekday: "short", month: "short", day: "numeric" })}`}
+        scenario={sc} showBadges={false} />
+      <div className="content kitchen-content">
         {res.error && <ErrorBox error={res.error} />}
         {res.data?.fallback && <div className="banner">{res.data.reason}</div>}
         {res.loading && !r && <Loading />}
         {r && (
           <>
-            <div className="row" style={{ fontSize: 12 }}>
-              <span className="chip">Dinner {clock(r.open)}–{clock(r.dinner_close ?? r.close)}</span>
-              {r.late_close != null && <span className="chip">Late night {clock(r.dinner_close ?? r.close)}–{clock(r.late_close)}</span>}
-              <span className="chip">{info?.weekday ?? ""}{info?.weekend ? " · weekend" : ""}</span>
-              {info?.events_at_or_affecting_worcester.map((e) => <span key={e.name} className="chip info">{e.name}</span>)}
-              <span className="chip good">Menu: snapshot ({r.cook_sheet.length} dishes{menu.data?.addons ? `, ${menu.data.addons.length} add-ons` : ""})</span>
-              <span className="chip warn">Arrivals: modeled, no swipes yet</span>
-              <span className="chip">Weather: not connected</span>
-              {r.population_status !== "calibrated" && <span className="chip warn">Personas {r.population_status}</span>}
-              <span className="spacer" />
-              <Link to="/hall" className="btn ghost" onClick={() => setScenario(sc)}>View in Hall →</Link>
+            <div className="kitchen-context">
+              <span className="service-time">{clock(r.open)} – {clock(r.close)}<small>Service hours</small></span>
+              <Link to="/hall" className="link" onClick={() => setScenario(sc)}>Watch simulation →</Link>
             </div>
-            <Kpis r={r} />
-            <div className="grid-2">
-              <ArrivalsCard r={r} onPick={(t) => { setScenario(sc); setHallTime(t); nav("/hall"); }} />
-              <Alerts r={r} />
-            </div>
-            <MenuByStation r={r} />
-            <div className="grid-2">
-              <ProductionPlan r={r} date={date} />
-              <div className="stack">
-                <Staffing r={r} />
-                <LeftAtClose r={r} />
+            <nav className="kitchen-tabs" aria-label="Kitchen plan sections">
+              <button aria-current={!menuTab ? "page" : undefined} onClick={() => setParams({})}>Overview</button>
+              <button aria-current={menuTab ? "page" : undefined} onClick={() => setParams({ view: "menu" })}>Menu <span>{r.cook_sheet.length}</span></button>
+            </nav>
+            {menuTab ? <MenuByStation r={r} /> : <>
+              <Kpis r={r} />
+              <ArrivalsCard r={r} onPick={watch} onAlerts={() => setDetail("alerts")} />
+              <div className="plan-detail-cards">
+                <button className="card plan-detail-card" onClick={() => setDetail("production")}>
+                  <span className="plan-detail-icon" aria-hidden>≡</span><h2>Production plan</h2>
+                  <p>Batch sizes, refill points, and last cook times.</p>
+                  <strong>{r.cook_sheet.filter((d) => d.plan).length}<small> batch-cooked dishes</small></strong>
+                  <span className="detail-open">View production plan <span aria-hidden>↗</span></span>
+                </button>
+                <button className="card plan-detail-card" onClick={() => setDetail("staffing")}>
+                  <span className="plan-detail-icon" aria-hidden>⌘</span><h2>Staffing</h2>
+                  <p>Servers by station and expected peak queues.</p>
+                  <strong>{r.stations.filter((s) => !s.self_serve).reduce((sum, s) => sum + s.servers, 0)}<small> servers planned</small></strong>
+                  <span className="detail-open">View staffing <span aria-hidden>↗</span></span>
+                </button>
+                <button className="card plan-detail-card" onClick={() => setDetail("leftovers")}>
+                  <span className="plan-detail-icon" aria-hidden>◷</span><h2>Left at close</h2>
+                  <p>Expected leftovers and a draft pickup note.</p>
+                  <strong>{fmtInt(r.cook_sheet.reduce((sum, d) => sum + d.leftover.p50, 0))}<small> portions estimated</small></strong>
+                  <span className="detail-open">View leftovers <span aria-hidden>↗</span></span>
+                </button>
               </div>
-            </div>
+              <p className="kitchen-model-note">{adopted[date] ? "Adopted plan" : "Current plan"}: {scenarioLabel(sc.preset, sc.lever, sc.label)} · Forecast across {r.n_nights} simulated nights. Assumptions are available in Model information.</p>
+            </>}
+            {detail && <DetailDialog title={detail === "alerts" ? "Arrival alerts" : detail === "production" ? "Production plan" : detail === "staffing" ? "Staffing" : "Expected left at close"} onClose={() => setDetail(null)}>
+              {detail === "production" ? <ProductionPlan r={r} date={date} /> : detail === "staffing" ? <Staffing r={r} /> : detail === "leftovers" ? <LeftAtClose r={r} /> : <Alerts r={r} onWatch={watch} />}
+            </DetailDialog>}
           </>
         )}
       </div>
@@ -110,36 +122,37 @@ function Kpi({ label, value, range, chip }: { label: string; value: string; rang
   );
 }
 
-function ArrivalsCard({ r, onPick }: { r: Result; onPick: (t: number) => void }) {
+function ArrivalsCard({ r, onPick, onAlerts }: { r: Result; onPick: (t: number) => void; onAlerts: () => void }) {
   const peak = peakWindow(r);
   return (
     <section className="card">
       <div className="card-head">
         <div>
           <h2>Expected arrivals</h2>
-          <div className="hint">Per 10 minutes, {r.late_close != null ? "dinner and late night" : "dinner"} · from the arrival model ({r.n_nights} simulated nights) · click a bar to watch that moment in the Hall</div>
+          <div className="hint">Students per 10 minutes. Select a bar to watch that moment in the simulation.</div>
         </div>
-        <span className="chip info">{r.late_close != null ? "Dinner + late night" : "Dinner only"}</span>
+        <button className="btn arrivals-alert-button" onClick={onAlerts}>View alerts <span>{groupFlags(r.flags).length}</span></button>
       </div>
       <Bars
         bars={r.arrivals.map((a) => ({ label: a.start.replace(" pm", ""), value: a.expected, color: a === peak ? "var(--maroon)" : undefined, title: `${a.start}: ~${Math.round(a.expected)} students` }))}
         tickEvery={3} onPick={(i) => onPick(r.arrivals[i].start_min + 5)} yLabel="students per 10 minutes" />
-      <div className="hint">Breakfast and lunch aren't simulated yet, so the full-day view in the design isn't shown.</div>
+      <p className="arrivals-caption">Busiest around <b>{clock(peak.start_min)}</b> · {Math.round(peak.expected)} expected arrivals in 10 minutes.</p>
     </section>
   );
 }
 
-function Alerts({ r }: { r: Result }) {
+function Alerts({ r, onWatch }: { r: Result; onWatch: (t: number) => void }) {
   const cls = (s: string) => (s === "bad" ? "bad" : s === "warn" ? "warn" : s === "good" ? "good" : "info");
   return (
     <section className="card">
-      <h2>Alerts</h2>
-      <div className="hint" style={{ marginBottom: 10 }}>Flagged automatically from {r.n_nights} simulated nights</div>
+      <h2>Arrival alerts</h2>
+      <div className="hint" style={{ marginBottom: 10 }}>Potential issues across {r.n_nights} simulated nights. Open a moment in the replay to investigate.</div>
       <div className="stack" style={{ gap: 8 }}>
         {r.flags.length === 0 && <div className="alert good"><b>No issues flagged</b></div>}
         {groupFlags(r.flags).map((f, i) => (
           <div key={i} className={`alert ${cls(f.severity)}`}>
-            <b>{f.kind.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase())}</b>{f.text}
+            <b>{f.kind.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase())}</b><p>{f.text}</p>
+            <button className="link" onClick={() => onWatch(r.cook_sheet.find((d) => d.dish_id === f.dish_id)?.runout_window?.p50_min ?? peakWindow(r).start_min + 5)}>View in simulation →</button>
           </div>
         ))}
       </div>
@@ -159,7 +172,7 @@ function MenuByStation({ r }: { r: Result }) {
         </div>
         <button className="btn" onClick={() => setShowAll(!showAll)}>{showAll ? "Top 7 per station" : "Show all dishes"}</button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
+      <div className="station-menu-grid">
         {stations.map(({ s, dishes }) => (
           <div key={s.id} style={{ border: "1px solid var(--border)", borderRadius: 10, padding: 12 }}>
             <div className="row" style={{ marginBottom: 6 }}>
@@ -184,8 +197,8 @@ function MenuByStation({ r }: { r: Result }) {
 function DishLine({ d }: { d: CookRow }) {
   const risk = d.runout_window && d.runout_share >= 0.3;
   return (
-    <div className="row" style={{ flexWrap: "nowrap", fontSize: 12, padding: "3px 0" }}>
-      <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>
+    <div className="row menu-dish-line">
+      <span style={{ flex: 1, minWidth: 0 }} title={d.name}>
         {d.period === "late_night" && <span className="chip info" style={{ padding: "0 5px", marginRight: 4 }} title="Late night, 9 pm–12 am">late</span>}{d.name}
       </span>
       <DietTags tags={d.diet_tags} />
@@ -219,7 +232,7 @@ function ProductionPlan({ r, date }: { r: Result; date: string }) {
           <button className="btn primary" onClick={exportCsv}>Export CSV</button>
         </div>
       </div>
-      <div className="scroll-x">
+      <div className="scroll-x production-table" role="region" aria-label="Production plan table" tabIndex={0}>
         <table className="t">
           <thead>
             <tr><th>Dish</th><th>Station</th><th className="n">Start</th><th className="n">Reorder</th><th className="n">+Batch</th><th className="n">Last</th><th className="n">Prepare</th><th>Risk</th></tr>
@@ -227,7 +240,7 @@ function ProductionPlan({ r, date }: { r: Result; date: string }) {
           <tbody>
             {rows.slice(0, all ? rows.length : 10).map((d) => (
               <tr key={d.dish_id}>
-                <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>{d.name}{d.period === "late_night" ? " (late night)" : ""}</td>
+                <td className="production-dish">{d.name}{d.period === "late_night" ? " (late night)" : ""}</td>
                 <td className="muted">{stationName(d.station)}</td>
                 <td className="n">{d.plan!.starting_batches}×{d.plan!.batch_size}</td>
                 <td className="n">{d.plan!.reorder_point}</td>

@@ -84,9 +84,9 @@ export function apiBody(date: string, d: Draft) {
 type Run = { result: Result; base: Result; source: "bundle" | "api"; scenario: Scenario; hasTrace: boolean; draft: Draft | null };
 
 export default function Lab() {
-  const { date, setScenario, adopt, adopted } = useApp();
+  const { date, scenario, setScenario, adopt, adopted } = useApp();
   const nav = useNavigate();
-  const [draft, setDraft] = useState<Draft>({ ...EMPTY, preset: "smaller_batches" });
+  const [draft, setDraft] = useState<Draft>(() => ({ ...EMPTY, preset: scenario.preset ?? "smaller_batches" }));
   const [run, setRun] = useState<Run | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -631,7 +631,7 @@ function ResultsCard({ run, date, adopted, apiUp, onWatch, onAdopt }: { run: Run
               {why === "busy" ? "Explaining…" : "Why?"}
             </button>
           )}
-          <button className="btn" onClick={onWatch} disabled={!onWatch} title={onWatch ? "" : "No replay in the offline bundle for this scenario. Start the API (make serve) to replay it."}>Watch in 3D</button>
+          <button className="btn" onClick={onWatch} disabled={!onWatch} title={onWatch ? "" : "No replay in the offline bundle for this scenario. Start the API (make serve) to replay it."}>Watch replay</button>
           <button className="btn primary" onClick={onAdopt} disabled={!onAdopt || !!isAdopted}>{isAdopted ? "Adopted ✓" : `Adopt for ${dateLabel(date, { weekday: "short", month: "short", day: "numeric" })}`}</button>
         </div>
       </div>

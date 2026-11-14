@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAsync, useManifest } from "../lib/hooks";
 import { loadDates } from "../lib/data";
 import { dateLabel, scenarioLabel } from "../lib/format";
@@ -18,40 +18,22 @@ const Icon = ({ name }: { name: string }) => (
 );
 
 export function Sidebar() {
-  const links = [
-    ["/hall", "Hall", "hall"],
-    ["/dashboard", "Dashboard", "dashboard"],
-    ["/waste", "Waste Record", "waste"],
-    ["/lab", "What-If Lab", "lab"],
-  ];
+  const location = useLocation();
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-logo">DC</div>
-        <div>
-          <b>DC What-If</b>
-          <span>Worcester Commons</span>
-        </div>
-      </div>
-      <div className="overline">Pages</div>
-      <nav className="nav" aria-label="Pages">
-        {links.map(([to, label, icon]) => (
-          <NavLink key={to} to={to} title={label}>
-            <Icon name={icon} />
-            <span>{label}</span>
-          </NavLink>
-        ))}
+    <header className="app-navigation no-print">
+      <NavLink to="/hall" className="brand" aria-label="DC What-If home"><div className="brand-logo">DC</div><div><b>What-if</b><span>Worcester Commons</span></div></NavLink>
+      <nav className="app-links" aria-label="Pages">
+        <NavLink to="/hall" className={({ isActive }) => isActive || location.pathname === "/lab" ? "active" : ""}><Icon name="hall" /><span>Simulation</span></NavLink>
+        <NavLink to="/dashboard"><Icon name="dashboard" /><span>Kitchen plan</span></NavLink>
+        <NavLink to="/waste"><Icon name="waste" /><span>Insights</span></NavLink>
       </nav>
-      <div className="sources">
-        <div className="overline">Data sources</div>
-        <ul>
-          <li><i className="dot" style={{ background: "var(--good)" }} />Menu · umassdining.com snapshot</li>
-          <li><i className="dot" style={{ background: "var(--warn)" }} />Arrivals · model, no swipes yet</li>
-          <li><i className="dot" style={{ background: "var(--warn)" }} />Waste · synthetic (MetaFoodX-shaped)</li>
-          <li><i className="dot" style={{ background: "var(--warn)" }} />Personas · uncalibrated</li>
-        </ul>
-      </div>
-    </aside>
+      <details className="model-information"><summary>Model information</summary><div>
+        <h3>Know what the model knows</h3>
+        <p><b>Menu:</b> real umassdining.com snapshot.</p><p><b>Arrivals:</b> modeled; no swipe history connected.</p>
+        <p><b>Waste history:</b> synthetic, not measured Worcester waste.</p><p><b>Personas:</b> uncalibrated assumptions.</p>
+        <p>The replay shows one representative night. Comparison ranges describe variation across simulated nights.</p>
+      </div></details>
+    </header>
   );
 }
 
@@ -61,15 +43,16 @@ type TopBarProps = {
   scenario?: Scenario;
   scenarioPrefix?: string;
   dateControl?: ReactNode;
+  showBadges?: boolean;
 };
 
 /** Global top bar (SPEC §2): date picker · meal · active scenario chip · synthetic badge. */
-export function TopBar({ title, sub, scenario, scenarioPrefix = "Scenario", dateControl }: TopBarProps) {
+export function TopBar({ title, sub, scenario, scenarioPrefix = "Scenario", dateControl, showBadges = true }: TopBarProps) {
   const { date, setDate } = useApp();
   const m = useManifest();
   const dates = useAsync(loadDates, []);
   return (
-    <header className="topbar">
+    <header className={`topbar${title === "Simulation" ? " simulation-topbar" : ""}`}>
       <div className="title">
         <h1>{title}</h1>
         <div className="sub">{sub}</div>
@@ -90,18 +73,14 @@ export function TopBar({ title, sub, scenario, scenarioPrefix = "Scenario", date
           </select>
         </label>
       )}
-      <div className="seg" role="group" aria-label="Meal">
-        <button disabled title="Breakfast is not simulated yet (SPEC §10: stretch)">Breakfast</button>
-        <button disabled title="Lunch is not simulated yet (SPEC §10: stretch)">Lunch</button>
-        <button aria-pressed="true">Dinner</button>
-      </div>
-      {scenario && (
+
+      {showBadges && scenario && (
         <span className="chip maroon scenario-chip" style={{ padding: "6px 10px", borderRadius: 8 }}
           title={`${scenarioPrefix}: ${scenarioLabel(scenario.preset, scenario.lever, scenario.label)}`}>
           {scenarioPrefix} <b style={{ fontWeight: 600 }}>{scenarioLabel(scenario.preset, scenario.lever, scenario.label)}</b>
         </span>
       )}
-      <span className="chip warn" style={{ padding: "6px 10px", borderRadius: 8 }}>Synthetic waste data</span>
+      {showBadges && <span className="chip warn" style={{ padding: "6px 10px", borderRadius: 8 }}>{title === "Simulation" ? "Simulated replay" : "Synthetic waste data"}</span>}
     </header>
   );
 }

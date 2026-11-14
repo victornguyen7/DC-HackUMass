@@ -5,7 +5,8 @@
 // event's spot and walks to the next spot at the end of the gap; in a line, the
 // student moves up from their slot at join time to the counter at service time.
 
-import zones from "./zones.json";
+import { SEATING } from "./hallGeometry";
+import { alongRoute, snapToFloor, walkingRoute } from "./navigation";
 import type { PanEvent, Trace, TraceEvent, TraceStudent } from "./types";
 
 // ---------------------------------------------------------------- plan frame
@@ -18,8 +19,8 @@ export const toPx = ([x, y]: readonly [number, number] | number[]): [number, num
 
 type P = [number, number];
 
-export const ENTRANCE: P = [37.4, 9.6]; // check-in desk, just inside the main stairs
-export const DISH_RETURN: P = [10.9, 26.4];
+export const ENTRANCE: P = [37.6, 11.8]; // public aisle just above check-in
+export const DISH_RETURN: P = [10.9, 25.2]; // public side of the return counter
 export const WALK_M_PER_MIN = 70;
 
 // Queue heads and directions, from the measured plan model (scene.py QUEUES).
@@ -51,26 +52,24 @@ export function queueSlot(station: string, i: number): P {
     col = Math.floor(k / fold);
     k = col % 2 === 1 ? fold - 1 - (k % fold) : k % fold;
   }
-  return [q.head[0] + dx * 0.62 * k - dy * 0.7 * col, q.head[1] + dy * 0.62 * k + dx * 0.7 * col];
+  return snapToFloor([q.head[0] + dx * 0.62 * k - dy * 0.7 * col, q.head[1] + dy * 0.62 * k + dx * 0.7 * col]);
 }
 
 // ---------------------------------------------------------------- seats
-type Zone = { table_xy_m: number[][] };
-const ZONES = (zones as { zones: Record<string, Zone> }).zones;
-const SEAT_OFFS: P[] = [[-0.45, 0.42], [0.45, 0.42], [-0.45, -0.42], [0.45, -0.42]];
+const SEAT_OFFS: P[] = [[-0.45, 0.65], [0.45, 0.65], [-0.45, -0.65], [0.45, -0.65]];
 
 /** Deterministic seat for a student in a zone (4-tops; seats are assumed, the plan doesn't show tables). */
 export function seatFor(zoneId: string, studentId: number): P {
-  const z = ZONES[zoneId] ?? ZONES.main;
-  const n = z.table_xy_m.length * 4;
+  const z = SEATING[zoneId] ?? SEATING.main;
+  const n = z.length * 4;
   const k = Math.floor(((studentId * 0.6180339887) % 1) * n);
-  const [tx, ty] = z.table_xy_m[Math.floor(k / 4)];
+  const [tx, ty] = z[Math.floor(k / 4)];
   const [ox, oy] = SEAT_OFFS[k % 4];
-  return [tx + ox, ty + oy];
+  return snapToFloor([tx + ox, ty + oy]);
 }
 
 export const tablesPx = () =>
-  Object.entries(ZONES).flatMap(([id, z]) => z.table_xy_m.map((t) => ({ zone: id, xy: toPx(t) })));
+  Object.entries(SEATING).flatMap(([id, z]) => z.map((t) => ({ zone: id, xy: toPx(t) })));
 
 // ---------------------------------------------------------------- students
 export type Phase = "walking" | "line" | "seated" | "returning";
@@ -101,7 +100,7 @@ function spot(e: TraceEvent, seat: P, stationPos: Record<string, P>): P {
     case "dish_return":
       return DISH_RETURN;
     default:
-      return stationPos[e.station ?? ""] ?? seat;
+      return snapToFloor(stationPos[e.station ?? ""] ?? seat);
   }
 }
 
@@ -113,9 +112,6 @@ function spotAt(ev: TraceEvent[], i: number, seat: P, stationPos: Record<string,
   while (j > 0 && (ev[j].type === "balk" || ev[j].type === "empty_pan") && Math.abs(ev[j].t - ev[j - 1].t) < 1e-6) j--;
   return spot(ev[j], seat, stationPos);
 }
-
-const dist = (a: P, b: P) => Math.hypot(a[0] - b[0], a[1] - b[1]);
-const lerp = (a: P, b: P, f: number): P => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
 
 /** Index of the last event at or before t (binary search), -1 if none. */
 function lastAt(ev: TraceEvent[], t: number) {
@@ -151,21 +147,22 @@ export function poseAt(s: TraceStudent, t: number, stationPos: Record<string, P>
     const f = (t - e.t) / span;
     const slot = (e.line ?? 0) * (1 - f);
     const a = queueSlot(e.station!, Math.floor(slot));
-    const b = queueSlot(e.station!, Math.max(0, Math.floor(slot) - 1));
-    return { id: s.id, diet: s.diet, xy: lerp(a, b, slot - Math.floor(slot)), phase: "line", station: e.station, hands, waitedMin: t - e.t };
+    const b = queueSlot(e.station!, Math.ceil(slot));
+    return { id: s.id, diet: s.diet, xy: alongRoute(walkingRoute(a, b), slot - Math.floor(slot)), phase: "line", station: e.station, hands, waitedMin: t - e.t };
   }
   // Several items served in one pass have the same timestamp; stay at the counter.
   const from = spotAt(ev, i, seat, stationPos);
   const to = spotAt(ev, i + 1, seat, stationPos);
   const gap = nx.t - e.t;
-  const walk = Math.min(gap, dist(from, to) / WALK_M_PER_MIN);
+  const route = walkingRoute(from, to);
+  const walk = Math.min(gap, route.length / WALK_M_PER_MIN);
   const startWalk = nx.t - walk;
   if (t < startWalk) {
     return { id: s.id, diet: s.diet, xy: from, phase: e.type === "sit" ? "seated" : "walking", station: e.station, hands };
   }
   const f = walk > 0 ? (t - startWalk) / walk : 1;
   return {
-    id: s.id, diet: s.diet, xy: lerp(from, to, f),
+    id: s.id, diet: s.diet, xy: alongRoute(route, f),
     phase: e.type === "dish_return" || nx.type === "dish_return" ? "returning" : "walking", hands,
   };
 }

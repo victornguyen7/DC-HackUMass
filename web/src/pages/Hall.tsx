@@ -1,15 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ErrorBox, Loading, TopBar } from "../components/Shell";
 import { Meter, Spark } from "../components/Charts";
+import { HallScene } from "../components/HallScene";
+import { ReplayAlert, type LiveAlert } from "../components/ReplayAlert";
+import { useReplayClock } from "../lib/useReplayClock";
+import { TABLE_SOLIDS } from "../lib/hallGeometry";
 import { apiUp, loadApiHighlights, loadApiTrace, loadNarration, loadTrace, narrateStudent } from "../lib/data";
-import { clock, dateLabel, dishWindow, stationName } from "../lib/format";
-import { useApiUp, useAsync, useScenarioResult } from "../lib/hooks";
+import { clock, dateLabel, dishWindow, fmt1, groupFlags, PRESET_LABELS, signed, stationName } from "../lib/format";
+import { useApiUp, useAsync, useManifest, useScenarioResult } from "../lib/hooks";
 import {
   counters, levelAt, lineSeries, panTimelines, peakLevel, PLAN_H, PLAN_W, poseAt, toPx, type Pose,
 } from "../lib/playback";
 import { useApp } from "../lib/store";
-import type { CookRow, Narration, Result, Trace, TraceStudent } from "../lib/types";
+import type { ManifestEntry, Narration, Result, Trace, TraceStudent } from "../lib/types";
 
 // Label anchors on the top-down plan (px), from the measured plan model (render_meta.json).
 const ANCHORS: Record<string, [number, number]> = {
@@ -30,30 +34,34 @@ const DIET_COLOR: Record<string, string> = {
 };
 const dietLabel = (d: string) => ({ none: "No restriction", vegetarian: "Vegetarian", vegan: "Vegan", halal: "Halal" } as Record<string, string>)[d] ?? d;
 type ColorBy = "diet" | "wait" | "missed";
-type View = "overview" | "serving" | "top";
+type View = "isometric" | "top";
+type Step = "watch" | "try" | "compare";
 const SPEEDS = [1, 10, 30, 60];
 
-type Replay = { trace: Trace | null; source: "bundle" | "api" | null; note?: string };
+type Replay = { trace: Trace | null; configHash: string | null; source: "bundle" | "api" | null; note?: string };
 
 export default function Hall() {
-  const { date, scenario, hallTime, setHallTime } = useApp();
+  const { date, scenario, hallTime, setHallTime, setScenario } = useApp();
+  const [step, setStep] = useState<Step>("watch");
+  const [draftPreset, setDraftPreset] = useState(scenario.preset ?? "extra_server");
+  const manifest = useManifest();
   const res = useScenarioResult(date, scenario);
   const entry = res.data?.entry;
   const seed = res.data?.result.median_seed;
   // Bundle trace first; otherwise ask the API to replay the median night (UI_ISSUES U3).
   const replay = useAsync<Replay>(async () => {
-    if (!entry) return { trace: null, source: null };
-    if (entry.trace) return { trace: await loadTrace(entry), source: "bundle" };
+    if (!entry) return { trace: null, configHash: null, source: null };
+    if (entry.trace) return { trace: await loadTrace(entry), configHash: entry.config_hash, source: "bundle" };
     if (!(await apiUp())) {
-      return { trace: null, source: null, note: "No replay was exported to the offline bundle for this scenario. Start the API (`make serve`) to replay it, or pick a preset." };
+      return { trace: null, configHash: entry.config_hash, source: null, note: "This scenario has no saved replay available right now. Choose a saved scenario or return to the current plan." };
     }
     try {
-      return { trace: await loadApiTrace(entry.config_hash, seed), source: "api" };
+      return { trace: await loadApiTrace(entry.config_hash, seed), configHash: entry.config_hash, source: "api" };
     } catch (e) {
-      return { trace: null, source: null, note: `The API couldn't replay this scenario (${(e as Error).message}).` };
+      return { trace: null, configHash: entry.config_hash, source: null, note: `The API couldn't replay this scenario (${(e as Error).message}).` };
     }
   }, [entry?.key]);
-  const trace = replay.data?.trace ?? null;
+  const trace = replay.data?.configHash === entry?.config_hash ? replay.data?.trace ?? null : null;
   const narr = useAsync<Narration | null>(async () => {
     if (!entry || !trace) return null;
     if (entry.narration) return loadNarration(entry);
@@ -67,150 +75,165 @@ export default function Hall() {
   }, [entry?.key, trace]);
 
   const sub = res.data
-    ? `${replay.data?.source === "api" ? "Replayed on the API · " : ""}Worcester 2nd floor · simulated median night (seed ${res.data.result.median_seed} of ${res.data.result.n_nights})`
+    ? `Worcester, second floor · one representative night from ${res.data.result.n_nights} simulations`
     : "Worcester 2nd floor";
   return (
     <>
-      <TopBar title="Hall" sub={sub} scenario={res.data?.fallback ? { preset: null, lever: "" } : scenario} />
-      <div className="content">
+      <TopBar title="Simulation" sub={sub} scenario={res.data?.fallback ? { preset: null, lever: "" } : scenario} />
+      <div className="content simulation-content">
         {res.error && <ErrorBox error={res.error} />}
         {res.data?.fallback && <div className="banner">{res.data.reason ?? `This scenario isn't available for ${dateLabel(date)}; showing the baseline.`}</div>}
         {replay.data?.note && <div className="banner">{replay.data.note}</div>}
         {replay.error && <ErrorBox error={replay.error} />}
-        {(res.loading || replay.loading) && !trace && <Loading what="the night's replay (≈1 MB)" />}
-        {res.data && trace && (
-          <HallView key={entry?.key} result={res.data.result} trace={trace} narration={narr.data ?? null}
-            configHash={entry!.config_hash} initialT={hallTime} onTime={setHallTime} />
+        {(res.loading || replay.loading) && <Loading what="the full simulation replay" />}
+        {res.data && trace && !res.loading && !replay.loading && (
+          <HallView key={entry?.key} result={res.data.result} trace={trace} narration={narr.data && narr.data.config_hash === entry?.config_hash ? narr.data : null}
+            configHash={entry!.config_hash} initialT={hallTime} onTime={setHallTime}
+            step={step} setStep={setStep} draftPreset={draftPreset} setDraftPreset={setDraftPreset}
+            replays={(manifest.data?.entries ?? []).filter((e) => e.date === date && !!e.trace)} replayKey={entry!.key}
+            onReplay={(e) => setScenario({ preset: e.preset, lever: e.lever })} />
         )}
       </div>
     </>
   );
 }
 
-function HallView({ result, trace, narration, configHash, initialT, onTime }: {
-  result: Result; trace: Trace; narration: Narration | null; configHash: string; initialT: number | null; onTime: (t: number) => void;
+function HallView({ result, trace, narration, configHash, initialT, onTime, step, setStep,
+  draftPreset, setDraftPreset, replays, replayKey, onReplay }: {
+  result: Result; trace: Trace; narration: Narration | null; configHash: string;
+  initialT: number | null; onTime: (t: number) => void;
+  step: Step; setStep: (step: Step) => void; draftPreset: string; setDraftPreset: (preset: string) => void;
+  replays: ManifestEntry[]; replayKey: string; onReplay: (entry: ManifestEntry) => void;
 }) {
   const nav = useNavigate();
-  const [t, setT] = useState(() => initialT ?? Math.min(result.close, 18 * 60 + 12));
-  const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(30);
-  const [colorBy, setColorBy] = useState<ColorBy>("diet");
-  const [view, setView] = useState<View>("top");
-  const [station, setStation] = useState<string>("tandoor");
-  // Default to a highlight student who is inside at the starting time, so the card matches the map.
-  const pickDefault = () => {
-    const hs = narration?.highlights ?? [];
-    const inside = hs.find((h) => {
-      const s = trace.students.find((x) => x.id === h.student_id);
-      return s && s.events[0].t <= t && t < s.events[s.events.length - 1].t;
-    });
-    // none inside yet: the highlight who arrives soonest after the starting time
-    const next = [...hs].map((h) => ({ h, s: trace.students.find((x) => x.id === h.student_id) }))
-      .filter((x) => x.s).sort((a, b) => Math.abs(a.s!.events[0].t - t) - Math.abs(b.s!.events[0].t - t))[0]?.h;
-    return (inside ?? next ?? hs[0])?.student_id ?? null;
-  };
-  const [studentId, setStudentId] = useState<number | null>(pickDefault);
-  // narration can arrive after the trace
-  useEffect(() => {
-    if (studentId == null && narration) setStudentId(pickDefault());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [narration]);
-
-  // keep the shared context in sync (Dashboard "jump to time" lands here)
-  useEffect(() => onTime(t), [t, onTime]);
-
-  // playback clock
-  const tRef = useRef(t);
-  tRef.current = t;
-  useEffect(() => {
-    if (!playing) return;
-    let raf = 0, last = performance.now(), acc = 0;
-    const tick = (now: number) => {
-      acc += ((now - last) / 1000) * (speed / 60); // sim minutes
-      last = now;
-      if (acc > 1 / 30 || speed === 1) {
-        const next = tRef.current + acc;
-        acc = 0;
-        if (next >= result.close + 30) { setPlaying(false); setT(result.close + 30); return; }
-        setT(next);
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [playing, speed, result.close]);
-
+  const replayEnd = result.close + 30;
+  const { time: t, timeRef, playing, setPlaying, speed, setSpeed, seek, toggle } = useReplayClock(
+    result.open, replayEnd, initialT ?? Math.min(result.close, 18 * 60 + 12));
+  const [colorBy, setColorBy] = useState<ColorBy>("wait");
+  const [view, setView] = useState<View>("isometric");
+  const [replayOptionsOpen, setReplayOptionsOpen] = useState(false);
+  const [station, setStation] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState<number | null>(null);
   const names = useMemo(() => Object.fromEntries(result.cook_sheet.map((d) => [d.dish_id, d.name])), [result]);
   const stationPos = useMemo(() => Object.fromEntries(result.stations.map((s) => [s.id, s.pos as [number, number]])), [result]);
   const pans = useMemo(() => panTimelines(trace), [trace]);
   const missed = useMemo(() => missedFirst(trace.students), [trace]);
   const byId = useMemo(() => new Map(trace.students.map((s) => [s.id, s])), [trace]);
-
-  const poses = useMemo(() => {
-    const out: Pose[] = [];
-    for (const s of trace.students) {
-      const p = poseAt(s, t, stationPos);
-      if (p) out.push(p);
-    }
-    return out;
-  }, [trace, t, stationPos]);
-  const c = counters(poses);
-  const longest = Object.entries(c.lines).sort((a, b) => b[1] - a[1])[0];
-  // Only the dishes of the service period on at time t (dinner, then late night from 9 pm).
-  const period = t >= (result.dinner_close ?? result.close) ? "late_night" : "dinner";
-  const inPeriod = (d: CookRow) => (d.period ?? "dinner") === period;
-  const stationDishes = (sid: string) => result.cook_sheet.filter((d) => d.station === sid && !d.to_order && pans.has(d.dish_id) && inPeriod(d));
   const rowOf = useMemo(() => Object.fromEntries(result.cook_sheet.map((d) => [d.dish_id, d])), [result]);
+  const poses = useMemo(() => trace.students.map((s) => poseAt(s, t, stationPos)).filter((p): p is Pose => p !== null), [trace, t, stationPos]);
+  const c = counters(poses);
+  // Keep navigation context without updating the entire app store on every animation frame.
+  useEffect(() => { if (!playing) onTime(t); }, [t, playing, onTime]);
+  useEffect(() => () => onTime(timeRef.current), [onTime, timeRef]);
   const emptyNow = [...pans.values()].filter((tl) => {
     const d = rowOf[tl.dish];
     if (!d) return false;
     const [a, b] = dishWindow(result, d.period);
     return t >= a && t < b && levelAt(tl, t) <= 0;
   });
-  const isEmpty = (sid: string) => emptyNow.filter((tl) => rowOf[tl.dish]?.station === sid).map((tl) => names[tl.dish] ?? tl.dish);
-
+  const isEmpty = (sid: string) => emptyNow.filter((tl) => rowOf[tl.dish]?.station === sid || (sid === "desserts" && rowOf[tl.dish]?.station === "breads")).map((tl) => names[tl.dish] ?? tl.dish);
+  const queueCount = (sid: string) => (c.lines[sid] ?? 0) + (sid === "desserts" ? c.lines.breads ?? 0 : 0);
+  const visibleStations = result.stations.filter((s) => s.id !== "breads");
+  const pickStation = (sid: string) => { setStation(sid); setStudentId(null); setStep("watch"); };
+  const pickStudent = (id: number) => { setStudentId(id); setStation(null); setStep("watch"); setPlaying(false); };
+  const goStep = (next: Step) => { setStation(null); setStudentId(null); setStep(next); };
   const color = (p: Pose) => {
     if (colorBy === "diet") return DIET_COLOR[p.diet] ?? DIET_COLOR.none;
     if (colorBy === "missed") return missed.has(p.id) ? "var(--bad)" : "var(--border-strong)";
     if (p.phase !== "line") return "var(--border-strong)";
-    const w = p.waitedMin ?? 0;
-    return w > 10 ? "var(--bad)" : w > 5 ? "var(--warn)" : "var(--good)";
+    return (p.waitedMin ?? 0) > 10 ? "var(--bad)" : (p.waitedMin ?? 0) > 5 ? "var(--warn)" : "var(--good)";
   };
+  const draftEntry = replays.find((e) => e.preset === draftPreset && !e.lever);
+  const presets = [
+    ["smaller_batches", "Cook smaller batches", "Reduce the batch size of favorites"],
+    ["extra_server", "Add a Grill server", "Test one extra server at the busiest station"],
+    ["theme_night", "Test a busier night", "Theme-night preset: 25% more crowd"],
+  ];
+  const longest = [...visibleStations].sort((a, b) => queueCount(b.id) - queueCount(a.id))[0];
+  const liveAlerts: LiveAlert[] = visibleStations.flatMap<LiveAlert>((s) => {
+    const empty = isEmpty(s.id), line = queueCount(s.id), label = stationName(s.id);
+    if (empty.length) return [{ id: `empty:${s.id}`, station: s.id, kind: "empty", title: `${label} has ${empty.length === 1 ? "an empty pan" : "empty pans"}`, message: `${empty[0]}${empty.length > 1 ? ` and ${empty.length - 1} more ${empty.length === 2 ? "dish" : "dishes"}` : ""} ${empty.length === 1 ? "is" : "are"} empty.` }];
+    if (line > 15) return [{ id: `queue:${s.id}`, station: s.id, kind: "queue", title: `${label} has a long line`, message: `${line} students are waiting. Open the station to check its queue and menu.` }];
+    return [];
+  }).sort((a, b) => Number(a.kind === "queue") - Number(b.kind === "queue"));
 
   return (
-    <div className="grid-2">
-      <div className="stack">
-        <section className="card" aria-label="Floor plan">
-          <div className="row" style={{ marginBottom: 12 }}>
-            <div className="seg" role="group" aria-label="Camera">
-              <button aria-pressed={view === "overview"} onClick={() => setView("overview")}>3D overview</button>
-              <button disabled title="Not built yet: needs the 3D scene (SPEC §3.1)">Serving line</button>
-              <button aria-pressed={view === "top"} onClick={() => setView("top")}>Top-down</button>
-            </div>
-            <span className="spacer" />
-            <span className="faint">Color by</span>
-            <div className="seg" role="group" aria-label="Color by">
-              <button aria-pressed={colorBy === "diet"} onClick={() => setColorBy("diet")}>Diet</button>
-              <button aria-pressed={colorBy === "wait"} onClick={() => setColorBy("wait")}>Wait time</button>
-              <button aria-pressed={colorBy === "missed"} onClick={() => setColorBy("missed")}>Missed 1st choice</button>
-            </div>
-          </div>
-          {view === "overview" ? (
-            <div className="plan-wrap">
-              <img src="/plan/worcester-2f-render.svg" alt="3D overview of Worcester second floor" style={{ width: "100%", display: "block" }} />
-              <div className="banner" style={{ position: "absolute", left: 12, bottom: 12, right: 12 }}>
-                Static render. Animated 3D isn't built yet; switch to Top-down to watch the night.
+    <div className="guided-hall">
+      <ReplayAlert alerts={liveAlerts} playing={playing} time={t} onInspect={(sid) => { pickStation(sid); setPlaying(false); }} />
+      <aside className="guided-sidebar" aria-label="Simulation guide">
+        <nav className="guided-steps" aria-label="Simulation steps">
+          {([["watch", "Watch the hall"], ["try", "Try a change"], ["compare", "Compare"]] as const).map(([id, label], i) => (
+            <button key={id} aria-current={step === id ? "step" : undefined} onClick={() => goStep(id)}><span>{i + 1}</span>{label}</button>
+          ))}
+        </nav>
+        <section className="card guided-inspector" aria-label="Simulation details" tabIndex={0}>
+          {station || studentId !== null ? <button className="back-to-stations" onClick={() => { setStation(null); setStudentId(null); }}>← All stations</button> : null}
+          {station ? <StationCard result={result} trace={trace} sid={station} t={t} pans={pans} inLine={queueCount(station)} />
+            : studentId !== null && byId.get(studentId) ? <StudentCard key={studentId} s={byId.get(studentId)!} narration={narration} names={names} t={t}
+                missed={missed.has(studentId)} configHash={configHash} seed={trace.night_seed} onPick={pickStudent} />
+            : step === "watch" ? <>
+              <p className="guide-eyebrow">Explore the current replay</p>
+              <h2>Every station.<br />The whole night.</h2>
+              <p className="guide-copy">Press Play to follow the students. Select a station for its dishes, pan levels, and queue history.</p>
+              <button className="btn primary guide-action" onClick={() => goStep("try")}>Try a change <span aria-hidden>→</span></button>
+              <div className="station-directory-head"><h3>Stations</h3><span>In line now</span></div>
+              <div className="station-directory">
+                {visibleStations.map((s) => <button key={s.id} onClick={() => pickStation(s.id)} aria-label={`Inspect ${s.id === "desserts" ? "Desserts and Breads" : stationName(s.id)}`}>
+                  <span>{s.id === "desserts" ? "Desserts · Breads" : stationName(s.id)}</span>
+                  <span>{isEmpty(s.id).length > 0 && <small className="empty-pan-indicator">{isEmpty(s.id).length} empty</small>}<b>{queueCount(s.id)}</b></span>
+                </button>)}
               </div>
-            </div>
-          ) : (
-            <div className="plan-wrap">
+              <details className="student-directory"><summary>Student stories</summary>
+                {(narration?.highlights ?? []).map((h) => <button className="link" key={h.student_id} onClick={() => pickStudent(h.student_id)}>{h.title}</button>)}
+                {!narration?.highlights.length && <p className="guide-copy">Select a student in the hall to inspect their journey.</p>}
+              </details>
+            </> : step === "try" ? <>
+              <p className="guide-eyebrow">A small change, tested</p><h2>What if we…</h2>
+              <p className="guide-copy">Choose a scenario to compare with the current plan. Its full replay will load when you compare.</p>
+              {presets.map(([id, title, description]) => <button key={id} className="guided-preset" aria-pressed={draftPreset === id} onClick={() => setDraftPreset(id)}>
+                <i aria-hidden /><span><b>{title}</b><small>{description}</small></span>
+              </button>)}
+              <button className="btn primary guide-action" disabled={!draftEntry} onClick={() => { if (draftEntry) { onTime(t); onReplay(draftEntry); setStep("compare"); } }}>Compare {result.n_nights} nights</button>
+              {!draftEntry && <p className="guide-copy">No saved replay for this scenario on this date. Use advanced settings to run a new comparison.</p>}
+              <button className="link guide-advanced" onClick={() => nav("/lab")}>Advanced settings & all scenarios</button>
+            </> : <>
+              <p className="guide-eyebrow">{result.n_nights} simulated nights</p><h2>Results & trade-offs</h2><p className="guide-copy">{result.label}</p>
+              {result.vs_baseline ? <>
+                {([["waste_total", "Waste", "portions"], ["wait_p90", "Long waits (p90)", "min"], ["stockout_min_total", "Dish unavailability", "dish-min"]] as const).map(([id, label, unit]) => {
+                  const metric = result.vs_baseline!.metrics[id];
+                  return <div className="guided-metric" key={id}><div><span>{label}</span><b className={`chip ${metric.verdict === "better" ? "good" : metric.verdict === "worse" ? "warn" : ""}`}>{metric.verdict === "inconclusive" ? "Unclear" : metric.verdict}</b></div>
+                    <strong>{signed(metric.diff.p50, fmt1)} <small>{unit}</small></strong><p>Range {signed(metric.diff.p10, fmt1)} to {signed(metric.diff.p90, fmt1)}</p></div>;
+                })}
+                <p className="guide-footnote">Paired changes from baseline, with 10–90% ranges. Dish-minutes sum unavailable time across dishes.</p>
+                <details className="comparison-more"><summary>Student outcomes & alerts</summary>
+                  <p>{fmt1(result.headline.missed_first_choice_rate.p50 * 100)}% miss their first choice.</p>
+                  <p>{Math.round(result.headline.missed_meal.p50)} students miss a meal (median).</p>
+                  {groupFlags(result.flags).map((flag, i) => <p key={i}>{flag.text}</p>)}
+                </details>
+                <button className="btn primary guide-action" onClick={() => nav("/lab")}>Full results & cook sheet</button>
+              </> : <><p className="guide-copy">This is the baseline. Try a change to see the effect across {result.n_nights} paired nights.</p><button className="btn primary guide-action" onClick={() => goStep("try")}>Choose a scenario</button></>}
+            </>}
+        </section>
+      </aside>
+      <div className="guided-stage">
+        <section className={`guided-viewport ${view === "top" ? "top-down-viewport" : ""}`} aria-label="Floor plan">
+          <div className="hall-scene-heading">
+            <div><h2>Worcester, second floor</h2><p>{result.label} · representative simulated night</p></div>
+            <div className="hall-view-controls"><button onClick={() => setView(view === "isometric" ? "top" : "isometric")}>{view === "isometric" ? "Top-down view" : "Isometric view"}</button>
+              <label>Color by <select value={colorBy} onChange={(e) => setColorBy(e.target.value as ColorBy)}><option value="wait">Wait time</option><option value="diet">Diet</option><option value="missed">Missed first choice</option></select></label></div>
+          </div>
+          {view === "isometric" ? <HallScene poses={poses} stations={visibleStations.map((s) => ({ id: s.id, pos: s.pos, line: queueCount(s.id), empty: isEmpty(s.id).length }))}
+            selectedStation={station} selectedStudent={studentId} onStation={pickStation} onStudent={pickStudent} colorBy={colorBy} missed={missed} /> : <div className="plan-wrap">
               <svg viewBox={`0 0 ${PLAN_W} ${PLAN_H}`} role="img" aria-label={`Top-down plan at ${clock(t)}: ${c.inside} students inside`}>
                 <image href="/plan/worcester-2f-plan.svg" width={PLAN_W} height={PLAN_H} />
+                <g aria-hidden fill="#ded9d0" stroke="#817b72" strokeWidth={.6}>
+                  {TABLE_SOLIDS.map((table) => <polygon key={table.id} points={table.polygon.map((p) => toPx(p).join(",")).join(" ")} />)}
+                </g>
                 {poses.map((p) => {
                   const [x, y] = toPx(p.xy);
                   const sel = p.id === studentId;
                   return (
-                    <g key={p.id} className="student" onClick={() => setStudentId(p.id)}>
+                    <g key={p.id} className="student" onClick={() => pickStudent(p.id)}>
                       <circle cx={x} cy={y} r={sel ? 4.6 : 3.1} fill={color(p)} stroke={sel ? "var(--maroon)" : "#fff"} strokeWidth={sel ? 2 : 0.6} />
                       {p.hands !== "empty" && (
                         <circle cx={x + 3} cy={y - 2.6} r={1.5} fill={p.hands === "plate" ? "#fff" : "var(--diet-halal)"} stroke="var(--text-3)" strokeWidth={0.4} />
@@ -225,8 +248,8 @@ function HallView({ result, trace, narration, configHash, initialT, onTime }: {
                   const w = label.length * 4.6 + 26 + (empties.length ? 46 : 0);
                   const sel = sid === station;
                   return (
-                    <g key={sid} className="station-tag" transform={`translate(${x - (w * 1.3) / 2},${y - 24}) scale(1.3)`} onClick={() => setStation(sid)}
-                      role="button" aria-label={`${label}: ${line} in line${empties.length ? `, ${empties.length} empty` : ""}`}>
+                    <g key={sid} className="station-tag" transform={`translate(${x - (w * 1.3) / 2},${y - 24}) scale(1.3)`} onClick={() => pickStation(sid)}
+                      role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickStation(sid); } }} aria-label={`${label}: ${line} in line${empties.length ? `, ${empties.length} empty` : ""}`}>
                       <rect width={w} height={14} rx={4} fill="#fff" stroke={sel ? "var(--maroon)" : empties.length ? "var(--bad)" : "var(--border-strong)"} strokeWidth={sel ? 1.2 : 0.6} />
                       <text x={5} y={10} fontSize={7.5} fontWeight={500} fill="var(--text)">{label}</text>
                       <rect x={label.length * 4.6 + 8} y={2.5} width={14} height={9} rx={4.5} fill={line >= 12 ? "var(--warn-soft)" : "var(--bg-muted)"} />
@@ -250,57 +273,29 @@ function HallView({ result, trace, narration, configHash, initialT, onTime }: {
                   );
                 })}
               </svg>
-            </div>
-          )}
-          <div className="legend">
-            {colorBy === "diet" && Object.entries(DIET_COLOR).map(([k, v]) => <span key={k}><i className="dot" style={{ background: v, margin: 0 }} />{dietLabel(k)}</span>)}
-            {colorBy === "wait" && (<>
-              <span><i className="dot" style={{ background: "var(--good)", margin: 0 }} />in line &lt; 5 min</span>
-              <span><i className="dot" style={{ background: "var(--warn)", margin: 0 }} />5–10 min</span>
-              <span><i className="dot" style={{ background: "var(--bad)", margin: 0 }} />&gt; 10 min</span>
-              <span><i className="dot" style={{ background: "var(--border-strong)", margin: 0 }} />not in a line</span>
-            </>)}
-            {colorBy === "missed" && (<>
-              <span><i className="dot" style={{ background: "var(--bad)", margin: 0 }} />never got first choice</span>
-              <span><i className="dot" style={{ background: "var(--border-strong)", margin: 0 }} />got it</span>
-            </>)}
-            <span><i className="dot" style={{ background: "#fff", border: "1px solid var(--text-3)", margin: 0 }} />plate</span>
-            <span><i className="dot" style={{ background: "var(--diet-halal)", margin: 0 }} />bowl</span>
-            <span className="spacer" />
-            <span className="faint">Seating assumed · 1 dot = 1 student</span>
+            </div>}
+          <div className="hall-live-stats" aria-label="Right now">
+            <span><b>{c.inside}</b> inside</span><span><b>{c.inLine}</b> waiting</span><span><b>{emptyNow.length}</b> empty pans</span>
+            <small>{c.seated} seated · {clock(t)}</small>
           </div>
         </section>
-
-        <Timeline result={result} trace={trace} t={t} setT={(x) => { setPlaying(false); setT(x); }}
-          playing={playing} setPlaying={setPlaying} speed={speed} setSpeed={setSpeed}
-          onCompare={() => nav("/lab")} />
-      </div>
-
-      <div className="stack">
-        <section className="card" aria-label="Right now">
-          <div className="card-head">
-            <h3>Right now</h3>
-            <span className="chip mono">{clock(t)}</span>
+        <Timeline result={result} trace={trace} t={t} setT={seek} playing={playing} toggle={toggle} speed={speed} setSpeed={setSpeed} end={replayEnd} />
+        <div className="hall-replay-options" data-open={replayOptionsOpen}>
+          <button className="replay-options-toggle" aria-expanded={replayOptionsOpen} aria-controls="replay-options" onClick={() => setReplayOptionsOpen(!replayOptionsOpen)}>
+            Replay options & legend <span aria-hidden>{replayOptionsOpen ? "−" : "+"}</span>
+          </button>
+        <div className="hall-bottom-bar" id="replay-options">
+          <label>Replay scenario <select value={replayKey} onChange={(e) => { const entry = replays.find((r) => r.key === e.target.value); if (entry) { onTime(t); onReplay(entry); } }}>
+            {!replays.some((r) => r.key === replayKey) && <option value={replayKey}>{result.label}</option>}
+            {replays.map((e) => <option key={e.key} value={e.key}>{e.preset ? PRESET_LABELS[e.preset] ?? e.label : "Current plan (baseline)"}{e.lever ? ` · ${e.lever}` : ""}</option>)}
+          </select></label>
+          <div className="hall-scene-legend">
+            {colorBy === "wait" ? <><span><i style={{ background: "#a4d7b7" }} />Under 5 min</span><span><i style={{ background: "#eac28d" }} />5–10 min</span><span><i style={{ background: "#f39e97" }} />Over 10 min</span></> : colorBy === "diet" ? Object.keys(DIET_COLOR).map((diet) => <span key={diet}><i style={{ background: DIET_COLOR[diet] }} />{dietLabel(diet)}</span>) : <><span><i style={{ background: "#f39e97" }} />Missed first choice</span><span><i style={{ background: "#c2d0d5" }} />Got first choice</span></>}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {([["Inside", c.inside], ["In line", c.inLine], ["Seated", c.seated], ["Pans empty", emptyNow.length]] as const).map(([k, v]) => (
-              <div key={k} style={{ background: "var(--bg-muted)", borderRadius: 8, padding: "8px 10px" }}>
-                <div className="muted" style={{ fontSize: 12 }}>{k}</div>
-                <div style={{ fontSize: 22, fontWeight: 600, lineHeight: "28px" }} className="tnum">{v}</div>
-              </div>
-            ))}
-          </div>
-          <div className="row" style={{ marginTop: 10, fontSize: 12 }}>
-            <span className="muted">Longest line</span>
-            {longest ? <span className="chip warn">{stationName(longest[0])} · {longest[1]}</span> : <span className="faint">none</span>}
-          </div>
-        </section>
-
-        <StationCard result={result} trace={trace} sid={station} t={t} pans={pans} stationDishes={stationDishes} />
-        {studentId != null && byId.get(studentId) && (
-          <StudentCard key={studentId} s={byId.get(studentId)!} narration={narration} names={names} t={t} missed={missed.has(studentId)}
-            configHash={configHash} seed={trace.night_seed} onPick={setStudentId} />
-        )}
+          <p>Illustrated hall · assumed seating · one figure per student{longest && queueCount(longest.id) > 0 ? ` · Longest line: ${stationName(longest.id)} (${queueCount(longest.id)})` : ""}</p>
+          <details className="replay-metadata"><summary>Replay information</summary><p>Representative night {trace.night_seed} of {result.n_nights}. Serving ends at {clock(result.close)}; playback includes the following 30 minutes. Station menus and pan levels follow the selected time.</p></details>
+        </div>
+        </div>
       </div>
     </div>
   );
@@ -318,133 +313,83 @@ export function missedFirst(students: TraceStudent[]) {
   return out;
 }
 
-function Timeline({ result, trace, t, setT, playing, setPlaying, speed, setSpeed, onCompare }: {
-  result: Result; trace: Trace; t: number; setT: (t: number) => void; playing: boolean; setPlaying: (p: boolean) => void;
-  speed: number; setSpeed: (s: number) => void; onCompare: () => void;
+function Timeline({ result, trace, t, setT, playing, toggle, speed, setSpeed, end }: {
+  result: Result; trace: Trace; t: number; setT: (t: number) => void;
+  playing: boolean; toggle: () => void; speed: number; setSpeed: (speed: number) => void; end: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const t0 = result.open, t1 = result.close;
   const bins = useMemo(() => {
-    const n = Math.ceil((t1 - t0) / 10);
-    const b = new Array(n).fill(0);
-    for (const s of trace.students) {
-      const e = s.events[0];
-      const i = Math.floor((e.t - t0) / 10);
-      if (i >= 0 && i < n) b[i]++;
+    const values = new Array(Math.ceil((end - result.open) / 10)).fill(0);
+    for (const student of trace.students) {
+      const i = Math.floor((student.events[0].t - result.open) / 10);
+      if (i >= 0 && i < values.length) values[i]++;
     }
-    return b;
-  }, [trace, t0, t1]);
-  const marks = useMemo(() => {
-    const out: { t: number; kind: "empty" | "ready" | "expire" }[] = [];
-    for (const p of trace.pans) {
-      if (p.t <= t0 || p.t >= t1) continue;
-      if (p.event === "batch_ready") out.push({ t: p.t, kind: "ready" });
-      else if (p.event === "expire") out.push({ t: p.t, kind: "expire" });
-      else if (p.portions === 0 && p.event !== "batch_start") out.push({ t: p.t, kind: "empty" });
-    }
-    // pans that hit zero from serving: one mark per dish run-out window
-    for (const d of result.cook_sheet) if (d.runout_window && d.runout_share >= 0.5) out.push({ t: d.runout_window.p50_min, kind: "empty" });
-    return out;
-  }, [trace, result, t0, t1]);
+    return values;
+  }, [trace, result.open, end]);
   const max = Math.max(1, ...bins);
-  const frac = (x: number) => (x - t0) / (t1 - t0);
-  const pick = (clientX: number) => {
-    const r = ref.current!.getBoundingClientRect();
-    setT(t0 + Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * (t1 - t0));
-  };
-  const markColor = { empty: "var(--bad)", ready: "var(--good)", expire: "var(--warn)" };
-  return (
-    <section className="card" aria-label="Timeline">
-      <div className="row" style={{ marginBottom: 8 }}>
-        <button className="btn primary" style={{ width: 32, padding: 0, justifyContent: "center", borderRadius: 16 }}
-          onClick={() => { if (t >= t1 + 29) setT(t0); setPlaying(!playing); }} aria-label={playing ? "Pause" : "Play"}>
-          {playing ? "❚❚" : "▶"}
-        </button>
-        <b style={{ fontSize: 22, fontWeight: 600, minWidth: 92 }} className="tnum">{clock(t)}</b>
-        <div className="seg" role="group" aria-label="Speed">
-          {SPEEDS.map((s) => <button key={s} aria-pressed={speed === s} onClick={() => setSpeed(s)}>{s}×</button>)}
-        </div>
-        <span className="spacer" />
-        <span className="legend" style={{ margin: 0 }}>
-          <span><i className="dot" style={{ background: "var(--bad)", margin: 0 }} />Pan empty</span>
-          <span><i className="dot" style={{ background: "var(--good)", margin: 0 }} />Batch ready</span>
-          <span><i className="dot" style={{ background: "var(--warn)", margin: 0 }} />Food expired</span>
-        </span>
-        <button className="btn" onClick={onCompare} title="Split-screen compare isn't built (SPEC P2); opens the What-If Lab">Compare with…</button>
-      </div>
-      <div
-        ref={ref} className="scrub" role="slider" tabIndex={0} aria-label="Playback time"
-        aria-valuemin={t0} aria-valuemax={t1} aria-valuenow={Math.round(t)} aria-valuetext={clock(t)}
-        onPointerDown={(e) => { (e.target as Element).setPointerCapture?.(e.pointerId); pick(e.clientX); }}
-        onPointerMove={(e) => { if (e.buttons) pick(e.clientX); }}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowRight") setT(Math.min(t1, t + 5));
-          if (e.key === "ArrowLeft") setT(Math.max(t0, t - 5));
-          if (e.key === " ") { e.preventDefault(); setPlaying(!playing); }
-        }}
-      >
-        <svg viewBox="0 0 1000 90" preserveAspectRatio="none" width="100%" height="90">
-          {marks.map((m, i) => <circle key={i} cx={frac(m.t) * 1000} cy={6} r={2.4} fill={markColor[m.kind]} />)}
-          {bins.map((v, i) => {
-            const x = (i / bins.length) * 1000, w = 1000 / bins.length;
-            const played = t0 + (i + 1) * 10 <= t + 0.001;
-            return <rect key={i} x={x + w * 0.08} y={70 - (v / max) * 54} width={w * 0.84} height={(v / max) * 54} rx={2} fill={played ? "var(--data-1)" : "var(--band)"} />;
-          })}
-          <line x1={frac(Math.min(t, t1)) * 1000} x2={frac(Math.min(t, t1)) * 1000} y1={0} y2={72} stroke="var(--maroon)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-        </svg>
-        <div className="row" style={{ justifyContent: "space-between", fontSize: 11, color: "var(--text-3)", marginTop: -14 }}>
-          {Array.from({ length: Math.floor((t1 - t0) / 30) + 1 }, (_, i) => <span key={i}>{clock(t0 + i * 30, false)}</span>)}
-        </div>
-      </div>
-      <div className="faint" style={{ fontSize: 11, marginTop: 4 }}>Bars: students arriving per 10 min on this night · arrow keys step 5 min, space plays</div>
-    </section>
-  );
+  return <section className="card guided-timeline" aria-label="Timeline">
+    <div className="playback-toolbar">
+      <button className="btn playback-toggle" aria-label={playing ? "Pause" : "Play"} onClick={toggle}><span aria-hidden>{playing ? "Ⅱ" : "▷"}</span>{playing ? "Pause" : "Play"}</button>
+      <b className="playback-clock tnum" data-testid="playback-clock">{clock(t)}</b>
+      <label className="playback-speed">Speed <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} aria-label="Playback speed">{SPEEDS.map((value) => <option value={value} key={value}>{value}×</option>)}</select></label>
+      <span className="playback-status" role="status">{playing ? "Playing full replay" : t >= end ? "Replay complete" : "Paused"}</span>
+      <button className="link" onClick={() => setT(result.open)}>Restart</button>
+    </div>
+    <div className="playback-arrivals" aria-hidden>{bins.map((v, i) => <span key={i} style={{ height: `${Math.max(3, v / max * 100)}%`, opacity: result.open + i * 10 <= t ? 1 : .32 }} />)}</div>
+    <input type="range" className="playback-scrubber" min={result.open} max={end} step={.05} value={t} onChange={(e) => setT(Number(e.target.value))}
+      aria-label="Playback time" aria-valuetext={clock(t)} onKeyDown={(e) => {
+        if (e.key === " ") { e.preventDefault(); toggle(); }
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); setT(t + (e.key === "ArrowRight" ? 5 : -5)); }
+      }} />
+    <div className="playback-ticks"><span>{clock(result.open)}</span><span>Students arriving · continuous replay</span><span>{clock(end)}</span></div>
+  </section>;
 }
 
-function StationCard({ result, trace, sid, t, pans, stationDishes }: {
-  result: Result; trace: Trace; sid: string; t: number;
-  pans: ReturnType<typeof panTimelines>; stationDishes: (sid: string) => Result["cook_sheet"];
+function StationCard({ result, trace, sid, t, pans, inLine }: {
+  result: Result; trace: Trace; sid: string; t: number; inLine: number;
+  pans: ReturnType<typeof panTimelines>;
 }) {
   const st = result.stations.find((s) => s.id === sid);
   const ids = sid === "desserts" ? ["desserts", "breads"] : [sid];
-  const dishes = ids.flatMap(stationDishes);
-  const toOrder = result.cook_sheet.filter((d) => ids.includes(d.station) && d.to_order);
-  const series = useMemo(() => lineSeries(trace, sid, result.open, Math.min(result.close, 19 * 60), 10), [trace, sid, result]);
-  const nowIdx = Math.floor((t - result.open) / 10);
-  const inLine = useMemo(() => {
-    let n = 0;
-    for (const s of trace.students) { const p = poseAt(s, t); if (p?.phase === "line" && p.station === sid) n++; }
-    return n;
-  }, [trace, t, sid]);
+  const activePeriod = t >= (result.dinner_close ?? result.close) ? "late_night" : "dinner";
+  const [menuPeriod, setMenuPeriod] = useState<"dinner" | "late_night">(activePeriod);
+  useEffect(() => setMenuPeriod(activePeriod), [activePeriod, sid]);
+  const allDishes = result.cook_sheet.filter((d) => ids.includes(d.station));
+  const periods = [...new Set(allDishes.map((d) => d.period ?? "dinner"))];
+  // Closed stations still expose their complete dinner menu during late night.
+  const shownPeriod = periods.includes(menuPeriod) ? menuPeriod : periods[0] ?? "dinner";
+  const dishes = allDishes.filter((d) => (d.period ?? "dinner") === shownPeriod && !d.to_order && pans.has(d.dish_id));
+  const toOrder = allDishes.filter((d) => (d.period ?? "dinner") === shownPeriod && d.to_order);
+  const [opens, closes] = dishWindow(result, shownPeriod);
+  const serviceStatus = t < opens ? "Not open yet" : t >= closes ? "Service ended" : "Serving now";
+  const inspectionT = Math.max(opens, Math.min(t, closes - .001));
+  const series = useMemo(() => {
+    const main = lineSeries(trace, sid, result.open, result.close + 30, 10);
+    if (sid !== "desserts") return main;
+    const breads = lineSeries(trace, "breads", result.open, result.close + 30, 10);
+    return main.map((v, i) => v + (breads[i] ?? 0));
+  }, [trace, sid, result.open, result.close]);
   return (
-    <section className="card" aria-label={`${stationName(sid)} station`}>
+    <section className="card station-detail" aria-label={`${stationName(sid)} station`}>
       <h3>{sid === "desserts" ? "Desserts · Breads" : stationName(sid)}</h3>
-      <div className="hint" style={{ marginBottom: 10 }}>
-        {sid === "tandoor" ? "Center island, east side · " : ""}
-        {st ? `${st.self_serve ? "self-serve" : `${st.servers} servers`}${st.to_order ? " · made to order" : ""} · ` : ""}{inLine} in line
-      </div>
-      <div className="stack" style={{ gap: 8 }}>
+      <p className="station-service">{st?.self_serve ? "Self-serve" : `${st?.servers ?? 0} servers`}{st?.to_order ? " · made to order" : ""}</p>
+      <div className="station-summary"><div><strong>{inLine}</strong><span>in line now</span></div><span className={`chip ${t >= opens && t < closes ? "good" : ""}`}>{serviceStatus}</span></div>
+      {periods.length > 1 && <label className="station-period">Menu <select value={shownPeriod} onChange={(e) => setMenuPeriod(e.target.value as "dinner" | "late_night")}>{periods.map((period) => <option key={period} value={period}>{period === "late_night" ? "Late night" : "Dinner"}</option>)}</select></label>}
+      <div className="station-menu-heading"><h4>{shownPeriod === "late_night" ? "Late-night dishes" : "Dinner dishes"}</h4><span>{t >= closes ? "At close" : t < opens ? "At opening" : "Portions left"}</span></div>
+      <div className="station-dishes">
         {dishes.map((d) => {
           const tl = pans.get(d.dish_id)!;
-          const lvl = levelAt(tl, t);
-          const peak = peakLevel(tl);
-          const cooking = tl.batches.find((b) => b.start <= t && t < b.ready);
-          const empty = lvl <= 0 && t >= result.open;
-          return (
-            <div key={d.dish_id} className="row" style={{ flexWrap: "nowrap", fontSize: 13 }}>
-              <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={d.name}>{d.name}</span>
-              <Meter frac={lvl / peak} color={lvl / peak < 0.15 ? "var(--bad)" : lvl / peak < 0.35 ? "var(--warn)" : "var(--good)"} width={44} />
-              <span className="num" style={{ width: 56, textAlign: "right", color: empty ? "var(--bad)" : undefined }}>
-                {empty ? (cooking ? `next ${clock(cooking.ready, false)}` : "empty") : lvl}
-              </span>
-            </div>
-          );
+          const level = levelAt(tl, inspectionT), peak = peakLevel(tl);
+          const cooking = tl.batches.find((b) => b.start <= inspectionT && inspectionT < b.ready);
+          return <div className="station-dish" key={d.dish_id}>
+            <div><span>{d.name}</span><b className={level <= 0 ? "bad-text" : ""}>{level <= 0 ? "Empty" : level}</b></div>
+            <Meter frac={level / peak} color={level / peak < .15 ? "var(--bad)" : level / peak < .35 ? "var(--warn)" : "var(--good)"} width={240} />
+            {cooking && <small>Next batch ready at {clock(cooking.ready)}</small>}
+          </div>;
         })}
-        {toOrder.length > 0 && <div className="hint">{toOrder.length} dish{toOrder.length > 1 ? "es" : ""} made to order (no pan)</div>}
-        {!dishes.length && !toOrder.length && <div className="hint">No dishes from this station tonight.</div>}
+        {toOrder.map((d) => <div className="station-dish" key={d.dish_id}><div><span>{d.name}</span></div><small>Made to order · no pan inventory</small></div>)}
+        {!dishes.length && !toOrder.length && <p className="guide-copy">No menu items for this station on this date.</p>}
       </div>
-      <div className="hint" style={{ margin: "12px 0 4px" }}>Queue length, {clock(result.open, false)}–7:00 pm</div>
-      <Spark values={series} highlight={nowIdx} />
+      <div className="station-queue-chart"><h4>Queue throughout the night</h4><Spark values={series} highlight={Math.floor((t - result.open) / 10)} /><div><span>{clock(result.open)}</span><span>{clock(result.close + 30)}</span></div></div>
     </section>
   );
 }

@@ -114,9 +114,10 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - **Done 2026-11-13:** SPEC §12 (demo flow) now uses the real numbers and dishes ("about 6% less waste (1–8%) … stockouts about the same"). The pitch slides, if any, need the same change.
 - **Still open:** refresh the Figma frames from the bundle so design and app agree, and decide whether engine fixes E1–E3 (ISSUES.md) land before the numbers are final; they will move every figure.
 
-### U2 · Medium · Hall: only the top-down view is live
-- **3D overview** shows the static render with a note. **Serving line** is disabled. **Compare with…** opens the Lab; split-screen compare (SPEC P2) isn't built.
-- The animated React Three Fiber scene (SPEC §3.4) is not started.
+### U2 · Medium · Hall: illustrated isometric replay, no orbital 3D
+- **Updated 2026-11-13:** Guided Watch/Try/Compare now runs in the main app. Both the Canvas isometric view and SVG top-down view use the full trace, with continuous Play/Pause, scrubbing, all station menus and pan levels, whole-night queues, and student selection. Closed stations retain their dinner menus.
+- Presets load their own replay and show paired 30-night comparisons. Advanced controls remain in the Lab. Split-screen comparison (SPEC P2) isn't built.
+- The scene is an illustrated isometric view. Orbital WebGL/React Three Fiber and the serving-line camera remain future work.
 
 ### U4 · Partly fixed · Dashboard: dinner only
 - **Partly fixed (engine 0.4.1):** the Dashboard shows dinner + late night (KPI chip, arrivals chart, "late" tags on dishes and in the production plan). Breakfast and lunch below are still open.
@@ -139,7 +140,7 @@ Offline (bundle only), these are disabled with a message: the plain-English box,
 - **For the demo:** run `make serve` next to `make web`, or stick to presets and single levers.
 
 ### U9 · Low · Hall replay geometry is approximate
-- Walking is a straight line between spots (no nav graph), so a walker can cut across a counter for a moment.
+- **Wall/counter crossing fixed 2026-11-13:** both views use cached routes around shared counters, stairs, rooms, walls, and tables. Paths maintain body clearance and use the back-room door openings. Queue interpolation also follows safe paths and no longer jumps between neighboring slots. Recorded event times are preserved.
 - The engine records only the seating zone. The exact seat is picked by the UI from the **assumed** table layout.
 - Pan levels are rebuilt from `served` events. They match the engine's empty-pan events more than 95% of the time.
 - "Missed 1st choice" coloring infers the first choice from the first line joined (21.2% vs the engine's 21.0%).

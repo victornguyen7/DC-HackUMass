@@ -26,6 +26,7 @@ FIELDS = (
     "students", "late_night_students", "waste_total", "stockout_min_total", "missed_first_choice_rate",
     "missed_meal", "wait_p50", "wait_p90", "balks", "empty_seen", "in_hall_before_close",
     "batch_wait_min", "cook_busy_share", "empty_wait_min", "seat_wait_min", "peak_seated",
+    "swipe_wait_min", "swipe_queue_max", "group_students", "allergy_students", "allergy_no_meal",
 )
 
 

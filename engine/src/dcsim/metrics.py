@@ -45,6 +45,11 @@ class NightMetrics:
     empty_wait_min: float = 0.0  # minutes students waited at an empty pan for a batch
     seat_wait_min: float = 0.0  # minutes students stood waiting for a seat
     peak_seated: int = 0
+    swipe_wait_min: float = 0.0  # minutes waited at the entrance card readers
+    swipe_queue_max: int = 0
+    group_students: int = 0  # students who came with friends
+    allergy_students: int = 0  # students with at least one allergy (survey shares)
+    allergy_no_meal: int = 0  # of those, how many left with nothing they could eat
     servers_needed: dict[str, dict[str, int]] = field(default_factory=dict)  # station -> hour ("17") -> servers for 85% busy
     in_hall_before_close: int = 0  # students inside 30 min before serving stops (11:30 pm)
 
@@ -85,6 +90,11 @@ def _servers_needed(cfg, rec) -> dict[str, dict[str, int]]:
         mean_min = st.service_median_min * float(np.exp(st.service_sigma ** 2 / 2))
         out.setdefault(st.id, {})[str(hour)] = max(1, int(np.ceil(items * mean_min / 60 / TARGET_SERVER_BUSY)))
     return out
+
+
+def _allergy_no_meal(night: Night) -> int:
+    allergic = {s.id for s in night.students if s.allergies}
+    return sum(1 for oc in night.rec.outcomes if oc.student in allergic and oc.items == 0)
 
 
 def _cook_share(cfg, rec) -> float:
@@ -148,9 +158,44 @@ def compute_metrics(night: Night) -> NightMetrics:
         empty_wait_min=round(rec.empty_wait_min, 2),
         seat_wait_min=round(rec.seat_wait_min, 2),
         peak_seated=rec.peak_seated,
+        swipe_wait_min=round(rec.swipe_wait_min, 2),
+        swipe_queue_max=rec.swipe_queue_max,
+        group_students=sum(1 for s in night.students if s.group >= 0),
+        allergy_students=sum(1 for s in night.students if s.allergies),
+        allergy_no_meal=_allergy_no_meal(night),
         servers_needed=_servers_needed(cfg, rec),
         in_hall_before_close=sum(1 for oc in outcomes if oc.arrive <= c - 30 < oc.exit),
     )
+
+
+SERIES_STEP_MIN = 1
+
+
+def _step_values(changes: list[tuple[float, int]], grid: np.ndarray) -> np.ndarray:
+    """Value of a step function (logged as changes) at each grid time: the last change at or before it."""
+    if not changes:
+        return np.zeros(len(grid), dtype=int)
+    t = np.array([c[0] for c in changes])
+    v = np.array([c[1] for c in changes])
+    idx = np.searchsorted(t, grid, side="right") - 1
+    return np.where(idx >= 0, v[np.maximum(idx, 0)], 0)
+
+
+def night_series(night: Night, step: int = SERIES_STEP_MIN) -> dict:
+    """Per-minute series for one night (IMPROVEMENTS 1.4), sampled from the recorder's exact step
+    functions: line length per station, portions on the line per batch-cooked dish, students inside.
+    Not stored with cached nights (too big); `runner.series_summary` builds them on request."""
+    cfg, rec = night.cfg, night.rec
+    grid = np.arange(cfg.open_min, cfg.service_end + 30 + step, step, dtype=float)
+    arrive = np.array([o.arrive for o in rec.outcomes])
+    leave = np.array([o.exit for o in rec.outcomes])
+    inside = ((arrive[None, :] <= grid[:, None]) & (grid[:, None] < leave[None, :])).sum(axis=1) if len(arrive) else np.zeros(len(grid), dtype=int)
+    return {
+        "t0": int(grid[0]), "step": step,
+        "inside": inside.astype(int).tolist(),
+        "queue": {s.id: _step_values(rec.queue_lens[i], grid).tolist() for i, s in enumerate(cfg.stations)},
+        "pans": {d.id: _step_values(rec.pan_levels[i], grid).tolist() for i, d in enumerate(cfg.menu) if d.id in cfg.kitchen},
+    }
 
 
 def build_trace(night: Night) -> dict:

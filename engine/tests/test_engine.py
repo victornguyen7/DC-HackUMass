@@ -403,3 +403,89 @@ def test_package_version_matches_engine_version():
 
     meta = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())
     assert meta["project"]["version"] == ENGINE_VERSION
+
+
+# ---------------------------------------------------------------- 1.1: pans as SimPy Containers
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_night_ends_clean(cfg, seed):
+    """Nobody still holds a server or waits for food at the end, and every pan's lots add up to its
+    Container level (catches a student leaving a line without releasing it)."""
+    from dcsim.model import Night
+
+    n = Night(cfg, seed).run()
+    for st in n.stations:
+        assert st.res.count == len(st.off_duty) and st.line() == 0, st.cfg.id
+    for p in n.pans:
+        assert sum(lot.portions for lot in p.lots) == p.level and not p.stock.get_queue
+        assert p.cooked == p.served + p.expired + p.leftover
+
+
+# ---------------------------------------------------------------- 0.6.0 realism items
+
+
+def test_noodle_popularity_is_per_dish():
+    """ISSUES E6: Hot Pot draws a crowd, ramen doesn't."""
+    hot_pot = next(d for d in load_baseline("2026-11-13").menu if d.station == "noodle_bowl")
+    ramen = next(d for d in load_baseline("2026-11-14").menu if d.station == "noodle_bowl")
+    assert "Hot Pot" in hot_pot.name and "Ramen" in ramen.name
+    assert hot_pot.popularity == pytest.approx(2 * ramen.popularity)
+
+
+def test_allergies_and_pescetarians_are_respected(cfg):
+    from dcsim.model import Night
+    from dcsim.recorder import Ev
+
+    n = Night(cfg, 1, trace=True).run()
+    by_id = {s.id: s for s in n.students}
+    labels = {a.id: set(a.labels) for a in cfg.allergies}
+    allergic = sum(1 for s in n.students if s.allergies)
+    assert 0.07 < allergic / len(n.students) < 0.12  # survey: ~10% (independent draws)
+    for t, sid, code, st, dish, *_ in n.rec.events:
+        if code != Ev.SERVED:
+            continue
+        d, s = cfg.menu[dish], by_id[sid]
+        for a in s.allergies:
+            assert not labels[a] & set(d.allergens), (sid, a, d.name)
+        if s.diet == "pescetarian":
+            assert "pescetarian" in d.diet_tags, d.name
+    assert any("pescetarian" in d.diet_tags and "vegetarian" not in d.diet_tags for d in cfg.menu)
+
+
+def test_groups_arrive_and_sit_together(cfg):
+    m = run_night(cfg, 1, trace=True)
+    from dcsim.arrivals import sample_arrivals
+    from dcsim.population import build_students
+
+    ids, times = sample_arrivals(cfg, 1)
+    studs = build_students(cfg, 1, ids, times)
+    groups: dict[int, list] = {}
+    for s in studs:
+        if s.group >= 0:
+            groups.setdefault(s.group, []).append(s)
+    assert groups and all(2 <= len(g) <= 4 for g in groups.values())
+    seat = {s["id"]: next(e["seat"] for e in s["events"] if e["type"] == "sit") for s in m.trace["students"]
+            if any(e["type"] == "sit" for e in s["events"])}
+    for g in groups.values():
+        assert len({s.arrive for s in g}) == 1
+        assert len({seat[s.id] for s in g if s.id in seat}) <= 1
+
+
+def test_swipe_queue_and_pan_sizes(cfg):
+    m = run_night(cfg, 1).metrics
+    assert cfg.swipe_readers == 2 and m.swipe_queue_max >= 1 and m.swipe_wait_min > 0
+    assert run_night(cfg.updated(swipe_readers=0), 1).metrics.swipe_wait_min == 0
+    # smaller line pans mean more swaps, so students see an empty pan more often
+    tiny = cfg.updated(pan_capacity={r: 8 for r in cfg.pan_capacity})
+    assert run_night(tiny, 1).metrics.empty_seen > m.empty_seen
+
+
+def test_forecast_reorder_preset(cfg):
+    from dcsim.presets import PRESETS
+
+    fc = PRESETS["forecast_reorder"](cfg)
+    assert all(p.forecast_reorder for p in fc.kitchen.values() if p.expected_demand is not None)
+    base = sum(run_night(cfg, s).metrics.waste_total for s in (1, 2, 3))
+    fore = sum(run_night(fc, s).metrics.waste_total for s in (1, 2, 3))
+    assert fore < base  # cooks to the expected rush: less left over

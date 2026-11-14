@@ -92,6 +92,17 @@ export type Headline = {
   peak_seated?: Range;
 };
 
+export type Band = { p10: number[]; p50: number[]; p90: number[] };
+/** Index i is minute t0 + i * step. */
+export type Series = {
+  t0: number;
+  step: number;
+  n_nights: number;
+  inside: Band; // students in the building
+  queue: Record<string, Band>; // students in line, by station id
+  pans: Record<string, Band>; // portions on hand (line + hot-hold), by dish id
+};
+
 export type Result = {
   config_hash: string;
   label: string;
@@ -113,6 +124,8 @@ export type Result = {
   stations: StationResult[];
   arrivals: { start: string; start_min: number; expected: number }[];
   median_seed: number;
+  /** Per-minute p10/p50/p90 bands, only with GET /api/results/{hash}?include=series (engine 0.6.0). */
+  series?: Series;
   /** Servers needed per station and hour ("19" = 7–8 pm) for ≤85% busy (engine 0.5.0). */
   staffing?: Record<string, Record<string, number>>;
   baseline_hash: string;

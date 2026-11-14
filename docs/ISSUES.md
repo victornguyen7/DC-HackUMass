@@ -1,6 +1,6 @@
 # Known issues
 
-Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
+Status as of 2026-11-12, engine 0.3.3; updated 2026-11-13 for engine 0.6.0 (Container pans, per-minute series, E6, allergies and pescetarians, swipe queue, groups, pan sizes, forecast-reorder preset), 0.5.0 (simulation core: kitchen capacity, empty-pan waits, seats, staffing by hour; D1, D2), 0.4.2 (late-night waste taper, E5 crowd by date, E7 carving line) and 0.4.1 (E1 and E2 fixed, late night added) and earlier for engine 0.3.4 (seating zones, door routes), the web UI in `web/` and the per-dish back-test. Numbers marked *measured* come from Nov 13, night 11 under 0.3.3 (the median night: 3,059 students, close 9:00 pm) unless noted.
 
 Severity: **High** = changes headline numbers or could mislead a viewer · **Medium** = wrong in some cases, or a gap the demo will show · **Low** = cleanup.
 
@@ -13,7 +13,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | E3 | Medium | Engine | Stockouts are higher than the team observes |
 | E4 | ~~Medium~~ | Engine | ~~Made-to-order dishes show "empty pan" events after close~~ **Fixed in 0.4.1** (`closed` event) |
 | E5 | Low | Engine | ~~Same crowd every date~~ **Fixed in 0.4.2** with placeholder multipliers; needs real swipe data |
-| E6 | Medium | Engine | Noodle Bowl popularity is set per station, not per dish |
+| E6 | ~~Medium~~ | Engine | ~~Noodle Bowl popularity is set per station, not per dish~~ **Fixed in 0.6.0** (per dish, team list) |
 | E7 | ~~Medium~~ | Engine | ~~Thanksgiving carving (Nov 18) is modeled as pre-made pans~~ **Fixed in 0.4.2** (staffed carving line; confirm with the team) |
 | E8 | Low | Engine | Seats are zones, not tables; personas can't overlap; add-ons use no stock |
 | B1 | High | Back-test | The back-test grades the engine against itself |
@@ -21,7 +21,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | C1 | Medium | Compare | Tiny differences get labeled "worse" |
 | A1 | Medium | API | Admin actions have no authentication |
 | A2 | Medium | API | Memory grows with jobs and cached traces |
-| A3 | Low | API | Trace format differs from the spec |
+| A3 | Low | API | Trace format differs from the spec (`?include=series` built in 0.6.0; `POST /warm`, `/backtest` job not) |
 | L1 | High | LLM | Persona generation is paused (bad output on Qwen 27B) |
 | L2 | ~~Medium~~ | LLM | ~~Groq free-tier limit: 1,000 output tokens per minute~~ **Mitigated:** Gemini is the default provider; load gate + bundle narrations |
 | L3 | Medium | LLM | The Groq key was pasted into a chat |
@@ -98,6 +98,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 ### E6 · Medium · Noodle Bowl popularity is set per station, not per dish
 - The team's 2× favorite-station boost applies to the whole Noodle Bowl station, but the team says its line depends on the dish. Hot Pot (Nov 13) may not draw a crowd.
 - **Fix:** move the boost to specific dishes in `overrides.json → popularity`. Needs the team's list of crowd-drawing Noodle Bowl dishes.
+- **Fixed (0.6.0):** team list (2026-11-13): Hot Pot, Pho, Shrimp Tom Yum and Taiwan Pork draw a crowd (2×); ramen does not (1×). `overrides.json → dish_popularity` (known to the kitchen plan, like the station factor it replaces).
 
 ### E7 · Fixed (0.4.2, confirm with the team) · Thanksgiving carving (Nov 18) was modeled as pre-made pans
 - **Was:** the carved turkey sat in Display's self-serve pans (4 spots, 18 s an item), which made Nov 18 look like the best date.
@@ -106,7 +107,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 
 ### E8 · Low · Smaller modeling gaps
 - Seating has two zones since 0.3.4 (`main`, 284 seats, and the indoor `back` area, 120 seats, reached by turning left after check-in), and walks route through the doors. There are no individual tables or nav graph: the web replay picks a seat from an **assumed** table layout and walks in straight lines (UI_ISSUES U9).
-- Persona shares must sum to 1, but "rushed" and "social" can overlap in real students.
+- Persona shares must sum to 1, but "rushed" and "social" can overlap in real students. (Pescetarian diet and allergies were added in 0.6.0, N8.)
 - Add-ons (sauces, toppings) don't use up stock.
 - Pescetarian (2.0%) has no diet rule.
 - "Make Your Own Waffles" is modeled as a dessert pan.
@@ -222,7 +223,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | N5 | Survey adjustment of personas and dish popularity, held-out check, `POST /personas/calibrate` | ENGINE §7.3 |
 | N6 | Optimizer ("Optimize plan"); the back-test uses `smaller_batches` until then | SPEC §6.1 |
 | N7 | Uncertainty sweep, so ranges widen for guessed inputs and AI-estimated dishes (the Lab's "Holds up if we're wrong?" needs it) | ENGINE §7.3 |
-| N8 | Allergen modeling (10% of students report an allergy or intolerance) | ASSUMPTIONS context |
+| N8 | ✅ **Built (0.6.0):** allergies at the 2022–23 survey shares (drawn per student; dishes labeled with the allergen avoided) and a 2% pescetarian diet. ~~Allergen modeling (10% of students report an allergy or intolerance)~~ | ASSUMPTIONS context |
 | N9 | Real data hookups: attendance (R01), staffing (R02), production and waste exports (R06, R07) | ASSUMPTIONS |
 
 ---

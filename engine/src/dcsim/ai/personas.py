@@ -54,7 +54,7 @@ class PersonaDraft(BaseModel):
     label: str = Field(description="short, e.g. 'Athlete, high protein'")
     description: str = Field(description="ONE sentence, at most 25 words, about how this student eats dinner here")
     proposed_share: float = Field(description="share of dinner diners, 0-1")
-    diet: Literal["none", "vegetarian", "vegan", "halal"]
+    diet: Literal["none", "vegetarian", "vegan", "halal", "pescetarian"]
     patience: list[Bucket]
     plate_size: list[Bucket]
     seconds_prob: float

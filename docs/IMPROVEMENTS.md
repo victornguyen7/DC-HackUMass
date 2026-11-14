@@ -1,6 +1,6 @@
 # Possible improvements
 
-Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2 and 0.5.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour). Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
+Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2, 0.5.0 and 0.6.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour). Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
 
 Each item has:
 - **Now:** what the code does today (checked against `engine/src/dcsim/`).
@@ -27,7 +27,8 @@ These fix behavior that every later improvement would otherwise inherit.
 
 ## Tier 1: rebuild the core properly
 
-### 1.1 Pans as SimPy primitives (Container or Store of trays)
+### 1.1 ✅ Done (0.6.0) · Pans as SimPy primitives (Container or Store of trays)
+- **As built:** `model.PanStock` (a `simpy.Container`) holds the portions on the line; the lot list keeps hold times, and every get (immediate or after waiting) takes from the oldest lots in `PanStock._do_get`. Students waiting at an empty pan queue with `stock.get(1)`. Verified identical to 0.5.0 on the golden Nov 13 nights before the realism items went in; `test_night_ends_clean` checks that lots always add up to the Container level and no server or waiter is left over.
 - **Now:** each `Pan` keeps a deque of `Lot`s by hand (oldest first). Each lot has its own expiry process, and the reorder check runs on every take, expiry and batch. Hold times are already enforced exactly (oldest lot first, expired portions counted as waste).
 - **Gain:** less hand-written bookkeeping, and SimPy handles "wait until food arrives" (see 1.2).
 - **Caution:** a plain `Container` only knows a level. It can't tell which portions are old, so expiry would break. Two options keep hold times:
@@ -73,7 +74,8 @@ These fix behavior that every later improvement would otherwise inherit.
   ```
 - **New outputs:** cook utilization, minutes batches waited for equipment, and a staffing lever ("+1 cook at 6–8 pm").
 
-### 1.4 Statistics monitor
+### 1.4 ✅ Done (0.6.0) · Statistics monitor
+- **As built:** `GET /api/results/{hash}?include=series` adds per-minute p10/p50/p90 bands (students inside, line length per station, portions on hand per dish), sampled from the recorder's exact step functions (`metrics.night_series`, `runner.series_summary`). Series aren't stored with cached nights (too big); the request re-runs the nights (~1–2 s). Typed as `Result.series` in the web app; no chart yet.
 - **Now:** already better than a per-minute monitor. The `Recorder` logs every pan level and queue length **as a change** (exact step functions), so stockout minutes are exact, not sampled. The 3D trace and the arrival histogram come from it.
 - **Gain:** what's missing is per-minute **series in results**, for charts like level over time, queue over time and the run-out timeline.
 - **Effort:** S. Downsample the existing step functions to 1-minute series in `metrics.py`, aggregated as p10/p50/p90 across nights. Serve them via `GET /results/{hash}?include=series` (already planned in ENGINE.md §8).
@@ -165,13 +167,13 @@ These fix behavior that every later improvement would otherwise inherit.
 | --- | --- | --- |
 | ✅ **Done (0.5.0):** `Station.shifts`, lever `stations.<id>.shifts`, `staffing` output (servers needed per hour). **Staffing by hour** (servers change during the meal) | Real staffing levers ("+1 Grill server 6:30–8:00") | M |
 | ✅ **Done (0.4.2, placeholder multipliers; needs R01).** **Per-date crowd** from `calendar.json` (weekend, events, exams, weather) (ISSUES E5) | Dates stop looking identical | S (needs R01/R08 for values) |
-| **Item-level popularity boosts** instead of station-wide ones (Noodle Bowl, ISSUES E6) | Matches the team: the line depends on the dish | S |
-| **Entrance swipe queue** (card readers as a Resource) | A real bottleneck at peak; shows in 3D | S |
-| **Groups** (social students arrive and sit together) | Realistic waves and seating pressure | M |
-| **Pan size limits** (hotel-pan capacity per dish) | Batch sizes the kitchen can actually cook | S |
-| **Forecast-based reordering** (start a batch from the expected rush, not only the current level) | Fewer stockouts at the 7:30 peak; a smarter preset | M |
+| ✅ **Done (0.6.0):** `overrides.json → dish_popularity` (Hot Pot, Pho, Tom Yum, Taiwan Pork 2×; ramen 1×; team). **Item-level popularity boosts** instead of station-wide ones (Noodle Bowl, ISSUES E6) | Matches the team: the line depends on the dish | S |
+| ✅ **Done (0.6.0, placeholder: 2 readers, 4 s):** `swipe_wait_min`, `swipe_queue_max`. **Entrance swipe queue** (card readers as a Resource) | A real bottleneck at peak; shows in 3D | S |
+| ✅ **Done (0.6.0, placeholder: 40% of social students, groups of 2–4):** same arrival time and seat zone; `group_students`. **Groups** (social students arrive and sit together) | Realistic waves and seating pressure | M |
+| ✅ **Done (0.6.0, placeholder sizes):** `kitchen_defaults.json → pan_capacity` by role; the rest of a batch waits in the hot-hold cabinet; a 0.5-min pan swap shows the pan empty. **Pan size limits** (hotel-pan capacity per dish) | Batch sizes the kitchen can actually cook | S |
+| ✅ **Done (0.6.0) as preset `forecast_reorder`:** reorder when stock won't cover 1.2 × the forecast for the next cook time + 5 min, plus safety stock 1.65·√forecast; re-checked every 5 min. Nov 13: waste −15%, stockouts 66 → 117 min; Nov 17: waste −7%, stockouts 112 → 83 min. **Forecast-based reordering** (start a batch from the expected rush, not only the current level) | Fewer stockouts at the 7:30 peak; a smarter preset | M |
 | ✅ **Done (0.4.2, carving line; confirm with the team).** **Per-date station overrides** (Thanksgiving carving made to order, ISSUES E7) | Special nights modeled correctly | S |
-| **Allergens and pescetarian diet rules** (ISSUES E8, N8) | Diet-gap flags cover more students | S |
+| ✅ **Done (0.6.0):** survey allergy shares (2022–23, ~10%) drawn per student, dishes labeled with the allergen avoided; pescetarian 2% diet; `allergy_students`, `allergy_no_meal`. **Allergens and pescetarian diet rules** (ISSUES E8, N8) | Diet-gap flags cover more students | S |
 
 ### B. Calibration and validation
 | Improvement | Gain | Effort |

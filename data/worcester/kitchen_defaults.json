@@ -102,5 +102,15 @@
       "bread": "none",
       "naan": "tandoor"
     }
-  }
+  },
+  "pan_capacity": {
+    "_note": "IMPROVEMENTS A, engine 0.6.0. PLACEHOLDER: portions one line pan holds (about one full hotel pan), by role; the rest of a batch waits in the hot-hold cabinet. pan_swap_min: minutes to swap in a full pan when the line pan runs out (the pan looks empty meanwhile).",
+    "entree": 40,
+    "starch": 50,
+    "side": 40,
+    "soup": 60,
+    "dessert": 48,
+    "bread": 40
+  },
+  "pan_swap_min": 0.5
 }

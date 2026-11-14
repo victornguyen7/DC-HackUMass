@@ -255,17 +255,19 @@ Consequences:
 
 ## 9. Current status and known issues
 
-*As of 2026-11-13, engine 0.5.0. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
+*As of 2026-11-13, engine 0.6.0. The committed demo bundle was generated 2026-11-14 00:54 UTC with engine **0.4.1**, so the web app shows 0.4.1 numbers until the bundle is rebuilt (planned once, before the demo). One-page tracker: [`docs/STATUS.md`](docs/STATUS.md).*
 
 **Works:** engine with dinner + late night on 8 real dates; 5 presets and the lever grid precomputed; FastAPI with jobs, caching, scenarios, traces, narration and the AI routes; all four web pages offline and with the API; synthetic history, back-test and Tiger calibration.
+
+**New in 0.6.0:** pans are SimPy Containers (same results); per-minute series via `GET /api/results/{hash}?include=series`; Noodle Bowl popularity per dish (Hot Pot, Pho, Tom Yum, Taiwan Pork draw a crowd; ramen doesn't); allergies at survey shares and a 2% pescetarian diet; an entrance swipe queue, friends who arrive and sit together, and hotel-pan size limits with a hot-hold cabinet (placeholders); a **Forecast reorder** preset (cooks to the expected rush; Nov 13 waste −15% but more stockouts, Nov 17 better on both).
 
 **New in 0.5.0 (simulation core):** cooks and equipment as limited resources (`kitchen_defaults.json → resources`, placeholders: 12 dinner / 4 late-night cooks, ovens, steamers, kettles, flat-tops, woks, fryers, tandoors); students wait up to 2 min at an empty pan when a batch is cooking; staffing by hour (`shifts`) with a "servers needed" table; seats counted per night (limits off); golden baseline and calibration-target tests. New result fields: `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `peak_seated`, `staffing`.
 
 **New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey. **In progress (not committed):** similar-night search on Tiger (`dcsim tsdb similar`, see `docs/TIGER.md` §7); timeout and progress lines for the bundle's narration step (ISSUES L5).
 
 **Headline numbers right now** (they change whenever the engine changes, so check the app):
-- Fri Nov 13 baseline (engine 0.5.0, median of 10 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 74 stockout-minutes per night. The web app still shows 0.4.1 numbers until the bundle is rebuilt.
-- Back-test of *Smaller batches of favorites* over 39 past nights (engine 0.5.0, `data/synthetic/worcester/backtest.json`): **waste about 8.5% lower (4.5–10.3%)**, wins 39 of 39 nights, about 497 lb and $1,592 per week. Stockouts: about 83 min per night under the plan vs 76 for the baseline plan and **69 recorded**, so the plan saves waste at some cost in run-outs.
+- Fri Nov 13 baseline (engine 0.6.0, median of 10 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 73 stockout-minutes per night, about 3,200 portions wasted. The web app still shows 0.4.1 numbers until the bundle is rebuilt.
+- Back-test of *Smaller batches of favorites* over 39 past nights (engine 0.6.0, `data/synthetic/worcester/backtest.json`): **waste about 8.7% lower (5.0–10.4%)**, wins 37 of 39 nights, about 511 lb and $1,728 per week. Stockouts: about 85 min per night under the plan vs 79 for the baseline plan and **74 recorded**, so the plan saves waste at some cost in run-outs.
 
 **Biggest open items:**
 | Item | Where |

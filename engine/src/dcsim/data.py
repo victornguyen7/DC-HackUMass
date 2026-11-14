@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -88,6 +89,21 @@ def crowd_factors(date: str, data_dir: Path | None = None, *, events: bool = Tru
     return dinner, late
 
 
+_MEAT_RE = re.compile(
+    r"\b(chicken|beef|pork|turkey|lamb|bacon|sausage|ham|pepperoni|meatballs?|birria|carnitas|steak|"
+    r"chorizo|pancetta|prosciutto|duck|veal|bulgogi)\b", re.I)
+
+
+def _diet_tags(x: dict) -> list[str]:
+    """Menu diet tags, plus "pescetarian" for vegetarian dishes and for fish/seafood dishes whose
+    name has no meat (labels Fish/Shellfish; "Hot Pot (Chicken, Beef, Pork, Fish, ...)" is not)."""
+    tags = list(x["diet_tags"])
+    seafood = bool({"Fish", "Shellfish"} & set(x.get("allergens") or []))
+    if {"vegetarian", "vegan"} & set(tags) or (seafood and not _MEAT_RE.search(x["name"])):
+        tags.append("pescetarian")
+    return sorted(set(tags))
+
+
 def load_baseline(
     date: str | None = None,
     data_dir: str | Path | None = None,
@@ -128,19 +144,23 @@ def load_baseline(
     prior = defaults["popularity_prior"]
     staff = {} if neutral else overrides.get("popularity", {})
     # Station-level favorites are known to the kitchen, so they apply to the baseline plan too.
-    station_pop = overrides.get("station_popularity", {})
+    station_pop = {k: v for k, v in overrides.get("station_popularity", {}).items() if not k.startswith("_")}
+    # Crowd-drawing dishes the kitchen knows about (ISSUES E6: Noodle Bowl is per dish, not per station).
+    dish_pop = {k: v for k, v in overrides.get("dish_popularity", {}).items() if not k.startswith("_")}
     # Nest-style correction for the logit model: similar items at one station share demand.
     dilution = float(defaults.get("station_dilution", 0.0))
     same = Counter((x["period"], x["station"], x["role"]) for x in rows)
     dishes = [
         {
             "id": x["id"], "name": x["name"], "station": x["station"], "role": x["role"],
-            "diet_tags": x["diet_tags"], "vessel": x["vessel"], "hot": x["hot"],
+            "diet_tags": _diet_tags(x), "vessel": x["vessel"], "hot": x["hot"],
+            "allergens": x.get("allergens") or [],
             "serving_size": x.get("serving_size"), "carbon_rating": x.get("carbon_rating"),
             "period": x["period"],
             "popularity": prior[x["role"]]
             * float(staff.get(x["name"], 1.0))
             * float(station_pop.get(x["station"], 1.0))
+            * float(dish_pop.get(x["name"], 1.0))
             / same[(x["period"], x["station"], x["role"])] ** dilution,
         }
         for x in rows
@@ -178,6 +198,13 @@ def load_baseline(
             "late_crowd": (late_cfg["crowd"] | {"multiplier": round(late_cfg["crowd"].get("multiplier", 1.0) * f_late, 4)})
             if late_cfg else None,
             "late_plate_size": late_cfg.get("plate_size") if late_cfg else None,
+            "pan_capacity": {k: v for k, v in defaults.get("pan_capacity", {}).items() if not k.startswith("_")}
+            if not unlimited else {},
+            "pan_swap_min": defaults.get("pan_swap_min", 0.5),
+            "groups": dc.get("groups"),
+            "swipe_readers": dc.get("swipe", {}).get("readers", 0),
+            "swipe_min": dc.get("swipe", {}).get("seconds", 4) / 60,
+            "allergies": [a for a in dc.get("allergies", []) if not a.get("id", "").startswith("_")],
             "kitchen_resources": {k: v for k, v in defaults["resources"].items() if not k.startswith("_")}
             if "resources" in defaults and not unlimited else None,
             "layout": dc["layout"],

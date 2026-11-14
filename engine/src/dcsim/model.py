@@ -20,9 +20,10 @@ import math
 from collections import deque
 from collections.abc import Generator
 
+import numpy as np
 import simpy
 
-from .arrivals import sample_arrivals
+from .arrivals import _segments, _intensity, sample_arrivals
 from .config import BatchPlan, ScenarioConfig, Station
 from .population import MAX_SERVICES, Student, build_students
 from .recorder import VESSELS, Ev, Outcome, PanEv, Recorder
@@ -39,19 +40,61 @@ class Lot:
         self.expires_at = expires_at
 
 
+class PanStock(simpy.Container):
+    """The portions on the line (IMPROVEMENTS 1.1): a SimPy Container, so a student can wait for
+    the next batch with `stock.get(1)`. Every get, immediate or after waiting, also takes the
+    portions from the oldest lots, so hold times stay exact (lots of one pan expire in order)."""
+
+    def __init__(self, env: simpy.Environment, lots: deque):
+        super().__init__(env, capacity=float("inf"), init=0)
+        self.lots = lots
+        self.skip_lots = False  # set while removing portions whose lot was already zeroed (expiry)
+
+    def _do_get(self, event):  # noqa: ANN001
+        if self._level >= event.amount and not self.skip_lots:
+            need = event.amount
+            while need:
+                lot = self.lots[0]
+                if lot.portions == 0:  # expired or used up: drop it
+                    self.lots.popleft()
+                    continue
+                k = min(need, lot.portions)
+                lot.portions -= k
+                need -= k
+        return super()._do_get(event)
+
+    def take_now(self, n: int) -> bool:
+        """Take n portions at once, or nothing. Students already waiting for this pan are served
+        first (in line order); a get that can't be filled right now is withdrawn."""
+        self._trigger_get(None)
+        if self._level < n:
+            return False
+        ev = self.get(n)
+        if not ev.triggered:  # pragma: no cover - guarded by the level check above
+            self.get_queue.remove(ev)
+            return False
+        return True
+
+    def drop_waiters(self) -> None:
+        for ev in list(self.get_queue):
+            self.get_queue.remove(ev)
+
+
 class Pan:
     __slots__ = (
-        "idx", "plan", "to_order", "last_batch", "lots", "level", "cooking", "batches_started",
-        "cooked", "served", "expired", "leftover", "closed", "last_call", "taper_armed", "waiters",
+        "idx", "plan", "to_order", "last_batch", "lots", "stock", "cooking", "batches_started",
+        "cooked", "served", "expired", "leftover", "closed", "last_call", "taper_armed", "closed_ev",
+        "cap", "cabinet", "swapping",
     )
 
-    def __init__(self, idx: int, plan: BatchPlan | None, last_batch: float, not_open_yet: bool):
+    def __init__(self, idx: int, plan: BatchPlan | None, last_batch: float, not_open_yet: bool,
+                 env: simpy.Environment, cap: int | None = None):
         self.idx = idx
         self.plan = plan
         self.to_order = plan is None
         self.last_batch = last_batch
         self.lots: deque[Lot] = deque()
-        self.level = 0
+        self.stock = PanStock(env, self.lots)  # level + waiting; the lot list keeps hold times
         self.cooking = 0
         self.batches_started = 0
         self.cooked = 0
@@ -61,11 +104,25 @@ class Pan:
         self.closed = not_open_yet  # closed before its period starts and after it ends
         self.last_call = False  # period over: no new students, but the line already formed is served
         self.taper_armed = False  # a re-check is scheduled for when the taper starts
-        self.waiters: list = []  # events of students waiting at the counter for the next batch
+        self.closed_ev = env.event()  # fires when the pan closes: anyone waiting for it gives up
+        # Pan size (IMPROVEMENTS A): at most `cap` portions on the line (one hotel pan); the rest
+        # of a batch waits in the hot-hold cabinet until staff swap in a full pan.
+        self.cap = cap
+        self.cabinet = 0
+        self.swapping = False
+
+    @property
+    def on_line(self) -> int:
+        return int(self.stock.level)
+
+    @property
+    def level(self) -> int:
+        """All portions cooked and still good: on the line plus in the hot-hold cabinet."""
+        return int(self.stock.level) + self.cabinet
 
     @property
     def visibly_empty(self) -> bool:
-        return not self.to_order and self.level == 0
+        return not self.to_order and self.on_line == 0
 
 
 STUDENT_PRIORITY, OFF_DUTY_PRIORITY = 1, 0  # off-duty tokens go ahead of students
@@ -118,9 +175,12 @@ class Night:
             last = end
             if plan is not None and plan.last_batch_min is not None:
                 last = min(plan.last_batch_min, end)
-            self.pans.append(Pan(i, plan, last, not_open_yet=start > cfg.open_min))
+            cap = cfg.pan_capacity.get(d.role) if plan is not None else None
+            self.pans.append(Pan(i, plan, last, not_open_yet=start > cfg.open_min, env=env, cap=cap))
 
         self.rec = Recorder(len(cfg.menu), len(cfg.stations), trace)
+        self._forecast_cdf = self._build_forecast(cfg)
+        self.readers = simpy.Resource(env, capacity=cfg.swipe_readers) if cfg.swipe_readers else None
         # Kitchen capacity (IMPROVEMENTS 1.3): cooks per service period and equipment units.
         kr = cfg.kitchen_resources
         self.cooks = {p: simpy.Resource(env, capacity=max(1, n)) for p, n in kr.cooks.items()} if kr else {}
@@ -146,6 +206,9 @@ class Night:
     def run(self) -> Night:
         for window in sorted(set(self.dish_window)):
             self.env.process(self._service_hours(*window))
+        for pan in self.pans:
+            if pan.plan is not None and pan.plan.forecast_reorder and pan.plan.expected_demand is not None:
+                self.env.process(self._forecast_watch(pan))
         for st in self.stations:
             if st.shifted:
                 self.env.process(self._staffing(st))
@@ -207,14 +270,16 @@ class Night:
                 yield env.timeout(0.5)
         for pan in pans:
             pan.closed = True
-            self._wake_waiters(pan)  # nobody waits at a closed pan
+            if not pan.closed_ev.triggered:
+                pan.closed_ev.succeed()  # nobody waits at a closed pan
             if pan.to_order:
                 continue
+            pan.stock.drop_waiters()  # they give up via closed_ev
             pan.leftover += pan.level
-            for lot in pan.lots:
-                lot.portions = 0
+            if pan.on_line:
+                pan.stock.take_now(pan.on_line)
+            pan.cabinet = 0
             pan.lots.clear()
-            pan.level = 0
             self.rec.pan(env.now, pan.idx, 0, PanEv.CLOSE)
 
     def _add_lot(self, pan: Pan, portions: int, code: PanEv) -> None:
@@ -224,17 +289,12 @@ class Night:
             return
         lot = Lot(portions, self.env.now + pan.plan.hold_min)
         pan.lots.append(lot)
-        pan.level += portions
+        room = portions if pan.cap is None else max(0, min(portions, pan.cap - pan.on_line))
+        if room:
+            pan.stock.put(room)  # a student waiting with stock.get(1) is served from it
+        pan.cabinet += portions - room
         self.rec.pan(self.env.now, pan.idx, pan.level, code)
         self.env.process(self._expire(pan, lot))
-        self._wake_waiters(pan)
-
-    @staticmethod
-    def _wake_waiters(pan: Pan) -> None:
-        for ev in pan.waiters:
-            if not ev.triggered:
-                ev.succeed()
-        pan.waiters.clear()
 
     def _expire(self, pan: Pan, lot: Lot) -> Proc:
         lead = pan.plan.cook_min
@@ -247,21 +307,86 @@ class Night:
             yield self.env.timeout(pan.plan.hold_min)
         if lot.portions and not pan.closed:
             pan.expired += lot.portions
-            pan.level -= lot.portions
-            lot.portions = 0
+            p, lot.portions = lot.portions, 0
+            from_cab = min(pan.cabinet, p)  # the cabinet first, then the line
+            pan.cabinet -= from_cab
+            rest = min(p - from_cab, pan.on_line)
+            if rest:
+                pan.stock.skip_lots = True
+                pan.stock.take_now(rest)
+                pan.stock.skip_lots = False
+            self._maybe_swap(pan)
             self.rec.pan(self.env.now, pan.idx, pan.level, PanEv.EXPIRE)
             self._kitchen_check(pan)
+
+    def _maybe_swap(self, pan: Pan) -> None:
+        """The line pan is empty but the cabinet has food: staff swap in a full pan (pan_swap_min)."""
+        if pan.cap is None or pan.on_line or not pan.cabinet or pan.swapping or pan.closed:
+            return
+        pan.swapping = True
+
+        def swap() -> Proc:
+            yield self.env.timeout(self.cfg.pan_swap_min)
+            pan.swapping = False
+            if pan.closed or not pan.cabinet:
+                return
+            k = min(pan.cap - pan.on_line, pan.cabinet)
+            if k <= 0:  # a fresh batch already filled the line pan during the swap
+                return
+            pan.cabinet -= k
+            pan.stock.put(k)  # waiting students are served from the new pan
+            self.rec.pan(self.env.now, pan.idx, pan.level, PanEv.BATCH_READY)
+
+        self.env.process(swap())
 
     def _usable(self, pan: Pan) -> int:
         """Portions that will still be within hold time when a batch started now is ready."""
         ready_at = self.env.now + pan.plan.cook_min
         return sum(lot.portions for lot in pan.lots if lot.expires_at > ready_at)
 
+    @staticmethod
+    def _build_forecast(cfg: ScenarioConfig) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+        """Per service period: minute grid and the share of that period's arrivals expected by
+        each minute (the kitchen's forecast of when demand comes)."""
+        out = {}
+        for crowd, start, end, sub, _ in _segments(cfg):
+            grid = np.arange(start, end + 1, 1.0)
+            lam = _intensity(crowd, start, end, grid)
+            cum = np.concatenate([[0.0], np.cumsum((lam[1:] + lam[:-1]) / 2)])
+            out["late_night" if sub else "dinner"] = (grid, cum / cum[-1] if cum[-1] > 0 else cum)
+        return out
+
+    def _forecast_need(self, pan: Pan) -> int:
+        """Portions expected over the next cook_min + forecast_extra_min, x forecast_factor."""
+        plan, now = pan.plan, self.env.now
+        grid, cdf = self._forecast_cdf[self.cfg.menu[pan.idx].period]
+        ahead = now + plan.cook_min + plan.forecast_extra_min
+        share = np.interp(ahead, grid, cdf) - np.interp(now, grid, cdf)
+        mean = plan.forecast_factor * (plan.expected_demand or 0.0) * share
+        return math.ceil(mean + plan.forecast_safety_z * math.sqrt(mean))
+
+    def _reorder_threshold(self, pan: Pan) -> int:
+        plan, now = pan.plan, self.env.now
+        if plan.forecast_reorder and plan.expected_demand is not None and not (
+            plan.taper_from_min is not None and now >= plan.taper_from_min
+        ):
+            return self._forecast_need(pan)
+        return plan.reorder_at(now)
+
+    def _forecast_watch(self, pan: Pan) -> Proc:
+        """Forecast pans are re-checked every 5 minutes, to start cooking ahead of a rush."""
+        while not pan.closed or self.env.now < self.dish_window[pan.idx][0]:
+            yield self.env.timeout(5.0)
+            if not pan.closed:
+                self._kitchen_check(pan)
+            if self.env.now >= self.dish_window[pan.idx][1]:
+                return
+
     def _kitchen_check(self, pan: Pan) -> None:
         plan, now = pan.plan, self.env.now
         while (
             not pan.closed
-            and self._usable(pan) + pan.cooking <= plan.reorder_at(now)
+            and self._usable(pan) + pan.cooking <= self._reorder_threshold(pan)
             and pan.batches_started < plan.max_batches
             and now + plan.cook_min <= pan.last_batch
         ):
@@ -322,13 +447,9 @@ class Night:
             pan.cooked += 1
             pan.served += 1
             return True
-        if pan.level == 0:
+        if not pan.stock.take_now(1):  # takes from the oldest lot
             return False
-        lots = pan.lots
-        while lots[0].portions == 0:  # drop expired/emptied lots (oldest first)
-            lots.popleft()
-        lots[0].portions -= 1
-        pan.level -= 1
+        self._maybe_swap(pan)
         pan.served += 1
         self.rec.pan(self.env.now, pan.idx, pan.level, PanEv.TAKE)
         self._kitchen_check(pan)
@@ -435,18 +556,22 @@ class Night:
         for d in wanted:
             pan = self.pans[d]
             ok = self._take(pan)
-            if not ok and not pan.closed and pan.cooking > 0 and self.cfg.empty_pan_wait_min > 0:
+            if not ok and not pan.closed and (pan.cooking > 0 or pan.swapping or pan.cabinet) and self.cfg.empty_pan_wait_min > 0:
                 # Empty, but a batch is already cooking: wait at the counter a little (1.2).
                 fav = bool(s.prefs) and s.prefs[0] == d
                 limit = self.cfg.empty_pan_wait_min * (self.cfg.favorite_patience_mult if fav else 1.0)
-                refill = env.event()
-                pan.waiters.append(refill)
+                portion = pan.stock.get(1)  # SimPy queues the student for the next portion
                 t0 = env.now
-                yield refill | env.timeout(limit)
+                yield portion | env.timeout(limit) | pan.closed_ev
                 rec.empty_wait_min += env.now - t0
-                if refill in pan.waiters:
-                    pan.waiters.remove(refill)
-                ok = self._take(pan)
+                if portion.triggered:  # got a portion from the new batch or the swapped-in pan
+                    pan.served += 1
+                    self._maybe_swap(pan)
+                    self.rec.pan(env.now, pan.idx, pan.level, PanEv.TAKE)
+                    self._kitchen_check(pan)
+                    ok = True
+                elif portion in pan.stock.get_queue:
+                    pan.stock.get_queue.remove(portion)
             if ok:
                 z = s.svc_z[min(n_served + len(got), MAX_SERVICES - 1)]
                 yield env.timeout(st.cfg.service_median_min * math.exp(st.cfg.service_sigma * z))
@@ -475,6 +600,13 @@ class Night:
 
     def _student(self, s: Student) -> Proc:
         env, rec, layout = self.env, self.rec, self.cfg.layout
+        if self.readers is not None:  # swipe in at the card readers (IMPROVEMENTS A)
+            t0 = env.now
+            rec.swipe_queue_max = max(rec.swipe_queue_max, len(self.readers.queue) + 1)
+            with self.readers.request() as r:
+                yield r
+                rec.swipe_wait_min += env.now - t0
+                yield env.timeout(self.cfg.swipe_min)
         rec.ev(env.now, s.id, Ev.ENTER)
         pos: tuple[float, float] = layout.entrance
         served: list[int] = []
@@ -504,7 +636,7 @@ class Night:
             served.extend(got)
         plate_done = env.now
         first = s.prefs[0] if s.prefs else -1
-        zone = layout.seat_zone(s.id)
+        zone = layout.seat_zone(s.seat_key)  # a group sits in the first member's zone
         seat_req = None
         if self.seats is not None:
             # Usual zone if it has a free seat, else the zone with the most free seats; if every

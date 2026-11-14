@@ -80,7 +80,10 @@ class FakeAPI:
 def test_template_never_names_unseen_dishes(night):
     svc, cfg, h, trace = night
     picks = highlights(cfg, trace, 20)
-    assert {p["reason"] for p in picks} >= {"switched", "missed_meal"}
+    reasons = {p["reason"] for p in picks}
+    assert "switched" in reasons
+    if any(not any(e["type"] == "served" for e in s["events"]) for s in trace["students"]):
+        assert "missed_meal" in reasons  # only when someone on this night left with nothing
     for p in picks:
         c = card(cfg, trace["_by_id"][p["student_id"]])
         text = template(c)

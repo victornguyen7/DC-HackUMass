@@ -98,6 +98,38 @@ def summarize(nights: list[NightMetrics]) -> dict:
     return {"n_nights": n, "headline": headline, "dishes": dishes, "max_queue": stations, "staffing": staffing}
 
 
+def _night_series(args: tuple[ScenarioConfig, int]) -> dict:
+    from .metrics import night_series
+
+    cfg, seed = args
+    return night_series(Night(cfg, seed).run())
+
+
+def series_summary(cfg: ScenarioConfig, seeds: list[int], workers: int | None = None) -> dict:
+    """Per-minute p10/p50/p90 across nights of line length per station, portions on the line per
+    dish and students inside (IMPROVEMENTS 1.4). Re-runs the nights (series aren't cached)."""
+    workers = workers if workers is not None else min(len(seeds), os.cpu_count() or 1)
+    args = [(cfg, s) for s in seeds]
+    if workers <= 1 or len(seeds) <= 1:
+        per = [_night_series(a) for a in args]
+    else:
+        with ProcessPoolExecutor(max_workers=workers) as pool:
+            per = list(pool.map(_night_series, args))
+
+    def band(rows: list[list[int]]) -> dict[str, list[float]]:
+        a = np.asarray(rows, dtype=float)
+        p10, p50, p90 = np.percentile(a, [10, 50, 90], axis=0)
+        return {"p10": np.round(p10, 1).tolist(), "p50": np.round(p50, 1).tolist(), "p90": np.round(p90, 1).tolist()}
+
+    first = per[0]
+    return {
+        "t0": first["t0"], "step": first["step"], "n_nights": len(per),
+        "inside": band([p["inside"] for p in per]),
+        "queue": {k: band([p["queue"][k] for p in per]) for k in first["queue"]},
+        "pans": {k: band([p["pans"][k] for p in per]) for k in first["pans"]},
+    }
+
+
 def compare(baseline: ScenarioResult, scenario: ScenarioResult) -> dict:
     """Paired comparison: same seeds, so per-night differences come from the change."""
     base = {m.seed: m for m in baseline.nights}

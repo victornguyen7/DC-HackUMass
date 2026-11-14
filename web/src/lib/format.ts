@@ -42,6 +42,7 @@ export const PRESET_LABELS: Record<string, string> = {
   extra_server: "Extra server at busiest",
   theme_night: "Theme night +25%",
   combined: "Combined plan",
+  forecast_reorder: "Forecast reorder",
 };
 
 export function scenarioLabel(preset: string | null, lever: string, label?: string) {

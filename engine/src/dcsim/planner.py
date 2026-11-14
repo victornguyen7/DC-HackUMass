@@ -117,6 +117,7 @@ def plan_kitchen(date: str, data_dir: Path | None = None) -> Path:
             "batch_size": batch, "starting_batches": start, "reorder_point": reorder,
             "cook_min": r["cook_min"], "hold_min": r["hold_min"], "max_batches": max_batches,
             "last_batch_min": last_batch,
+            "expected_demand": round(demand, 1),
         } | taper
         basis[dish.id] = {"name": dish.name, "expected_demand": demand, "opening_demand": s["opening"], "peak_per_10min": s["peak10"]}
 

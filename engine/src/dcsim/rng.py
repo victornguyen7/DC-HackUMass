@@ -30,6 +30,8 @@ class Stream(IntEnum):
     DWELL = 6
     TASTE = 7
     SERVICE = 8
+    ALLERGY = 9
+    GROUP = 10
 
 
 @lru_cache(maxsize=4096)

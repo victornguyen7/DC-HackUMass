@@ -1,5 +1,5 @@
 {
-  "_note": "Worcester dinner service. Layout points and seating zones come from layout/floor_plan.json; students reach the back seating room through one of its doors. close_min 1260 (9:00 pm) is sourced; open_min 990 (4:30 pm) is team-confirmed. expected_students 3000 and the peak windows (6:00-6:45, 7:00-8:00, 8:00-9:00 pm) come from team observation (2026-11-12); wave widths and shares are guesses. See ASSUMPTIONS.md. favorite_patience_mult 3.0: students wait up to 3x longer in a line for their first-choice dish (team: 'wait if I really want that dish'); 3x is a guess. retry_balked_favorite: a student who leaves their favorite's line eats elsewhere, then tries it once more (team, 2026-11-12). empty_pan_wait_min 2.0 (engine 0.5.0, IMPROVEMENTS 1.2): at the counter, a student whose dish is empty but already cooking waits up to 2 min (x favorite_patience_mult = 6 min for their first choice) instead of switching at once; a guess. seat_limits false (engine 0.5.0, IMPROVEMENTS 2.4): the layout's 284 + 120 seats are assumed (tables are not drawn) and the 7:30 pm peak wants 530-680 seats, so seats stay unlimited until someone counts them; every night reports peak_seated. Set true (with real seat counts in layout/floor_plan.json) to make students wait for a seat.",
+  "_note": "Worcester dinner service. Layout points and seating zones come from layout/floor_plan.json; students reach the back seating room through one of its doors. close_min 1260 (9:00 pm) is sourced; open_min 990 (4:30 pm) is team-confirmed. expected_students 3000 and the peak windows (6:00-6:45, 7:00-8:00, 8:00-9:00 pm) come from team observation (2026-11-12); wave widths and shares are guesses. See ASSUMPTIONS.md. favorite_patience_mult 3.0: students wait up to 3x longer in a line for their first-choice dish (team: 'wait if I really want that dish'); 3x is a guess. retry_balked_favorite: a student who leaves their favorite's line eats elsewhere, then tries it once more (team, 2026-11-12). empty_pan_wait_min 2.0 (engine 0.5.0, IMPROVEMENTS 1.2): at the counter, a student whose dish is empty but already cooking waits up to 2 min (x favorite_patience_mult = 6 min for their first choice) instead of switching at once; a guess. seat_limits false (engine 0.5.0, IMPROVEMENTS 2.4): the layout's 284 + 120 seats are assumed (tables are not drawn) and the 7:30 pm peak wants 530-680 seats, so seats stay unlimited until someone counts them; every night reports peak_seated. Set true (with real seat counts in layout/floor_plan.json) to make students wait for a seat. allergies (engine 0.6.0, ISSUES N8): UMass Dining survey 2022-2023 allergy and intolerance shares (sources/population/allergies.json, total 10.04%); drawn independently per student, who then never picks a dish labeled with that allergen. Fruits and vegetables (0.38%) have no menu label and are left out. The survey mixes allergy and intolerance. groups and swipe (engine 0.6.0, IMPROVEMENTS A): PLACEHOLDERS. About 40% of 'social' students arrive with 1-3 friends (sizes 2/3/4 at 50/30/20%) and sit in the same zone; everyone swipes in at 2 card readers, ~4 s each.",
   "dc": "worcester",
   "meal": "dinner",
   "open_min": 990,
@@ -111,5 +111,101 @@
   "favorite_patience_mult": 3.0,
   "retry_balked_favorite": true,
   "empty_pan_wait_min": 2.0,
-  "seat_limits": false
+  "seat_limits": false,
+  "allergies": [
+    {
+      "id": "tree_nuts",
+      "share": 0.0273,
+      "labels": [
+        "Tree Nuts"
+      ]
+    },
+    {
+      "id": "peanuts",
+      "share": 0.023,
+      "labels": [
+        "Peanuts"
+      ]
+    },
+    {
+      "id": "gluten",
+      "share": 0.0132,
+      "labels": [
+        "Gluten",
+        "Wheat"
+      ]
+    },
+    {
+      "id": "shellfish",
+      "share": 0.01,
+      "labels": [
+        "Shellfish"
+      ]
+    },
+    {
+      "id": "milk",
+      "share": 0.0093,
+      "labels": [
+        "Milk"
+      ]
+    },
+    {
+      "id": "fish",
+      "share": 0.0043,
+      "labels": [
+        "Fish"
+      ]
+    },
+    {
+      "id": "egg",
+      "share": 0.0038,
+      "labels": [
+        "Eggs"
+      ]
+    },
+    {
+      "id": "sesame",
+      "share": 0.003,
+      "labels": [
+        "Sesame"
+      ]
+    },
+    {
+      "id": "soy",
+      "share": 0.0023,
+      "labels": [
+        "Soy"
+      ]
+    },
+    {
+      "id": "corn",
+      "share": 0.0004,
+      "labels": [
+        "Corn"
+      ]
+    }
+  ],
+  "groups": {
+    "persona": "social",
+    "share": 0.4,
+    "sizes": [
+      [
+        2,
+        0.5
+      ],
+      [
+        3,
+        0.3
+      ],
+      [
+        4,
+        0.2
+      ]
+    ],
+    "window_min": 10
+  },
+  "swipe": {
+    "readers": 2,
+    "seconds": 4
+  }
 }

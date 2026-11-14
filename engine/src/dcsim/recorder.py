@@ -52,7 +52,7 @@ class Outcome(NamedTuple):
 class Recorder:
     __slots__ = ("trace", "events", "pan_events", "pan_levels", "queue_lens", "outcomes", "balks", "empty_seen",
                  "batch_wait_min", "cook_busy_min", "equipment_peak", "empty_wait_min", "seat_wait_min", "peak_seated",
-                 "served_by_hour")
+                 "served_by_hour", "swipe_wait_min", "swipe_queue_max")
 
     def __init__(self, n_dishes: int, n_stations: int, trace: bool = False):
         self.trace = trace
@@ -69,6 +69,8 @@ class Recorder:
         self.empty_wait_min = 0.0  # minutes students waited at an empty pan for a batch
         self.seat_wait_min = 0.0  # minutes students stood waiting for a seat
         self.peak_seated = 0
+        self.swipe_wait_min = 0.0  # minutes students waited at the card readers
+        self.swipe_queue_max = 0
         self.served_by_hour: dict[tuple[int, int], int] = {}  # (station, hour of day) -> items served
 
     def ev(self, t: float, student: int, code: Ev, station: int = -1, dish: int = -1, vessel: int = -1,

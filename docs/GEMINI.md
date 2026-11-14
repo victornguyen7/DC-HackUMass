@@ -170,5 +170,5 @@ Ranked by value to the project. Every idea follows the LLM.md rules: never insid
 1. ~~Fallback model chain~~, ~~similar-dish embeddings~~, ~~dish prior on Gemini~~: done 2026-11-13.
 2. Wire `near_duplicates` into whatever persona approach comes next.
 3. Function calling for `/ask` if the contradiction seen live keeps happening (LLM.md §5.7b).
-4. Decide whether to rebuild the bundle narrations with Gemini (`make demo-bundle`).
+4. ~~Decide whether to rebuild the bundle narrations with Gemini~~: done 2026-11-13 (the committed bundle has 156 Gemini narrations). Bundle builds now time out stalled calls and print progress (ISSUES L5).
 5. Rotate both API keys after the hackathon.

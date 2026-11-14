@@ -133,6 +133,10 @@ def student(env, s, hall):
 
 **Service periods (0.4.1).** Each dish has a `period`: `dinner` (`open_min`..`close_min`, 4:30–9:00 pm) or `late_night` (`close_min`..`late_close_min`, 9:00 pm–12:00 am; ids `late.<station>.<name>`, from `menus/<date>_late_night.json`). Pans open with starting stock when their period starts and close at its end. At 9:00 dinner dishes take no new students, and lines already formed are served from what is left (`LAST_CALL_MAX_MIN` 30). At midnight serving stops; students still in line get a `closed` event, and seated students stay until they are done. Late night has its own crowd (`late_crowd`, its own random stream, so dinner arrivals don't move) and snack-sized plates (`late_plate_size`). A student ranks only the dishes of the period they arrive in. The planner sizes each dish over its own period.
 
+**Late-night taper (0.4.2).** A `BatchPlan` may carry `taper_from_min`, `taper_batch_size` and `taper_reorder_point`: from that time the kitchen cooks the smaller batch with the lower reorder point (one re-check is scheduled at the taper time). The planner sets them for late-night dishes (`kitchen_defaults.json → planner_by_period.late_night`): the taper starts once fewer than `taper_fill` × batch portions are still to be eaten in the pilot runs.
+
+**Crowd by date (0.4.2).** `crowd_by_date.json` scales the dinner and late-night crowds by weekday and date events (placeholders, E5). `overrides.json → station_by_date` moves a dish to another station on one date (Nov 18 carving line, E7).
+
 **Kitchen is event-driven, not polled.** `Pan.take()` checks the reorder condition and, if met, triggers the kitchen process. When a lot is added, one expiry event is scheduled at `expires_at` that removes whatever is left of that lot and logs it as *expired*. At close, everything left in pans is logged as *leftover*. Nothing ticks every minute, which keeps the event count low.
 
 ### 3.3 The rest of the day

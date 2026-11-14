@@ -288,6 +288,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |
 | [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) | Planning what to build next |
+| [`docs/SPONSORS.md`](docs/SPONSORS.md) | Picking up a sponsor-prize feature (Gemini, agent, Tiger Data, Vultr, domain): status and build steps |
 | [`survey/student_survey.md`](survey/student_survey.md) | Running the student survey |
 
 ---

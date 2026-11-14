@@ -1,6 +1,6 @@
 # Possible improvements
 
-Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
+Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engine 0.4.2. Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
 
 Each item has:
 - **Now:** what the code does today (checked against `engine/src/dcsim/`).
@@ -18,10 +18,10 @@ These fix behavior that every later improvement would otherwise inherit.
 
 | # | Improvement | Why first | Effort |
 | --- | --- | --- | --- |
-| 0.1 | **Close the hall properly** (ISSUES E2): stop arrivals some minutes before 9:00 pm and send everyone still in the serving area to seating or the exit | 247 students still active after close distort waste, stockouts and the replay | S |
-| 0.2 | **Stop students touring every line** (ISSUES E1): cap stations tried per trip, and let students see lines from a distance and pick one | 33% of students walk away from 10+ lines; every other behavior builds on this | M |
-| 0.3 | **git init** + `.gitignore` (`cache/`, `.env`, `.venv/`) | Tier 1 rewrites the core; you need a way back | S |
-| 0.4 | **Golden baseline test**: commit Nov 13 headline numbers; any engine change that moves them must be intentional | Rewrites like 1.1 should change behavior only where intended | S |
+| 0.1 | ✅ **Done (0.4.1).** ~~**Close the hall properly** (ISSUES E2)~~: stop arrivals some minutes before 9:00 pm and send everyone still in the serving area to seating or the exit | 247 students still active after close distort waste, stockouts and the replay | S |
+| 0.2 | ✅ **Done (0.4.1).** ~~**Stop students touring every line** (ISSUES E1)~~: cap stations tried per trip, and let students see lines from a distance and pick one | 33% of students walk away from 10+ lines; every other behavior builds on this | M |
+| 0.3 | ✅ **Done 2026-11-13** (on GitHub). ~~**git init** + `.gitignore`~~ (`cache/`, `.env`, `.venv/`) | Tier 1 rewrites the core; you need a way back | S |
+| 0.4 | ✗ Open. **Golden baseline test**: commit Nov 13 headline numbers; any engine change that moves them must be intentional | Rewrites like 1.1 should change behavior only where intended | S |
 
 ---
 
@@ -115,7 +115,7 @@ These fix behavior that every later improvement would otherwise inherit.
 - **Effort:** S per upgrade.
 
 ### 2.4 Seating as a Resource
-- **Now:** seating is one point with no capacity (`seat: "Z1"` stub).
+- **Now:** ◐ **partly done (0.3.4):** students sit in seating zones (main / back) reached through door routes, but zones have **no capacity** yet. (Was: one point with no capacity, `seat: "Z1"` stub.)
 - **Gain:** on busy nights seating becomes a second bottleneck. It also enables groups sitting together (social persona) and zones for the 3D view.
 - **Design:** `simpy.Resource(capacity=seats)` per zone, plus a choice of the nearest zone with space. Group arrivals need a group size per student.
 - **Effort:** M.
@@ -161,13 +161,13 @@ These fix behavior that every later improvement would otherwise inherit.
 | Improvement | Gain | Effort |
 | --- | --- | --- |
 | **Staffing by hour** (servers change during the meal) | Real staffing levers ("+1 Grill server 6:30–8:00") | M |
-| **Per-date crowd** from `calendar.json` (weekend, events, exams, weather) (ISSUES E5) | Dates stop looking identical | S (needs R01/R08 for values) |
+| ✅ **Done (0.4.2, placeholder multipliers; needs R01).** **Per-date crowd** from `calendar.json` (weekend, events, exams, weather) (ISSUES E5) | Dates stop looking identical | S (needs R01/R08 for values) |
 | **Item-level popularity boosts** instead of station-wide ones (Noodle Bowl, ISSUES E6) | Matches the team: the line depends on the dish | S |
 | **Entrance swipe queue** (card readers as a Resource) | A real bottleneck at peak; shows in 3D | S |
 | **Groups** (social students arrive and sit together) | Realistic waves and seating pressure | M |
 | **Pan size limits** (hotel-pan capacity per dish) | Batch sizes the kitchen can actually cook | S |
 | **Forecast-based reordering** (start a batch from the expected rush, not only the current level) | Fewer stockouts at the 7:30 peak; a smarter preset | M |
-| **Per-date station overrides** (Thanksgiving carving made to order, ISSUES E7) | Special nights modeled correctly | S |
+| ✅ **Done (0.4.2, carving line; confirm with the team).** **Per-date station overrides** (Thanksgiving carving made to order, ISSUES E7) | Special nights modeled correctly | S |
 | **Allergens and pescetarian diet rules** (ISSUES E8, N8) | Diet-gap flags cover more students | S |
 
 ### B. Calibration and validation
@@ -176,13 +176,13 @@ These fix behavior that every later improvement would otherwise inherit.
 | **Calibration targets file**: the team's observations as tests (longest lines 30–40, rarely runs out late, biggest rush 7–8 pm) | Every engine change is checked against what the team sees | S |
 | **Sensitivity analysis** (tornado or Sobol on the guessed inputs) | Ranks which data requests R01–R08 matter most | M (with 2.2) |
 | **Approximate Bayesian computation** when real counts arrive: find input values that reproduce observed line lengths and waste | Replaces guesses with ranges backed by data | L |
-| **Holdout back-test** once real data exists: fit on weeks 1–4, test on 5–6 | Fixes the circular back-test (ISSUES B1) | M |
+| ◐ **Protocol built on synthetic data** (`make calibrate`, TIGER.md); waits for real data. **Holdout back-test** once real data exists: fit on weeks 1–4, test on 5–6 | Fixes the circular back-test (ISSUES B1) | M |
 
 ### C. Honest results
 | Improvement | Gain | Effort |
 | --- | --- | --- |
 | **Minimum meaningful difference** in verdicts (ISSUES C1) | No "worse" for 0.1-minute changes | S |
-| **Trade-off card**: always show waste *and* stockout *and* wait together (ISSUES B2) | Prevents a waste-only headline | S |
+| ✅ **Done:** the Lab shows waste, stockouts, missed first choice and wait with a verdict each; the Waste Record shows the stockout change next to the waste reduction. **Trade-off card**: always show waste *and* stockout *and* wait together (ISSUES B2) | Prevents a waste-only headline | S |
 | **Data-source badges on every number** (measured / team-confirmed / sourced / guess / synthetic / AI estimate) | Judges can see exactly what is real | S |
 | **Generated ASSUMPTIONS numbers** (ISSUES D1) | Docs can't go stale | S |
 
@@ -211,8 +211,8 @@ These fix behavior that every later improvement would otherwise inherit.
 
 ### F. LLM layer (details in `LLM.md` §5)
 - Persona replacement (paused; your alternative arrives tomorrow).
-- In-app rate-limit queue for Groq's 1,000 output tokens per minute.
-- Wider narration checks (times, line lengths).
+- ✅ ~~In-app rate-limit queue for Groq's 1,000 output tokens per minute.~~ Done: live load gate + backup model (LLM.md §5.4); Gemini is the default.
+- ✅ ~~Wider narration checks (times, line lengths).~~ Done (`narrate-v3`).
 - Pre-warm narration for each new scenario's median night.
 - Prompts in separate versioned files.
 - Survey calibration (ENGINE.md §7.3).
@@ -233,7 +233,7 @@ These fix behavior that every later improvement would otherwise inherit.
 
 ## Suggested order
 
-1. **Tier 0** (0.1–0.4).
+1. **Tier 0:** 0.1–0.3 done; **0.4 golden baseline test** left.
 2. **1.3 cooks and equipment.** Highest credibility gain; it makes the recommendation honest.
 3. **1.1 + 1.2:** pans with waiting, and the "waiting at empty pans" metric.
 4. **C items:** honest verdicts and trade-off card. Cheap.

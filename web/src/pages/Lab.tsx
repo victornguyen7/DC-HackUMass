@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { OptimizePanel, WorldsPanel } from "../components/PlanSearch";
 import { ErrorBox, Loading, TopBar } from "../components/Shell";
 import {
   apiUp, ask, dishPrior, explain, findEntry, listScenarios, loadApiResult, loadManifest, loadResult, saveScenario, similarDishes, simulate,
@@ -10,7 +11,7 @@ import { useApiUp, useAsync } from "../lib/hooks";
 import { useApp, type Scenario } from "../lib/store";
 import type { CookRow, Result, Verdict } from "../lib/types";
 
-type KitchenEdit = { batch_size?: number; starting_batches?: number; reorder_point?: number; last_batch_min?: number };
+type KitchenEdit = { batch_size?: number; starting_batches?: number; reorder_point?: number; last_batch_min?: number; max_batches?: number };
 type Draft = {
   preset: string | null;
   crowd: number; // multiplier, 1 = baseline
@@ -98,6 +99,7 @@ export default function Lab() {
     try { return JSON.parse(localStorage.getItem("dcwhatif.saved") ?? "[]"); } catch { return []; }
   });
   const [mode, setMode] = useState<"baseline" | "preset" | "saved">(fromAgent && !fromAgent.preset ? "baseline" : "preset");
+  const [showOpt, setShowOpt] = useState(false);
   const apiOn = useApiUp();
   // scenarios saved on the API (any browser), for this date
   const remote = useAsync<SavedScenario[]>(async () => ((await apiUp()) ? listScenarios(date).catch(() => []) : []), [date, apiOn, note]);
@@ -178,7 +180,7 @@ export default function Lab() {
             <Builder
               base={base.data} date={date} draft={draft} setDraft={setDraft} mode={mode} setMode={setMode} saved={saved}
               remote={remote.data ?? []} onOpenRemote={openRemote} apiUp={apiOn}
-              busy={busy} onRun={() => doRun(draft)}
+              busy={busy} onRun={() => doRun(draft)} onOptimize={() => setShowOpt(!showOpt)} optimizeOpen={showOpt}
               onPreset={(p) => { const d = { ...EMPTY, preset: p }; setDraft(d); doRun(d); }}
               onLoadSaved={(d) => { setDraft(d); doRun(d); }}
               onApply={(d) => { setDraft(d); setMode(d.preset ? "preset" : "baseline"); doRun(d); }}
@@ -198,12 +200,29 @@ export default function Lab() {
             <div className="stack">
               {err && <div className="alert warn" role="alert"><b>Can't run this yet</b>{err}</div>}
               {note && <div className="alert info" role="status">{note}</div>}
+              {showOpt && (
+                <section className="card" aria-label="Optimize plan">
+                  <div className="card-head">
+                    <h2>Optimize plan</h2>
+                    <button className="btn ghost" onClick={() => setShowOpt(false)} aria-label="Close the optimizer">Close</button>
+                  </div>
+                  <OptimizePanel date={date} apiUp={apiOn} onLoad={(levers) => {
+                    const d = draftFromRequest({ levers });
+                    setDraft(d);
+                    setMode("baseline");
+                    doRun(d);
+                  }} />
+                </section>
+              )}
               {!run && !err && <Loading what="results" />}
               {run && (
                 <>
                   <ResultsCard run={run} date={date} adopted={adopted[date]} apiUp={apiOn}
                     onWatch={run.hasTrace ? () => { setScenario(run.scenario); nav("/hall"); } : undefined}
                     onAdopt={() => onAdopt(run)} />
+                  {run.result.config_hash !== run.base.config_hash && (
+                    <WorldsPanel apiUp={apiOn} request={run.draft ? apiBody(date, run.draft) : null} />
+                  )}
                   {run.draft && menuEdits(run.draft) > 0 && <DemandShift run={run} />}
                   <div className="grid-2" style={{ gridTemplateColumns: "minmax(0,1fr) 260px" }}>
                     <CookSheet run={run} />
@@ -220,10 +239,10 @@ export default function Lab() {
   );
 }
 
-function Builder({ base, date, draft, setDraft, mode, setMode, saved, remote, onOpenRemote, apiUp, busy, onRun, onPreset, onLoadSaved, onApply, onSave }: {
+function Builder({ base, date, draft, setDraft, mode, setMode, saved, remote, onOpenRemote, apiUp, busy, onRun, onOptimize, optimizeOpen, onPreset, onLoadSaved, onApply, onSave }: {
   base: Result; date: string; draft: Draft; setDraft: (d: Draft) => void; mode: string; setMode: (m: "baseline" | "preset" | "saved") => void;
   saved: { name: string; draft: Draft }[]; remote: SavedScenario[]; onOpenRemote: (s: SavedScenario) => void; apiUp: boolean; busy: string | null;
-  onRun: () => void; onPreset: (p: string | null) => void; onLoadSaved: (d: Draft) => void; onApply: (d: Draft) => void; onSave: () => void;
+  onRun: () => void; onOptimize: () => void; optimizeOpen: boolean; onPreset: (p: string | null) => void; onLoadSaved: (d: Draft) => void; onApply: (d: Draft) => void; onSave: () => void;
 }) {
   const [open, setOpen] = useState<string | null>("batch");
   const batchDishes = base.cook_sheet.filter((d) => d.plan).sort((a, b) => b.portions_to_prepare.p50 - a.portions_to_prepare.p50);
@@ -323,7 +342,8 @@ function Builder({ base, date, draft, setDraft, mode, setMode, saved, remote, on
       </div>
       <div className="row">
         <button className="btn primary" onClick={onRun} disabled={!!busy || (!offline && !apiUp)}>{busy ? `Running… ${busy}` : "Run 30 nights"}</button>
-        <button className="btn" disabled title="Optimizer is a stretch goal (SPEC §6.1)">Optimize</button>
+        <button className="btn" onClick={onOptimize} aria-pressed={optimizeOpen}
+          title={apiUp ? "Search kitchen plans for less waste" : "Needs the API (make server)"}>Optimize</button>
         <button className="btn ghost" onClick={onSave}>Save</button>
       </div>
     </section>

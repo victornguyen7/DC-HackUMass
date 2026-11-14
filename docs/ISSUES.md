@@ -261,7 +261,7 @@ Found while checking engines 0.5.0–0.6.0; all fixed in 0.6.1 unless noted.
 | R4 | Gap | The plain-English box couldn't set cooks or server shifts | `ai/ask.py` (prompt `ask-v3`): `cooks` and `shifts` in the plan (optional, so cached v2 replies stay valid); the mock understands "one more cook" |
 | R5 | Model note (open) | Stockout-minutes count food on hand (line + hot-hold cabinet), so a 0.5-min pan swap isn't a stockout, though students see an empty pan and it counts in `empty_seen` | By design; documented in ENGINE.md |
 | R6 | Model note (open) | The mock (no-AI) /ask parser matches preset names inside questions: "an extra server at grill" also picks the `extra_server` preset. Gemini doesn't | Low; only the offline fallback **Fixed in 0.6.2** |
-| R7 | Trade-off (open) | The `forecast_reorder` preset saves waste but can cost run-outs: Nov 13 waste −13%, stockouts 36 → 107 min; Nov 17 waste −6%, stockouts 66 → 57 | Shown as a choice in the Lab; an optimizer (N6) could tune its factor and safety stock per dish |
+| R7 | Trade-off (open) | The `forecast_reorder` preset saves waste but can cost run-outs: Nov 13 waste −13%, stockouts 36 → 107 min; Nov 17 waste −6%, stockouts 66 → 57 | Shown as a choice in the Lab. The optimizer (N6, built) maps the same trade-off for batch sizes and reorder points; it doesn't tune `forecast_factor` or safety stock yet |
 
 Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s without kitchen limits, pans, swipe and groups); the forecast preset ~0.26 s.
 
@@ -276,8 +276,8 @@ Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s
 | N3 | ✅ **Built (engine 0.5.0):** `Station.shifts` / lever `stations.<id>.shifts` change servers during the night, and results carry `staffing` (servers needed per station and hour for ≤ 85% busy). ~~Servers by hour, and a "servers needed for p90 wait < 8 min" output~~. The Dashboard doesn't show it yet (UI_ISSUES U5) | SPEC §6.1 |
 | N4 | ~~Breakfast and lunch (full-day arrivals)~~ **Closed 2026-11-14:** not needed (dinner + late night only); the menu snapshot still has both meals | SPEC §7 |
 | N5 | Survey adjustment of personas and dish popularity, held-out check, `POST /personas/calibrate` | ENGINE §7.3 |
-| N6 | Optimizer ("Optimize plan"); the back-test uses `smaller_batches` until then | SPEC §6.1 |
-| N7 | Uncertainty sweep, so ranges widen for guessed inputs and AI-estimated dishes (the Lab's "Holds up if we're wrong?" needs it) | ENGINE §7.3 |
+| N6 | ✅ **Built 2026-11-14** (IMPROVEMENTS 2.1): Optimize plan, a waste-vs-stockouts frontier re-checked on unseen seeds. The back-test still uses `smaller_batches`; switching it to an optimized plan is a separate decision | SPEC §6.1 |
+| N7 | ✅ **Built 2026-11-14** (IMPROVEMENTS 2.2): plausible worlds (crowd, rush timing, dish popularity drawn per seed) + waste tornado. AI-estimated dishes get no extra spread yet | ENGINE §7.3 |
 | N8 | ✅ **Built (0.6.0):** allergies at the 2022–23 survey shares (drawn per student; dishes labeled with the allergen avoided) and a 2% pescetarian diet. ~~Allergen modeling (10% of students report an allergy or intolerance)~~ | ASSUMPTIONS context |
 | N9 | Real data hookups: attendance (R01), staffing (R02), production and waste exports (R06, R07) | ASSUMPTIONS |
 

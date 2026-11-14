@@ -14,7 +14,7 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 | 1 | Best Use of Gemini API | Plain-English what-if box on **Gemini function calling**; Sam's tool loop | ✅ built | — | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
 | 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night search | ◐ mostly built | S (polish + demo) | |
-| 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ✗ not built | S–M | |
+| 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ◐ sweep built (2026-11-14), not deployed | S–M | |
 | 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done | ~10 min | |
 
 ✅ built · ◐ partly built · ✗ not started
@@ -175,7 +175,7 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 | Parallel simulation workers | `ProcessPoolExecutor`, size set by `DCSIM_WORKERS` (default: CPU count) |
 | Allowed web origins | `DCSIM_CORS` (default `http://localhost:5173`) |
 | The web app calls a relative `/api/...` | `web/src/lib/data.ts`, so serving the app and the API on one domain needs no code change |
-| Uncertainty sweep | ✗ not built (ISSUES N7; design in IMPROVEMENTS §2.2) |
+| Uncertainty sweep | ✅ built 2026-11-14 (`worlds.py`, `POST /api/worlds`, `dcsim worlds --worlds 1000`); 200 worlds take 54 s on 8 cores, so 1,000 is the cloud story (IMPROVEMENTS §2.2) |
 | Deploy files (Dockerfile etc.) | ✗ none |
 
 ### To build (S–M)

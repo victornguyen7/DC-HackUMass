@@ -1,6 +1,6 @@
 # Possible improvements
 
-Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2, 0.5.0, 0.6.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour, Container pans, series, realism items) and 0.6.1 (review fixes, ISSUES §6b). All Tier 0, Tier 1 and model-realism items are done; open: Tier 2 optimizer (2.1) and uncertainty sweep (2.2), 2.4 seat limits (need real seat counts), Tier 3, sensitivity analysis and real-data calibration. Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
+Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2, 0.5.0, 0.6.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour, Container pans, series, realism items) and 0.6.1 (review fixes, ISSUES §6b). All Tier 0, Tier 1 and model-realism items are done; Tier 2 optimizer (2.1) and uncertainty sweep (2.2) built 2026-11-14; open: 2.4 seat limits (need real seat counts), Tier 3, sensitivity analysis and real-data calibration. Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
 
 Each item has:
 - **Now:** what the code does today (checked against `engine/src/dcsim/`).
@@ -85,8 +85,13 @@ These fix behavior that every later improvement would otherwise inherit.
 
 ## Tier 2: features that impress judges
 
-### 2.1 Optimizer (Optuna)
-- **Now:** none. The "recommended plan" is the `smaller_batches` preset (ISSUES N6).
+### 2.1 ✅ Optimizer (Optuna) · built 2026-11-14
+- **As built** (`engine/src/dcsim/optimize.py`, `POST /api/optimize`, `dcsim optimize`, the Lab's **Optimize** button):
+  - **Two objectives, not one.** Smaller batches waste less but need more batches, and the 12 dinner cooks fall behind (Nov 13: batches ×0.7 everywhere cut waste 31% but stockouts went 38 → 106 min and batch waits 438 → 2,419 min). A single "lowest waste with stockouts ≤ today" search found nothing (1 of 80 plans kept the limit), so it scores **waste and stockouts together** (multi-objective TPE, wait p90 as a constraint) and returns the **trade-off frontier**. The recommended plan is the frontier plan with the least waste within the stockout limit (today's + the "too small to matter" margin); when none is meaningfully better, the frontier shows what extra stockouts would buy.
+  - **Search space:** per station, batch ×0.6–1.2 and reorder point ×0.8–1.2; per dish, batch ×0.6–1.2 for the 5 most-wasted dishes; 0.1 steps. Five whole-kitchen starting points (today's plan first). Every plan is plain `Levers`, so **Load into builder** runs, compares and adopts it like any Lab plan.
+  - **Re-checked on unseen seeds:** every frontier plan is run on seeds 31–60 (the search used 1–10); the recommended one also in 100 plausible worlds (2.2).
+  - **Measured (Nov 13, 80 trials × 10 nights, about 1 min on 8 cores):** frontier = today's plan, **−28.6% waste for +5.8 stockout min** on the unseen seeds (−28.4% / +5.3 on the search seeds), and −32.2% for +27.9 min. Nothing beat today's within the strict limit. The −32% plan loaded and run in the Lab (30 nights): −1,081 portions, better on 30/30 nights; stockouts +24 min, worse on 26/30; less waste in 100% of 100 plausible worlds, fewer stockouts in 13%.
+- **Was:** none. The "recommended plan" is the `smaller_batches` preset (ISSUES N6).
 - **Gain:** "Optimize plan" button: lowest waste subject to *stockout minutes ≤ limit* and *wait p90 ≤ 8 min* (SPEC default).
 - **Design points:**
   - **Search space:** about 50 dishes × 2 knobs (48 on Nov 13) is too many for a quick search. Optimize **per-station multipliers** on batch size and reorder point (about 20 parameters), plus per-dish knobs for the 5–10 dishes with the most waste.
@@ -99,8 +104,12 @@ These fix behavior that every later improvement would otherwise inherit.
 - **Effort:** M.
 - **Needs:** 1.3 first; otherwise it will just find "tiny batches, all the time".
 
-### 2.2 Uncertainty sweep
-- **Now:** ranges come only from night-to-night randomness (seeds). Inputs like popularity, crowd size and arrival peaks are fixed, so ranges look narrower than our knowledge justifies (ISSUES N7).
+### 2.2 ✅ Uncertainty sweep · built 2026-11-14
+- **As built** (`engine/src/dcsim/worlds.py`, `POST /api/worlds`, `dcsim worlds`, **Plausible worlds** under the Lab's results):
+  - `ScenarioConfig.uncertainty` (`crowd_sd`, `peak_shift_sd_min`, `popularity_sd`; default 0.10 / 10 min / 0.3). With it, every seed is also a world: crowd factor, wave shift and each dish's popularity (mean-one lognormal) are drawn from `Stream.WORLD`, keyed by seed and dish id, clamped to ±2.5 sd. The plan and the baseline face the same worlds; the kitchen plan doesn't know the world. `None` is dropped from the hash, so every cached result and the bundle stay valid (checked: Nov 13's hash is unchanged; golden test passes).
+  - **Tornado:** waste p10–p90 on today's plan with one guess varying at a time, plus seed noise alone, each mapped to the data request that would narrow it.
+  - **Measured (Nov 13, `smaller_batches`, 200 worlds, 54 s):** less waste in 86% of worlds (median −54.5 portions), stockouts inconclusive (42.5%). Tornado: crowd size 2,966–3,843 (width 876, ask R01) ≫ dish popularity 290 (R04) > rush timing 260 (R01) > night-to-night 232. **Attendance data is the request that matters most.**
+- **Was:** ranges come only from night-to-night randomness (seeds). Inputs like popularity, crowd size and arrival peaks are fixed, so ranges look narrower than our knowledge justifies (ISSUES N7).
 - **Gain:** "the plan beats today's plan in 82% of plausible worlds" is much stronger than one forecast.
 - **Design:** don't make a new config per draw, because that defeats the cache. Add `uncertainty: {popularity_sd: 0.3, peak_shift_sd_min: 10, crowd_sd: 0.1}` to `ScenarioConfig`, and draw the parameters **per seed** from a dedicated RNG stream. Then:
   - one config + 300 seeds covers 300 plausible worlds;

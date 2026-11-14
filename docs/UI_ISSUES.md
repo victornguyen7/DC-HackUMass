@@ -67,7 +67,7 @@ What `smoke-api.mjs` does (API up):
 | U3 replay traces | The Hall uses the bundle trace when there is one, otherwise `GET /api/traces/{hash}?seed=<median>` when the API is up (any bundled scenario or API run). Highlight students come from `/api/traces/{hash}/highlights`. Without the API, an availability panel explains the missing replay; saved comparison results remain usable, with retry and return-to-baseline actions. **Fixed (with API for unbundled animations).** |
 | U8 adopt / watch / save | API runs become scenarios `{lever: "api", hash, label}`: Watch in 3D and Adopt work for them. The result is kept in `localStorage`, so an adopted API plan still shows on the Dashboard offline. Adopt and Save also call `POST /api/scenarios` (adopting logs a forecast to the Tiger ledger when configured), and the Lab's Saved list shows scenarios saved on the API. **Fixed.** |
 | U10 narration | Any student can be narrated on demand (`/api/narrate/...?stream=false`); highlight students of an API replay are narrated automatically. **Fixed (with API).** |
-| U7 Lab features | Built: plain-English box (`/api/ask`, shows the settings and what it couldn't express; Apply and run), menu edits (remove a dish, change popularity), the new-dish form (station, kind, diet tags, similar dishes with *suggest* via `/api/ai/similar-dishes`, popularity, **AI estimate** via `/api/ai/dish-prior`), "Where demand moves" card (served portions per dish vs. baseline), and "Why?" (`/api/explain`). **Mostly fixed;** Optimize and the uncertainty sweep remain (below). |
+| U7 Lab features | Built: plain-English box (`/api/ask`, shows the settings and what it couldn't express; Apply and run), menu edits (remove a dish, change popularity), the new-dish form (station, kind, diet tags, similar dishes with *suggest* via `/api/ai/similar-dishes`, popularity, **AI estimate** via `/api/ai/dish-prior`), "Where demand moves" card (served portions per dish vs. baseline), and "Why?" (`/api/explain`). **Mostly fixed;** Optimize and the uncertainty sweep built 2026-11-14 (below); dish swap remains. |
 | U6 Waste per dish | "Top waste dishes" now has the designed columns: recorded lb, with plan, change, $ / week. Station filters now also change the nightly chart (recorded vs. plan for that station). The KPI tiles follow the selected window ("wins 22 of 25 back-tested nights" for the last 4 weeks) with the all-nights range alongside. **Fixed.** |
 | U12 alerts | All long-line flags are grouped into one alert ("7 stations have more than 15 people in line at peak: Grill 36, Latino 33, …") on the Dashboard and in Lab side effects. **Fixed.** |
 | U13 health 500 | The Vite dev and preview proxies answer `/api/health` with 200 `{ok:false}` when the API is down (other `/api` calls get a 503 with a readable message), so there's no console error. **Fixed.** |
@@ -100,7 +100,7 @@ Also fixed while testing the second pass:
 | U2 | Medium | Hall | ~~Only the top-down view is live~~ **Partly fixed (PR #1):** the illustrated isometric view (Canvas) plays the full trace; no orbital 3D |
 | U4 | ~~Medium~~ | Dashboard | ~~Dinner only~~ **Closed 2026-11-14:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch not needed (ISSUES N4) |
 | U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; **verified with data** on the 0.6.2 bundle (8 of 8 staffed stations; e.g. Grill has 2, needs 3 at 6 pm) |
-| U7 | Medium | Lab | Optimize and the uncertainty sweep are not built (no engine support) |
+| U7 | ~~Medium~~ Low | Lab | ~~Optimize and the uncertainty sweep are not built~~ Built 2026-11-14; dish swap is still two steps |
 | U15 | Medium | All | Several features need the API; offline they explain why and stay disabled |
 | U9 | Low | Hall | Replay geometry is approximate |
 | U11 | ~~Low~~ | Hall | ~~Engine issues E1/E2 are visible in the replay~~ **Fixed** with E1/E2 in engine 0.4.1 |
@@ -147,8 +147,8 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - **Update (engine 0.5.0):** results now carry `staffing`: servers needed per station and hour ("19" = 7–8 pm) for servers ≤ 85% busy, from the items each station actually served (ISSUES N3). Typed as `Result.staffing?` in `web/src/lib/types.ts`. Still to do: a "needed" column per hour in the Dashboard staffing card, after the bundle is rebuilt with 0.5.0. Shifts can already be tried through the API lever `stations.<id>.shifts`.
 
 ### U7 · Medium · What-If Lab: Optimize and uncertainty sweep
-- **Optimize** stays disabled: the engine has no optimizer.
-- **"Holds up if we're wrong? 27/30"** (uncertainty sweep) isn't shown: the engine has no sweep. A cheap version would re-run the scenario at crowd ×0.9 and ×1.1 through `/api/simulate`; not built yet.
+- ✅ **Optimize** (2026-11-14): opens a panel with a waste-vs-stockouts chart (every plan searched, the frontier, today's plan, the stockout limit) and one card per frontier plan with its unseen-seed numbers and **Load into builder**. Needs the API.
+- ✅ **Plausible worlds** (2026-11-14): under the results of any non-baseline plan, "Test in 100 worlds" shows the win rate per metric and the waste tornado (about 30 s cold). Needs the API and a plan made in the builder (not one opened from the saved list).
 - Dish **swap** is "remove one + add one" (two steps), not a single control.
 
 ### U15 · Medium · Several features need the API

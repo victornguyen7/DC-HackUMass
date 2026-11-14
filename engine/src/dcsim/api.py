@@ -25,6 +25,9 @@
     POST /api/agent | GET /api/agent/{id}[/stream]  Sam the Minuteman: goal -> simulate (<= 5 tries), check, adjust -> plan,
                                                     or a question answered from Tiger via the Tiger MCP server (SSE steps)
     GET /api/agent/history[/{id}]                   Sam's past final analyses (prompt, date); DELETE one (admin)
+    POST /api/optimize | GET /api/optimize/{id}[/stream]   search kitchen plans (Optuna): waste-vs-stockouts frontier,
+                                                    re-checked on unseen seeds (SSE trial, progress, final)
+    POST /api/worlds | GET /api/worlds/{id}[/stream]       a plan vs baseline in plausible worlds + waste tornado
     Admin (DCSIM_ADMIN_TOKEN, if set: header `Authorization: Bearer <token>` or `X-Admin-Token`):
     DELETE /api/scenarios/{id}
     POST /api/warm  | GET /api/warm                 precompute baseline + presets per date (background job)
@@ -210,6 +213,7 @@ async def lifespan(app: FastAPI):
     app.state.narrator = Narrator(svc, app.state.llm)
     app.state.admin = {}  # name -> admin job status (warm, backtest)
     app.state.agents = {}  # planning-agent runs (POST /api/agent)
+    app.state.searches = {}  # optimizer and plausible-worlds runs (POST /api/optimize, /api/worlds)
     app.state.ai_limit = RateLimit(int(os.environ.get("DCSIM_AI_RATE", "20")))
     TRACES.size = int(os.environ.get("DCSIM_TRACE_CACHE", "2"))  # decompressed traces kept for narration (ISSUES A2)
     warm = None
@@ -987,3 +991,140 @@ async def backtest_job(body: BacktestRequest, request: Request) -> dict:
 @app.get("/api/backtest")
 def backtest_status(request: Request) -> dict:
     return _admin_status(request, "backtest")
+
+
+# ------------------------------------------------------------ plan search (IMPROVEMENTS 2.1, 2.2)
+
+SEARCH_MAX_RUNNING = int(os.environ.get("DCSIM_SEARCH_MAX_RUNNING", "1"))  # each is hundreds of nights on the pool
+
+
+class OptimizeRequest(BaseModel):
+    date: str | None = None
+    trials: int = Field(80, ge=4, le=200)
+    seeds: int = Field(10, ge=2, le=30)
+    max_stockout_min: float | None = Field(None, ge=0)
+    worlds: int = Field(100, ge=0, le=300)
+
+
+class UncertaintyIn(BaseModel):
+    crowd_sd: float = Field(0.10, ge=0, le=0.5)
+    peak_shift_sd_min: float = Field(10.0, ge=0, le=60)
+    popularity_sd: float = Field(0.3, ge=0, le=1.0)
+
+
+class WorldsRequest(BaseModel):
+    request: ScenarioRequest  # the plan, as POST /api/simulate takes it; compared with that date's baseline
+    uncertainty: UncertaintyIn = UncertaintyIn()
+    n_worlds: int = Field(100, ge=4, le=300)
+    tornado_worlds: int = Field(50, ge=0, le=200)
+
+
+class SearchJob(EventLog):
+    def __init__(self, job_id: str, kind: str, date: str):
+        super().__init__(job_id)
+        self.kind, self.date = kind, date
+
+    def public(self) -> dict:
+        return {"job_id": self.id, "kind": self.kind, "status": self.status, "date": self.date,
+                "result": self.result, "error": self.error, "events": len(self.events)}
+
+
+def _search_jobs(request: Request) -> dict[str, SearchJob]:
+    jobs: dict[str, SearchJob] = request.app.state.searches
+    now = time.monotonic()
+    for jid in [j.id for j in jobs.values() if j.finished_at is not None and now - j.finished_at > JOB_TTL_S]:
+        del jobs[jid]
+    return jobs
+
+
+def _search_start(request: Request, kind: str, date: str, work) -> dict:
+    """Run `work(emit)` in a thread as a background job; events stream over GET /api/{kind}/{id}/stream."""
+    jobs = _search_jobs(request)
+    if sum(j.status == "running" for j in jobs.values()) >= SEARCH_MAX_RUNNING:
+        raise HTTPException(429, "Another plan search is running; try again in a minute")
+    job = SearchJob(uuid.uuid4().hex[:12], kind, date)
+    jobs[job.id] = job
+    loop = asyncio.get_running_loop()
+
+    def emit(event: str, data: dict) -> None:  # from the worker thread
+        asyncio.run_coroutine_threadsafe(job.emit(event, data), loop).result(timeout=10)
+
+    async def run() -> None:
+        try:
+            job.result = await asyncio.to_thread(work, emit)
+            await job.emit("final", job.result)
+            await job.finish("done")
+        except Exception as e:  # surfaced as an SSE `error`
+            job.error = f"{type(e).__name__}: {e}"
+            await job.emit("error", {"message": job.error})
+            await job.finish("error")
+
+    asyncio.create_task(run())
+    return {"status": "running", "job_id": job.id, "stream": f"/api/{kind}/{job.id}/stream"}
+
+
+def _search_job(request: Request, kind: str, job_id: str) -> SearchJob:
+    job = _search_jobs(request).get(job_id)
+    if job is None or job.kind != kind:
+        raise HTTPException(404, "unknown job")
+    return job
+
+
+@app.post("/api/optimize", status_code=202)
+async def optimize_start(body: OptimizeRequest, request: Request) -> dict:
+    """Search kitchen plans (Optuna): SSE `trial` per plan, `progress` while re-checking, then `final`
+    with the waste-vs-stockouts frontier and, if one is within the limits, the recommended plan."""
+    from .optimize import optimize
+
+    date = body.date or available_dates()[0]
+    if date not in available_dates():
+        raise HTTPException(422, f"no menu for {date}")
+    svc = _svc(request)
+
+    def work(emit) -> dict:
+        return optimize(svc, date, trials=body.trials, seeds=body.seeds, max_stockout_min=body.max_stockout_min,
+                        worlds_n=body.worlds, on_trial=lambda t: emit("trial", t),
+                        on_progress=lambda done, total: emit("progress", {"done": done, "total": total}))
+
+    return _search_start(request, "optimize", date, work)
+
+
+@app.post("/api/worlds", status_code=202)
+async def worlds_start(body: WorldsRequest, request: Request) -> dict:
+    """A plan vs its date's baseline in plausible worlds (crowd, rush timing and popularity drawn per
+    seed), plus a waste tornado: SSE `progress`, then `final`."""
+    from . import worlds
+    from .config import Uncertainty
+
+    try:
+        plan = build_config(body.request)
+    except (FileNotFoundError, ValueError) as e:
+        raise _bad(e) from e
+    u = Uncertainty(**body.uncertainty.model_dump())
+    svc = _svc(request)
+
+    def work(emit) -> dict:
+        return worlds.sweep(svc, baseline_of(plan), plan, u, n_worlds=body.n_worlds, tornado_worlds=body.tornado_worlds,
+                            on_progress=lambda done, total: emit("progress", {"done": done, "total": total}))
+
+    return _search_start(request, "worlds", plan.date, work)
+
+
+@app.get("/api/optimize/{job_id}")
+def optimize_status(job_id: str, request: Request) -> dict:
+    return _search_job(request, "optimize", job_id).public()
+
+
+@app.get("/api/optimize/{job_id}/stream")
+def optimize_stream(job_id: str, request: Request):
+    return _sse(_search_job(request, "optimize", job_id))
+
+
+@app.get("/api/worlds/{job_id}")
+def worlds_status(job_id: str, request: Request) -> dict:
+    return _search_job(request, "worlds", job_id).public()
+
+
+@app.get("/api/worlds/{job_id}/stream")
+def worlds_stream(job_id: str, request: Request):
+    return _sse(_search_job(request, "worlds", job_id))

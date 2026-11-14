@@ -95,6 +95,79 @@ def print_menu(cfg: ScenarioConfig) -> None:
             print(f"    add-ons: {'; '.join(addons)}")
 
 
+def _search(args) -> None:
+    """`dcsim worlds` and `dcsim optimize` (IMPROVEMENTS 2.1, 2.2): pooled, cached, with a progress line."""
+    import os
+    import sys
+    import time
+    from concurrent.futures import ProcessPoolExecutor
+    from pathlib import Path
+
+    from .data import available_dates, load_baseline
+    from .service import Service
+    from .store import Store
+
+    date = args.date or available_dates()[0]
+
+    def progress(done: int, total: int) -> None:
+        print(f"\r  {done}/{total} nights", end="", file=sys.stderr, flush=True)
+
+    t0 = time.time()
+    with ProcessPoolExecutor(max_workers=os.cpu_count() or 1) as pool:
+        svc = Service(Store(), pool)
+        if args.cmd == "worlds":
+            from . import worlds
+
+            base = load_baseline(date)
+            r = worlds.sweep(svc, base, PRESETS[args.preset](base), n_worlds=args.worlds, on_progress=progress)
+        else:
+            from .optimize import optimize
+
+            def on_trial(t: dict) -> None:
+                best = t["best_waste"]
+                print(f"\r  trial {t['n']}/{t['of']}: waste {t['waste']:.0f}{'' if t['feasible'] else ' (breaks a limit)'}"
+                      f"  best {'-' if best is None else f'{best:.0f}'}   ", end="", file=sys.stderr, flush=True)
+
+            r = optimize(svc, date, trials=args.trials, seeds=args.seeds, max_stockout_min=args.max_stockout_min,
+                         on_trial=on_trial, on_progress=progress)
+    print(file=sys.stderr)
+    print(_search_text(args.cmd, r, time.time() - t0))
+    if args.json:
+        Path(args.json).write_text(json.dumps(r, indent=2))
+
+
+def _search_text(cmd: str, r: dict, secs: float) -> str:
+    def verdicts(vs: dict) -> list[str]:
+        return [f"  {k:<26} win {m['win_rate'] * 100:>5.1f}%   median diff {m['diff']['p50']:>+9.2f}   {m['verdict']}"
+                for k, m in vs["metrics"].items()]
+
+    if cmd == "worlds":
+        out = [f"{r['plan_label']} vs {r['baseline_label']} in {r['n_worlds']} plausible worlds ({secs:.0f} s):"]
+        out += verdicts(r["vs_baseline"])
+        out += [f"\nwaste spread on today's plan, one guess at a time ({r['tornado']['n_worlds']} worlds each):"]
+        out += [f"  {b['label']:<20} {b['p10']:>7.0f} - {b['p90']:<7.0f} (width {b['width']:.0f})   ask: {b['data_request']}"
+                for b in r["tornado"]["bars"]]
+        return "\n".join(out)
+    b, lim = r["baseline"], r["limits"]
+    out = [f"searched {r['trials']} plans across {r['nights_searched']} simulated nights ({secs:.0f} s); "
+           f"{r['feasible_trials']} within the limits (stockouts <= {lim['stockout_min_total']:.0f} min, "
+           f"p90 wait <= {lim['wait_p90']:.1f} min)",
+           f"today: waste {b['waste']:.0f}, stockouts {b['stockout_min']:.0f} min\n\ntrade-off frontier (waste vs stockouts):"]
+    out += [f"  waste {f['waste']:>6.0f} ({f['waste_pct']:+5.1f}%)  stockouts {f['stockout_min']:>6.1f} min"
+            f"{'  within limits' if f['within'] else ''}"
+            + (f"\n      unseen seeds: waste {f['validation']['waste_pct']:+.1f}%, stockouts "
+               f"{f['validation']['stockout_diff_min']:+.1f} min" if f.get("validation") else "")
+            + f"\n      {'; '.join(f['changes'])}" for f in r["frontier"]]
+    if not r.get("levers"):
+        return "\n".join(out + ["\nno plan meaningfully beat today's within the limits"])
+    out.append("")
+    out += ["changes: " + "; ".join(r["changes"]), f"\nvalidated on unseen seeds {r['validation']['seeds']}:"]
+    out += verdicts(r["validation"]["vs_baseline"])
+    if r.get("worlds"):
+        out += [f"\nin {r['worlds']['n_worlds']} plausible worlds:"] + verdicts(r["worlds"]["vs_baseline"])
+    return "\n".join(out)
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="dcsim")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -122,6 +195,17 @@ def main(argv: list[str] | None = None) -> None:
     sv.add_argument("--reload", action="store_true")
     sv.add_argument("--warm", action="store_true", help="precompute baseline + presets for every date in the background")
     sub.add_parser("waste-gen", help="generate the SYNTHETIC recorded waste history (data/synthetic/worcester)")
+    wo = sub.add_parser("worlds", help="a plan vs today's plan in plausible worlds (crowd, rush, popularity drawn), + tornado")
+    wo.add_argument("--date")
+    wo.add_argument("--preset", choices=sorted(PRESETS), default="smaller_batches")
+    wo.add_argument("--worlds", type=int, default=200)
+    wo.add_argument("--json", help="write the result to this file")
+    op = sub.add_parser("optimize", help="search batch plans for the least waste (Optuna), validated on unseen seeds")
+    op.add_argument("--date")
+    op.add_argument("--trials", type=int, default=80)
+    op.add_argument("--seeds", type=int, default=10, help="nights per trial (seeds 1..N)")
+    op.add_argument("--max-stockout-min", type=float, default=None, help="default: no more than today's plan")
+    op.add_argument("--json", help="write the result to this file")
     bt = sub.add_parser("backtest", help="re-simulate every recorded night with the recommended plan")
     bt.add_argument("--plan", default=None, choices=sorted(PRESETS))
     bd = sub.add_parser("bundle", help="export the static demo bundle (web/public/cache)")
@@ -218,6 +302,9 @@ def main(argv: list[str] | None = None) -> None:
         from .bundle import refresh_waste
 
         print("bundle refreshed: " + ", ".join(refresh_waste(Path(args.out) if args.out else None)))
+        return
+    if args.cmd in ("worlds", "optimize"):
+        _search(args)
         return
     if args.cmd in ("backtest", "bundle"):
         import os

@@ -157,6 +157,10 @@ Proc = Generator[simpy.Event, object, object]
 
 class Night:
     def __init__(self, cfg: ScenarioConfig, seed: int, trace: bool = False):
+        if cfg.uncertainty is not None:  # this seed's plausible world (IMPROVEMENTS 2.2)
+            from .worlds import world_of
+
+            cfg = world_of(cfg, seed)
         self.cfg = cfg
         self.seed = seed
         self.env = simpy.Environment(initial_time=cfg.open_min)

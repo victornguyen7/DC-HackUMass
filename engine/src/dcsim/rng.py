@@ -32,6 +32,7 @@ class Stream(IntEnum):
     SERVICE = 8
     ALLERGY = 9
     GROUP = 10
+    WORLD = 11  # plausible-world inputs (worlds.py): crowd, peak shift, dish popularity
 
 
 @lru_cache(maxsize=4096)

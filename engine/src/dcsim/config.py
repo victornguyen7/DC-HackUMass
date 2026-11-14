@@ -183,6 +183,16 @@ class Crowd(_Frozen):
     waves: tuple[Wave, ...]
 
 
+class Uncertainty(_Frozen):
+    """What we don't know about the inputs (IMPROVEMENTS 2.2). With it, every seed is also a
+    plausible world: the crowd, the arrival peak and each dish's popularity are drawn per seed
+    (worlds.py, Stream.WORLD), so a plan and its baseline still face the same worlds."""
+
+    crowd_sd: float = Field(0.0, ge=0, le=0.5)  # lognormal sd of the crowd size (both periods)
+    peak_shift_sd_min: float = Field(0.0, ge=0, le=60)  # sd of a shift of every dinner wave
+    popularity_sd: float = Field(0.0, ge=0, le=1.0)  # lognormal sd of each dish's popularity
+
+
 class Persona(_Frozen):
     id: str
     label: str
@@ -233,6 +243,7 @@ class ScenarioConfig(_Frozen):
     seat_limits: bool = False  # True: seating zones hold layout seats (students wait for a seat); False: unlimited, counted
     empty_pan_wait_min: float = Field(0.0, ge=0)  # at an empty pan with a batch cooking, wait up to this (x favorite_patience_mult for the favorite)
     retry_balked_favorite: bool = False  # after leaving their favorite's line, students sit, then try it once more
+    uncertainty: Uncertainty | None = None  # None: inputs fixed, seeds vary only night-to-night randomness
     engine_version: str = ENGINE_VERSION
     data_version: str = "dev"
 
@@ -313,6 +324,7 @@ class ScenarioConfig(_Frozen):
 # ---------------------------------------------------------------- hashing
 
 _HASH_EXCLUDE = {"label"}
+_DROP_IF_NONE = ("uncertainty",)  # added after configs were cached: absent keeps every older hash
 
 
 def _canon(x: Any) -> Any:
@@ -330,6 +342,9 @@ def _canon(x: Any) -> Any:
 
 def canonical_json(cfg: ScenarioConfig) -> str:
     data = cfg.model_dump(mode="json", exclude=_HASH_EXCLUDE)
+    for k in _DROP_IF_NONE:
+        if data.get(k) is None:
+            data.pop(k, None)
     return json.dumps(_canon(data), sort_keys=True, separators=(",", ":"))
 
 

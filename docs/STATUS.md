@@ -18,9 +18,11 @@ Last updated: 2026-11-14, engine 0.6.2, `main` at `8e7d9e0` + this docs pass: As
 - ✗ Restart `make server` if it was started before the Sam merge (`/api/agent`, `/api/similar-nights`, `/tiger` and `/api/tiger/*` → 404 otherwise; Ask Sam then says "Not Found").
 - ⚠️ **Browser-test the API only on the test stack:** `make server-test` (port 8001, a fresh copy of the cache in `cache-test/`, `DCSIM_LEDGER_WRITES=0`) + `make web-test-ui` (port 5174), then `make web-test-api`. The script now refuses an API that would write test forecasts to the append-only Tiger ledger (ISSUES T8).
 - ✗ Restart `make server` to pick up the single similar-night search (ISSUES T5, 2026-11-14); until then the page still uses the old 48-dim search, whose table was dropped, so it answers "temporarily unavailable".
+- ✗ Restart `make server` to get **Optimize** and **Plausible worlds** in the Lab (IMPROVEMENTS 2.1–2.2, 2026-11-14; `/api/optimize` and `/api/worlds` → 404 on an older server). `uv sync` first: the engine now needs `optuna`.
 - ✗ **Rotate the tokens in `.dev.vars`** (ISSUES T6). Removed from the branches' git history and force-pushed on 2026-11-14, but GitHub still serves the old commit through PRs #4–#6 until GitHub Support purges it, so the tokens must be treated as leaked. **Everyone else: re-clone, or `git fetch` then `git reset --hard origin/main`.**
 
 ## Recently built (2026-11-14)
+- ✅ **Tier 2 (IMPROVEMENTS 2.1–2.2):** Optimize plan (Optuna, waste-vs-stockouts frontier, re-checked on unseen seeds; Nov 13: −28.6% waste for +5.8 stockout min, nothing better within today's stockouts) and Plausible worlds (crowd, rush timing and dish popularity drawn per seed; win rate + waste tornado: crowd size matters most → ask for R01). Tests: engine 208 passed, 2 skipped; web 61 passed; typecheck clean; browser flow (Optimize → Load into builder → Run → Plausible worlds) at 1440 and 390 px on a private API, no console errors, no horizontal scroll.
 - ✅ Tiger: two real-time continuous aggregates (`waste_daily_by_dish`, `pan_hourly`) with refresh policies, `dcsim tsdb bench` (raw vs aggregate), `dcsim tsdb query stack` (one query across the stack), columnstore on all six hypertables (76 MB → 9.6 MB). Details: [TIGER.md §8](TIGER.md).
 - ✅ Live Tiger dashboard, served by the API at `http://127.0.0.1:8000/tiger` only (not part of the web app).
 - ✅ Tiger items 4–6 (2026-11-14): weekly track record (`forecast_results` hypertable, nightly `score_forecasts` job, real-time aggregate `forecast_weekly`, `dcsim tsdb track`); weather/event crowd fit (`dcsim calibrate --situations-only`; not kept, held-out CRPS 205.8 vs 200.0); schema comments and a verified question set for the Tiger MCP. TIGER.md §4–6.
@@ -101,8 +103,8 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | N3 | Servers by hour; "servers needed" output | ✅ Built 0.5.0 (`shifts`, lever, `staffing` in results; not on the Dashboard yet, U5) |
 | N4 | Breakfast and lunch | ✅ Closed 2026-11-14 (not needed: dinner + late night only) |
 | N5 | Survey calibration of personas | ✗ |
-| N6 | Optimizer | ✗ (also the core of the agent prize, SPONSORS §2) |
-| N7 | Uncertainty sweep | ✗ (Vultr prize, SPONSORS §4) |
+| N6 | Optimizer | ✅ Built 2026-11-14 (IMPROVEMENTS 2.1): waste-vs-stockouts frontier, Lab › Optimize |
+| N7 | Uncertainty sweep | ✅ Built 2026-11-14 (IMPROVEMENTS 2.2): plausible worlds + tornado; a 1,000-world run is the Vultr pitch (SPONSORS §4) |
 | N8 | Allergens | ✅ Built 0.6.0 (survey allergy shares, pescetarian 2%) |
 | N9 | Real data hookups (R01, R02, R06, R07) | ✗ |
 
@@ -119,7 +121,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | U13 | `/api/health` 500 when the API is down | ✅ Fixed |
 | U1 | Figma numbers are placeholders | ◐ SPEC demo script fixed; Figma frames and slides open |
 | U4 | Dashboard dinner only | ◐ Late night shown; breakfast and lunch open |
-| U7 | Lab: Optimize and uncertainty sweep | ◐ Ask box, menu edits, new dish, Why? built; Optimize and sweep open |
+| U7 | Lab: Optimize and uncertainty sweep | ✅ Built 2026-11-14 (dish swap is still two steps) |
 | U2 | Only the top-down view is live | ◐ Isometric replay plays the full trace (PR #1); orbital 3D open |
 | U5 | Staffing "needed" not shown | ✅ Fixed 0.6.2 ("Needed at peak" column; verified with data on the 0.6.2 bundle) |
 | U9 | Replay geometry approximate | ✗ (needs N2) |
@@ -134,13 +136,13 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | # | Prize | Status |
 | --- | --- | --- |
 | 1 | Gemini API | ✅ Ask box on **function calling** (JSON and keyword fallbacks), Sam's tool loop, narration, explain, dish prior, embeddings; image input out of scope |
-| 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, `/sam`): goals in ≤ 5 tries with batch, staffing and menu setting functions, Tiger lookups via the Tiger MCP server, what-ifs and history questions in the same box, History; optimizer N6 still optional |
+| 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, `/sam`): goals in ≤ 5 tries with batch, staffing and menu setting functions, Tiger lookups via the Tiger MCP server, what-ifs and history questions in the same box, History; the optimizer (N6) is built separately in the Lab (Optuna), not inside Sam |
 | 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (served by the API at `/tiger`, not part of the web app; two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; track record, weather/event fit and MCP question set built 2026-11-14 (TIGER.md §4–6); 500-night demo query open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 
 ## Other docs
-- [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 and Tier 1 all ✅ (1.1 Container pans and 1.4 per-minute series in 0.6.0); 2.4 seats ◐ (built, limits off); model-realism table all ✅ (item-level popularity, swipe queue, groups, pan sizes, forecast-reorder preset, allergens in 0.6.0; staffing by hour, per-date crowd, carving earlier); calibration targets ✅; optimizer, sweep, sensitivity analysis ✗.
+- [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 and Tier 1 all ✅ (1.1 Container pans and 1.4 per-minute series in 0.6.0); 2.4 seats ◐ (built, limits off); model-realism table all ✅ (item-level popularity, swipe queue, groups, pan sizes, forecast-reorder preset, allergens in 0.6.0; staffing by hour, per-date crowd, carving earlier); calibration targets ✅; 2.1 optimizer and 2.2 plausible worlds ✅ (2026-11-14); sensitivity analysis ✗.
 - [LLM.md](LLM.md) §5 and [GEMINI.md](GEMINI.md) §7: their own ~~done~~ lists are current.
 - [TIGER.md](TIGER.md): "What is built on Tiger" table is current (items 0–8 built; 5 built but not kept on this history). §8 ends with what is left for the dashboard work (restart the API, rehearsal reset).
 

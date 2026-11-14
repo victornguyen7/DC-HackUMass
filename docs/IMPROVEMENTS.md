@@ -1,6 +1,6 @@
 # Possible improvements
 
-Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2, 0.5.0 and 0.6.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour). Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
+Status as of 2026-11-12, engine 0.3.3; status notes updated 2026-11-13 (engine 0.3.4, web UI built in `web/`) and again 2026-11-13 for engines 0.4.2, 0.5.0, 0.6.0 (simulation core: golden test, calibration targets, kitchen capacity, empty-pan waits, seats, staffing by hour, Container pans, series, realism items) and 0.6.1 (review fixes, ISSUES §6b). All Tier 0, Tier 1 and model-realism items are done; open: Tier 2 optimizer (2.1) and uncertainty sweep (2.2), 2.4 seat limits (need real seat counts), Tier 3, sensitivity analysis and real-data calibration. Markers: ✅ done · ◐ partly done · ✗ open (unmarked items are open). Companion to `ISSUES.md` (bugs and gaps), `UI_ISSUES.md` (web UI) and `LLM.md` (LLM layer).
 
 Each item has:
 - **Now:** what the code does today (checked against `engine/src/dcsim/`).
@@ -58,7 +58,7 @@ These fix behavior that every later improvement would otherwise inherit.
   ```
 
 ### 1.3 ✅ Done (0.5.0) · Cooks and equipment as Resources
-- **As built:** `kitchen_defaults.json → resources` (placeholders): 12 dinner / 5 late-night cooks (4 until 0.6.1), equipment units (oven 14, steamer 8, kettle 4, flat-top 6, wok 5, fryer 3, tandoor 5), hands-on prep minutes per role, equipment by role / station / keyword. A batch needs a cook for its prep (inside `cook_min`), then one unit of equipment for the rest; without contention it still takes `cook_min`. New metrics `batch_wait_min`, `cook_busy_share` (~63%), `equipment_peak`; lever `kitchen_staff` (cooks, equipment). The `smaller_batches` preset now waits longer for the kitchen than the baseline. With 8 dinner cooks stockouts get ~6× worse.
+- **As built:** `kitchen_defaults.json → resources` (placeholders): 12 dinner / 5 late-night cooks (4 until 0.6.1), equipment units (oven 14, steamer 8, kettle 4, flat-top 6, wok 5, fryer 3, tandoor 5), hands-on prep minutes per role, equipment by role / station / keyword. A batch needs a cook for its prep (inside `cook_min`), then one unit of equipment for the rest; without contention it still takes `cook_min`. New metrics `batch_wait_min`, `cook_busy_share` (~63% at 0.5.0; ~57% since 0.6.1 with 5 late-night cooks), `equipment_peak`; lever `kitchen_staff` (cooks, equipment). The `smaller_batches` preset now waits longer for the kitchen than the baseline. With 8 dinner cooks stockouts get ~6× worse.
 - **Now:** **cooking capacity is unlimited.** `_cook` is just a timeout, so any number of batches can cook at once. Because of this, "cook smaller batches more often" (the recommended plan) costs nothing in the model.
 - **Gain:** the biggest credibility improvement. Batches compete for cooks and equipment (wok, fryer, oven, grill top), so small batches queue up and the optimizer (2.1) finds a real trade-off.
 - **Effort:** M.
@@ -178,7 +178,7 @@ These fix behavior that every later improvement would otherwise inherit.
 ### B. Calibration and validation
 | Improvement | Gain | Effort |
 | --- | --- | --- |
-| ✅ **Done (0.5.0):** `data/worcester/calibration_targets.json` + `tests/test_calibration_targets.py` (late run-outs is a known E3 failure on Nov 17). **Calibration targets file**: the team's observations as tests (longest lines 30–40, rarely runs out late, biggest rush 7–8 pm) | Every engine change is checked against what the team sees | S |
+| ✅ **Done (0.5.0):** `data/worcester/calibration_targets.json` + `tests/test_calibration_targets.py` (all targets pass since 0.6.1; late run-outs was a known E3 failure on Nov 17 until then). **Calibration targets file**: the team's observations as tests (longest lines 30–40, rarely runs out late, biggest rush 7–8 pm) | Every engine change is checked against what the team sees | S |
 | **Sensitivity analysis** (tornado or Sobol on the guessed inputs) | Ranks which data requests R01–R08 matter most | M (with 2.2) |
 | **Approximate Bayesian computation** when real counts arrive: find input values that reproduce observed line lengths and waste | Replaces guesses with ranges backed by data | L |
 | ◐ **Protocol built on synthetic data** (`make calibrate`, TIGER.md); waits for real data. **Holdout back-test** once real data exists: fit on weeks 1–4, test on 5–6 | Fixes the circular back-test (ISSUES B1) | M |

@@ -279,6 +279,8 @@ Consequences:
 | Dashboard doesn't show "servers needed" yet (the engine computes it since 0.5.0); no breakfast/lunch | U4, U5 |
 | No optimizer or uncertainty sweep (the Lab's Optimize button is disabled) | U7, ISSUES N6–N7 |
 | API has no auth; don't host it publicly as is | ISSUES A1 |
+| The committed demo bundle is engine 0.4.1; rebuild once on the final engine (`make demo-bundle`) | `docs/STATUS.md` |
+| Many inputs are labeled guesses (cooks and equipment, pan sizes, swipe readers, groups, late-night crowd, seat counts); seat limits stay off until seats are counted | `data/worcester/ASSUMPTIONS.md` |
 
 Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.md`** (web app). Ideas ranked by value: `docs/IMPROVEMENTS.md`.
 
@@ -288,6 +290,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 
 | Doc | Read it when |
 | --- | --- |
+| [`docs/STATUS.md`](docs/STATUS.md) | You want one page of what's done and open across every tracker (start here) |
 | [`docs/SPEC.md`](docs/SPEC.md) | You want the product: pages, scope (P0/P1/P2), architecture, **3-minute demo script (§12)** |
 | [`docs/ENGINE.md`](docs/ENGINE.md) | You touch the simulation, caching or API (§8 lists every route and which page uses it) |
 | [`engine/README.md`](engine/README.md) | You use the `dcsim` CLI, levers, or the data flow |

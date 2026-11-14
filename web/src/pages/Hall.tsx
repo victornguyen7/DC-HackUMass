@@ -44,6 +44,7 @@ export default function Hall() {
   const { date, scenario, hallTime, setHallTime, setScenario } = useApp();
   const [step, setStep] = useState<Step>("watch");
   const [draftPreset, setDraftPreset] = useState(scenario.preset ?? "extra_server");
+  const [replayAttempt, setReplayAttempt] = useState(0);
   const manifest = useManifest();
   const res = useScenarioResult(date, scenario);
   const entry = res.data?.entry;
@@ -52,16 +53,18 @@ export default function Hall() {
   const replay = useAsync<Replay>(async () => {
     if (!entry) return { trace: null, configHash: null, source: null };
     if (entry.trace) return { trace: await loadTrace(entry), configHash: entry.config_hash, source: "bundle" };
-    if (!(await apiUp())) {
-      return { trace: null, configHash: entry.config_hash, source: null, note: "This scenario has no saved replay available right now. Choose a saved scenario or return to the current plan." };
+    if (replayAttempt === 0 && !(await apiUp())) {
+      return { trace: null, configHash: entry.config_hash, source: null, note: "No animation was saved for this scenario on this date. Its saved results are still available." };
     }
     try {
       return { trace: await loadApiTrace(entry.config_hash, seed), configHash: entry.config_hash, source: "api" };
-    } catch (e) {
-      return { trace: null, configHash: entry.config_hash, source: null, note: `The API couldn't replay this scenario (${(e as Error).message}).` };
+    } catch {
+      return { trace: null, configHash: entry.config_hash, source: null, note: "The animation could not be loaded. Its saved results are still available." };
     }
-  }, [entry?.key]);
-  const trace = replay.data?.configHash === entry?.config_hash ? replay.data?.trace ?? null : null;
+  }, [entry?.key, replayAttempt]);
+  const currentReplay = replay.data?.configHash === entry?.config_hash ? replay.data : undefined;
+  const trace = currentReplay?.trace ?? null;
+  const replayLoading = replay.loading || (!currentReplay && !replay.error);
   const narr = useAsync<Narration | null>(async () => {
     if (!entry || !trace) return null;
     if (entry.narration) return loadNarration(entry);
@@ -83,14 +86,14 @@ export default function Hall() {
       <div className="content simulation-content">
         {res.error && <ErrorBox error={res.error} />}
         {res.data?.fallback && <div className="banner">{res.data.reason ?? `This scenario isn't available for ${dateLabel(date)}; showing the baseline.`}</div>}
-        {replay.data?.note && <div className="banner">{replay.data.note}</div>}
-        {replay.error && <ErrorBox error={replay.error} />}
-        {(res.loading || replay.loading) && <Loading what="the full simulation replay" />}
-        {res.data && trace && !res.loading && !replay.loading && (
+        {res.loading && <Loading what="simulation results" />}
+        {res.data && !res.loading && (
           <HallView key={entry?.key} result={res.data.result} trace={trace} narration={narr.data && narr.data.config_hash === entry?.config_hash ? narr.data : null}
             configHash={entry!.config_hash} initialT={hallTime} onTime={setHallTime}
             step={step} setStep={setStep} draftPreset={draftPreset} setDraftPreset={setDraftPreset}
-            replays={(manifest.data?.entries ?? []).filter((e) => e.date === date && !!e.trace)} replayKey={entry!.key}
+            scenarios={(manifest.data?.entries ?? []).filter((e) => e.date === date)} replayKey={entry!.key}
+            replayLoading={replayLoading} replayNote={currentReplay?.note ?? (replay.error ? "The animation could not be loaded. Its saved results are still available." : undefined)}
+            onRetryReplay={() => setReplayAttempt((attempt) => attempt + 1)}
             onReplay={(e) => setScenario({ preset: e.preset, lever: e.lever })} />
         )}
       </div>
@@ -99,11 +102,12 @@ export default function Hall() {
 }
 
 function HallView({ result, trace, narration, configHash, initialT, onTime, step, setStep,
-  draftPreset, setDraftPreset, replays, replayKey, onReplay }: {
-  result: Result; trace: Trace; narration: Narration | null; configHash: string;
+  draftPreset, setDraftPreset, scenarios, replayKey, onReplay, replayLoading, replayNote, onRetryReplay }: {
+  result: Result; trace: Trace | null; narration: Narration | null; configHash: string;
   initialT: number | null; onTime: (t: number) => void;
   step: Step; setStep: (step: Step) => void; draftPreset: string; setDraftPreset: (preset: string) => void;
-  replays: ManifestEntry[]; replayKey: string; onReplay: (entry: ManifestEntry) => void;
+  scenarios: ManifestEntry[]; replayKey: string; onReplay: (entry: ManifestEntry) => void;
+  replayLoading: boolean; replayNote?: string; onRetryReplay: () => void;
 }) {
   const nav = useNavigate();
   const replayEnd = result.close + 30;
@@ -116,11 +120,11 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
   const [studentId, setStudentId] = useState<number | null>(null);
   const names = useMemo(() => Object.fromEntries(result.cook_sheet.map((d) => [d.dish_id, d.name])), [result]);
   const stationPos = useMemo(() => Object.fromEntries(result.stations.map((s) => [s.id, s.pos as [number, number]])), [result]);
-  const pans = useMemo(() => panTimelines(trace), [trace]);
-  const missed = useMemo(() => missedFirst(trace.students), [trace]);
-  const byId = useMemo(() => new Map(trace.students.map((s) => [s.id, s])), [trace]);
+  const pans = useMemo<ReturnType<typeof panTimelines>>(() => trace ? panTimelines(trace) : new Map(), [trace]);
+  const missed = useMemo(() => missedFirst(trace?.students ?? []), [trace]);
+  const byId = useMemo(() => new Map(trace?.students.map((s) => [s.id, s]) ?? []), [trace]);
   const rowOf = useMemo(() => Object.fromEntries(result.cook_sheet.map((d) => [d.dish_id, d])), [result]);
-  const poses = useMemo(() => trace.students.map((s) => poseAt(s, t, stationPos)).filter((p): p is Pose => p !== null), [trace, t, stationPos]);
+  const poses = useMemo(() => (trace?.students ?? []).map((s) => poseAt(s, t, stationPos)).filter((p): p is Pose => p !== null), [trace, t, stationPos]);
   const c = counters(poses);
   // Keep navigation context without updating the entire app store on every animation frame.
   useEffect(() => { if (!playing) onTime(t); }, [t, playing, onTime]);
@@ -143,7 +147,11 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
     if (p.phase !== "line") return "var(--border-strong)";
     return (p.waitedMin ?? 0) > 10 ? "var(--bad)" : (p.waitedMin ?? 0) > 5 ? "var(--warn)" : "var(--good)";
   };
-  const draftEntry = replays.find((e) => e.preset === draftPreset && !e.lever);
+  // A comparison needs saved results, not an animation. Most dates only bundle
+  // a baseline trace, even though all preset comparisons are available offline.
+  const draftEntry = scenarios.find((e) => e.preset === draftPreset && !e.lever);
+  const replays = scenarios.filter((e) => !!e.trace);
+  const baseline = scenarios.find((e) => !e.preset && !e.lever);
   const presets = [
     ["smaller_batches", "Cook smaller batches", "Reduce the batch size of favorites"],
     ["extra_server", "Add a Grill server", "Test one extra server at the busiest station"],
@@ -159,7 +167,7 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
 
   return (
     <div className="guided-hall">
-      <ReplayAlert alerts={liveAlerts} playing={playing} time={t} onInspect={(sid) => { pickStation(sid); setPlaying(false); }} />
+      {trace && <ReplayAlert alerts={liveAlerts} playing={playing} time={t} onInspect={(sid) => { pickStation(sid); setPlaying(false); }} />}
       <aside className="guided-sidebar" aria-label="Simulation guide">
         <nav className="guided-steps" aria-label="Simulation steps">
           {([["watch", "Watch the hall"], ["try", "Try a change"], ["compare", "Compare"]] as const).map(([id, label], i) => (
@@ -168,10 +176,15 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
         </nav>
         <section className="card guided-inspector" aria-label="Simulation details" tabIndex={0}>
           {station || studentId !== null ? <button className="back-to-stations" onClick={() => { setStation(null); setStudentId(null); }}>← All stations</button> : null}
-          {station ? <StationCard result={result} trace={trace} sid={station} t={t} pans={pans} inLine={queueCount(station)} />
-            : studentId !== null && byId.get(studentId) ? <StudentCard key={studentId} s={byId.get(studentId)!} narration={narration} names={names} t={t}
+          {station && trace ? <StationCard result={result} trace={trace} sid={station} t={t} pans={pans} inLine={queueCount(station)} />
+            : studentId !== null && byId.get(studentId) && trace ? <StudentCard key={studentId} s={byId.get(studentId)!} narration={narration} names={names} t={t}
                 missed={missed.has(studentId)} configHash={configHash} seed={trace.night_seed} onPick={pickStudent} />
-            : step === "watch" ? <>
+            : step === "watch" && !trace ? <>
+              <p className="guide-eyebrow">{result.n_nights} simulated nights</p>
+              <h2>{replayLoading ? "Preparing the hall" : "Explore this plan"}</h2>
+              <p className="guide-copy">{replayLoading ? "The animation is loading. You can explore scenarios while it gets ready." : "Saved results are available even when a plan has no animation. Compare its effects or choose another scenario."}</p>
+              <button className="btn primary guide-action" onClick={() => goStep(result.vs_baseline ? "compare" : "try")}>{result.vs_baseline ? "View comparison" : "Try a change"}</button>
+            </> : step === "watch" ? <>
               <p className="guide-eyebrow">Explore the current replay</p>
               <h2>Every station.<br />The whole night.</h2>
               <p className="guide-copy">Press Play to follow the students. Select a station for its dishes, pan levels, and queue history.</p>
@@ -189,12 +202,12 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
               </details>
             </> : step === "try" ? <>
               <p className="guide-eyebrow">A small change, tested</p><h2>What if we…</h2>
-              <p className="guide-copy">Choose a scenario to compare with the current plan. Its full replay will load when you compare.</p>
+              <p className="guide-copy">Choose a scenario to compare with the current plan. Saved results open immediately; an animation loads when available.</p>
               {presets.map(([id, title, description]) => <button key={id} className="guided-preset" aria-pressed={draftPreset === id} onClick={() => setDraftPreset(id)}>
                 <i aria-hidden /><span><b>{title}</b><small>{description}</small></span>
               </button>)}
               <button className="btn primary guide-action" disabled={!draftEntry} onClick={() => { if (draftEntry) { onTime(t); onReplay(draftEntry); setStep("compare"); } }}>Compare {result.n_nights} nights</button>
-              {!draftEntry && <p className="guide-copy">No saved replay for this scenario on this date. Use advanced settings to run a new comparison.</p>}
+              {!draftEntry && <p className="guide-copy">No saved comparison for this scenario on this date. Use advanced settings to run a new comparison.</p>}
               <button className="link guide-advanced" onClick={() => nav("/lab")}>Advanced settings & all scenarios</button>
             </> : <>
               <p className="guide-eyebrow">{result.n_nights} simulated nights</p><h2>Results & trade-offs</h2><p className="guide-copy">{result.label}</p>
@@ -216,6 +229,16 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
         </section>
       </aside>
       <div className="guided-stage">
+        {!trace ? <section className="card replay-unavailable" aria-label="Replay availability">
+          <p className="guide-eyebrow">{PRESET_LABELS[scenarios.find((e) => e.key === replayKey)?.preset ?? ""] ?? result.label} · {dateLabel(result.date)}</p>
+          <h2>{replayLoading ? "Preparing the replay…" : "Replay unavailable"}</h2>
+          <p role="status">{replayLoading ? "Your results are ready. The animation is loading separately." : replayNote ?? "No animation is available for this scenario. You can still explore its saved results."}</p>
+          <div className="row">
+            {baseline?.trace && baseline.key !== replayKey && <button className="btn primary" onClick={() => { onTime(t); onReplay(baseline); setStep("watch"); }}>Watch current plan</button>}
+            <button className="btn" disabled={replayLoading} onClick={onRetryReplay}>{replayLoading ? "Loading replay…" : "Retry replay"}</button>
+          </div>
+          <button className="link guide-advanced" onClick={() => nav("/lab")}>Full results & advanced settings</button>
+        </section> : <>
         <section className={`guided-viewport ${view === "top" ? "top-down-viewport" : ""}`} aria-label="Floor plan">
           <div className="hall-scene-heading">
             <div><h2>Worcester, second floor</h2><p>{result.label} · representative simulated night</p></div>
@@ -296,6 +319,7 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
           <details className="replay-metadata"><summary>Replay information</summary><p>Representative night {trace.night_seed} of {result.n_nights}. Serving ends at {clock(result.close)}; playback includes the following 30 minutes. Station menus and pan levels follow the selected time.</p></details>
         </div>
         </div>
+        </>}
       </div>
     </div>
   );

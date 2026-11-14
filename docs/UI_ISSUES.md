@@ -64,7 +64,7 @@ What `smoke-api.mjs` does (API up):
 
 | Issue | What changed |
 | --- | --- |
-| U3 replay traces | The Hall uses the bundle trace when there is one, otherwise `GET /api/traces/{hash}?seed=<median>` when the API is up (any bundled scenario or API run). Highlight students come from `/api/traces/{hash}/highlights`. Without the API, the banner says why there's no replay. **Fixed (with API).** |
+| U3 replay traces | The Hall uses the bundle trace when there is one, otherwise `GET /api/traces/{hash}?seed=<median>` when the API is up (any bundled scenario or API run). Highlight students come from `/api/traces/{hash}/highlights`. Without the API, an availability panel explains the missing replay; saved comparison results remain usable, with retry and return-to-baseline actions. **Fixed (with API for unbundled animations).** |
 | U8 adopt / watch / save | API runs become scenarios `{lever: "api", hash, label}`: Watch in 3D and Adopt work for them. The result is kept in `localStorage`, so an adopted API plan still shows on the Dashboard offline. Adopt and Save also call `POST /api/scenarios` (adopting logs a forecast to the Tiger ledger when configured), and the Lab's Saved list shows scenarios saved on the API. **Fixed.** |
 | U10 narration | Any student can be narrated on demand (`/api/narrate/...?stream=false`); highlight students of an API replay are narrated automatically. **Fixed (with API).** |
 | U7 Lab features | Built: plain-English box (`/api/ask`, shows the settings and what it couldn't express; Apply and run), menu edits (remove a dish, change popularity), the new-dish form (station, kind, diet tags, similar dishes with *suggest* via `/api/ai/similar-dishes`, popularity, **AI estimate** via `/api/ai/dish-prior`), "Where demand moves" card (served portions per dish vs. baseline), and "Why?" (`/api/explain`). **Mostly fixed;** Optimize and the uncertainty sweep remain (below). |
@@ -116,7 +116,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 
 ### U2 · Medium · Hall: illustrated isometric replay, no orbital 3D
 - **Updated 2026-11-13:** Guided Watch/Try/Compare now runs in the main app. Both the Canvas isometric view and SVG top-down view use the full trace, with continuous Play/Pause, scrubbing, all station menus and pan levels, whole-night queues, and student selection. Closed stations retain their dinner menus.
-- Presets load their own replay and show paired 30-night comparisons. Advanced controls remain in the Lab. Split-screen comparison (SPEC P2) isn't built.
+- Presets show paired 30-night comparisons on every bundled date, even without an animation. Their own replay loads separately when available; loading or failure never hides comparison results. The current bundle includes preset animations only for Nov 13 and baseline animations for all dates. Advanced controls remain in the Lab. Split-screen comparison (SPEC P2) isn't built.
 - The scene is an illustrated isometric view. Orbital WebGL/React Three Fiber and the serving-line camera remain future work.
 
 ### U4 · Partly fixed · Dashboard: dinner only

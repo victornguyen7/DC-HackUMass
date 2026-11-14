@@ -42,7 +42,7 @@ The main app is at `http://localhost:5173/hall`. `work/design/dining-simulation.
 
 - Play advances through the complete selected trace at 1×, 10×, 30×, or 60×. Pause, scrub, and restart are supported; arrow keys move five minutes and Space toggles playback on the slider. An ended replay restarts when Play is pressed.
 - Both hall views use the same student poses. All 12 stations remain accessible (Desserts and Breads share one inspector), with complete dish names, pan levels, and whole-night queues. Closed stations retain their dinner menus for inspection.
-- Selecting a student pauses playback and opens their recorded journey. Choosing a scenario loads its own trace. The comparison summarizes paired changes across 30 nights, separate from the representative-night animation.
+- Selecting a student pauses playback and opens their recorded journey. Choosing a scenario opens its saved, paired 30-night comparison and loads its own animation when available. **Compare works on every bundled date without the API.** The current bundle includes baseline animations for every date, but preset animations only for Nov 13. Other dates show the saved comparison alongside a replay-availability panel, with actions to retry the API or watch the current plan; a missing animation never blocks the results.
 - During playback, long queues and empty pans trigger one dismissible, temporary notification at a time. Dismissed conditions remain quiet until they clear; alerts are rate limited.
 
 `src/lib/playback.ts` turns the engine trace (SPEC §8.3) into positions on the top-down plan (`public/plan/worcester-2f-plan.svg`, 849×465 px, 13.37 px/m, same frame as `data/worcester/layout`).

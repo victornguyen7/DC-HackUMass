@@ -17,8 +17,10 @@ import asyncio
 import gzip
 import json
 import re
+import time
 from collections import OrderedDict
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
+from contextlib import aclosing
 
 from ..config import ScenarioConfig
 from ..reports import clock
@@ -266,11 +268,14 @@ class CheckFailed(LLMError):
 
 
 class Narrator:
-    """`wait_when_busy`: batch jobs (the bundle) wait for the load limit to clear instead of using the template."""
+    """`wait_when_busy`: batch jobs (the bundle) wait for the load limit to clear instead of using the template.
+    `log`: progress lines for batch jobs (e.g. "waiting for the LLM rate limit"); None stays quiet."""
 
-    def __init__(self, svc: Service, llm: LLM, wait_when_busy: bool = False, max_wait_s: float = 180):
+    def __init__(self, svc: Service, llm: LLM, wait_when_busy: bool = False, max_wait_s: float = 180,
+                 log: Callable[[str], None] | None = None):
         self.svc, self.llm = svc, llm
         self.wait_when_busy, self.max_wait_s = wait_when_busy, max_wait_s
+        self.log = log
 
     def load(self, h: str, seed: int, student_id: int) -> tuple[ScenarioConfig, dict]:
         cfg = self.svc.store.get_config(h)
@@ -308,20 +313,27 @@ class Narrator:
         while self.wait_when_busy and self.llm.busy() and waited < self.max_wait_s:
             await asyncio.sleep(1)
             waited += 1
+            if self.log and waited % 15 == 0:
+                self.log(f"    waiting for the LLM load limit ({waited:.0f}s of {self.max_wait_s:.0f}s max)")
         if self.llm.busy():  # free-tier limits: answer now instead of queueing behind other clicks
             yield "sentence", {"text": fallback}
             yield "final", base | {"text": fallback, "source": "template", "reason": "LLM busy (load limit)"}
             return
 
         sent, buf, reason, cache_it = [], "", None, True
+        deadline = time.monotonic() + self.llm.timeout_s  # the HTTP timeout catches a stall; this caps a trickle
         try:
-            async for delta in self.llm.stream_text(system=SYSTEM, user=prompt(c)):
-                buf += delta
-                while m := _END.search(buf):  # a sentence is done once whitespace follows its period
-                    s, buf = buf[: m.start(1)].strip(), buf[m.end():]
-                    self._check(s, c, cfg)
-                    sent.append(s)
-                    yield "sentence", {"text": s}
+            # aclosing: when we stop early (deadline, failed check) the stream's HTTP client closes on this loop
+            async with aclosing(self.llm.stream_text(system=SYSTEM, user=prompt(c))) as stream:
+                async for delta in stream:
+                    if time.monotonic() > deadline:
+                        raise LLMError(f"narration took longer than {self.llm.timeout_s:.0f}s")
+                    buf += delta
+                    while m := _END.search(buf):  # a sentence is done once whitespace follows its period
+                        s, buf = buf[: m.start(1)].strip(), buf[m.end():]
+                        self._check(s, c, cfg)
+                        sent.append(s)
+                        yield "sentence", {"text": s}
             if buf.strip():
                 self._check(buf, c, cfg)
                 sent.append(buf.strip())

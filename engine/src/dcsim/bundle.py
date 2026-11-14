@@ -22,7 +22,9 @@ import datetime as dt
 import gzip
 import json
 import shutil
+import time
 from collections.abc import Callable
+from functools import partial
 from pathlib import Path
 
 from .api import arrivals as api_arrivals
@@ -38,6 +40,8 @@ from .levers import Levers, ScenarioRequest, StationLever, build_config
 from .presets import PRESETS
 from .runner import median_night
 from .service import Service, baseline_of
+
+_say = partial(print, flush=True)  # progress shows up live even when output goes to a file or pipe
 
 N_NIGHTS = 30
 CROWD_STEPS = [0.75, 0.8, 0.85, 0.9, 0.95, 1.05, 1.1, 1.15, 1.2, 1.25]
@@ -79,21 +83,40 @@ def requests_for(date: str, grid: bool) -> list[tuple[str, ScenarioRequest]]:
     return reqs
 
 
-def _narrations(narrator, cfg, h: str, seed: int, k: int) -> dict:
+def _narrations(narrator, cfg, h: str, seed: int, k: int, log: Callable[[str], None] = _say,
+                tag: str = "") -> dict:
     from .ai.narrate import TRACES, highlights
 
     picks = highlights(cfg, TRACES.get(narrator.svc, h, seed), k)
     out = {"config_hash": h, "seed": seed, "highlights": picks, "students": {}}
-    for p in picks:
+    for i, p in enumerate(picks, 1):
         _, c = narrator.load(h, seed, p["student_id"])
+        t0 = time.monotonic()
         n = narrator.narrate_sync(h, seed, p["student_id"])
+        why = f" - {n['reason']}" if n.get("reason") else ""
+        log(f"  {tag} student {i}/{len(picks)}: {n['source']} ({time.monotonic() - t0:.1f}s){why}")
         out["students"][str(p["student_id"])] = {"card": c, "text": n["text"], "source": n["source"]}
     return out
 
 
+def _count_traces(dates: list[str], grid: bool, traces: str, featured: str) -> int:
+    """How many entries `build` will export a trace for (for progress lines); same rule as the loop below."""
+    if traces == "none":
+        return 0
+    n = 0
+    for date in dates:
+        for k, req in requests_for(date, grid):
+            if k.split("|", 2)[2]:
+                continue
+            cfg = build_config(req)
+            if traces == "all" or date == featured or config_hash(baseline_of(cfg)) == config_hash(cfg):
+                n += 1
+    return n
+
+
 def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: str = "featured",
           featured: str | None = None, dates: list[str] | None = None, n_nights: int = N_NIGHTS,
-          narrate: int = 12, log: Callable[[str], None] = print) -> Path:
+          narrate: int = 12, log: Callable[[str], None] = _say) -> Path:
     """`narrate`: highlight students narrated per exported trace (0 = none). Uses LLM_PROVIDER.
 
     Every exported trace gets a narration file, so the Hall has highlight students on every date. The LLM
@@ -101,7 +124,11 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
     from .ai import LLM
     from .ai.narrate import Narrator
 
-    narrator = Narrator(svc, LLM(svc.store), wait_when_busy=True)
+    narrator = Narrator(svc, LLM(svc.store), wait_when_busy=True, log=log)
+    if narrate:
+        llm = narrator.llm
+        log(f"narration: {llm.provider} / {llm.model}, {narrate} students per trace, "
+            f"timeout {llm.timeout_s:.0f}s (LLM_PROVIDER=mock skips the LLM)")
     out = out or default_out()
     if out.exists():
         shutil.rmtree(out)
@@ -109,6 +136,7 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
     dates = dates or available_dates()
     featured = featured or dates[0]
     entries, size = [], 0
+    n_traces, done_traces = _count_traces(dates, grid, traces, featured), 0
 
     for date in dates:
         reqs = requests_for(date, grid)
@@ -130,8 +158,11 @@ def build(svc: Service, out: Path | None = None, *, grid: bool = False, traces: 
                 (out / "traces" / f"{h}_s{seed}.json.gz").write_bytes(data)
                 size += len(data)
                 entry["trace"] = f"traces/{h}_s{seed}.json.gz"
+                done_traces += 1
                 if narrate:
-                    size += _write(out / "narration" / f"{h}_s{seed}.json", _narrations(narrator, cfg, h, seed, narrate))
+                    tag = f"[trace {done_traces}/{n_traces} {date} {cfg.label or 'baseline'}]"
+                    size += _write(out / "narration" / f"{h}_s{seed}.json",
+                                   _narrations(narrator, cfg, h, seed, narrate, log, tag))
                     entry["narration"] = f"narration/{h}_s{seed}.json"
             entries.append(entry)
         log(f"{date}: {len(reqs)} results")

@@ -26,7 +26,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | L2 | ~~Medium~~ | LLM | ~~Groq free-tier limit: 1,000 output tokens per minute~~ **Mitigated:** Gemini is the default provider; load gate + bundle narrations |
 | L3 | Medium | LLM | The Groq key was pasted into a chat |
 | L4 | ~~Low~~ | LLM | ~~Narration check covers names only~~ **Fixed** (`narrate-v3`: names, times, numbers) |
-| L5 | ~~Medium~~ | LLM | ~~`dcsim bundle` narration could hang forever on a stalled Gemini request~~ **Fixed 2026-11-13** (timeout + progress lines; not committed yet) |
+| L5 | ~~Medium~~ | LLM | ~~`dcsim bundle` narration could hang forever on a stalled Gemini request~~ **Fixed 2026-11-13** (timeout + progress lines) |
 | D1 | ~~Medium~~ | Docs | ~~ASSUMPTIONS.md has stale planner numbers~~ **Fixed 2026-11-13** (engine 0.5.0 numbers; golden test guards them) |
 | D2 | ~~Low~~ | Docs | ~~Version numbers disagree~~ **Fixed 2026-11-13** (both 0.5.0; a test keeps them equal) |
 | T1 | ~~Low~~ | Repo | ~~Not a git repository; bundle size undecided~~ **Fixed 2026-11-13** (on GitHub; full bundle committed) |
@@ -184,7 +184,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 
 ### L5 · Fixed 2026-11-13 · `dcsim bundle` narration could hang forever
 - **Was:** the Gemini client had no network timeout, so one stalled request blocked `make demo-bundle` with no output (a teammate's run looked frozen and was stopped with Ctrl+C).
-- **Fixed:** requests time out after `DCSIM_LLM_TIMEOUT` seconds (default 60) and a narration stream is capped at the same time; the student falls back to the template, which is not cached. The bundle prints one progress line per student and a line every 15 s while waiting on the rate limit. Code: `ai/llm.py`, `ai/narrate.py`, `bundle.py` (**in the working tree, not committed yet**).
+- **Fixed:** requests time out after `DCSIM_LLM_TIMEOUT` seconds (default 60) and a narration stream is capped at the same time; the student falls back to the template, which is not cached. The bundle prints one progress line per student and a line every 15 s while waiting on the rate limit. Code: `ai/llm.py`, `ai/narrate.py`, `bundle.py`.
 - **Tip:** `LLM_PROVIDER=mock make demo-bundle` skips the LLM entirely.
 
 ---

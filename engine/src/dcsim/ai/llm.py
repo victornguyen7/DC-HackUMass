@@ -12,6 +12,7 @@ fallback, so the app works with no key and no network.
     DCSIM_LLM_FALLBACK_MODELS  comma list tried in order when the model is busy (429/5xx/timeout); Gemini only
     DCSIM_LLM_MODEL_STRONG     model for one-off jobs that can wait a few seconds (dish prior); default per provider
     DCSIM_LLM_MAX_LIVE / DCSIM_LLM_RPM  live narration load limits; over them a click gets the template at once
+    DCSIM_LLM_TIMEOUT   seconds before a stalled request (or a whole narration stream) gives up; default 60
     DCSIM_EMBED_MODEL   embedding model (Gemini only; default gemini-embedding-001)
     DCSIM_LLM_MAX_OUTPUT  output-token cap per call (Groq default 1000 = free tier's tokens-per-minute limit,
                           a request asking for more is rejected outright; Gemini default 8000)
@@ -55,6 +56,7 @@ THINKING_HEADROOM_LOW = 1500  # even thinking_level LOW spends some
 T = TypeVar("T", bound=BaseModel)
 ENV_FILE = Path(__file__).resolve().parents[3] / ".env"  # engine/.env
 RETRIES = 6  # the SDK waits out 429s (retry-after) between attempts
+DEFAULT_TIMEOUT_S = 60.0  # a request with no response bytes for this long fails; callers fall back
 
 
 def load_env_file(path: Path = ENV_FILE) -> None:
@@ -125,6 +127,7 @@ class LLM:
         self.embed_model = os.environ.get("DCSIM_EMBED_MODEL", EMBED_MODEL)
         self.max_live = int(os.environ.get("DCSIM_LLM_MAX_LIVE", "4"))
         self.rpm = int(os.environ.get("DCSIM_LLM_RPM", "15"))
+        self.timeout_s = float(os.environ.get("DCSIM_LLM_TIMEOUT", DEFAULT_TIMEOUT_S))
         self.live = 0
         self._calls: deque[float] = deque()
         self.last_model = self.model
@@ -190,7 +193,7 @@ class LLM:
         if self._client is None:
             import groq
 
-            self._client = groq.Groq(max_retries=RETRIES)
+            self._client = groq.Groq(max_retries=RETRIES, timeout=self.timeout_s)
         return self._client
 
     def _gemini(self):
@@ -200,8 +203,10 @@ class LLM:
         key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
         if not key:
             raise LLMError("GEMINI_API_KEY is not set")
-        # retries 408/429/5xx only; 402 (no credits) and 403 fail fast so the fallback answers quickly
+        # retries 408/429/5xx only; 402 (no credits) and 403 fail fast so the fallback answers quickly.
+        # timeout (ms): without it a stalled stream waits forever (seen in `dcsim bundle`).
         return genai.Client(api_key=key, http_options=types.HttpOptions(
+            timeout=int(self.timeout_s * 1000),
             retry_options=types.HttpRetryOptions(attempts=GEMINI_RETRIES, http_status_codes=[408, 429, 500, 502, 503, 504])))
 
     def _async(self):
@@ -219,7 +224,7 @@ class LLM:
             else:
                 import groq
 
-                self._aclient = groq.AsyncGroq(max_retries=RETRIES)
+                self._aclient = groq.AsyncGroq(max_retries=RETRIES, timeout=self.timeout_s)
             self._aclient_owned, self._aclient_loop = True, loop
         return self._aclient
 

@@ -9,7 +9,7 @@ Last updated: 2026-11-13, engine 0.6.2.
 
 ## Before the demo
 - ✗ **Rebuild the demo bundle once, at the end.** The committed bundle (`web/public/cache`) is engine **0.4.1**; the code is 0.6.2, so the web app shows older numbers until it's rebuilt. Run `make demo-bundle` (15–30 min with Gemini narrations) or `LLM_PROVIDER=mock make demo-bundle` (a few minutes, template text).
-- ⚠️ Commit the narration timeout fix (L5) and the similar-night search (Tiger) once they're finished.
+- ⚠️ Commit the command-line similar-night search (`dcsim tsdb similar`) once it's finished. The narration timeout fix (L5) and the Similar Nights page are committed.
 
 ---
 
@@ -46,7 +46,7 @@ Last updated: 2026-11-13, engine 0.6.2.
 | L2 | Groq free-tier output limit | ✅ Mitigated (Gemini default, load gate, bundle narrations) |
 | L3 | Groq key pasted into a chat | ✗ Open — rotate after the hackathon |
 | L4 | Narration check covered names only | ✅ Fixed (`narrate-v3`: times and numbers) |
-| L5 | `dcsim bundle` narration could hang forever | ✅⚠️ Fixed 2026-11-13 (timeout + progress), **not committed yet** |
+| L5 | `dcsim bundle` narration could hang forever | ✅ Fixed 2026-11-13 (timeout + progress lines) |
 | D1 | ASSUMPTIONS.md has stale planner numbers | ✅ Fixed 2026-11-13 (0.5.0 numbers; golden test) |
 | D2 | Version numbers disagree | ✅ Fixed 2026-11-13 (both 0.5.0; test keeps them equal) |
 | T1 | Not a git repo; bundle size undecided | ✅ Fixed 2026-11-13 (GitHub; bundle committed) |

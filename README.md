@@ -224,7 +224,7 @@ Put keys in **`engine/.env`** (git-ignored, keep it that way; never paste keys i
 | `DCSIM_ADMIN_TOKEN` | protect deleting scenarios and the admin jobs (`/api/warm`, `/api/backtest`) | **set before hosting publicly** (ISSUES A1). Unset = open (local). Send `Authorization: Bearer <token>` or `X-Admin-Token` |
 | `DCSIM_AI_RATE` | AI requests per minute per client IP (ask, narrate, explain, dish prior, similar dishes) | default 20; `0` = no limit; over it → 429 with `Retry-After` |
 | `DCSIM_JOB_TTL_S`, `DCSIM_TRACE_CACHE` | API memory: how long finished jobs are kept, how many decompressed traces narration keeps | defaults 900 s (max 200 jobs) and 2 (ISSUES A2) |
-| `DCSIM_LLM_TIMEOUT` | how long an LLM request may stall before falling back to the template | seconds, default 60 (ISSUES L5; in the working tree, not committed yet) |
+| `DCSIM_LLM_TIMEOUT` | how long an LLM request may stall before falling back to the template | seconds, default 60 (ISSUES L5) |
 
 **Without any keys everything still runs:** the LLM features use templates or keyword matching, and the static bundle already contains AI narrations.
 
@@ -270,7 +270,7 @@ Consequences:
 
 **New in 0.5.0 (simulation core):** cooks and equipment as limited resources (`kitchen_defaults.json → resources`, placeholders: 12 dinner / 5 late-night cooks since 0.6.1, ovens, steamers, kettles, flat-tops, woks, fryers, tandoors); students wait up to 2 min at an empty pan when a batch is cooking; staffing by hour (`shifts`) with a "servers needed" table; seats counted per night (limits off); golden baseline and calibration-target tests. New result fields: `batch_wait_min`, `cook_busy_share`, `empty_wait_min`, `peak_seated`, `staffing`.
 
-**New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey. **In progress (not committed):** similar-night search on Tiger (`dcsim tsdb similar`, see `docs/TIGER.md` §7); timeout and progress lines for the bundle's narration step (ISSUES L5).
+**New in 0.4.2:** late-night kitchen taper (late-night waste about 40% → about 20% of cooked portions), crowd size by weekday and event (placeholder multipliers in `data/worcester/crowd_by_date.json`), and a staffed carving line for the Nov 18 turkey. **In progress (not committed):** similar-night search on Tiger (`dcsim tsdb similar`, see `docs/TIGER.md` §7). **Also new:** the bundle's narration step times out after `DCSIM_LLM_TIMEOUT` seconds and prints one progress line per student (ISSUES L5); the Similar Nights page (`docs/SIMILAR_NIGHTS.md`).
 
 **Headline numbers right now** (they change whenever the engine changes, so check the app):
 - Fri Nov 13 baseline (engine 0.6.1, median of 10 nights): about 3,720 students (2,710 dinner + 1,010 late night; Friday crowd ×0.9), wait p90 about 15 min, about 25% miss their first choice, about 38 stockout-minutes per night (dinner 14, late night 20), about 3,360 portions wasted (dinner ~29% of cooked, late night ~24%). The web app still shows 0.4.1 numbers until the bundle is rebuilt.

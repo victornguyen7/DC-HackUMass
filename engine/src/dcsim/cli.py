@@ -267,7 +267,7 @@ def main(argv: list[str] | None = None) -> None:
     ex.add_argument("--nights", type=int, default=30)
     tq = sub.add_parser("tsdb", help="Tiger Data (TimescaleDB): observed nights and simulated runs side by side")
     tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar", "bench", "refresh",
-                                       "track", "dishes", "searches"],
+                                       "track", "dishes", "searches", "sweep"],
                     help="init: create schema · load: recorded history -> observed rows · query: run a named query or SQL"
                          " · compress: convert older chunks to the columnstore now and report sizes"
                          " · observe: generate + load the SYNTHETIC observation for --date (scores its logged forecasts)"
@@ -276,7 +276,13 @@ def main(argv: list[str] | None = None) -> None:
                          " · refresh: bring every continuous aggregate up to date now"
                          " · track: score every observed night now and show the weekly track record"
                          " · dishes: the dish-popularity check, and look-alikes of --name (pgvector) with what they sold"
-                         " · searches: saved plan searches and the changes that keep showing up on the frontier")
+                         " · searches: saved plan searches and the changes that keep showing up on the frontier"
+                         " · sweep: --nights simulated nights of --date into Tiger, then how long each dish is out"
+                         " of stock across them (--dish to pick one; --report-only to skip loading)")
+    tq.add_argument("--nights", type=int, default=500, help="`sweep`: how many nights (1-2000)")
+    tq.add_argument("--dish", help="`sweep`: part of a dish name, e.g. 'tikka' (default: the longest-empty dishes)")
+    tq.add_argument("--report-only", action="store_true", help="`sweep`: don't simulate or load, just query Tiger")
+    tq.add_argument("--top", type=int, default=15, help="`sweep`: how many dishes to show")
     tq.add_argument("--name", help="`dishes`: a (new) dish name to find look-alikes for")
     tq.add_argument("--station", help="`dishes`: its station id")
     tq.add_argument("--role", choices=["entree", "starch", "side", "soup", "dessert", "bread"], help="`dishes`: its role")
@@ -569,6 +575,26 @@ def _tiger(args) -> None:
             print(tsdb.format_table([*cols, "waste range"], out))
             print("\nweeks start Thursday; backtest weeks 2026-10-29 and 2026-11-05 are the held-out split "
                   "(calibrated is scored only there); ledger = live forecasts issued before the night")
+        elif args.cmd == "tsdb" and args.action == "sweep":
+            import os
+            from concurrent.futures import ProcessPoolExecutor
+
+            from . import nightsweep
+            from .service import Service
+            from .store import Store
+
+            if not args.date:
+                raise SystemExit("--date is required for sweep (a menu date, e.g. 2026-11-13)")
+            if not args.report_only:
+                workers = int(os.environ.get("DCSIM_WORKERS") or os.cpu_count() or 1)
+                with ProcessPoolExecutor(max_workers=workers) as pool:
+                    nightsweep.load(conn, Service(Store(), pool), args.date, args.nights)
+            cols, rows = nightsweep.dish_report(conn, args.date, args.dish, args.top)
+            what = f"dishes matching '{args.dish}'" if args.dish else "the dishes out of stock longest"
+            n = rows[0][cols.index("nights")] if rows else 0
+            print(f"\n{args.date}: {what}, across {n} simulated nights in Tiger (one SQL statement: nightsweep.DISH_SQL)"
+                  f"\n\n{tsdb.format_table(cols, rows)}" if rows else f"no sweep rows for {args.date}"
+                  + (f" matching '{args.dish}'" if args.dish else "") + " in Tiger")
         elif args.cmd == "tsdb" and args.action == "query":
             title = tsdb.QUERIES.get(args.query, ("SQL", ""))[0]
             cols, rows = tsdb.run_query(conn, args.query)

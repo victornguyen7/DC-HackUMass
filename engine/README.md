@@ -27,6 +27,7 @@ uv run dcsim optimize --date 2026-11-13                      # search kitchen pl
 uv run dcsim worlds --date 2026-11-13 --preset smaller_batches   # a plan in plausible worlds + waste tornado (--save)
 uv run dcsim tsdb searches                                   # saved plan searches, levers that keep showing up (docs/TIGER.md §10)
 uv run dcsim tsdb dishes --name "Butter Chicken" --role entree   # dish-popularity check + look-alikes on Tiger (§9)
+uv run dcsim tsdb sweep --date 2026-11-13 --nights 500        # 500 simulated nights -> Tiger, minutes out of stock per dish (§11; --dish, --report-only)
 ```
 
 Presets: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`, `forecast_reorder` (cook to the expected rush, with safety stock).
@@ -114,6 +115,7 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 | `ai/agent.py` | Ask Sam: goal/what-if/question, the tool loop (`run_simulation`, `finish`, setting functions, Tiger tools), `check_goal` in code, rule-based fallback, hold-out check, history entries |
 | `ai/tiger_mcp.py` | Sam's MCP client of `tiger mcp start` (only `db_schema` / `db_query`), `guard_sql` (one read-only SELECT), schema digest |
 | `similar_nights.py` | Similar nights for the page and API: input checks, students tie-break and local fallback over `nightsearch.py`'s vectors |
+| `nightsweep.py` | The 500-night question (`dcsim tsdb sweep`): N simulated nights of one menu date into Tiger as scenario `sweep` (`nights`, `dish_nights`), and the per-dish stockout query `DISH_SQL` (docs/TIGER.md §11) |
 | `nightsearch.py` | The similar-night search (page, API and `dcsim tsdb similar`): 77-dim night vectors in `dcsim.night_vectors` (DiskANN index), held-out check |
 | `optimize.py` | Optimize plan: Optuna multi-objective search over station/dish multipliers, frontier re-checked on unseen seeds |
 | `worlds.py` | Plausible worlds (`ScenarioConfig.uncertainty`): crowd, rush and popularity drawn per seed, new dishes with their own spread; sweep + waste tornado |

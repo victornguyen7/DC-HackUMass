@@ -581,7 +581,7 @@ COMMENT ON COLUMN dcsim.nights.waste_lb IS 'food thrown away that night in pound
 COMMENT ON COLUMN dcsim.nights.stockout_min IS 'minutes summed over dishes that a dish was out (empty pan) while serving';
 COMMENT ON TABLE dcsim.pan_windows IS 'Pan levels per dish per 30-minute window (MetaFoodX shape). A dish ran out in a window when portions_left = 0, except its last window of the night: that is the close-out, when pans are pulled.';
 COMMENT ON TABLE dcsim.waste_log IS 'Observed weigh-ins (LeanPath shape), one row per bin weighed. reason: expired (held too long) | close (left at close) | plate (left on plates). Labels in cat_values (category waste_reason).';
-COMMENT ON TABLE dcsim.dish_nights IS 'Per dish per simulated replay night: cooked, served, waste, minutes out of stock (stockout_min) and when it first ran out (runout_min, minutes after open).';
+COMMENT ON TABLE dcsim.dish_nights IS 'Per dish per simulated night (scenario replay: calibration replays; sweep: many nights of one menu date, dcsim tsdb sweep): cooked, served, waste, minutes out of stock (stockout_min) and when it first ran out (runout_min, minute of the day: 1080 = 6:00 pm).';
 COMMENT ON TABLE dcsim.planned_batches IS 'The production plan per menu date and plan (baseline | recommended | cfg:<hash>): batch size, starting batches, reorder point per dish.';
 COMMENT ON TABLE dcsim.forecasts IS 'Append-only forecast ledger: every forecast logged before its night (issued_at is the database clock). Updates and deletes are blocked by trigger. Scored in forecast_scorecard.';
 COMMENT ON COLUMN dcsim.forecasts.weather IS 'situation the forecast assumed (NULL = not given: pooled crowd error)';
@@ -1247,7 +1247,28 @@ WHERE scenario = 'observed' AND night = %(night)s
 ORDER BY dish, bucket
 """
 
+# Many simulated nights of one menu date (scenario 'sweep', nightsweep.py, docs/TIGER.md section 11):
+# per sweep date, the 5 dishes out of stock longest on average.
+SWEEPS_SQL = """
+WITH per AS (
+  SELECT x.night, x.dish_id, d.name AS dish, x.station, x.period, count(*) AS nights,
+         avg(x.stockout_min) AS avg_empty_min,
+         percentile_cont(0.9) WITHIN GROUP (ORDER BY x.stockout_min) AS p90_min,
+         avg((x.stockout_min > 0)::int) AS share_out
+  FROM dcsim.dish_nights x JOIN dcsim.dishes d ON d.menu_date = x.night AND d.dish_id = x.dish_id
+  WHERE x.scenario = 'sweep' AND NOT x.to_order
+  GROUP BY 1, 2, 3, 4, 5),
+ranked AS (SELECT *, row_number() OVER (PARTITION BY night ORDER BY avg_empty_min DESC) AS rk FROM per)
+SELECT night::text, rk AS "#", dish, station, replace(period, '_', ' ') AS period, nights, round(avg_empty_min::numeric, 1) AS avg_empty_min,
+       round(p90_min::numeric, 1) AS p90_min, round(100 * share_out::numeric, 1) AS pct_nights_out
+FROM ranked WHERE rk <= 5 ORDER BY night, rk
+"""
+
+
+
 QUERIES.update({
+    "sweep": ("500-night sweeps: per date, the 5 dishes out of stock longest (avg and p90 minutes, share of nights)",
+              SWEEPS_SQL),
     "stack": ("One query across the stack: aggregates over two hypertables + nights + plan + forecasts + ledger",
               STACK_SQL + "LIMIT 20"),
     "hypertables": ("Hypertables: chunks, how many are in the columnstore, size on disk, row data vs columnstore",

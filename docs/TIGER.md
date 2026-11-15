@@ -22,13 +22,16 @@ uv run dcsim forecast --date 2026-11-15 --weather rain   # a forecast that recor
 uv run dcsim tsdb dishes --name "Butter Chicken" --role entree   # dish-popularity check + a new dish's look-alikes (§9)
 uv run dcsim optimize --date 2026-11-13 --save    # keep an optimizer run in Tiger (also: dcsim worlds --save) (§10)
 uv run dcsim tsdb searches                        # saved searches + the levers that keep showing up on the frontier (§10)
+uv run dcsim tsdb sweep --date 2026-11-13 --nights 500   # 500 simulated nights -> Tiger, then each dish's minutes out of stock (§11)
+uv run dcsim tsdb sweep --date 2026-11-13 --report-only --dish cauliflower   # one dish, no new simulations
+uv run dcsim tsdb query sweep                     # every sweep in Tiger: per date, the 5 dishes out of stock longest
 uv run dcsim bundle --waste-only                  # refresh calibration + ledger files in the demo bundle (seconds)
 ```
 
 Live dashboard: `make server`, then open `http://127.0.0.1:8000/tiger` (§8). It is served by the API only, not by the web app. API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
-(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page; same vectors and table as `nightsearch.py`), `engine/src/dcsim/dishsearch.py` (dish search + popularity check, §9), `engine/src/dcsim/searchlog.py` (plan searches, §10). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), `POST /api/dish-evidence`, `GET /api/searches[?date=&kind=]`, `GET /api/searches/changes`, `GET /api/searches/{id}`, and adopting a scenario
+(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page; same vectors and table as `nightsearch.py`), `engine/src/dcsim/dishsearch.py` (dish search + popularity check, §9), `engine/src/dcsim/searchlog.py` (plan searches, §10), `engine/src/dcsim/nightsweep.py` (the 500-night sweep, §11). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), `POST /api/dish-evidence`, `GET /api/searches[?date=&kind=]`, `GET /api/searches/changes`, `GET /api/searches/{id}`, and adopting a scenario
 (`POST /api/scenarios/{id}/adopt`, or `POST /api/scenarios` with `status: "adopted"`) logs its forecast. The What-If
 Lab's **Adopt** button makes that call when the API is up, so adopting in the web app writes to the ledger. Page: `web/public/calibration.html`.
 
@@ -46,6 +49,7 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14 (commit `78d9239`; §8) | `dcsim tsdb bench`, `/api/tiger/*`, API page `/tiger` |
 | 7 | **Similar-night search** with pgvector + a pgvectorscale DiskANN index | built | `dcsim tsdb similar`, `dcsim.night_vectors` (§7); API + web page handoff: [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md) |
 | 9 | **Dish search + dish-popularity check**: look-alike dishes across every menu (pgvector + DiskANN), what they sold, a new dish's popularity spread in plausible worlds; per-dish popularity error measured from observed vs replay | built 2026-11-14 (§9); **no dish-level error found** on this synthetic history (τ 0.021) | `dcsim tsdb dishes`, `POST /api/dish-evidence`, `dcsim.dish_vectors` |
+| 11 | **500-night sweep**: hundreds of simulated nights of one menu date in Tiger (scenario `sweep`); one SQL statement gives each dish's average, median and p90 minutes out of stock, how often it runs out and when | built 2026-11-14 (§11); Nov 13 loaded: 500 nights, 29,500 dish rows, ~115 ms | `dcsim tsdb sweep`, `dcsim tsdb query sweep`, `nightsweep.DISH_SQL`; Sam answers it through the MCP |
 | 10 | **Plan searches in Tiger**: every Optimize plan / Plausible worlds run kept (search row, one hypertable row per plan tried, one row per world); "which lever keeps showing up on the frontier" in SQL | built 2026-11-14 (§10) | `dcsim tsdb searches`, `GET /api/searches[...]`, `dcsim.plan_searches`, `search_trials`, `search_worlds` |
 
 ## Schema (`dcsim`)
@@ -359,7 +363,7 @@ Still to do:
 2. **Rehearsal reset for step 2 of the demo.** There is no `unobserve`. To rehearse and then reset:
    `DELETE` the `run_id = 'observed:live' AND night = '2026-11-13'` rows from `nights` and `pan_windows`, the
    Nov 13 rows from `waste_log`, then `dcsim tsdb refresh`. Worth a small CLI action if rehearsing more than once.
-3. Ideas not started: a longer history (the "500-night" query) so the timings mean more, columnstore on the
+3. Ideas not started: a longer observed history so the timings mean more (the "500-night" query is built on simulated nights, §11), columnstore on the
    aggregates themselves, a track-record card on the `/tiger` dashboard (the data is in `forecast_weekly`).
    (A **Plan searches** card was added 2026-11-14, §10.)
 
@@ -495,6 +499,51 @@ FROM dcsim.search_trials t CROSS JOIN LATERAL jsonb_each_text(t.params) AS p(key
 WHERE t.on_frontier AND t.validated_waste_pct IS NOT NULL
 GROUP BY p.key ORDER BY lower DESC LIMIT 8;
 ```
+
+## 11. The 500-night question: one dish across 500 simulated nights
+
+The pitch question: *"how long is a dish out of stock, across 500 nights?"* `engine/src/dcsim/nightsweep.py` runs (or reads from the results cache) N nights of one menu date's baseline plan and writes them to Tiger as scenario **`sweep`**: one `nights` row per seed and one `dish_nights` row per dish per seed. Loading the same date again replaces that sweep (`run_id = sweep:<date>:<config hash>`).
+
+```bash
+cd engine
+uv run dcsim tsdb sweep --date 2026-11-13 --nights 500            # simulate what isn't cached, load, report
+uv run dcsim tsdb sweep --date 2026-11-13 --report-only --dish "hot pot"   # one dish, straight from Tiger
+uv run dcsim tsdb query sweep                                      # all sweeps: per date, the top 5 dishes
+```
+
+**On Tiger now (2026-11-14):** Fri Nov 13, 500 nights (440 simulated for this, 60 from the cache, 55 s on the 8-core laptop), 29,500 dish rows. The query runs in about **115 ms** on the server (`EXPLAIN ANALYZE`, median of 5).
+
+| Dish (Nov 13) | Period | Avg min out | Median | p90 | Nights out | Median first run-out |
+| --- | --- | --- | --- | --- | --- | --- |
+| Roasted Cauliflower | late night | 5.8 | 5.2 | 13.6 | 69.0% | 10:47 pm |
+| Steamed Broccoli | late night | 5.7 | 3.5 | 16.3 | 66.0% | 11:41 pm |
+| Savory Baked Chicken Thigh | dinner | 5.0 | 5.0 | 5.0 | 100% | 8:55 pm |
+| Halal French Fries | late night | 3.6 | 2.4 | 8.8 | 63.2% | 10:41 pm |
+| Waffle Fries | late night | 3.4 | 0.0 | 14.3 | 44.0% | 9:28 pm |
+| Hot Pot | dinner | 1.2 | 0.0 | 4.8 | 35.4% | 8:56 pm |
+
+- **What the numbers mean:** `stockout_min` is minutes the pan was empty while that dish was being served (the same number the cook sheet shows). The run-out time is the median over the nights it ran out. Savory Baked Chicken Thigh is out for exactly the last 5 minutes every night, and that is the plan, not chance: the pan put out at 7:55 pm reaches its 60-minute hold limit at 8:55 and is thrown out (11–17 portions left in it on the seeds checked), and no batch may start after 8:45 pm (`last_batch_min`), so nothing replaces it before the 9:00 pm close. The sweep shows a stockout and waste with the same cause, a lead for the planner.
+- **General Tso's** was the spec's example; it isn't on any of the real menus, so the demo uses a real dish (Roasted Cauliflower, or Hot Pot for a dinner favourite).
+- A dish on both the dinner and the late-night menu has two ids, so it shows as two rows (Roasted Cauliflower: dinner 0.3 min, out on 7.4% of nights; late night 5.8 min, 69.0%).
+- **Sam answers it too.** The MCP schema digest describes the `sweep` scenario, so *"Across the 500 simulated nights of the Nov 13 menu, how long is the Roasted Cauliflower out of stock on average, and how often does it run out?"* is answered with one Tiger lookup and gives the same numbers (checked 2026-11-14).
+- **Kept out of the scores:** the track record and `forecast_check` scoring read only `forecast_*` scenarios, so sweep rows never change calibration results. These are simulated nights, not observations; say so on stage.
+- Tests: `engine/tests/test_nightsweep.py` (rows match the Tiger columns and the engine's numbers; SQL checks).
+
+```sql
+-- the demo query (nightsweep.DISH_SQL, here for one dish)
+SELECT d.name AS dish, replace(x.period, '_', ' ') AS period, count(*) AS nights,
+       round(avg(x.stockout_min)::numeric, 1) AS avg_empty_min,
+       round(percentile_cont(0.9) WITHIN GROUP (ORDER BY x.stockout_min)::numeric, 1) AS p90_min,
+       round(100 * avg((x.stockout_min > 0)::int)::numeric, 1) AS pct_nights_out,
+       to_char(TIME '00:00' + percentile_cont(0.5) WITHIN GROUP (ORDER BY x.runout_min) * INTERVAL '1 minute',
+               'HH12:MI am') AS median_first_out
+FROM dcsim.dish_nights x
+JOIN dcsim.dishes d ON d.menu_date = x.night AND d.dish_id = x.dish_id
+WHERE x.scenario = 'sweep' AND x.night = '2026-11-13' AND d.name ILIKE '%cauliflower%'
+GROUP BY x.dish_id, d.name, x.period;
+```
+
+**Still to do:** load sweeps for the other menu dates if the demo needs them (about 1 min each on the laptop, faster on the Vultr server: `sudo -iu dcsim bash -lc 'cd /srv/dc-whatif/engine && uv run dcsim tsdb sweep --date 2026-11-14'`); a card on the `/tiger` dashboard is not built.
 
 ## Useful queries
 

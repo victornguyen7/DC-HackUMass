@@ -164,8 +164,11 @@ SCHEMA_DIGEST = """Tiger Data (TimescaleDB), schema dcsim, Worcester Commons his
   per dish per 30-min window. A dish ran out in a window when portions_left = 0, EXCEPT its last window of the
   night (close-out, pans pulled).
 - waste_log(ts, night, station, dish_id, dish, portions, weight_lb, reason 'expired|close|plate', period): weigh-ins.
-- dish_nights(night, source, scenario, dish_id, station, period, cooked, served, waste, stockout_min, runout_min):
-  SIMULATED replays only (source = 'simulated'); for what really happened use pan_windows / waste_log.
+- dish_nights(night, source, scenario, seed, dish_id, station, period, to_order, cooked, served, waste, stockout_min,
+  runout_min): SIMULATED only (source = 'simulated'); for what really happened use pan_windows / waste_log.
+  scenario 'sweep' = hundreds of simulated nights (one row per seed) of one menu date's plan, night = that menu date:
+  "how long is <dish> out of stock across 500 nights" = avg(stockout_min) over scenario = 'sweep' for that night,
+  joined to dishes ON d.menu_date = x.night. runout_min = minute of the day it first ran out (1080 = 6:00 pm).
 - dishes(menu_date, dish_id, name, station, period, role, diet_tags text[], popularity, batch_cooked): one menu per
   menu_date. Past nights reuse a menu: join dishes ON d.dish_id = x.dish_id AND d.menu_date = nights.menu_date
   (NOT the night's own date). Diet test: 'vegetarian' = ANY(d.diet_tags).

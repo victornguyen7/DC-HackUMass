@@ -503,7 +503,7 @@ COMMENT ON COLUMN dcsim.nights.waste_lb IS 'food thrown away that night in pound
 COMMENT ON COLUMN dcsim.nights.stockout_min IS 'minutes summed over dishes that a dish was out (empty pan) while serving';
 COMMENT ON TABLE dcsim.pan_windows IS 'Pan levels per dish per 30-minute window (MetaFoodX shape). A dish ran out in a window when portions_left = 0, except its last window of the night: that is the close-out, when pans are pulled.';
 COMMENT ON TABLE dcsim.waste_log IS 'Observed weigh-ins (LeanPath shape), one row per bin weighed. reason: expired (held too long) | close (left at close) | plate (left on plates). Labels in cat_values (category waste_reason).';
-COMMENT ON TABLE dcsim.dish_nights IS 'Per dish per simulated replay night: cooked, served, waste, minutes out of stock (stockout_min) and when it first ran out (runout_min, minutes after open).';
+COMMENT ON TABLE dcsim.dish_nights IS 'Per dish per simulated night (scenario replay: calibration replays; sweep: many nights of one menu date, dcsim tsdb sweep): cooked, served, waste, minutes out of stock (stockout_min) and when it first ran out (runout_min, minute of the day: 1080 = 6:00 pm).';
 COMMENT ON TABLE dcsim.planned_batches IS 'The production plan per menu date and plan (baseline | recommended | cfg:<hash>): batch size, starting batches, reorder point per dish.';
 COMMENT ON TABLE dcsim.forecasts IS 'Append-only forecast ledger: every forecast logged before its night (issued_at is the database clock). Updates and deletes are blocked by trigger. Scored in forecast_scorecard.';
 COMMENT ON COLUMN dcsim.forecasts.weather IS 'situation the forecast assumed (NULL = not given: pooled crowd error)';

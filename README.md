@@ -161,6 +161,7 @@ HackUMass2026/
 │   │   ├── optimize.py      Optimize plan: Optuna search, waste-vs-stockouts frontier, unseen-seed check
 │   │   ├── worlds.py        plausible worlds (uncertain crowd, rush, popularity) + waste tornado
 │   │   ├── searchlog.py     plan searches kept in Tiger (plan_searches, search_trials, search_worlds)
+│   │   ├── nightsweep.py    the 500-night question: many simulated nights of one date in Tiger, minutes out of stock per dish (`dcsim tsdb sweep`)
 │   │   ├── dishsearch.py    dish look-alikes (DiskANN), what they sold, dish-popularity check (`dcsim tsdb dishes`)
 │   │   ├── reports.py       cook sheet, alerts, station table
 │   │   ├── service.py, store.py, api.py   caching, SQLite, FastAPI
@@ -356,7 +357,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`data/README.md`](data/README.md) | You need to find an input or a source |
 | [`data/worcester/ASSUMPTIONS.md`](data/worcester/ASSUMPTIONS.md) | You need to know where a number comes from |
 | [`docs/LLM.md`](docs/LLM.md), [`docs/GEMINI.md`](docs/GEMINI.md) | You touch anything AI: rules, prompts, fallbacks, rate limits |
-| [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data, `dcsim tsdb similar`, continuous aggregates, the `/tiger` dashboard and its demo script (§8), dish search and popularity check (§9), plan searches (§10) |
+| [`docs/TIGER.md`](docs/TIGER.md) | Forecast ledger, calibration, Tiger Data, `dcsim tsdb similar`, continuous aggregates, the `/tiger` dashboard and its demo script (§8), dish search and popularity check (§9), plan searches (§10), the 500-night question (§11) |
 | [`docs/SIMILAR_NIGHTS.md`](docs/SIMILAR_NIGHTS.md) | The Similar nights page and API: contract, vector design, UI states, verification |
 | [`docs/FRONTEND_REDESIGN_PLAN.md`](docs/FRONTEND_REDESIGN_PLAN.md) | The redesign's navigation, interaction stages and visual system (follow it for new UI) |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |

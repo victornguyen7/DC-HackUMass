@@ -2,15 +2,15 @@
 
 One command runs the optimizer on many menu dates at once, one Vultr server per date:
 
-    dcsim fleet image                                   # once: snapshot the live server as the worker image
     dcsim fleet optimize --dates 2026-11-13..2026-11-20 --dry-run   # plan, workers, cost estimate; creates nothing
     dcsim fleet optimize --dates 2026-11-13..2026-11-20             # create, run, save to Tiger, delete
     dcsim fleet status | dcsim fleet cleanup                        # list / delete leftover fleet servers
 
-Each worker is created from the `dcsim-worker` snapshot of the live server, so it already has the code, uv,
-the results cache, engine/.env (Tiger) and root's SSH keys. Over SSH the coordinator stops the web services
-on it, pulls `main`, runs `dcsim optimize --date D --save --source fleet:<run>`, and takes the next date
-from the queue until none are left. Then the server is deleted.
+Each worker is a fresh Ubuntu 24.04 server (a snapshot of the live server was tried first: restoring its
+322 GB took over 10 minutes). cloud-init lets this laptop's public key log in as root; over SSH the
+coordinator installs uv, clones the public repo (`main`), syncs the packages, sends the Tiger URL on stdin
+(so no secret sits in Vultr's server metadata), runs `dcsim optimize --date D --save --source fleet:<run>`,
+and takes the next date from the queue until none are left. Then the server is deleted.
 
 Servers bill until deleted (stopped ones too), so every server a run creates is deleted in a `finally`:
 on success, on error, on Ctrl-C and after `max_minutes`. `cleanup` deletes anything tagged `dcsim-fleet`.
@@ -37,6 +37,8 @@ import httpx
 API = "https://api.vultr.com/v2"
 TAG = "dcsim-fleet"
 SNAPSHOT_DESC = "dcsim-worker"
+REPO = "https://github.com/victornguyen7/DC-HackUMass"
+OS_NAME = "Ubuntu 24.04 LTS x64"
 LIVE_IP = "155.138.211.252"  # the live server (deploy/README.md); VULTR_LIVE_IP overrides
 MAX_WORKERS = 8
 APP_DIR = "/srv/dc-whatif"
@@ -129,6 +131,12 @@ class Vultr:
     def delete_instance(self, iid: str) -> None:
         self._req("DELETE", f"/instances/{iid}")
 
+    def os_list(self) -> list[dict]:
+        return self._all("/os", "os")
+
+    def delete_snapshot(self, sid: str) -> None:
+        self._req("DELETE", f"/snapshots/{sid}")
+
     def snapshots(self) -> list[dict]:
         return self._all("/snapshots", "snapshots")
 
@@ -147,6 +155,34 @@ def fleet_servers(api: Vultr) -> list[dict]:
     return [i for i in api.instances(TAG) if TAG in (i.get("tags") or [])]
 
 
+def delete_until_gone(api: Vultr, iid: str, sleep: Callable[[float], None] = time.sleep, timeout_s: float = 1800,
+                      log: Callable[[str], None] = print) -> bool:
+    """Delete a server, retrying while Vultr says it is locked (409: still being built or restored).
+    Returns True once it is gone."""
+    end, said = time.time() + timeout_s, False
+    while True:
+        try:
+            api.delete_instance(iid)
+            return True
+        except VultrError as e:
+            if "404" in str(e):
+                return True
+            if time.time() >= end:
+                log(f"!! could not delete {iid} after {timeout_s / 60:.0f} min: {e} (run `dcsim fleet cleanup`)")
+                return False
+            if not said:
+                log(f"server {iid} is locked by Vultr; retrying the delete until it goes through")
+                said = True
+            sleep(20)
+
+
+def ubuntu_os_id(api: Vultr) -> int:
+    for o in api.os_list():
+        if o.get("name") == OS_NAME:
+            return int(o["id"])
+    raise VultrError(f"Vultr offers no {OS_NAME!r}")
+
+
 def live_server(api: Vultr) -> dict:
     ip = os.environ.get("VULTR_LIVE_IP", LIVE_IP)
     for i in api.instances():
@@ -155,34 +191,13 @@ def live_server(api: Vultr) -> dict:
     raise VultrError(f"no Vultr server with IP {ip} (set VULTR_LIVE_IP)")
 
 
-def latest_image(api: Vultr) -> dict | None:
-    snaps = [s for s in api.snapshots() if s.get("description") == SNAPSHOT_DESC and s.get("status") == "complete"]
-    return max(snaps, key=lambda s: s.get("date_created", "")) if snaps else None
-
-
 def pick_plan(plans: list[dict], region: str, vcpus: int, min_disk: int = 0) -> dict:
-    """Cheapest CPU-optimized plan with at least `vcpus` vCPUs offered in `region` (and room for the image)."""
+    """Cheapest CPU-optimized plan with at least `vcpus` vCPUs offered in `region` (and `min_disk` GB)."""
     ok = [p for p in plans if p.get("id", "").startswith("voc-c") and p["vcpu_count"] >= vcpus
           and region in p.get("locations", []) and p.get("disk", 0) >= min_disk]
     if not ok:
         raise VultrError(f"no CPU-optimized plan with {vcpus}+ vCPUs in {region}")
     return min(ok, key=lambda p: (p["hourly_cost"], p["vcpu_count"], p["id"]))
-
-
-def make_image(api: Vultr, log: Callable[[str], None] = print, sleep: Callable[[float], None] = time.sleep,
-               timeout_s: float = 3600) -> dict:
-    """Snapshot the live server as the worker image and wait until it is complete."""
-    src = live_server(api)
-    snap = api.create_snapshot(src["id"], SNAPSHOT_DESC)
-    log(f"snapshot {snap['id']} of {src['label'] or src['main_ip']} started (takes several minutes)")
-    end = time.time() + timeout_s
-    while time.time() < end:
-        s = api.snapshot(snap["id"])
-        if s.get("status") == "complete":
-            log(f"snapshot complete: {s['id']} ({s.get('size', 0) / 1e9:.1f} GB)")
-            return s
-        sleep(20)
-    raise VultrError(f"snapshot {snap['id']} not complete after {timeout_s / 60:.0f} min")
 
 
 def parse_dates(spec: str) -> list[str]:
@@ -196,7 +211,7 @@ def parse_dates(spec: str) -> list[str]:
 # ---------------------------------------------------------------- SSH
 
 def ssh_run(ip: str, command: str, on_line: Callable[[str], None] | None = None, timeout_s: float = 30,
-            stop: threading.Event | None = None) -> tuple[int, str]:
+            stop: threading.Event | None = None, stdin: bytes | None = None) -> tuple[int, str]:
     """Run `command` as root on `ip` and stream its output line by line ("\\r" counts as a line end,
     so the optimizer's progress line comes through). Returns (exit code, all output)."""
     known = os.path.expanduser("~/.ssh/dcsim_fleet_known_hosts")  # fresh IPs: keep them out of known_hosts
@@ -205,7 +220,12 @@ def ssh_run(ip: str, command: str, on_line: Callable[[str], None] | None = None,
             "-o", "ServerAliveInterval=15"]
     if os.environ.get("VULTR_SSH_KEY"):
         args += ["-i", os.path.expanduser(os.environ["VULTR_SSH_KEY"])]
-    p = subprocess.Popen([*args, f"root@{ip}", command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen([*args, f"root@{ip}", command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                         stdin=subprocess.PIPE if stdin is not None else subprocess.DEVNULL)
+    if stdin is not None:
+        assert p.stdin is not None
+        p.stdin.write(stdin)
+        p.stdin.close()
     out, buf = [], b""
     assert p.stdout is not None
     while True:
@@ -242,8 +262,8 @@ def public_key() -> str:
 
 
 def user_data(pubkey: str) -> str:
-    """cloud-init for a worker (base64, as Vultr wants it): lets this laptop's key log in as root. Workers
-    come from a snapshot of a server set up with a password, so they have no key of ours otherwise."""
+    """cloud-init for a worker (base64, as Vultr wants it): lets this laptop's key log in as root (the account
+    has no registered SSH key). Nothing secret: a public key only."""
     import base64
 
     script = ("#cloud-config\ndisable_root: false\nruncmd:\n"
@@ -254,15 +274,22 @@ def user_data(pubkey: str) -> str:
 
 
 def prep_command() -> str:
-    """On a fresh worker: no web services, current `main`, packages in sync."""
-    return ("systemctl stop dcsim caddy >/dev/null 2>&1; systemctl disable dcsim caddy >/dev/null 2>&1; "
-            f"sudo -iu dcsim bash -lc 'cd {APP_DIR} && git fetch -q origin main && git reset -q --hard origin/main "
-            f"&& cd engine && uv sync -q' && echo prep-ok")
+    """On a fresh Ubuntu worker, as root: uv, the public repo's `main`, the engine's packages."""
+    return ("set -e; export HOME=/root PATH=/root/.local/bin:$PATH; "
+            "command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1; "
+            f"if [ -d {APP_DIR}/.git ]; then cd {APP_DIR} && git fetch -q --depth 1 origin main && git reset -q --hard origin/main; "
+            f"else git clone -q --depth 1 --branch main {REPO} {APP_DIR}; fi; "
+            f"cd {APP_DIR}/engine && uv sync -q && echo prep-ok")
+
+
+def env_command() -> str:
+    """Writes engine/.env from stdin (the Tiger URL), readable by root only."""
+    return f"umask 077; cat > {APP_DIR}/engine/.env && echo env-ok"
 
 
 def optimize_command(date: str, trials: int, source: str) -> str:
-    return (f"sudo -iu dcsim bash -lc 'cd {APP_DIR}/engine && uv run dcsim optimize --date {date} "
-            f"--trials {int(trials)} --save --source {source}'")
+    return (f"export HOME=/root PATH=/root/.local/bin:$PATH; cd {APP_DIR}/engine && uv run dcsim optimize "
+            f"--date {date} --trials {int(trials)} --save --source {source}")
 
 
 SAVED = re.compile(r"saved to Tiger: ([0-9a-f]+)")
@@ -321,12 +348,11 @@ def _now() -> dt.datetime:
 
 def plan_run(api: Vultr, dates: list[str], workers: int, vcpus: int) -> dict:
     live = live_server(api)
-    image = latest_image(api)
-    plan = pick_plan(api.plans("voc"), live["region"], vcpus, min_disk=int(live.get("disk", 0)) if image else 0)
+    plan = pick_plan(api.plans("voc"), live["region"], vcpus)
     n = max(1, min(workers, len(dates), MAX_WORKERS))
     rounds = -(-len(dates) // n)
     return {
-        "region": live["region"], "image": image, "plan": plan, "workers": n, "dates": dates,
+        "region": live["region"], "os_id": ubuntu_os_id(api), "plan": plan, "workers": n, "dates": dates,
         "hourly_usd": plan["hourly_cost"],
         "est_cost_usd": round(plan["hourly_cost"] * n * EXPECTED_MIN * rounds / 60, 2),
         "max_cost_usd": round(plan["hourly_cost"] * n * max(1, -(-EXPECTED_MIN * rounds // 60)), 2),
@@ -336,17 +362,16 @@ def plan_run(api: Vultr, dates: list[str], workers: int, vcpus: int) -> dict:
 def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX_WORKERS, vcpus: int = 16,
               max_minutes: float = 30, dry_run: bool = False, ssh=ssh_run, board: Board | None = None,
               log: Callable[[str], None] = print, sleep: Callable[[float], None] = time.sleep,
-              boot_timeout_s: float = 600, pubkey: str | None = None) -> dict:
+              boot_timeout_s: float = 600, pubkey: str | None = None, env_text: str | None = None) -> dict:
     """Run `dcsim optimize --save` for every date on temporary Vultr servers. Returns a summary."""
     p = plan_run(api, dates, workers, vcpus)
     plan, n = p["plan"], p["workers"]
     log(f"{len(dates)} dates on {n} x {plan['id']} ({plan['vcpu_count']} vCPU, ${plan['hourly_cost']}/h) in {p['region']}, "
-        f"image {p['image']['id'] if p['image'] else 'MISSING (run `dcsim fleet image`)'}; "
+        f"fresh {OS_NAME}; "
         f"estimated ${p['est_cost_usd']} (at most ${p['max_cost_usd']} if billed by whole hours)")
     if dry_run:
         return p | {"dry_run": True}
-    if p["image"] is None:
-        raise VultrError("no worker image yet: run `dcsim fleet image` first")
+    env = env_text or _worker_env()
     board = board or Board(None, log)
     boot = user_data(pubkey or public_key())
     run_id = "f" + uuid.uuid4().hex[:7]
@@ -366,10 +391,7 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
         info = created.get(iid)
         if info is None or info.get("deleted"):
             return
-        try:
-            api.delete_instance(iid)
-        except VultrError as e:
-            log(f"!! could not delete {iid}: {e} (run `dcsim fleet cleanup`)")
+        if not delete_until_gone(api, iid, sleep, log=log):
             return
         info["deleted"] = time.time()
         for d in info["dates"]:
@@ -385,7 +407,7 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
             return
         board.task(run_id, first, worker=k, status="creating", created_at=_now())
         try:
-            inst = api.create_instance(region=p["region"], plan=plan["id"], snapshot_id=p["image"]["id"],
+            inst = api.create_instance(region=p["region"], plan=plan["id"], os_id=p["os_id"],
                                        label=f"{TAG}-{run_id}-{k}", hostname=f"{TAG}-{k}",
                                        tags=[TAG, f"run:{run_id}"], backups="disabled", user_data=boot)
         except VultrError as e:  # e.g. the account's server limit: give the date back to the others
@@ -399,9 +421,13 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
         board.task(run_id, first, instance_id=iid, status="booting")
         try:
             ip = _wait_ready(api, iid, ssh, stop, sleep, boot_timeout_s)
-            rc, out = ssh(ip, prep_command(), None, 600, stop)
+            board.task(run_id, first, progress="installing uv and the engine")
+            rc, out = ssh(ip, prep_command(), None, 900, stop)
             if rc != 0 or "prep-ok" not in out:
                 raise VultrError(f"worker prep failed: {out[-300:]}")
+            rc, out = ssh(ip, env_command(), None, 60, stop, stdin=env.encode())
+            if rc != 0 or "env-ok" not in out:
+                raise VultrError(f"could not send the Tiger settings: {out[-200:]}")
             date: str | None = first
             while date is not None:
                 if date not in created[iid]["dates"]:
@@ -459,7 +485,7 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
         try:  # anything created whose id we never got back
             for i in api.instances(f"run:{run_id}"):
                 if f"run:{run_id}" in (i.get("tags") or []) and TAG in (i.get("tags") or []):
-                    api.delete_instance(i["id"])
+                    delete_until_gone(api, i["id"], sleep, log=log)
         except VultrError as e:
             log(f"!! leftover check failed: {e} (run `dcsim fleet cleanup`)")
         wall = time.time() - started
@@ -496,11 +522,23 @@ def _wait_ready(api: Vultr, iid: str, ssh, stop: threading.Event, sleep, timeout
     raise VultrError(f"server {iid} not reachable over SSH after {timeout_s / 60:.0f} min")
 
 
-def cleanup(api: Vultr, log: Callable[[str], None] = print) -> int:
+def _worker_env() -> str:
+    """engine/.env for a worker: only what `dcsim optimize --save` needs (the Tiger URL)."""
+    from . import tsdb
+
+    return f"DCSIM_TSDB_URL={tsdb.dsn()}\nLLM_PROVIDER=mock\n"
+
+
+def cleanup(api: Vultr, log: Callable[[str], None] = print, sleep: Callable[[float], None] = time.sleep) -> int:
+    """Delete every dcsim-fleet server (retrying while locked) and any old `dcsim-worker` snapshot."""
     servers = fleet_servers(api)
     for i in servers:
-        api.delete_instance(i["id"])
-        log(f"deleted {i['label']} ({i['id']})")
+        if delete_until_gone(api, i["id"], sleep, log=log):
+            log(f"deleted {i['label']} ({i['id']})")
+    for sn in api.snapshots():
+        if sn.get("description") == SNAPSHOT_DESC:
+            api.delete_snapshot(sn["id"])
+            log(f"deleted old worker snapshot {sn['id']} (snapshots bill for storage)")
     return len(servers)
 
 
@@ -516,5 +554,5 @@ def dashboard_block(conn, read) -> dict | None:
     return {"run": run[0], "tasks": read("fleet_tasks", TASKS_SQL, {"run_id": run[0]["run_id"]})}
 
 
-__all__ = ["Vultr", "VultrError", "TABLES", "pick_plan", "parse_dates", "plan_run", "run_fleet", "make_image",
-           "cleanup", "fleet_servers", "live_server", "latest_image", "Board", "dashboard_block"]
+__all__ = ["Vultr", "VultrError", "TABLES", "pick_plan", "parse_dates", "plan_run", "run_fleet", "cleanup",
+           "delete_until_gone", "fleet_servers", "live_server", "Board", "dashboard_block"]

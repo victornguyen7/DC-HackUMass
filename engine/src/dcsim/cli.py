@@ -100,15 +100,11 @@ def _fleet(args) -> None:
     from .data import available_dates
 
     api = fleet.Vultr()
-    if args.action == "image":
-        fleet.make_image(api)
-    elif args.action == "cleanup":
+    if args.action == "cleanup":
         print(f"{fleet.cleanup(api)} fleet servers deleted")
     elif args.action == "status":
         live = fleet.live_server(api)
-        img = fleet.latest_image(api)
         print(f"live server: {live['label'] or live['id']} {live['plan']} in {live['region']} ({live['status']})")
-        print(f"worker image: {img['id'] + ' from ' + img['date_created'] if img else 'none (run `dcsim fleet image`)'}")
         servers = fleet.fleet_servers(api)
         print(f"fleet servers running now: {len(servers)}")
         for i in servers:
@@ -326,10 +322,9 @@ def main(argv: list[str] | None = None) -> None:
                     "dishes, coverage, nights, calibrations, ledger, production, stack, hypertables, aggregates, "
                     "waste-daily, waste-dishes, pans-hourly) or a SQL string")
     fl = sub.add_parser("fleet", help="Vultr: run plan searches on temporary cloud servers, one per date (deploy/README.md)")
-    fl.add_argument("action", choices=["image", "optimize", "status", "cleanup"],
-                    help="image: snapshot the live server as the worker image · optimize: one server per date runs "
-                         "`dcsim optimize --save`, then is deleted · status: fleet servers and the latest run · "
-                         "cleanup: delete leftover fleet servers")
+    fl.add_argument("action", choices=["optimize", "status", "cleanup"],
+                    help="optimize: temporary servers (fresh Ubuntu) run `dcsim optimize --save` per date, then are "
+                         "deleted · status: fleet servers running now · cleanup: delete leftover fleet servers")
     fl.add_argument("--dates", default=None, help="'2026-11-13..2026-11-20' or a comma list (default: every menu date)")
     fl.add_argument("--trials", type=int, default=80)
     fl.add_argument("--workers", type=int, default=8, help="servers at once (at most 8)")

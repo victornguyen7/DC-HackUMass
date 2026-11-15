@@ -23,17 +23,26 @@ PLANS = [
 class FakeVultr:
     """In-memory Vultr API v2: instances, snapshots, plans. `max_servers` mimics an account limit."""
 
-    def __init__(self, max_servers: int = 99, snapshot: bool = True):
+    def __init__(self, max_servers: int = 99, snapshot: bool = False, locked_deletes: int = 0):
         self.servers: dict[str, dict] = {
             "live": {"id": "live", "label": "", "main_ip": fleet.LIVE_IP, "region": "atl", "disk": 300,
                      "plan": "voc-c-16c-32gb-300s-amd", "status": "active", "power_status": "running", "tags": []}}
         self.snaps = [{"id": "snap1", "description": fleet.SNAPSHOT_DESC, "status": "complete",
                        "date_created": "2026-11-14T10:00:00+00:00", "size": 5e9}] if snapshot else []
         self.max_servers, self.created, self.deleted, self.n, self.lock = max_servers, [], [], 0, threading.Lock()
+        self.locked_deletes, self.snaps_deleted = locked_deletes, []
 
     def handler(self, req: httpx.Request) -> httpx.Response:
         path, m = req.url.path.removeprefix("/v2"), req.method
         with self.lock:
+            if path == "/os":
+                return httpx.Response(200, json={"os": [{"id": 1743, "name": "Ubuntu 22.04 LTS x64"},
+                                                         {"id": 2284, "name": "Ubuntu 24.04 LTS x64"}],
+                                                  "meta": {"links": {"next": ""}}})
+            if path.startswith("/snapshots/") and m == "DELETE":
+                self.snaps = [x for x in self.snaps if x["id"] != path.split("/")[-1]]
+                self.snaps_deleted.append(path.split("/")[-1])
+                return httpx.Response(204)
             if path == "/plans":
                 return httpx.Response(200, json={"plans": PLANS, "meta": {"links": {"next": ""}}})
             if path == "/snapshots" and m == "GET":
@@ -56,7 +65,7 @@ class FakeVultr:
                 self.n += 1
                 i = {"id": f"w{self.n}", "label": body["label"], "main_ip": f"10.0.0.{self.n}", "region": body["region"],
                      "plan": body["plan"], "status": "active", "power_status": "running", "tags": body["tags"],
-                     "date_created": "now", "snapshot_id": body["snapshot_id"], "user_data": body.get("user_data")}
+                     "date_created": "now", "os_id": body["os_id"], "user_data": body.get("user_data")}
                 self.servers[i["id"]] = i
                 self.created.append(i["id"])
                 return httpx.Response(202, json={"instance": i})
@@ -64,6 +73,9 @@ class FakeVultr:
             if m == "GET":
                 return httpx.Response(200, json={"instance": self.servers[iid]})
             if m == "DELETE":
+                if self.locked_deletes > 0:
+                    self.locked_deletes -= 1
+                    return httpx.Response(409, json={"error": "Server is currently locked"})
                 self.servers.pop(iid, None)
                 self.deleted.append(iid)
                 return httpx.Response(204)
@@ -80,13 +92,17 @@ class FakeSSH:
         self.calls: list[tuple[str, str]] = []
         self.fail_dates, self.hang, self.lock = set(fail_dates), hang, threading.Lock()
 
-    def __call__(self, ip, command, on_line=None, timeout_s=30, stop=None):
+    def __call__(self, ip, command, on_line=None, timeout_s=30, stop=None, stdin=None):
         with self.lock:
             self.calls.append((ip, command))
+            if stdin is not None:
+                self.stdin = stdin
         if command == "true":
             return 0, ""
         if "prep-ok" in command:
             return 0, "prep-ok"
+        if "env-ok" in command:
+            return 0, "env-ok"
         date = command.split("--date ")[1].split()[0]
         if self.hang:
             while stop is not None and not stop.is_set():
@@ -114,6 +130,7 @@ class FakeBoard(fleet.Board):
 
 DATES = [f"2026-11-{d}" for d in range(13, 21)]
 KEY = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAItest laptop"
+ENV = "DCSIM_TSDB_URL=postgresql://u:secret@h/db\nLLM_PROVIDER=mock\n"
 
 
 def test_pick_plan_cheapest_cpu_optimized_in_region():
@@ -138,7 +155,7 @@ def test_dry_run_creates_nothing():
 
 def test_run_spreads_dates_saves_each_and_deletes_every_server():
     v, ssh, board = FakeVultr(), FakeSSH(), FakeBoard()
-    r = fleet.run_fleet(v.api(), DATES, workers=3, ssh=ssh, board=board, pubkey=KEY, log=lambda s: None, sleep=lambda s: None)
+    r = fleet.run_fleet(v.api(), DATES, workers=3, ssh=ssh, board=board, pubkey=KEY, env_text=ENV, log=lambda s: None, sleep=lambda s: None)
     assert r["status"] == "done" and r["saved"] == DATES and not r["failed"]
     assert len(v.created) == 3 and sorted(v.deleted) == sorted(v.created)  # 3 servers took 8 dates
     assert set(v.servers) == {"live"}  # the live server is never touched
@@ -147,12 +164,12 @@ def test_run_spreads_dates_saves_each_and_deletes_every_server():
     assert all(board.tasks[(r["run_id"], d)]["status"] == "saved" for d in DATES)
     assert all(board.tasks[(r["run_id"], d)].get("deleted_at") for d in DATES)
     assert board.runs[r["run_id"]]["status"] == "done" and board.runs[r["run_id"]]["sequential_s"] >= 0
-    assert all(v_.get("snapshot_id") is None for v_ in v.servers.values())  # (only live left)
+    assert ssh.stdin == ENV.encode()  # the Tiger URL goes over SSH stdin, never in Vultr metadata
 
 
 def test_a_failed_date_still_deletes_and_is_reported():
     v, board = FakeVultr(), FakeBoard()
-    r = fleet.run_fleet(v.api(), DATES[:4], workers=2, pubkey=KEY, ssh=FakeSSH(fail_dates={DATES[1]}), board=board,
+    r = fleet.run_fleet(v.api(), DATES[:4], workers=2, pubkey=KEY, env_text=ENV, ssh=FakeSSH(fail_dates={DATES[1]}), board=board,
                         log=lambda s: None, sleep=lambda s: None)
     assert r["failed"] == [DATES[1]] and len(r["saved"]) == 3
     assert board.tasks[(r["run_id"], DATES[1])]["status"] == "failed"
@@ -161,37 +178,32 @@ def test_a_failed_date_still_deletes_and_is_reported():
 
 def test_account_limit_shrinks_the_fleet_without_failing():
     v = FakeVultr(max_servers=2)
-    r = fleet.run_fleet(v.api(), DATES, workers=8, pubkey=KEY, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
+    r = fleet.run_fleet(v.api(), DATES, workers=8, pubkey=KEY, env_text=ENV, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
                         sleep=lambda s: None)
     assert r["saved"] == DATES and r["servers"] == 2 and set(v.servers) == {"live"}
 
 
 def test_time_limit_deletes_everything():
     v = FakeVultr()
-    r = fleet.run_fleet(v.api(), DATES[:2], workers=2, pubkey=KEY, ssh=FakeSSH(hang=True), board=FakeBoard(),
+    r = fleet.run_fleet(v.api(), DATES[:2], workers=2, pubkey=KEY, env_text=ENV, ssh=FakeSSH(hang=True), board=FakeBoard(),
                         max_minutes=0.02, log=lambda s: None, sleep=lambda s: None)
     assert r["status"] == "stopped" and not r["saved"] and set(v.servers) == {"live"} and len(v.deleted) == 2
-
-
-def test_no_image_refuses_before_creating():
-    v = FakeVultr(snapshot=False)
-    with pytest.raises(fleet.VultrError, match="fleet image"):
-        fleet.run_fleet(v.api(), DATES, ssh=FakeSSH(), log=lambda s: None)
-    assert not v.created
 
 
 def test_cleanup_only_deletes_fleet_servers():
     v = FakeVultr()
     v.servers["other"] = {"id": "other", "label": "x", "main_ip": "1.2.3.4", "tags": ["dcsim-fleet-not"]}
     v.servers["stray"] = {"id": "stray", "label": "dcsim-fleet-old-1", "main_ip": "1.2.3.5", "tags": ["dcsim-fleet"]}
-    assert fleet.cleanup(v.api(), log=lambda s: None) == 1
-    assert set(v.servers) == {"live", "other"}
+    v.snaps = [{"id": "old", "description": fleet.SNAPSHOT_DESC, "status": "complete"}, {"id": "keep", "description": "x"}]
+    assert fleet.cleanup(v.api(), log=lambda s: None, sleep=lambda s: None) == 1
+    assert set(v.servers) == {"live", "other"} and v.snaps_deleted == ["old"]
 
 
-def test_image_snapshots_the_live_server():
-    v = FakeVultr(snapshot=False)
-    s = fleet.make_image(v.api(), log=lambda s: None, sleep=lambda s: None)
-    assert s["description"] == fleet.SNAPSHOT_DESC and fleet.latest_image(v.api())["id"] == "snap2"
+def test_locked_servers_are_deleted_once_vultr_lets_go():
+    v = FakeVultr(locked_deletes=3)
+    r = fleet.run_fleet(v.api(), DATES[:1], workers=1, pubkey=KEY, env_text=ENV, ssh=FakeSSH(), board=FakeBoard(),
+                        log=lambda s: None, sleep=lambda s: None)
+    assert r["saved"] == DATES[:1] and set(v.servers) == {"live"}
 
 
 def test_bad_key_says_what_to_do():
@@ -204,7 +216,8 @@ def test_bad_key_says_what_to_do():
 
 def test_commands_and_schema():
     assert "--save --source fleet:abc" in fleet.optimize_command("2026-11-13", 80, "fleet:abc")
-    assert "systemctl stop dcsim caddy" in fleet.prep_command() and "reset -q --hard origin/main" in fleet.prep_command()
+    assert "git clone -q --depth 1 --branch main" in fleet.prep_command() and "uv sync" in fleet.prep_command()
+    assert "umask 077" in fleet.env_command()
     s = script()
     assert "CREATE TABLE IF NOT EXISTS dcsim.fleet_runs" in s and "dcsim.fleet_tasks" in s
     assert "VULTR" not in s and "main_ip" not in fleet.TABLES  # no secrets, no IPs in Tiger
@@ -238,11 +251,11 @@ def test_workers_get_the_laptop_key_and_nothing_secret():
         return orig(req)
 
     api = fleet.Vultr("test-key", transport=httpx.MockTransport(spy), sleep=lambda s: None)
-    fleet.run_fleet(api, DATES[:1], workers=1, pubkey=KEY, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
+    fleet.run_fleet(api, DATES[:1], workers=1, pubkey=KEY, env_text=ENV, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
                     sleep=lambda s: None)
     ud = base64.b64decode(seen[0]["user_data"]).decode()
     assert ud.startswith("#cloud-config") and KEY in ud and "/root/.ssh/authorized_keys" in ud
-    assert "test-key" not in ud and "VULTR" not in ud
+    assert "test-key" not in ud and "VULTR" not in ud and "secret" not in ud and "secret" not in json.dumps(seen[0])
     with pytest.raises(fleet.VultrError):
         import os
         os.environ["VULTR_SSH_PUBKEY"] = "/nonexistent.pub"

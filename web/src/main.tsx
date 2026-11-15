@@ -12,6 +12,7 @@ import "./styles.css";
 import "./guided.css";
 import "./similar-nights.css";
 import "./sam.css";
+import "./tablet.css";
 
 function Layout() {
   return (

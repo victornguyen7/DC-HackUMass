@@ -95,6 +95,36 @@ def print_menu(cfg: ScenarioConfig) -> None:
             print(f"    add-ons: {'; '.join(addons)}")
 
 
+def _fleet(args) -> None:
+    from . import fleet
+    from .data import available_dates
+
+    api = fleet.Vultr()
+    if args.action == "image":
+        fleet.make_image(api)
+    elif args.action == "cleanup":
+        print(f"{fleet.cleanup(api)} fleet servers deleted")
+    elif args.action == "status":
+        live = fleet.live_server(api)
+        img = fleet.latest_image(api)
+        print(f"live server: {live['label'] or live['id']} {live['plan']} in {live['region']} ({live['status']})")
+        print(f"worker image: {img['id'] + ' from ' + img['date_created'] if img else 'none (run `dcsim fleet image`)'}")
+        servers = fleet.fleet_servers(api)
+        print(f"fleet servers running now: {len(servers)}")
+        for i in servers:
+            print(f"  {i['label']}  {i['plan']}  {i['status']}/{i['power_status']}  created {i['date_created']}")
+    else:
+        dates = fleet.parse_dates(args.dates) if args.dates else available_dates()
+        unknown = [d for d in dates if d not in available_dates()]
+        if unknown:
+            raise SystemExit(f"no menu for {', '.join(unknown)}")
+        board = None if args.dry_run else fleet.Board.connect()
+        r = fleet.run_fleet(api, dates, trials=args.trials, workers=args.workers, vcpus=args.vcpus,
+                            max_minutes=args.max_minutes, dry_run=args.dry_run, board=board)
+        if not args.dry_run and r["failed"]:
+            raise SystemExit(f"failed dates: {', '.join(r['failed'])}")
+
+
 def _search(args) -> None:
     """`dcsim worlds` and `dcsim optimize` (IMPROVEMENTS 2.1, 2.2): pooled, cached, with a progress line."""
     import os
@@ -295,6 +325,17 @@ def main(argv: list[str] | None = None) -> None:
     tq.add_argument("query", nargs="?", default="status", help="query name (status, situations, weekdays, pans, "
                     "dishes, coverage, nights, calibrations, ledger, production, stack, hypertables, aggregates, "
                     "waste-daily, waste-dishes, pans-hourly) or a SQL string")
+    fl = sub.add_parser("fleet", help="Vultr: run plan searches on temporary cloud servers, one per date (deploy/README.md)")
+    fl.add_argument("action", choices=["image", "optimize", "status", "cleanup"],
+                    help="image: snapshot the live server as the worker image · optimize: one server per date runs "
+                         "`dcsim optimize --save`, then is deleted · status: fleet servers and the latest run · "
+                         "cleanup: delete leftover fleet servers")
+    fl.add_argument("--dates", default=None, help="'2026-11-13..2026-11-20' or a comma list (default: every menu date)")
+    fl.add_argument("--trials", type=int, default=80)
+    fl.add_argument("--workers", type=int, default=8, help="servers at once (at most 8)")
+    fl.add_argument("--vcpus", type=int, default=16, help="vCPUs per server (cheapest CPU-optimized plan with at least this)")
+    fl.add_argument("--max-minutes", type=float, default=30, help="hard stop: every server is deleted after this")
+    fl.add_argument("--dry-run", action="store_true", help="print the plan and cost estimate; create nothing")
     fc = sub.add_parser("forecast", help="log a naive + calibrated forecast for a night in the append-only Tiger ledger")
     fc.add_argument("--date", required=True)
     fc.add_argument("--preset", choices=sorted(PRESETS))
@@ -331,6 +372,9 @@ def main(argv: list[str] | None = None) -> None:
         from .bundle import refresh_waste
 
         print("bundle refreshed: " + ", ".join(refresh_waste(Path(args.out) if args.out else None)))
+        return
+    if args.cmd == "fleet":
+        _fleet(args)
         return
     if args.cmd in ("worlds", "optimize"):
         _search(args)

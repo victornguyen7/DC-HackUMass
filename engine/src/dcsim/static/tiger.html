@@ -173,6 +173,12 @@
     <div class="scroll" id="ledger"></div>
   </section>
 
+  <section class="card" id="fleet-card" hidden>
+    <h2>Fleet (Vultr)</h2>
+    <p class="sub" id="fleet-sub"></p>
+    <div class="scroll" id="fleet"></div>
+  </section>
+
   <section class="card">
     <h2>Plan searches</h2>
     <p class="sub" id="searches-sub">Every Optimize plan run is kept in Tiger: one row per plan tried in the hypertable search_trials. This table reads all of them: which kitchen levers the best trade-offs keep moving, and which way.</p>
@@ -505,6 +511,24 @@
       { label: "Recorded (lb)", num: 1, get: f => num(f.observed_waste_lb) }, { label: "Result", get: f => status(f.waste_result) },
     ], [...d.ledger].reverse());
   }
+  function renderFleet(d) {
+    const f = d.fleet;
+    $("fleet-card").hidden = !f;
+    if (!f) return;
+    const r = f.run, saved = f.tasks.filter(t => t.status === "saved").length;
+    const mins = s => s == null ? "—" : `${(s / 60).toFixed(1)} min`;
+    const since = t => t ? Math.max(0, (Date.now() - new Date(t)) / 1000) : null;
+    const wall = r.wall_s ?? since(r.started_at);
+    $("fleet-sub").textContent = r.status === "running"
+      ? `Running now: ${f.tasks.length} menu dates on up to ${r.workers} temporary ${r.vcpus}-vCPU Vultr servers (${r.plan}, ${r.region}). ${saved} of ${f.tasks.length} saved, ${mins(wall)} so far.`
+      : `${saved} of ${f.tasks.length} menu dates searched in ${mins(r.wall_s)} on ${r.workers} temporary ${r.vcpus}-vCPU Vultr servers; the same searches one after another would take ${mins(r.sequential_s)}. ${num(r.server_minutes)} server-minutes, about $${(r.est_cost_usd ?? 0).toFixed(2)}. Every server was deleted afterwards.`;
+    table($("fleet"), [
+      { label: "Date", get: t => wday(t.menu_date) }, { label: "Server", num: 1, get: t => t.worker ?? "—" },
+      { label: "Status", get: t => t.deleted_at && t.status === "saved" ? "saved · server deleted" : t.status },
+      { label: "Optimizer run", num: 1, get: t => t.run_s != null ? mins(t.run_s) : t.status === "running" ? `${mins(since(t.started_at))}…` : "—" },
+      { label: "Last line", get: t => t.status === "running" ? (t.progress || "starting") : (t.search_id ? `search ${t.search_id}` : (t.error || "")).slice(0, 80) },
+    ], f.tasks);
+  }
   function renderSearches(d) {
     const s = d.searches;
     if (!s || !s.totals.searches) { $("searches").replaceChildren(el("p", { class: "sub" }, "No plan searches saved yet. Run Optimize plan in the Lab with Tiger writes on, or `dcsim optimize --save`.")); return; }
@@ -566,6 +590,7 @@
     if (changed("stack", d.stack)) renderStack(d);
     if (changed("ledger", d.ledger)) renderLedger(d);
     if (changed("searches", d.searches)) renderSearches(d);
+    if (changed("fleet", d.fleet) || (d.fleet && d.fleet.run.status === "running")) renderFleet(d);
     if (changed("storage", [d.hypertables, d.aggregates.map(a => [a.name, a.rows, a.source_rows, a.real_time, a.refresh_every])]) || !live) renderStorage(d);
   }
   function tick() {

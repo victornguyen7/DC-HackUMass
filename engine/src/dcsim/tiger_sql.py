@@ -22,7 +22,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 
-from . import dishsearch, searchlog
+from . import dishsearch, fleet, searchlog
 from .config import ENGINE_VERSION
 from .data import available_dates, crowd_factors, default_data_dir, load_baseline
 from .tsdb import (  # noqa: F401  (NEW_COLUMNS re-exported for tests)
@@ -180,7 +180,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
         "\n-- ============ 2. New columns on existing tables (engine 0.4+) ============\n", alter_columns_sql(),
         "\n-- ============ 3. New fact tables (engine 0.4+) ============\n", NEW_TABLES, VECTOR_TABLE, TRACK_TABLE,
         "\n-- Dish search (dishsearch.py; `dcsim tsdb dishes` fills it and adds a DiskANN index)\n", dishsearch.SCHEMA,
-        searchlog.TABLES,
+        searchlog.TABLES, fleet.TABLES,
         "\n-- ============ 4. Category tables ============\n", CATEGORY_TABLES,
         "\n-- ============ 5. Hypertables, columnstore, continuous aggregate ============\n",
         HYPERTABLES, NEW_HYPERTABLES, TRACK_HYPERTABLE, searchlog.HYPERTABLE, columnstore_sql(COLUMNSTORE), CAGG + ";\n",

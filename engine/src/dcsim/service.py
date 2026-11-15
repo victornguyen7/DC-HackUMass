@@ -35,13 +35,16 @@ class Service:
     def __init__(self, store: Store, pool: Executor | None = None):
         self.store = store
         self.pool = pool
+        # Nights per batch: at least BATCH, and enough to keep every worker process busy, so a
+        # 16-core server runs an optimizer trial's 10 seeds at once (results don't depend on batching).
+        self.chunk = max(BATCH, getattr(pool, "_max_workers", 0) or 0)
 
     # ------------------------------------------------------------ nights
 
     def batches(self, cfg: ScenarioConfig, n: int) -> list[list[int]]:
         h = self.store.put_config(cfg)
         missing = self.store.missing_seeds(h, seeds_for(n))
-        return [missing[i : i + BATCH] for i in range(0, len(missing), BATCH)]
+        return [missing[i : i + self.chunk] for i in range(0, len(missing), self.chunk)]
 
     def run_batch(self, cfg: ScenarioConfig, seeds: list[int]) -> list[NightMetrics]:
         """Run and store one batch (blocking). Uses the process pool when there is one."""

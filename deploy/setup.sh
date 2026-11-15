@@ -118,8 +118,13 @@ for _ in $(seq 1 30); do
 done
 if curl -fsS http://127.0.0.1:8000/api/health; then
   echo
-  IP=$(curl -fsS -4 https://ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
-  echo "API is up. Open ${DOMAIN:+https://$DOMAIN or }http://$IP"
+  if [ -n "$DOMAIN" ]; then
+    # Caddy only serves the domain; the bare IP redirects to https://<ip>, which has no certificate.
+    echo "API is up. Open https://$DOMAIN"
+  else
+    IP=$(curl -fsS -4 https://ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+    echo "API is up. Open http://$IP"
+  fi
   echo "Admin token: grep DCSIM_ADMIN_TOKEN /etc/dcsim.env"
 else
   echo "API did not start. Look at: journalctl -u dcsim -n 50 --no-pager" >&2

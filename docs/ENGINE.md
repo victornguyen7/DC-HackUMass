@@ -1,4 +1,4 @@
-# DC What-If — Simulation Core Design
+# Dineamics — Simulation Core Design
 
 Companion to `SPEC.md` §7. This document covers how the engine simulates a scenario, how it records what happened, how results are cached and stored, and how responses get back to the UI fast.
 

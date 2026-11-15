@@ -1,4 +1,4 @@
-# DC What-If — Product & Build Spec (v2)
+# Dineamics — Product & Build Spec (v2)
 
 Nov 11, 2026 · Vic (Tri Hien Nguyen) and team · HackUMass
 

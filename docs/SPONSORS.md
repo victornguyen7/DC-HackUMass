@@ -1,6 +1,6 @@
 # Sponsor prizes: what we're going for and how to build it
 
-Five sponsor prizes that fit DC What-If, what already exists in the repo for each one, and the steps to finish it.
+Five sponsor prizes that fit Dineamics, what already exists in the repo for each one, and the steps to finish it.
 Pick one, put your name in the **Owner** column, and update **Status** as you go.
 
 Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). Engine 0.6.1 notes: kitchen capacity since 0.5.0 makes the optimizer meaningful: small batches now cost cook and oven time; a `forecast_reorder` preset exists to compare against). Roll-up of everything done / open: [STATUS.md](STATUS.md).

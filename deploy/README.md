@@ -36,7 +36,7 @@ The app and API run on one Ubuntu server. Caddy serves `web/dist` over HTTPS and
 
 **2. Set it up** (on the server, `ssh root@<server-ip>`):
 ```bash
-curl -fsSL https://raw.githubusercontent.com/victornguyen7/DC-HackUMass/main/deploy/setup.sh | DOMAIN=<ip-with-dashes>.sslip.io TIGER_CLI=1 bash
+curl -fsSL https://raw.githubusercontent.com/victornguyen7/dineamics/main/deploy/setup.sh | DOMAIN=<ip-with-dashes>.sslip.io TIGER_CLI=1 bash
 ```
 - `DOMAIN` is a real hostname, never the placeholder: the script refuses `your-domain`, `example.com` and anything with `https://` or `/`. No domain yet: `<ip-with-dashes>.sslip.io` (e.g. `155-138-211-252.sslip.io`). Own a domain: its `A` record must already point at the server, or Caddy can't get the certificate.
 - Without `DOMAIN` the site is plain HTTP on the IP (for a first test only).

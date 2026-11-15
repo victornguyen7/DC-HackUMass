@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # DC What-If: set up (or update) a fresh Ubuntu 24.04 server. Run ON THE SERVER as root.
 #
-#   curl -fsSL https://raw.githubusercontent.com/victornguyen7/DC-HackUMass/main/deploy/setup.sh | DOMAIN=your-domain bash
+#   curl -fsSL https://raw.githubusercontent.com/victornguyen7/dineamics/main/deploy/setup.sh | DOMAIN=your-domain bash
 #
 # or, from a clone: DOMAIN=your-domain bash /srv/dc-whatif/deploy/setup.sh
 #
@@ -18,7 +18,7 @@
 # engine/.env (your secrets) or /etc/dcsim.env once they exist.
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/victornguyen7/DC-HackUMass.git}"
+REPO_URL="${REPO_URL:-https://github.com/victornguyen7/dineamics.git}"
 BRANCH="${BRANCH:-main}"
 APP_DIR=/srv/dc-whatif
 APP_USER=dcsim
@@ -56,7 +56,7 @@ mkdir -p "$APP_DIR"
 # ("dubious ownership"), uv and npm would refuse or fail on as $APP_USER.
 chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 if [ -d "$APP_DIR/.git" ]; then
-  as_app "cd $APP_DIR && git fetch -q origin $BRANCH && git checkout -q $BRANCH && git reset -q --hard origin/$BRANCH"
+  as_app "cd $APP_DIR && git remote set-url origin $REPO_URL && git fetch -q origin $BRANCH && git checkout -q $BRANCH && git reset -q --hard origin/$BRANCH"
 else
   as_app "git clone -q --branch $BRANCH $REPO_URL $APP_DIR"
 fi

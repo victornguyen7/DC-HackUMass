@@ -14,13 +14,13 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 | 1 | Best Use of Gemini API | Plain-English what-if box on **Gemini function calling**; Sam's tool loop | ✅ built | — | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
 | 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night and dish search; every plan search kept and queried in SQL | ◐ mostly built | S (polish + demo) | |
-| 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ◐ sweep built (2026-11-14), not deployed | S–M | |
-| 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done | ~10 min | |
+| 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ✅ **deployed 2026-11-14** at https://155-138-211-252.sslip.io (`deploy/`) | S (time the 1,000-world sweep there, write-up) | |
+| 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done (the server uses a free sslip.io name until then) | ~10 min | |
 
 ✅ built · ◐ partly built · ✗ not started
 
 **Prizes 1 and 2 share most of their code.** The agent is Gemini function calling plus a loop, so one feature can enter both.
-**Prizes 4 and 5 go together.** Point the domain at the Vultr server and the demo link becomes `https://<our-domain>`.
+**Prizes 4 and 5 go together.** Point the domain at the Vultr server (`155.138.211.252`) and re-run setup with it, and the demo link becomes `https://<our-domain>` (today: https://155-138-211-252.sslip.io).
 
 **Check at the event (don't assume):**
 - [ ] Sentient track rules: does it require Sentient's own platform or SDK? We couldn't find the rules.
@@ -171,29 +171,26 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 
 **Pitch:** "Running 1,000 nights for the uncertainty sweep happens on a cloud server, not a laptop."
 
-### What already exists
-| Piece | Where |
-| --- | --- |
-| FastAPI server | `make server` → `uv run dcsim serve` (`engine/src/dcsim/api.py`) |
-| Parallel simulation workers | `ProcessPoolExecutor`, size set by `DCSIM_WORKERS` (default: CPU count) |
-| Allowed web origins | `DCSIM_CORS` (default `http://localhost:5173`) |
-| The web app calls a relative `/api/...` | `web/src/lib/data.ts`, so serving the app and the API on one domain needs no code change |
-| Uncertainty sweep | ✅ built 2026-11-14 (`worlds.py`, `POST /api/worlds`, `dcsim worlds --worlds 1000`); 200 worlds take 54 s on 8 cores, so 1,000 is the cloud story (IMPROVEMENTS §2.2) |
-| Deploy files (Dockerfile etc.) | ✗ none |
+### Done (2026-11-14): the app runs on Vultr
+**Live link: https://155-138-211-252.sslip.io**. Runbook, settings and troubleshooting: [`deploy/README.md`](../deploy/README.md).
 
-### To build (S–M)
-1. **Server:** claim the Vultr credits and create a CPU-optimized instance (more cores = more parallel nights), Ubuntu LTS.
-2. **Install:** `uv`, Node 24, clone the repo, `cd engine && uv sync`, `cd web && npm ci && npm run build`.
-3. **Run the API** as a systemd service: `uv run dcsim serve --host 127.0.0.1 --port 8000`. Set `DCSIM_WORKERS` to the core count and copy `engine/.env` over **by hand** (never commit it).
-4. **One domain, HTTPS:** put Caddy in front. It serves `web/dist` and proxies `/api/*` to `127.0.0.1:8000`, and Caddy gets the HTTPS certificate automatically once the domain from §5 points at the server.
-   ```
-   our-domain.example {
-       handle /api/* { reverse_proxy 127.0.0.1:8000 }
-       handle { root * /srv/dc-whatif/web/dist; try_files {path} /index.html; file_server }
-   }
-   ```
-5. **⚠️ Security before going public:** the API has **no auth** (ISSUES A1), and LLM routes spend our Gemini quota. Add a token for write routes and a rate limit on `/api/ai/*`, `/api/ask`, `/api/narrate`, or keep the server private until the demo.
-6. **The reason to use the cloud:** build the uncertainty sweep (IMPROVEMENTS §2.2): 1,000 nights × (baseline + plan) on the server, shown as "the plan wins in X% of plausible worlds". Also run `make demo-bundle` there with `LLM_PROVIDER=mock`, or with the key, if you can wait for narration.
+| Piece | Where / state |
+| --- | --- |
+| Server | Vultr, Ubuntu 24.04, `155.138.211.252`; the app in `/srv/dc-whatif`, deployed from `main` |
+| One-command setup | `deploy/setup.sh` (as root; safe to re-run, that's how it updates): Node 24, uv, build, `/etc/dcsim.env`, systemd, Caddy, firewall (22/80/443). Commits `1e7c8c5`, `e3ffbc2`, `3ebc72c` and the Tiger-password follow-up |
+| Secrets and cache | `deploy/push-secrets.sh root@<ip>` from a laptop: `engine/.env` plus `DCSIM_TSDB_URL` from `tiger db uri`, and the 275 MB `cache/` (the server shows 729 configs, 16,168 nights, 992 LLM responses cached) |
+| API | `dcsim.service` (user `dcsim`, `127.0.0.1:8000`, `DCSIM_WORKERS` = core count) |
+| HTTPS, one origin | Caddy serves `web/dist` and passes `/api/*`, `/tiger`, `/docs` to the API (SSE unbuffered). Let's Encrypt certificate for the sslip.io name, valid until 2027-02-13 |
+| Public-site safety (ISSUES A1) | admin token set, AI rate limit 10/min per visitor, **`DCSIM_LEDGER_WRITES=0`** so visitors' Adopt clicks don't write to the append-only Tiger ledger |
+| Ask Sam's Tiger lookups | work on the server: Tiger CLI logged in as `dcsim`, password in `~/.pgpass` (`deploy/tiger-password.sh`; a server has no keyring) |
+| Checked from outside | the app and direct links load, the bundle is served, `/api/health` OK, `/tiger` loads, Gemini answers, Sam answers "Which dishes ran out on rainy Fridays?" from Tiger |
+| Uncertainty sweep | ✅ built (`worlds.py`, `POST /api/worlds`, `dcsim worlds --worlds 1000`); 200 worlds take 54 s on an 8-core laptop, so 1,000 is the cloud story (IMPROVEMENTS §2.2) |
+
+### Left (S)
+1. **Evidence for the judges:** on the server, `sudo -iu dcsim bash -lc 'cd /srv/dc-whatif/engine && time uv run dcsim worlds --worlds 1000'`. Keep the time next to the laptop's 200 worlds in 54 s, plus screenshots of `htop` during the run and the Vultr dashboard.
+2. **Before the demo:** `DCSIM_LEDGER_WRITES=1` in `/etc/dcsim.env`, then `systemctl restart dcsim` (deploy/README.md, Day to day), so Adopt logs to Tiger on stage.
+3. **Write-up:** "The API, the simulation workers and the 1,000-world sweep run on a Vultr CPU-optimized server", with the link.
+4. **Domain:** when §5 is done, re-run setup with `DOMAIN=<domain>`; it updates the allowed origin and gets a new certificate.
 
 ---
 
@@ -205,21 +202,21 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 1. **Check which extensions qualify first.** The prize is for a domain from *GoDaddy Registry*. Get the claim link or code from MLH at the event and see which extensions it covers. Not every extension counts. For example, `.tech` is run by a different registry, so `dcwhatif.tech` may **not** qualify.
 2. Pick a name: short, says what it does, easy to say on stage. Ideas: `dcwhatif`, `whatifdining`, `platewise`, `panplanner`. Check what's available.
 3. Register it with the team's shared account, not someone's personal one if avoidable, and write down who owns it.
-4. DNS: an `A` record for `@` (and `www`) pointing at the Vultr server's IP from §4. Caddy then serves HTTPS automatically.
+4. DNS: an `A` record for `@` (and `www`) pointing at the Vultr server, `155.138.211.252` (§4). Then on the server: `DOMAIN=<domain> TIGER_CLI=1 bash /srv/dc-whatif/deploy/setup.sh`, and Caddy gets the HTTPS certificate. Until then the server answers at https://155-138-211-252.sslip.io (a free name for the IP; it doesn't count for this prize).
 5. Put the link on the title slide, in the Devpost submission, and in the README.
 
 ---
 
 ## Suggested order
 
-1. **Domain (§5)** and **Vultr server (§4)** early. DNS and certificates take a while to take effect, and every later demo benefits.
+1. ✅ **Vultr server (§4)**: live 2026-11-14 at https://155-138-211-252.sslip.io. **Domain (§5)** still open: DNS takes a while, so do it early.
 2. **Agent (§2)**: the biggest new feature, and it enters two prizes. Start with 3 tools and the loop. Add `optimize` only if there's time.
 3. ✅ **Gemini (§1)**: function calling is built for the what-if box and for Sam.
 4. **Tiger polish (§3)**: the 500-night query (track record, situational fit and MCP questions are done).
-5. **Uncertainty sweep on Vultr (§4.6)** if there's time left.
+5. **Uncertainty sweep on Vultr (§4, Left 1)**: the sweep is built and the server is up; time the 1,000-world run there.
 
 ## One demo story that hits all five
 
-> Open **https://our-domain** (5, served from Vultr: 4). Type *"one more server at Grill and 10% busier"* → Gemini's function calls set it up and the Lab runs it (1).
+> Open **https://our-domain** (5, served from Vultr: 4; until the domain exists, https://155-138-211-252.sslip.io). Type *"one more server at Grill and 10% busier"* → Gemini's function calls set it up and the Lab runs it (1).
 > Type *"cut waste 20% without any vegetarian dish running out"* → the agent runs simulations on the server, shows each try, and hands back a cook sheet (2, 1, 4).
 > Adopt it → the forecast is logged to Tiger; open the calibration page and ask the Tiger MCP *"which dishes ran out on rainy Fridays?"* (3).

@@ -3,11 +3,14 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-14, engine 0.6.2, `main` at `9a0b389` + this docs pass: Tier 2 optimizer and plausible worlds, Tiger dish search + popularity check and plan searches (TIGER.md §9–10); earlier: Ask Sam (5-try cap, Tiger lookups through the Tiger MCP server, history, setting functions for staffing and menu changes, what-ifs in the Sam box), Gemini function calling for the plain-English box, the waste outlook (Insights opens on the next 8 nights), Tiger track record, ledger-safe test stack, `make serve` → `make server`, image input and breakfast/lunch out of scope.
+Last updated: 2026-11-14, engine 0.6.2, `main` at `9a0b389` + this docs pass; later the same day **deployed to Vultr** at https://155-138-211-252.sslip.io (`deploy/`, SPONSORS §4): Tier 2 optimizer and plausible worlds, Tiger dish search + popularity check and plan searches (TIGER.md §9–10); earlier: Ask Sam (5-try cap, Tiger lookups through the Tiger MCP server, history, setting functions for staffing and menu changes, what-ifs in the Sam box), Gemini function calling for the plain-English box, the waste outlook (Insights opens on the next 8 nights), Tiger track record, ledger-safe test stack, `make serve` → `make server`, image input and breakfast/lunch out of scope.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
 ## Before the demo
+- ✅ **Live on Vultr (2026-11-14):** https://155-138-211-252.sslip.io (Ubuntu 24.04, `155.138.211.252`, Caddy HTTPS + `dcsim.service`; laptop cache copied over; Gemini and Sam's Tiger lookups work there). Runbook: [deploy/README.md](../deploy/README.md).
+- ✗ **Vultr evidence:** time `dcsim worlds --worlds 1000` on the server, screenshot `htop` and the Vultr dashboard (SPONSORS §4, Left).
+- ✗ **Ledger writes on the server are off** (`DCSIM_LEDGER_WRITES=0`, so public visitors can't write to the Tiger ledger). Turn them on just before the demo so Adopt logs to Tiger (deploy/README.md, Day to day).
 - ✅ **Demo bundle rebuilt on engine 0.6.2** (2026-11-14 04:05 UTC: 264 results, 14 replays, 168 Gemini narrations, 22 MB; about 17 min). Rebuild again only if the engine or data changes: `make demo-bundle`, or `LLM_PROVIDER=mock make demo-bundle` for template text in a few minutes.
 - ✅ **Full test run after the rebuild passed:** engine 149 tests, web 46 tests, browser smoke 23/23 offline and 8/8 with the API, 44 deep offline checks, Similar nights 6/6. Table in [UI_ISSUES.md](UI_ISSUES.md#full-test-run-after-the-062-bundle-2026-11-13).
 - ✅ **Tests after the Tiger dashboard work (2026-11-14):** engine 161 passed, 2 skipped; web 46 passed; typecheck clean; the dashboard opened live from the API with no console errors. The browser smoke script passed 27/27 offline with the dashboard steps; those steps were then removed with the page, so it is back to the earlier 23.
@@ -105,7 +108,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | N4 | Breakfast and lunch | ✅ Closed 2026-11-14 (not needed: dinner + late night only) |
 | N5 | Survey calibration of personas | ✗ |
 | N6 | Optimizer | ✅ Built 2026-11-14 (IMPROVEMENTS 2.1): waste-vs-stockouts frontier, Lab › Optimize |
-| N7 | Uncertainty sweep | ✅ Built 2026-11-14 (IMPROVEMENTS 2.2): plausible worlds + tornado; a 1,000-world run is the Vultr pitch (SPONSORS §4) |
+| N7 | Uncertainty sweep | ✅ Built 2026-11-14 (IMPROVEMENTS 2.2): plausible worlds + tornado; a 1,000-world run is the Vultr pitch (SPONSORS §4; server is up, the timed run is still to do) |
 | N8 | Allergens | ✅ Built 0.6.0 (survey allergy shares, pescetarian 2%) |
 | N9 | Real data hookups (R01, R02, R06, R07) | ✗ |
 
@@ -139,8 +142,8 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | 1 | Gemini API | ✅ Ask box on **function calling** (JSON and keyword fallbacks), Sam's tool loop, narration, explain, dish prior, embeddings; image input out of scope |
 | 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, `/sam`): goals in ≤ 5 tries with batch, staffing and menu setting functions, Tiger lookups via the Tiger MCP server, what-ifs and history questions in the same box, History; the optimizer (N6) is built separately in the Lab (Optuna), not inside Sam |
 | 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (served by the API at `/tiger`, not part of the web app; two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; track record, weather/event fit and MCP question set built 2026-11-14 (TIGER.md §4–6); **dish search + popularity check and plan searches kept in Tiger built 2026-11-14 (TIGER.md §9–10)**; 500-night demo query open |
-| 4 | Vultr | ✗ Not deployed |
-| 5 | GoDaddy Registry domain | ✗ Not registered |
+| 4 | Vultr | ✅ **Deployed 2026-11-14** at https://155-138-211-252.sslip.io (`deploy/setup.sh`, `push-secrets.sh`, `tiger-password.sh`; [deploy/README.md](../deploy/README.md)); left: the timed 1,000-world sweep there and the write-up |
+| 5 | GoDaddy Registry domain | ✗ Not registered (the server uses a free sslip.io name meanwhile; re-run setup with `DOMAIN=` once the `A` record points at `155.138.211.252`) |
 
 ## Other docs
 - [IMPROVEMENTS.md](IMPROVEMENTS.md): Tier 0 and Tier 1 all ✅ (1.1 Container pans and 1.4 per-minute series in 0.6.0); 2.4 seats ◐ (built, limits off); model-realism table all ✅ (item-level popularity, swipe queue, groups, pan sizes, forecast-reorder preset, allergens in 0.6.0; staffing by hour, per-date crowd, carving earlier); calibration targets ✅; 2.1 optimizer and 2.2 plausible worlds ✅ (2026-11-14); sensitivity analysis ✗.

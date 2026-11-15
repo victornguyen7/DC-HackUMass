@@ -37,6 +37,7 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 | T6 | **High** | Repo | `.dev.vars` with app tokens (`APP_OWNER_JWT`, `APP_IDENTITY_TOKEN`) was committed and pushed (was `e926ea1`). **Partly fixed 2026-11-14:** untracked, in `.gitignore`, and removed from branch history (force-pushed); PRs #4–#6 still expose it and the tokens still need rotating |
 | T7 | ~~Low~~ | Repo | ~~A `my-app/` folder (a separate deepspace app) was committed in `78d9239` and isn't documented~~ **Fixed 2026-11-14** (deleted in `ab7bf71`) |
 | T8 | Low | Data | 6 test forecasts for 2026-11-13 are in the append-only Tiger ledger (end-to-end test, 2026-11-14 15:24–15:27 UTC) |
+| T9 | ~~Medium~~ | Deploy | ~~First Vultr deploy: git "dubious ownership", placeholder domain, no Tiger password on the server~~ **Fixed 2026-11-14** (scripts in `deploy/`; see §6) |
 | N1–N9 | — | Not built | See §7 |
 | U1–U18 | — | Web UI | See [UI_ISSUES.md](UI_ISSUES.md) (U3, U6, U8, U10, U12, U13 closed) |
 
@@ -242,6 +243,12 @@ Status: a ~~struck-through~~ row marked **Fixed** or **Mitigated** is done; ever
 - An end-to-end check on 2026-11-14 ran `web/scripts/smoke-api.mjs` and clicked **Adopt** on Sam's plan against an API connected to the real Tiger service. Adopting and saving log forecasts, so 6 rows for night 2026-11-13 were written between 15:24 and 15:27 UTC: 4 labeled "smaller batches of favorites…" (the smoke script) and 2 labeled "Sam's plan: Cut waste by 15% and protect all halal dishes." The ledger is append-only (triggers block deletes), so they stay. The scenarios and Sam history the test made were removed from the local store.
 - **Guard (done):** `DCSIM_LEDGER_WRITES=0` stops adopt/save from logging forecasts while Tiger reads keep working, and `/api/health` reports `ledger_writes`. `make server-test` starts a test API on :8001 with it off and a fresh copy of the cache (`cache-test/`); `make web-test-ui` serves the app on :5174 against it. `smoke-api.mjs` refuses an API that would write to the ledger unless given `--allow-ledger`.
 - **Left:** when reading `forecast_scorecard` or `forecast_results` for 2026-11-13, leave out forecasts issued 2026-11-14 15:24–15:27 UTC.
+
+### T9 · Fixed 2026-11-14 · First Vultr deploy problems
+- `git` refused `/srv/dc-whatif` ("dubious ownership": an earlier clone was root's) → `setup.sh` gives the whole folder to `dcsim` (`e3ffbc2`).
+- Setup ran with the placeholder `DOMAIN=your-domain`, so Caddy answered for no real name → `setup.sh` refuses placeholders and updates `DCSIM_CORS` when the domain changes.
+- Sam's Tiger lookups failed on the server (`password authentication failed`): `push-secrets.sh` called `tiger db uri` without the service ID, so no `DCSIM_TSDB_URL` arrived (`3ebc72c`), and the Tiger CLI's keyring storage doesn't exist on a server (`dbus-launch` missing) → `deploy/tiger-password.sh` uses `~/.pgpass`.
+- All fixed and the server checked end to end (deploy/README.md, Live now).
 
 ### T2 · Fixed · Starlette deprecation warning
 - **Fixed:** `uv run pytest` shows no warnings (checked 2026-11-13).

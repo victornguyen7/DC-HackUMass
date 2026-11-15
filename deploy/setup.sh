@@ -7,8 +7,11 @@
 #
 # DOMAIN      the domain whose A record points at this server (Caddy gets HTTPS for it).
 #             Leave it out to serve plain HTTP on the server's IP (for testing before DNS works).
-# TIGER_CLI=1 also install the Tiger CLI, so Ask Sam can use its Tiger lookups (then run
-#             `sudo -iu dcsim tiger auth login` once; see deploy/README.md).
+#             No domain yet? Use DOMAIN=<ip-with-dashes>.sslip.io (e.g. 155-138-211-252.sslip.io):
+#             a free hostname for the IP, and Caddy still gets HTTPS for it.
+# TIGER_CLI=1 also install the Tiger CLI and turn on Ask Sam's Tiger lookups: stores the CLI's
+#             password in ~/.pgpass (deploy/tiger-password.sh). The login stays manual, once:
+#             `sudo -iu dcsim tiger auth login --headless` (see deploy/README.md).
 # BRANCH      git branch to deploy (default main).
 #
 # Safe to re-run: it pulls the latest code, rebuilds and restarts. It never touches
@@ -25,6 +28,11 @@ log() { printf '\n\033[1;35m==> %s\033[0m\n' "$*"; }
 as_app() { sudo -iu "$APP_USER" bash -lc "$*"; }
 
 [ "$(id -u)" = 0 ] || { echo "Run as root (ssh root@<server-ip>)." >&2; exit 1; }
+case "$DOMAIN" in
+  *your-domain*|*example.com*|*yourname*|*://*|*/*)
+    echo "DOMAIN must be a real hostname without https://, e.g. 155-138-211-252.sslip.io or dcwhatif.xyz (got '$DOMAIN')." >&2
+    exit 1 ;;
+esac
 
 log "System packages"
 export DEBIAN_FRONTEND=noninteractive
@@ -75,6 +83,14 @@ DCSIM_LEDGER_WRITES=0
 EOF
   [ "${TIGER_CLI:-0}" = 1 ] || echo "DCSIM_TIGER_MCP=0" >> /etc/dcsim.env
   chmod 600 /etc/dcsim.env
+elif [ -n "$DOMAIN" ]; then
+  # A new domain on a re-run: allow it, keep the rest (admin token, ledger, Tiger settings).
+  sed -i "s|^DCSIM_CORS=.*|DCSIM_CORS=https://$DOMAIN|" /etc/dcsim.env
+fi
+if [ "${TIGER_CLI:-0}" = 1 ]; then
+  sed -i '/^DCSIM_TIGER_MCP=0$/d' /etc/dcsim.env   # Sam's Tiger lookups on
+  log "Tiger CLI password (pgpass)"
+  bash "$APP_DIR/deploy/tiger-password.sh" || true
 fi
 
 log "systemd service"

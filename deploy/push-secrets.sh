@@ -39,6 +39,9 @@ if [ "$NO_CACHE" != "--no-cache" ] && [ -d "$ROOT/cache" ]; then
   ssh "$HOST" "chown -R dcsim:dcsim $APP_DIR/cache"
 fi
 
+echo "==> Tiger CLI password on the server (skipped if the Tiger CLI isn't installed there)"
+ssh "$HOST" "[ -f $APP_DIR/deploy/tiger-password.sh ] && bash $APP_DIR/deploy/tiger-password.sh || true"
+
 echo "==> restart API"
 ssh "$HOST" "systemctl restart dcsim && sleep 3 && curl -fsS http://127.0.0.1:8000/api/health && echo"
 echo "Done."

@@ -58,6 +58,9 @@ There is also a standalone **calibration page** (`web/public/calibration.html`, 
 | Node.js | 24 (18+ should work) | web app |
 | Google Chrome | any recent | only for the browser smoke tests |
 
+### Live demo
+**https://155-138-211-252.sslip.io**: the app and API on a Vultr server (since 2026-11-14). How it's deployed and how to update it: [`deploy/README.md`](deploy/README.md).
+
 ### Just look at the app (2 minutes, no backend)
 ```bash
 cd web
@@ -193,6 +196,7 @@ HackUMass2026/
 │   ├── worcester/           ENGINE INPUTS: dc.json, stations.json, personas.json, menus/, kitchen/, layout/, ASSUMPTIONS.md
 │   └── synthetic/worcester/ SYNTHETIC "recorded" history + backtest.json
 ├── docs/                  design docs and issue lists (see §10)
+├── deploy/                Vultr server: setup.sh (server), push-secrets.sh (laptop), tiger-password.sh, dcsim.service, Caddyfile
 ├── survey/                student survey draft (feeds persona calibration)
 ├── work/design/           earlier standalone hall concept (dining-simulation.html), not the app
 ├── cache/                 local results cache (SQLite + traces + Sam's history); not committed
@@ -330,7 +334,7 @@ Consequences:
 | Figma frames and pitch use placeholder numbers (e.g. "−18% waste") that don't match the data | `docs/UI_ISSUES.md` U1 |
 | No orbital 3D: the Hall plays on an illustrated isometric view and the top-down plan | U2 / ISSUES N1 |
 | Optimize finds no plan with less waste and no more stockouts on Nov 13: the cooks are the limit, so it shows the trade-off instead | IMPROVEMENTS 2.1 |
-| Before hosting publicly: set `DCSIM_ADMIN_TOKEN` (and keep `DCSIM_AI_RATE`) | ISSUES A1 |
+| Hosted on Vultr: admin token and AI rate limit are set there, ledger writes off until the demo; the timed 1,000-world sweep is still to do | `deploy/README.md`, SPONSORS §4 |
 | **`.dev.vars` app tokens were on GitHub** (was `e926ea1`): removed from branch history 2026-11-14, but PRs #4–#6 still expose the old commit until GitHub purges it: rotate the tokens | ISSUES T6 |
 | 6 test forecasts for Nov 13 are in the append-only Tiger ledger; read the Nov 13 scorecard without them | ISSUES T8 |
 | The Hall's pan level counts the hot-hold cabinet too, so for the 30 s of a pan swap it shows food in a pan a student just found empty | UI_ISSUES U18 |
@@ -357,7 +361,8 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | [`docs/FRONTEND_REDESIGN_PLAN.md`](docs/FRONTEND_REDESIGN_PLAN.md) | The redesign's navigation, interaction stages and visual system (follow it for new UI) |
 | [`docs/ISSUES.md`](docs/ISSUES.md), [`docs/UI_ISSUES.md`](docs/UI_ISSUES.md) | Before you demo, or to pick something to fix |
 | [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) | Planning what to build next |
-| [`docs/SPONSORS.md`](docs/SPONSORS.md) | Sponsor-prize features: Gemini function calling (§1), **Ask Sam** as built (§2), Tiger Data, Vultr, domain |
+| [`docs/SPONSORS.md`](docs/SPONSORS.md) | Sponsor-prize features: Gemini function calling (§1), **Ask Sam** as built (§2), Tiger Data, Vultr (deployed, §4), domain |
+| [`deploy/README.md`](deploy/README.md) | You deploy or update the Vultr server, change its settings, or something breaks there (troubleshooting from the first deploy) |
 | [`survey/student_survey.md`](survey/student_survey.md) | Running the student survey |
 
 ---
@@ -419,6 +424,7 @@ Full lists: **`docs/ISSUES.md`** (engine, data, API, LLM) and **`docs/UI_ISSUES.
 | Insights says "The coming nights aren't available yet" | No `waste/outlook.json` in the bundle and no API: `cd engine && uv run dcsim bundle --waste-only`, or start `make server`. |
 | Insights › Similar nights says "Can't reach the search service" | The API isn't running, or it was started before you pulled this feature (`/api/similar-nights` → 404). Restart `make server`. |
 | `http://127.0.0.1:8000/tiger` is 404, or says "Tiger not configured" | 404: the API was started before 2026-11-14, restart `make server`. "Not configured": set `DCSIM_TSDB_URL` in `engine/.env` (`docs/TIGER.md`). |
+| The live site (Vultr) misbehaves: no page, certificate error, Sam's Tiger lookups fail | See the troubleshooting table in [`deploy/README.md`](deploy/README.md); logs: `journalctl -u dcsim -f` on the server. |
 | `git pull` says "You have divergent branches" | You committed locally while someone pushed or merged a PR. Run `git pull --rebase` (or set `git config pull.rebase true` once). See §14. |
 | Smoke test can't start a browser | It uses your installed Google Chrome (`playwright-core`, `channel: "chrome"`). Install Chrome. |
 

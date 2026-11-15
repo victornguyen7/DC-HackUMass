@@ -421,6 +421,8 @@ it with more history; the rule stays the same.
 
 ## 6. Live questions through the Tiger MCP
 
+> **On the Vultr server** (deploy/README.md): Sam's MCP client runs `tiger mcp start` as user `dcsim`, which needs `tiger auth login --headless` once and the database password in `~/.pgpass` (a server has no keyring; `deploy/tiger-password.sh` sets that up). Checked 2026-11-14: the rainy-Fridays question below answers from the server.
+
 Tiger's MCP server (`tiger mcp install claude-code`, which uses the CLI's login) gives an assistant `db_schema`
 and `db_query` against this service. To answer questions well it needs to know which rows are observed and how
 "ran out" is measured, so `dcsim tsdb init` now writes comments on the main tables, columns and aggregates

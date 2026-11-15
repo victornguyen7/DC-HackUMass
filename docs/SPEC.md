@@ -315,7 +315,7 @@ All inputs are files, so real exports can replace them without code changes.
 | Frontend | React + Vite + TypeScript, React Router (4 routes), Zustand (shared scenario context), Recharts, Tailwind. **As built (`web/`):** React 18 + Vite + TypeScript, React Router, Zustand; plain CSS with the Figma tokens and small hand-written SVG charts instead of Tailwind and Recharts (about 100 KB JS gzipped) |
 | 3D | React Three Fiber, drei, three.js GLTF + SkeletonUtils. **Not built yet:** the Hall plays the night as a top-down 2D replay on the floor plan; "3D overview" is a static render (UI_ISSUES U2) |
 | LLM | Google Gemini (`google-genai` SDK, `gemini-3.5-flash-lite`; Groq `qwen/qwen3.8-27b` as the alternative), structured JSON output validated with Pydantic. Used offline for personas and new-dish priors, on click for narration, and for `/ask` (stretch). SQLite response cache + deterministic mock provider. **Never called inside the simulation loop.** |
-| Deploy | Frontend on Vercel/Netlify; API on Render or local. **Demo runs fully offline from cached results.** |
+| Deploy | **Built 2026-11-14:** app and API on one Vultr server (https://155-138-211-252.sslip.io): Caddy serves the built app over HTTPS and proxies `/api`, systemd runs the API (`deploy/README.md`). The app still runs fully offline from cached results. |
 
 Repo layout:
 ```

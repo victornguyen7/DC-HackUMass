@@ -1,0 +1,18 @@
+[Unit]
+Description=DC What-If API (dcsim serve)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=dcsim
+Group=dcsim
+WorkingDirectory=/srv/dc-whatif/engine
+# Server-only settings. The app reads engine/.env (secrets) itself and never overrides these.
+EnvironmentFile=-/etc/dcsim.env
+Environment=PATH=/home/dcsim/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/dcsim/.local/bin/uv run --no-sync dcsim serve --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

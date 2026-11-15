@@ -1,0 +1,19 @@
+# Template: deploy/setup.sh fills in __SITE__ (your domain, or :80) and __ROOT__ (web/dist).
+__SITE__ {
+	encode zstd gzip
+
+	# API routes, its docs and the live Tiger dashboard go to the Python API.
+	@api path /api/* /tiger /docs /docs/* /openapi.json
+	handle @api {
+		reverse_proxy 127.0.0.1:8000 {
+			flush_interval -1 # stream SSE (Ask Sam, jobs) without buffering
+		}
+	}
+
+	# Everything else is the built web app (single-page app: unknown paths -> index.html).
+	handle {
+		root * __ROOT__
+		try_files {path} /index.html
+		file_server
+	}
+}

@@ -23,6 +23,10 @@ uv run dcsim agent "cut waste 20% without any vegetarian dish running out" --tri
 uv run dcsim agent "what if we add a Grill server and it's 10% busier?"               # Ask Sam: what-if
 uv run dcsim agent "Which dishes ran out on rainy Fridays?"                           # Ask Sam: answered from Tiger
 uv run dcsim bundle --waste-only                             # refresh calibration, ledger snapshot and the waste outlook (seconds)
+uv run dcsim optimize --date 2026-11-13                      # search kitchen plans: waste-vs-stockouts frontier (--save keeps it in Tiger)
+uv run dcsim worlds --date 2026-11-13 --preset smaller_batches   # a plan in plausible worlds + waste tornado (--save)
+uv run dcsim tsdb searches                                   # saved plan searches, levers that keep showing up (docs/TIGER.md §10)
+uv run dcsim tsdb dishes --name "Butter Chicken" --role entree   # dish-popularity check + look-alikes on Tiger (§9)
 ```
 
 Presets: `smaller_batches`, `trim_slow`, `extra_server`, `theme_night`, `combined`, `forecast_reorder` (cook to the expected rush, with safety stock).
@@ -111,6 +115,10 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 | `ai/tiger_mcp.py` | Sam's MCP client of `tiger mcp start` (only `db_schema` / `db_query`), `guard_sql` (one read-only SELECT), schema digest |
 | `similar_nights.py` | Similar nights for the page and API: input checks, students tie-break and local fallback over `nightsearch.py`'s vectors |
 | `nightsearch.py` | The similar-night search (page, API and `dcsim tsdb similar`): 77-dim night vectors in `dcsim.night_vectors` (DiskANN index), held-out check |
+| `optimize.py` | Optimize plan: Optuna multi-objective search over station/dish multipliers, frontier re-checked on unseen seeds |
+| `worlds.py` | Plausible worlds (`ScenarioConfig.uncertainty`): crowd, rush and popularity drawn per seed, new dishes with their own spread; sweep + waste tornado |
+| `dishsearch.py` | Dish look-alikes across every menu (111-dim vectors in `dcsim.dish_vectors`, DiskANN), what they sold, a new dish's spread, the per-dish popularity check |
+| `searchlog.py` | Plan searches kept in Tiger: `plan_searches`, hypertable `search_trials`, `search_worlds`; the "which lever keeps showing up" query |
 
 ## Guarantees (tested)
 - **Golden baseline:** Nov 13 headline numbers (seeds 1–10) are pinned in `tests/golden/nov13.json`; any change that moves them fails until the file is rewritten on purpose.
@@ -142,4 +150,4 @@ make demo-bundle      # = dcsim waste-gen && dcsim backtest && dcsim bundle --gr
 The web app in `web/` (Simulation with the What-If Lab, Kitchen plan, Insights) reads this bundle, so it works with no API: `make web` (dev server on :5173), `make web-test`, `make web-build`. With `make server` running too, they also replay any scenario, narrate any student, and use the plain-English box, menu edits, new dishes, "Why?", Insights › Similar nights and **Ask Sam**. See `web/README.md` and `docs/UI_ISSUES.md`.
 
 ## Not built yet
-Nav graph and table-level seats (zones are built; seat limits off until real seat counts) · add-ons consuming stock · breakfast and lunch · survey calibration · LLM personas (paused; narration is built) · optimizer · uncertainty sweep · animated 3D Hall. Built since 0.4: late night, kitchen capacity, staffing by hour, per-minute series, allergies, groups, swipe queue, pan sizes; on 2026-11-14 Ask Sam, function calling for the plain-English box and the waste outlook (no engine version change). Out of scope: image input (menu photos).
+Nav graph and table-level seats (zones are built; seat limits off until real seat counts) · add-ons consuming stock · breakfast and lunch · survey calibration · LLM personas (paused; narration is built) · animated 3D Hall. Built since 0.4: late night, kitchen capacity, staffing by hour, per-minute series, allergies, groups, swipe queue, pan sizes; on 2026-11-14 Ask Sam, function calling for the plain-English box, the waste outlook, the optimizer, plausible worlds, dish search and plan searches kept in Tiger (no engine version change). Out of scope: image input (menu photos).

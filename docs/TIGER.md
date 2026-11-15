@@ -19,13 +19,16 @@ uv run dcsim tsdb query stack                     # one query across the stack; 
 uv run dcsim tsdb track                           # score every observed night now, weekly track record with a verdict (§4)
 uv run dcsim calibrate --situations-only          # refit the crowd error by weather/event from Tiger, no new simulations (§5)
 uv run dcsim forecast --date 2026-11-15 --weather rain   # a forecast that records (and, if the fit was kept, uses) the situation
+uv run dcsim tsdb dishes --name "Butter Chicken" --role entree   # dish-popularity check + a new dish's look-alikes (§9)
+uv run dcsim optimize --date 2026-11-13 --save    # keep an optimizer run in Tiger (also: dcsim worlds --save) (§10)
+uv run dcsim tsdb searches                        # saved searches + the levers that keep showing up on the frontier (§10)
 uv run dcsim bundle --waste-only                  # refresh calibration + ledger files in the demo bundle (seconds)
 ```
 
 Live dashboard: `make server`, then open `http://127.0.0.1:8000/tiger` (§8). It is served by the API only, not by the web app. API: `GET /api/tiger/dashboard`, `GET /api/tiger/bench`.
 
 Code: `engine/src/dcsim/tsdb.py` (schema, loaders, ledger, named queries), `engine/src/dcsim/calibration.py`
-(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page; same vectors and table as `nightsearch.py`). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), and adopting a scenario
+(protocol, forecasts), `engine/src/dcsim/nightsearch.py` (`dcsim tsdb similar`), `engine/src/dcsim/similar_nights.py` (the Similar nights page; same vectors and table as `nightsearch.py`), `engine/src/dcsim/dishsearch.py` (dish search + popularity check, §9), `engine/src/dcsim/searchlog.py` (plan searches, §10). API: `GET /api/waste/calibration`, `GET /api/forecasts?date=`, `GET /api/similar-nights` ([SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)), `POST /api/dish-evidence`, `GET /api/searches[?date=&kind=]`, `GET /api/searches/changes`, `GET /api/searches/{id}`, and adopting a scenario
 (`POST /api/scenarios/{id}/adopt`, or `POST /api/scenarios` with `status: "adopted"`) logs its forecast. The What-If
 Lab's **Adopt** button makes that call when the API is up, so adopting in the web app writes to the ledger. Page: `web/public/calibration.html`.
 
@@ -358,6 +361,7 @@ Still to do:
    Nov 13 rows from `waste_log`, then `dcsim tsdb refresh`. Worth a small CLI action if rehearsing more than once.
 3. Ideas not started: a longer history (the "500-night" query) so the timings mean more, columnstore on the
    aggregates themselves, a track-record card on the `/tiger` dashboard (the data is in `forecast_weekly`).
+   (A **Plan searches** card was added 2026-11-14, §10.)
 
 ## 4. Calibration over time
 

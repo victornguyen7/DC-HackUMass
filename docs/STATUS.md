@@ -3,7 +3,7 @@
 One page that rolls up every tracker. The details stay in each doc; this page only says **done / partly done / open** and where to look.
 Update it whenever you close something, in the same commit as the fix.
 
-Last updated: 2026-11-14, engine 0.6.2, `main` at `8e7d9e0` + this docs pass: Ask Sam (5-try cap, Tiger lookups through the Tiger MCP server, history, setting functions for staffing and menu changes, what-ifs in the Sam box), Gemini function calling for the plain-English box, the waste outlook (Insights opens on the next 8 nights), Tiger track record, ledger-safe test stack, `make serve` → `make server`, image input and breakfast/lunch out of scope.
+Last updated: 2026-11-14, engine 0.6.2, `main` at `9a0b389` + this docs pass: Tier 2 optimizer and plausible worlds, Tiger dish search + popularity check and plan searches (TIGER.md §9–10); earlier: Ask Sam (5-try cap, Tiger lookups through the Tiger MCP server, history, setting functions for staffing and menu changes, what-ifs in the Sam box), Gemini function calling for the plain-English box, the waste outlook (Insights opens on the next 8 nights), Tiger track record, ledger-safe test stack, `make serve` → `make server`, image input and breakfast/lunch out of scope.
 
 **Markers:** ✅ done (fixed / closed / built) · ◐ partly done · ✗ open · ⚠️ done but **not committed yet**
 
@@ -138,7 +138,7 @@ All branches are merged into `main`; details in [README §14](../README.md#14-br
 | --- | --- | --- |
 | 1 | Gemini API | ✅ Ask box on **function calling** (JSON and keyword fallbacks), Sam's tool loop, narration, explain, dish prior, embeddings; image input out of scope |
 | 2 | Agentic hack (Sentient) | ✅ Sam the Minuteman built 2026-11-14 (`ai/agent.py`, `POST /api/agent`, `dcsim agent`, `/sam`): goals in ≤ 5 tries with batch, staffing and menu setting functions, Tiger lookups via the Tiger MCP server, what-ifs and history questions in the same box, History; the optimizer (N6) is built separately in the Lab (Optuna), not inside Sam |
-| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (served by the API at `/tiger`, not part of the web app; two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; track record, weather/event fit and MCP question set built 2026-11-14 (TIGER.md §4–6); 500-night demo query open |
+| 3 | Tiger Data | ◐ Schema, calibration, forecast ledger, compression built; **live dashboard built 2026-11-14** (served by the API at `/tiger`, not part of the web app; two real-time continuous aggregates, `dcsim tsdb bench`, one query across the stack; handoff in [TIGER.md §8](TIGER.md)); **Similar Nights page + `GET /api/similar-nights` (pgvector, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)) built**; CLI `tsdb similar` (DiskANN) built; track record, weather/event fit and MCP question set built 2026-11-14 (TIGER.md §4–6); **dish search + popularity check and plan searches kept in Tiger built 2026-11-14 (TIGER.md §9–10)**; 500-night demo query open |
 | 4 | Vultr | ✗ Not deployed |
 | 5 | GoDaddy Registry domain | ✗ Not registered |
 

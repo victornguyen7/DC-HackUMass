@@ -13,7 +13,7 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 | --- | --- | --- | --- | --- | --- |
 | 1 | Best Use of Gemini API | Plain-English what-if box on **Gemini function calling**; Sam's tool loop | ✅ built | — | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
-| 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night search | ◐ mostly built | S (polish + demo) | |
+| 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night and dish search; every plan search kept and queried in SQL | ◐ mostly built | S (polish + demo) | |
 | 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ◐ sweep built (2026-11-14), not deployed | S–M | |
 | 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done | ~10 min | |
 
@@ -162,7 +162,8 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 3. **Similar nights on stage:** "Which past nights look like tonight, and what happened on them?" is a good live demo of pgvector + pgvectorscale on Tiger. Show it in the app (Insights › Similar nights, the source chip reads "Searched in Tiger · pgvector"), then the CLI's held-out check. Tiger's history matches the local files (re-run `dcsim tsdb load` after any `make waste`), and say plainly that it's a hand-built feature vector, not a learned embedding.
 4. **Show the aggregates:** open `http://127.0.0.1:8000/tiger` (API page, not in the web app) and follow the 2-minute script in TIGER.md §8: a new night appears within 5 s, then raw vs aggregate timings.
 5. **Show it in the app:** link the calibration page from Insights › Waste history, and show "forecast logged to Tiger ✓" after **Adopt**.
-5. **Be honest on stage:** the "observed" nights are **synthetic**. Say so (README §8).
+6. **Plan searches and new dishes on stage** (TIGER.md §9–10): run Optimize in the Lab, point at "Saved to Tiger ✓" and "What keeps showing up on the frontier", then open the `/tiger` Plan searches card. In Menu › Add a new dish, type a name and show the "In Tiger: dishes like this … sold …" line. Before the demo, save a few runs on different dates (`dcsim optimize --date <d> --save`) so the lever table shows a pattern, not one run. Say plainly that the popularity check finds no per-dish error because the history is synthetic.
+7. **Be honest on stage:** the "observed" nights are **synthetic**. Say so (README §8).
 
 ---
 

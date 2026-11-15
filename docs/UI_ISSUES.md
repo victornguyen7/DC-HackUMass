@@ -149,6 +149,7 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 ### U7 · Medium · What-If Lab: Optimize and uncertainty sweep
 - ✅ **Optimize** (2026-11-14): opens a panel with a waste-vs-stockouts chart (every plan searched, the frontier, today's plan, the stockout limit) and one card per frontier plan with its unseen-seed numbers and **Load into builder**. Needs the API.
 - ✅ **Plausible worlds** (2026-11-14): under the results of any non-baseline plan, "Test in 100 worlds" shows the win rate per metric and the waste tornado (about 30 s cold). Needs the API and a plan made in the builder (not one opened from the saved list).
+- ✅ **Tiger in the Lab** (2026-11-14): the Optimize card lists past searches for the date (open one read back from Tiger, **Hide saved search**, Load into builder) and "What keeps showing up on the frontier"; results say "Saved to Tiger ✓" or "Not saved to Tiger (writes off)"; the new-dish form shows what look-alike dishes sold. All quiet when Tiger is down. Checked at 1440 and 390 px.
 - Dish **swap** is "remove one + add one" (two steps), not a single control.
 
 ### U15 · Medium · Several features need the API

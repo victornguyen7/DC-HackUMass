@@ -384,3 +384,49 @@ button, a, select, summary { -webkit-tap-highlight-color: transparent; touch-act
   .station-menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media print { body:has(.detail-dialog[open]) { overflow: visible; } }
+
+/* Interactive hall: the canvas owns gestures; page controls remain normal touch targets. */
+.guided-viewport:not(.top-down-viewport) .hall-scene-heading > div:first-child { flex: 1 1 250px; min-width: 0; }
+.guided-viewport:not(.top-down-viewport) .hall-scene-heading p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.hall-3d { isolation: isolate; container-type: inline-size; }
+.hall-3d canvas { touch-action: none; cursor: grab; outline-offset: -4px; }
+.hall-3d canvas.is-dragging { cursor: grabbing; }
+.hall-3d canvas:focus-visible { outline: 2px solid #edc787; }
+.hall-3d [hidden] { display: none !important; }
+.hall-3d-labels { position: absolute; inset: 0; pointer-events: none; }
+.hall-3d[data-labels="false"] .hall-3d-labels { display: none; }
+.hall-3d .hall-map-label { pointer-events: auto; height: 44px; left: 0; top: 0; font-size: 11px; padding: 0 10px; border: 0; background: transparent; box-shadow: none; isolation: isolate; }
+.hall-3d .hall-map-label::before { content: ""; position: absolute; inset: 7px 0; z-index: -1; border: 1px solid #8aa7b154; background: #152b36ef; border-radius: 7px; box-shadow: 0 3px 12px #08161e30; }
+.hall-3d .hall-map-label b { font-size: 12px; }
+.hall-3d .hall-map-label.selected::before, .hall-3d .hall-map-label:hover::before { border-color: #edc787; background: #2b4650; }
+.hall-3d .hall-label-leaders line { stroke: #afc9c783; }
+.hall-3d-toolbar { position: absolute; z-index: 3; bottom: 29px; left: 16px; right: 16px; display: flex; justify-content: space-between; gap: 12px; pointer-events: none; }
+.hall-3d-modes, .hall-3d-tools { pointer-events: auto; display: flex; align-items: center; padding: 3px; gap: 2px; border: 1px solid #536e7977; border-radius: 11px; background: #132934f5; box-shadow: 0 4px 16px #08161e30; }
+.hall-3d-toolbar button, .hall-3d-help button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 44px; height: 44px; border: 0; border-radius: 7px; padding: 0 12px; background: transparent; color: #c6d6dc; font: inherit; font-size: 12px; cursor: pointer; touch-action: manipulation; }
+.hall-3d-toolbar button:hover, .hall-3d-help button:hover { color: #fff; background: #324d59; }
+.hall-3d-toolbar button[aria-pressed="true"] { background: #dbe9e5; color: #19333c; }
+.hall-3d-toolbar .camera-label-toggle[aria-pressed="true"] { background: #2e4955; color: #e1eee9; }
+.hall-3d button:focus-visible { outline: 2px solid #edc787; outline-offset: 2px; }
+.hall-3d-toolbar .camera-icon-button, .hall-3d-toolbar .camera-label-toggle { padding: 0; width: 44px; }
+.camera-divider { width: 1px; height: 22px; background: #6c858b55; margin: 0 4px; }
+.hall-3d-hint { position: absolute; left: 18px; bottom: 7px; margin: 0; color: #a5bdc6; font-size: 10px; pointer-events: none; }
+.hall-3d-help { position: absolute; z-index: 4; right: 16px; bottom: 90px; width: min(330px, calc(100% - 32px)); padding: 12px 16px 16px; border: 1px solid #67818c; border-radius: 12px; background: #17303bf5; box-shadow: 0 10px 35px #06151d55; color: #dce8ed; font-size: 12px; max-height: calc(100% - 100px); overflow-y: auto; }
+.hall-3d-help > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.hall-3d-help > div strong { font-weight: 500; font-size: 14px; }
+.hall-3d-help > div button { font-size: 24px; margin-right: -8px; }
+.hall-3d-help p { margin: 10px 0; line-height: 1.6; }
+.hall-3d-help p b { color: #f2d9ac; font-weight: 500; }
+.hall-3d-help small { color: #b5cdd3; font-size: 11px; }
+.hall-scene-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+.hall-scene-placeholder strong { font-weight: 500; font-size: 17px; }
+.hall-scene-placeholder p { color: #b9cbd4; font-size: 13px; max-width: 38ch; line-height: 1.65; margin: 10px 0 20px; }
+.hall-scene-symbol { color: #e3c28e; font-size: 35px; margin-bottom: 12px; }
+.hall-scene-fallback { min-height: 44px; border: 1px solid #b4c8ca; border-radius: 8px; background: #dbe9e5; color: #19333c; padding: 10px 16px; font: inherit; font-size: 13px; }
+@container (max-width: 550px) {
+  .hall-3d-toolbar { left: 8px; right: 8px; bottom: 8px; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .hall-3d-toolbar button { padding-inline: 8px; font-size: 11px; gap: 5px; }
+  .camera-reset span { display: none; }
+  .camera-divider { margin-inline: 1px; }
+  .hall-3d-hint { display: none; }
+  .hall-3d-help { bottom: 114px; max-height: calc(100% - 124px); }
+}

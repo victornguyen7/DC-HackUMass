@@ -152,7 +152,8 @@ await step("Ask Sam: plan (at most 5 tries) + history", async () => {
   const tries = await p.locator(".sam-try").count();
   if (tries < 1 || tries > 5) throw new Error(`Sam ran ${tries} tries`);
   await p.screenshot({ path: `${out}/sam-plan.png`, fullPage: true });
-  await p.locator(".sam-history-open").nth(1).click(); // the question, from the history panel
+  await p.getByRole("button", { name: /^Recent chats/ }).click();
+  await p.locator(".sam-history-open").nth(1).click(); // the question, from recent chats
   await p.locator(".sam-viewing").waitFor();
   await p.getByRole("region", { name: "Sam's answer" }).waitFor();
   await p.getByRole("button", { name: "Back to the current run" }).click();

@@ -242,11 +242,11 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
         <section className={`guided-viewport ${view === "top" ? "top-down-viewport" : ""}`} aria-label="Floor plan">
           <div className="hall-scene-heading">
             <div><h2>Worcester, second floor</h2><p>{result.label} · representative simulated night</p></div>
-            <div className="hall-view-controls"><button onClick={() => setView(view === "isometric" ? "top" : "isometric")}>{view === "isometric" ? "Top-down view" : "Isometric view"}</button>
+            <div className="hall-view-controls"><button onClick={() => setView(view === "isometric" ? "top" : "isometric")}>{view === "isometric" ? "Top-down view" : "3D view"}</button>
               <label>Color by <select value={colorBy} onChange={(e) => setColorBy(e.target.value as ColorBy)}><option value="wait">Wait time</option><option value="diet">Diet</option><option value="missed">Missed first choice</option></select></label></div>
           </div>
           {view === "isometric" ? <HallScene poses={poses} stations={visibleStations.map((s) => ({ id: s.id, pos: s.pos, line: queueCount(s.id), empty: isEmpty(s.id).length }))}
-            selectedStation={station} selectedStudent={studentId} onStation={pickStation} onStudent={pickStudent} colorBy={colorBy} missed={missed} /> : <div className="plan-wrap">
+            selectedStation={station} selectedStudent={studentId} onStation={pickStation} onStudent={pickStudent} onTopDown={() => setView("top")} colorBy={colorBy} missed={missed} /> : <div className="plan-wrap">
               <svg viewBox={`0 0 ${PLAN_W} ${PLAN_H}`} role="img" aria-label={`Top-down plan at ${clock(t)}: ${c.inside} students inside`}>
                 <image href="/plan/worcester-2f-plan.svg" width={PLAN_W} height={PLAN_H} />
                 <g aria-hidden fill="#ded9d0" stroke="#817b72" strokeWidth={.6}>
@@ -315,7 +315,7 @@ function HallView({ result, trace, narration, configHash, initialT, onTime, step
           <div className="hall-scene-legend">
             {colorBy === "wait" ? <><span><i style={{ background: "#a4d7b7" }} />Under 5 min</span><span><i style={{ background: "#eac28d" }} />5–10 min</span><span><i style={{ background: "#f39e97" }} />Over 10 min</span></> : colorBy === "diet" ? Object.keys(DIET_COLOR).map((diet) => <span key={diet}><i style={{ background: DIET_COLOR[diet] }} />{dietLabel(diet)}</span>) : <><span><i style={{ background: "#f39e97" }} />Missed first choice</span><span><i style={{ background: "#c2d0d5" }} />Got first choice</span></>}
           </div>
-          <p>Illustrated hall · assumed seating · one figure per student{longest && queueCount(longest.id) > 0 ? ` · Longest line: ${stationName(longest.id)} (${queueCount(longest.id)})` : ""}</p>
+          <p>Interactive hall · assumed seating · one figure per student{longest && queueCount(longest.id) > 0 ? ` · Longest line: ${stationName(longest.id)} (${queueCount(longest.id)})` : ""}</p>
           <details className="replay-metadata"><summary>Replay information</summary><p>Representative night {trace.night_seed} of {result.n_nights}. Serving ends at {clock(result.close)}; playback includes the following 30 minutes. Station menus and pan levels follow the selected time.</p></details>
         </div>
         </div>

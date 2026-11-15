@@ -1,4 +1,4 @@
-# dcsim: DC What-If simulation engine
+# dcsim: Dineamics simulation engine
 
 SimPy model of a Worcester night, **dinner 4:30–9:00 pm + late night 9:00 pm–12:00 am**, on the **real menu** (see `../docs/SPEC.md` §7 and `../docs/ENGINE.md`). Engine 0.6.2.
 

@@ -22,7 +22,7 @@ export function Sidebar() {
   const location = useLocation();
   return (
     <header className="app-navigation no-print">
-      <NavLink to="/hall" className="brand" aria-label="DC What-If home"><div className="brand-logo">DC</div><div><b>What-if</b><span>Worcester Commons</span></div></NavLink>
+      <NavLink to="/hall" className="brand" aria-label="Dineamics home"><div className="brand-logo">D</div><div><b>Dineamics</b><span>Worcester Commons</span></div></NavLink>
       <nav className="app-links" aria-label="Pages">
         <NavLink to="/hall" className={({ isActive }) => isActive || location.pathname === "/lab" ? "active" : ""}><Icon name="hall" /><span>Simulation</span></NavLink>
         <NavLink to="/dashboard"><Icon name="dashboard" /><span>Kitchen plan</span></NavLink>

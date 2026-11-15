@@ -1,4 +1,4 @@
-# DC What-If · Worcester
+# Dineamics · Worcester
 
 **A "what-if" simulator for the Worcester Dining Commons at UMass Amherst** (HackUMass 2026).
 It simulates hundreds of dinner nights on the **real menu**, student by student, so a kitchen manager can test a decision (smaller batches, an extra server, a new dish, a busier night) **before** trying it on real students. It then says how many pans to cook, and when.

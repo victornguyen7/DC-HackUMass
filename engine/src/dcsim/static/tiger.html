@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Live Kitchen Data</title>
 <link rel="icon" href="data:,">
-<meta name="description" content="DC What-If on Tiger Data: hypertables, continuous aggregates, columnstore and the forecast ledger, read live. Synthetic recorded history.">
+<meta name="description" content="Dineamics on Tiger Data: hypertables, continuous aggregates, columnstore and the forecast ledger, read live. Synthetic recorded history.">
 <style>
   :root {
     color-scheme: light;
@@ -521,7 +521,7 @@
     const wall = r.wall_s ?? since(r.started_at);
     $("fleet-sub").textContent = r.status === "running"
       ? `Running now: ${f.tasks.length} menu dates on up to ${r.workers} temporary ${r.vcpus}-vCPU Vultr servers (${r.plan}, ${r.region}). ${saved} of ${f.tasks.length} saved, ${mins(wall)} so far.`
-      : `${saved} of ${f.tasks.length} menu dates searched in ${mins(r.wall_s)} on ${r.workers} temporary ${r.vcpus}-vCPU Vultr servers; the same searches one after another would take ${mins(r.sequential_s)}. ${num(r.server_minutes)} server-minutes, about $${(r.est_cost_usd ?? 0).toFixed(2)}. Every server was deleted afterwards.`;
+      : `${saved} of ${f.tasks.length} menu dates searched in ${mins(r.wall_s)} on ${r.servers ?? r.workers} temporary ${r.vcpus}-vCPU Vultr server${(r.servers ?? r.workers) === 1 ? "" : "s"}${r.servers != null && r.servers < r.workers ? ` (${r.workers} asked for; the account's limit allowed ${r.servers})` : ""}; the same searches one after another would take ${mins(r.sequential_s)}. ${num(r.server_minutes)} server-minutes, about $${(r.est_cost_usd ?? 0).toFixed(2)}. Every server was deleted afterwards.`;
     table($("fleet"), [
       { label: "Date", get: t => wday(t.menu_date) }, { label: "Server", num: 1, get: t => t.worker ?? "—" },
       { label: "Status", get: t => t.deleted_at && t.status === "saved" ? "saved · server deleted" : t.status },

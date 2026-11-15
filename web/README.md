@@ -1,4 +1,4 @@
-# DC What-If · web
+# Dineamics · web
 
 The main navigation is **Simulation**, **Kitchen plan**, **Insights** (tabs: **Waste history** and **Similar nights**) and **Ask Sam**. The simulation uses the Guided layout: **Watch the hall → Try a change → Compare**. The full What-If Lab remains available from advanced settings.
 React 18 + Vite + TypeScript, React Router, Zustand. The illustrated isometric hall uses Canvas; charts and the measured top-down plan use SVG. Styles are plain CSS: `src/styles.css` (tokens and primitives), `src/guided.css` (the redesign), `src/similar-nights.css` and `src/sam.css` (Ask Sam). New UI follows the "Visual system" in [`docs/FRONTEND_REDESIGN_PLAN.md`](../docs/FRONTEND_REDESIGN_PLAN.md).

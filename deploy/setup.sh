@@ -44,7 +44,9 @@ fi
 
 log "Code ($BRANCH) in $APP_DIR"
 mkdir -p "$APP_DIR"
-chown "$APP_USER:$APP_USER" "$APP_DIR"
+# -R: an earlier clone, uv sync or npm ci run as root leaves root-owned files that git
+# ("dubious ownership"), uv and npm would refuse or fail on as $APP_USER.
+chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 if [ -d "$APP_DIR/.git" ]; then
   as_app "cd $APP_DIR && git fetch -q origin $BRANCH && git checkout -q $BRANCH && git reset -q --hard origin/$BRANCH"
 else

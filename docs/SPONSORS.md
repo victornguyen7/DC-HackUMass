@@ -14,7 +14,7 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 | 1 | Best Use of Gemini API | Plain-English what-if box on **Gemini function calling**; Sam's tool loop | ✅ built | — | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
 | 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night and dish search; every plan search kept and queried in SQL | ✅ built (500-night query done 2026-11-14) | S (demo) | |
-| 4 | Best Use of Vultr | API + simulation workers in the cloud; 1,000-night uncertainty sweep | ✅ **deployed 2026-11-14** at https://155-138-211-252.sslip.io (`deploy/`) | S (time the 1,000-world sweep there, write-up) | |
+| 4 | Best Use of Vultr | API + simulation workers in the cloud; **a temporary fleet: every menu date optimized at once on rented 16-vCPU servers (3.3 min, $0.07)**; 1,000-night uncertainty sweep | ✅ **deployed 2026-11-14** at https://155-138-211-252.sslip.io (`deploy/`) | S (time the 1,000-world sweep there, write-up) | |
 | 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done (the server uses a free sslip.io name until then) | ~10 min | |
 
 ✅ built · ◐ partly built · ✗ not started
@@ -187,7 +187,15 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 | Checked from outside | the app and direct links load, the bundle is served, `/api/health` OK, `/tiger` loads, Gemini answers, Sam answers "Which dishes ran out on rainy Fridays?" from Tiger |
 | Uncertainty sweep | ✅ built (`worlds.py`, `POST /api/worlds`, `dcsim worlds --worlds 1000`); 200 worlds take 54 s on an 8-core laptop, so 1,000 is the cloud story (IMPROVEMENTS §2.2) |
 
+### Built 2026-11-15: a temporary fleet for plan searches (`dcsim fleet`)
+One command creates temporary 16-vCPU Vultr servers, runs the optimizer for every menu date on them at once, saves each search to Tiger and deletes the servers; the `/tiger` dashboard's **Fleet (Vultr)** card shows it live. Code: `engine/src/dcsim/fleet.py`; runbook: [deploy/README.md](../deploy/README.md#fleet-many-plan-searches-at-once-on-temporary-servers-dcsim-fleet).
+
+**First run (2026-11-15, run `f72caee8`):** all 8 menu dates, 80 plans each, saved to Tiger in **3.3 min** on 3 × 16-vCPU CPU-optimized servers (`voc-c-16c-32gb-300s-amd`, Atlanta, $0.438/h); one after another on those servers they'd take 6.0 min, and on the 8-core laptop about 13 min. Each server was reachable and set up (uv, clone, `uv sync`) about 60 s after it was created; each date's search took 37–50 s (the laptop: 86–160 s). 9 server-minutes, about **$0.07**; every server deleted. 8 servers were asked for, but **the account's monthly-fee limit allowed only 3**: the other 5 creates were refused and the 3 servers shared the dates. Ask Vultr support for a limit increase to run all 8 at once (then about 2 min).
+
+**Pitch:** "Optimizing the whole week takes 13 minutes on a laptop. One command rents Vultr servers for three minutes, runs every day at once, saves each answer to Tiger and gives the servers back: about seven cents."
+
 ### Left (S)
+0. **Fleet at full size:** request a monthly-fee limit increase from Vultr, then `uv run dcsim fleet optimize` again for 8 servers at once (TIGER.md §10 then holds three searches per date).
 1. **Evidence for the judges:** on the server, `sudo -iu dcsim bash -lc 'cd /srv/dc-whatif/engine && time uv run dcsim worlds --worlds 1000'`. Keep the time next to the laptop's 200 worlds in 54 s, plus screenshots of `htop` during the run and the Vultr dashboard.
 2. **Before the demo:** `DCSIM_LEDGER_WRITES=1` in `/etc/dcsim.env`, then `systemctl restart dcsim` (deploy/README.md, Day to day), so Adopt logs to Tiger on stage.
 3. **Write-up:** "The API, the simulation workers and the 1,000-world sweep run on a Vultr CPU-optimized server", with the link.

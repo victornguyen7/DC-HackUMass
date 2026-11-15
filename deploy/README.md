@@ -27,6 +27,7 @@ The app and API run on one Ubuntu server. Caddy serves `web/dist` over HTTPS and
 | `push-secrets.sh` | your laptop | sends `engine/.env` (plus `DCSIM_TSDB_URL` from `tiger db uri`) and `cache/`, saves the Tiger password on the server, restarts the API |
 | `tiger-password.sh` | server, as root | switches the server's Tiger CLI to `~/.pgpass` and saves the database password from `DCSIM_TSDB_URL` (the two scripts above call it) |
 | `dcsim.service` | — | systemd unit, installed by `setup.sh` |
+| `engine/src/dcsim/fleet.py` | your laptop | `dcsim fleet`: temporary worker servers for plan searches (section below) |
 | `Caddyfile` | — | template, filled in by `setup.sh` |
 
 ## Set up a server from scratch
@@ -74,6 +75,27 @@ The Sam check names 3 rainy Fridays, Cumin Basmati Rice and Savory Baked Chicken
 | Adopt logs to Tiger (demo) | `sed -i 's/^DCSIM_LEDGER_WRITES=.*/DCSIM_LEDGER_WRITES=1/' /etc/dcsim.env && systemctl restart dcsim` |
 | Tiger password again | `bash /srv/dc-whatif/deploy/tiger-password.sh && systemctl restart dcsim` |
 | 1,000-world sweep (Vultr evidence) | `sudo -iu dcsim bash -lc 'cd /srv/dc-whatif/engine && time uv run dcsim worlds --worlds 1000'` |
+
+## Fleet: many plan searches at once on temporary servers (`dcsim fleet`)
+
+One command runs the optimizer on every menu date at once, one temporary Vultr server per date, saves each search to Tiger and deletes the servers (`engine/src/dcsim/fleet.py`). Run it from your laptop, in `engine/`:
+
+```bash
+uv run dcsim fleet status                     # the key works, any fleet servers running now
+uv run dcsim fleet optimize --dry-run         # plan, number of servers, cost estimate; creates nothing
+uv run dcsim fleet optimize                   # every menu date, 8 x 16-vCPU servers; or --dates 2026-11-13..2026-11-16
+uv run dcsim fleet cleanup                    # delete any leftover dcsim-fleet server (normally there are none) and old worker snapshots
+```
+
+- **Key:** `VULTR_API_KEY` in `engine/.env` (gitignored; Vultr → Account → API). If Vultr answers 401/403, allow your IP under API → Access Control.
+- **Workers** are fresh Ubuntu 24.04 servers. Your laptop's public key (`~/.ssh/id_ed25519.pub`, or `VULTR_SSH_PUBKEY`) is added to their root login through cloud-init (the account has no registered SSH key; the live server is never changed). Over SSH each worker installs uv, clones `main` from GitHub and syncs the packages, receives the Tiger URL on stdin (so it never sits in Vultr's server metadata), then runs `dcsim optimize --date D --save --source fleet:<run>` for each date it takes from the queue.
+- **Plan:** the cheapest CPU-optimized plan with at least `--vcpus` (default 16) in the live server's region; at most 8 servers (`--workers`). If Vultr refuses a server (account limit), the others take its dates.
+- **Billing safety:** servers bill until deleted, even when stopped. Every server a run creates is deleted when it finishes, on an error, on Ctrl-C and after `--max-minutes` (default 30); `dcsim fleet cleanup` deletes anything tagged `dcsim-fleet`.
+- **Live view:** the `/tiger` dashboard's **Fleet (Vultr)** card (from `dcsim.fleet_runs` and `dcsim.fleet_tasks` in Tiger: no secrets, no IP addresses) shows each date's server, status, run time and last progress line; the saved searches appear in the Lab's Optimize card and the Plan searches card.
+- Code changes only need to be on `main` (workers clone it). Searches are reproducible on one machine but not across machines: Optuna's sampler picked different plans from trial 34 on the AMD servers than on the laptop, so a fleet run is a second independent search, not a copy.
+- **Lessons from the first tries:** a snapshot of the live server (322 GB) took over 10 minutes to restore and kept the server "locked", which also blocks deleting it. Workers now boot fresh Ubuntu, and deletes retry until Vultr lets go.
+
+**First run (2026-11-15, run `f72caee8`):** all 8 menu dates, 80 plans each, saved to Tiger in **3.3 min** on 3 × 16-vCPU CPU-optimized servers (`voc-c-16c-32gb-300s-amd`, Atlanta, $0.438/h); one after another on those servers they'd take 6.0 min, and on the 8-core laptop about 13 min. Each server was reachable and set up (uv, clone, `uv sync`) about 60 s after it was created; each date's search took 37–50 s (the laptop: 86–160 s). 9 server-minutes, about **$0.07**; every server deleted. 8 servers were asked for, but **the account's monthly-fee limit allowed only 3**: the other 5 creates were refused and the 3 servers shared the dates. Ask Vultr support for a limit increase to run all 8 at once (then about 2 min).
 
 ## Troubleshooting (all hit on the first deploy, 2026-11-14, and fixed in the scripts)
 

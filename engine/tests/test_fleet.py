@@ -177,10 +177,11 @@ def test_a_failed_date_still_deletes_and_is_reported():
 
 
 def test_account_limit_shrinks_the_fleet_without_failing():
-    v = FakeVultr(max_servers=2)
-    r = fleet.run_fleet(v.api(), DATES, workers=8, pubkey=KEY, env_text=ENV, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
+    v, board = FakeVultr(max_servers=2), FakeBoard()
+    r = fleet.run_fleet(v.api(), DATES, workers=8, pubkey=KEY, env_text=ENV, ssh=FakeSSH(), board=board, log=lambda s: None,
                         sleep=lambda s: None)
     assert r["saved"] == DATES and r["servers"] == 2 and set(v.servers) == {"live"}
+    assert board.runs[r["run_id"]]["servers"] == 2 and board.runs[r["run_id"]]["workers"] == 8
 
 
 def test_time_limit_deletes_everything():

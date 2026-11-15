@@ -27,6 +27,7 @@ uv run dcsim optimize --date 2026-11-13                      # search kitchen pl
 uv run dcsim worlds --date 2026-11-13 --preset smaller_batches   # a plan in plausible worlds + waste tornado (--save)
 uv run dcsim tsdb searches                                   # saved plan searches, levers that keep showing up (docs/TIGER.md §10)
 uv run dcsim tsdb dishes --name "Butter Chicken" --role entree   # dish-popularity check + look-alikes on Tiger (§9)
+uv run dcsim fleet optimize --dry-run                        # Vultr: every menu date at once on temporary servers (deploy/README.md)
 uv run dcsim tsdb sweep --date 2026-11-13 --nights 500        # 500 simulated nights -> Tiger, minutes out of stock per dish (§11; --dish, --report-only)
 ```
 
@@ -120,6 +121,7 @@ Edit `data/worcester/overrides.json` to fix a role (then re-run `prepare`) or to
 | `optimize.py` | Optimize plan: Optuna multi-objective search over station/dish multipliers, frontier re-checked on unseen seeds |
 | `worlds.py` | Plausible worlds (`ScenarioConfig.uncertainty`): crowd, rush and popularity drawn per seed, new dishes with their own spread; sweep + waste tornado |
 | `dishsearch.py` | Dish look-alikes across every menu (111-dim vectors in `dcsim.dish_vectors`, DiskANN), what they sold, a new dish's spread, the per-dish popularity check |
+| `fleet.py` | Vultr fleet: temporary 16-vCPU servers (fresh Ubuntu, SSH) run every date's optimizer at once and are deleted; live status in Tiger (`fleet_runs`, `fleet_tasks`) |
 | `searchlog.py` | Plan searches kept in Tiger: `plan_searches`, hypertable `search_trials`, `search_worlds`; the "which lever keeps showing up" query |
 
 ## Guarantees (tested)

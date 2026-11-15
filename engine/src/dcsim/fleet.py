@@ -49,6 +49,7 @@ TABLES = """
 CREATE TABLE IF NOT EXISTS dcsim.fleet_runs (
   run_id text PRIMARY KEY, kind text NOT NULL, dates date[], trials int,
   plan text, vcpus int, region text, workers int, hourly_usd double precision,
+  servers int,                      -- servers actually created (the account's limits can allow fewer than `workers`)
   started_at timestamptz NOT NULL DEFAULT now(), finished_at timestamptz,
   status text NOT NULL,             -- running | done | failed | stopped
   wall_s double precision,          -- first server created -> last one deleted
@@ -62,6 +63,7 @@ CREATE TABLE IF NOT EXISTS dcsim.fleet_tasks (
   deleted_at timestamptz, run_s double precision, search_id text, progress text, error text,
   PRIMARY KEY (run_id, menu_date)
 );
+ALTER TABLE dcsim.fleet_runs ADD COLUMN IF NOT EXISTS servers int;
 COMMENT ON TABLE dcsim.fleet_runs IS 'Vultr fleet runs: many optimizer searches at once, one temporary Vultr server per menu date. wall_s = real time for the whole run; sequential_s = the same searches one after another on one machine.';
 COMMENT ON TABLE dcsim.fleet_tasks IS 'One menu date in a Vultr fleet run: which worker ran it, when its server was created / ready / deleted, the optimizer run time and the saved search (plan_searches.search_id).';
 """
@@ -502,6 +504,7 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
         if status == "done" and len(run_times) < len(dates):
             status = "failed" if not run_times else "done"
         board.run(run_id=run_id, kind="optimize", status=status, finished_at=_now(), wall_s=round(wall, 1),
+                  servers=len(created),
                   sequential_s=round(sum(run_times.values()), 1), server_minutes=round(server_min, 1),
                   est_cost_usd=round(server_min / 60 * plan["hourly_cost"], 2))
     summary = {

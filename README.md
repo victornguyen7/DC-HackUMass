@@ -163,6 +163,7 @@ HackUMass2026/
 │   │   ├── searchlog.py     plan searches kept in Tiger (plan_searches, search_trials, search_worlds)
 │   │   ├── nightsweep.py    the 500-night question: many simulated nights of one date in Tiger, minutes out of stock per dish (`dcsim tsdb sweep`)
 │   │   ├── dishsearch.py    dish look-alikes (DiskANN), what they sold, dish-popularity check (`dcsim tsdb dishes`)
+│   │   ├── fleet.py         Vultr fleet: temporary servers run every date's optimizer at once (`dcsim fleet`)
 │   │   ├── reports.py       cook sheet, alerts, station table
 │   │   ├── service.py, store.py, api.py   caching, SQLite, FastAPI
 │   │   ├── synthetic.py, backtest.py      synthetic waste history + back-test
@@ -234,6 +235,7 @@ All targets run from the repo root; each one has a short comment in the `Makefil
 | Search kitchen plans for less waste (frontier + unseen-seed check) | Lab › **Optimize** (needs `make server`), or `cd engine && uv run dcsim optimize --date 2026-11-13` |
 | Test a plan when the crowd, rush and popularity guesses are off | Lab › **Plausible worlds**, or `cd engine && uv run dcsim worlds --date 2026-11-13 --preset smaller_batches` |
 | Keep an optimizer or worlds run in Tiger, and see which levers keep showing up | automatic from the Lab when Tiger is set up (not on `make server-test`); CLI: `uv run dcsim optimize --date 2026-11-13 --save`, then `uv run dcsim tsdb searches` |
+| Optimize every menu date at once on temporary Vultr servers (live on `/tiger`) | `cd engine && uv run dcsim fleet optimize --dry-run`, then without `--dry-run` (needs `VULTR_API_KEY`; deploy/README.md "Fleet") |
 | See what dishes like a new one really sold, and check dish popularity | Lab › Menu › Add a new dish (needs `make server` + Tiger), or `cd engine && uv run dcsim tsdb dishes --name "Butter Chicken" --role entree` |
 | Find past nights like a given one | Insights › Similar nights (needs `make server`), or `cd engine && uv run dcsim tsdb similar --date 2026-11-14 --weather rain` |
 

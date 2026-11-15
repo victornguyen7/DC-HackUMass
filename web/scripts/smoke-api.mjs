@@ -7,6 +7,11 @@
 import { chromium } from "playwright-core";
 import { mkdirSync } from "node:fs";
 
+// The Hall is ready when the 3D scene is (its canvas becomes focusable), or, on a browser without
+// WebGL 2, when it offers the top-down fallback instead.
+const hallReady = (p, timeout = 20000) => p.locator('canvas[tabindex="0"][aria-label^="Interactive 3D hall"]')
+  .or(p.getByRole("button", { name: "Open top-down view" })).first().waitFor({ timeout });
+
 const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const allowLedger = process.argv.includes("--allow-ledger");
 const base = args[0] ?? "http://localhost:5174";
@@ -100,7 +105,7 @@ await step("watch API run in Hall (API replay + narration)", async () => {
   await p.getByText("simulated on the API").waitFor({ timeout: 30000 });
   await p.getByRole("button", { name: "Watch replay" }).click();
   await p.waitForURL(/\/hall/);
-  await p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 120000 });
+  await hallReady(p, 120000);
   await p.getByText("Student stories", { exact: true }).click();
   await p.locator(".student-directory .link").first().click();
   await p.getByRole("button", { name: "Top-down view" }).click();
@@ -128,8 +133,8 @@ await step("bundle lever-grid scenario replays from the API", async () => {
   await p.getByRole("button", { name: "Watch replay" }).click();
   await p.waitForURL(/\/hall/);
   await Promise.race([
-    p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 120000 }),
-    p.getByText(/couldn't replay/).waitFor({ timeout: 120000 }).then(() => { throw new Error("API couldn't replay the lever-grid hash"); }),
+    hallReady(p, 120000),
+    p.getByRole("heading", { name: "Replay unavailable" }).waitFor({ timeout: 120000 }).then(() => { throw new Error("API couldn't replay the lever-grid hash"); }),
   ]);
 });
 

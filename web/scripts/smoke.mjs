@@ -7,6 +7,11 @@ const base = process.argv[2] ?? "http://localhost:5173";
 const out = process.argv[3] ?? "smoke-out";
 mkdirSync(out, { recursive: true });
 
+// The Hall is ready when the 3D scene is (its canvas becomes focusable), or, on a browser without
+// WebGL 2, when it offers the top-down fallback instead.
+const hallReady = (p, timeout = 20000) => p.locator('canvas[tabindex="0"][aria-label^="Interactive 3D hall"]')
+  .or(p.getByRole("button", { name: "Open top-down view" })).first().waitFor({ timeout });
+
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 const problems = [];
 async function page(width, height) {
@@ -25,7 +30,7 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
   const p = await page(w, h);
   await step(`${tag} hall loads`, async () => {
     await p.goto(`${base}/hall`);
-    await p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 20000 });
+    await hallReady(p);
     await p.getByRole("button", { name: "Inspect Latino" }).waitFor({ timeout: 20000 });
     await p.screenshot({ path: `${out}/hall-${tag}.png`, fullPage: true });
   });
@@ -47,7 +52,8 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
     await step("hall camera views", async () => {
       await p.getByRole("button", { name: "Top-down view" }).click();
       await p.getByRole("img", { name: /^Top-down plan/ }).waitFor();
-      await p.getByRole("button", { name: "Isometric view" }).click();
+      await p.getByRole("button", { name: "3D view" }).click();
+      await hallReady(p);
     });
     await step("hall scrub keyboard", async () => {
       await p.getByRole("slider", { name: "Playback time" }).focus();
@@ -89,7 +95,7 @@ for (const [w, h, tag] of [[1440, 1024, "desktop"], [1024, 1300, "tablet"], [390
       await p.getByText("Results vs. baseline").waitFor();
       await p.getByRole("button", { name: "Watch replay" }).click();
       await p.waitForURL(/\/hall/);
-      await p.getByRole("img", { name: /^Isometric hall replay/ }).waitFor({ timeout: 20000 });
+      await hallReady(p);
     });
     await step("dashboard date switch", async () => {
       await p.goto(`${base}/dashboard`);

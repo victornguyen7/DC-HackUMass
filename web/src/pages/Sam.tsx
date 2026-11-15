@@ -148,7 +148,7 @@ function Run({ s, date }: { s: AgentState; date: string }) {
       : <section className="sam-attempts" aria-label="Plans being tested"><div className="sam-section-heading"><h3>Finding a plan that fits</h3><span>{s.tries.length} of {s.maxTries ?? 5} attempts</span></div>{attempts}</section>)}
     {s.goal?.kind === "whatif" && s.whatif && !s.final && <WhatIfSettings w={s.whatif} />}
     {s.tiger.length > 0 && <TigerCard lookups={s.tiger} live={running} />}
-    {s.notices.length > 0 && <details className="card sam-disclosure"><summary><span>Run notes</span><small>{s.notices.length}</small></summary><div className="sam-disclosure-body">{s.notices.map((n) => <p key={n}>{n}</p>)}</div></details>}
+    {s.notices.length > 0 && <details className="card sam-disclosure"><summary><span>Run notes</span><small>{s.notices.length}</small></summary><div className="sam-disclosure-body">{s.notices.map((n, i) => <p key={`${i}:${n}`}>{n}</p>)}</div></details>}
   </div>;
 }
 
@@ -206,9 +206,9 @@ function TryCard({ t, s, chosen }: { t: AgentState["tries"][number]; s: AgentSta
           {t.missed_meal && <Metric label="Missed meals" h={t.missed_meal} unit="students" />}
           {t.wait_p90 && <Metric label="Long waits (90%)" h={t.wait_p90} unit="min" dec />}
         </div><CheckList checks={t.check.checks} />
-        {t.check.protected_worse.length > 0 && <details className="sam-settings"><summary>Dishes that run out more ({t.check.protected_worse.length})</summary><div className="sam-table"><table className="t"><thead><tr><th>Dish</th><th>Station</th><th>Before → after</th></tr></thead><tbody>{t.check.protected_worse.map((w) => <tr key={w.dish_id}><td>{w.name}</td><td>{stationName(w.station)}</td><td>{Math.round(w.runout_share[0] * 100)}% → {Math.round(w.runout_share[1] * 100)}% of nights</td></tr>)}</tbody></table></div></details>}
+        {t.check.protected_worse.length > 0 && <details className="sam-settings"><summary>Dishes that run out more ({t.check.protected_worse.length})</summary><div className="sam-table"><table className="t"><thead><tr><th>Dish</th><th>Station</th><th>Before → after</th></tr></thead><tbody>{t.check.protected_worse.map((w, i) => <tr key={`${i}:${w.dish_id}`}><td>{w.name}</td><td>{stationName(w.station)}</td><td>{Math.round(w.runout_share[0] * 100)}% → {Math.round(w.runout_share[1] * 100)}% of nights</td></tr>)}</tbody></table></div></details>}
       </>}
-      {(t.moves.length > 0 || !!t.settings?.length) && <details className="sam-settings"><summary>Changes tested{t.settings?.length ? ` · ${t.settings.length} settings` : ""}</summary><ul className="sam-moves">{t.moves.map((m) => <li key={m}>{plain(m)}</li>)}</ul>{!!t.settings?.length && <ul className="sam-setting-values">{t.settings.map((x) => <li key={x}>{plain(x)}</li>)}</ul>}</details>}
+      {(t.moves.length > 0 || !!t.settings?.length) && <details className="sam-settings"><summary>Changes tested{t.settings?.length ? ` · ${t.settings.length} settings` : ""}</summary><ul className="sam-moves">{t.moves.map((m, i) => <li key={`${i}:${m}`}>{plain(m)}</li>)}</ul>{!!t.settings?.length && <ul className="sam-setting-values">{t.settings.map((x, i) => <li key={`${i}:${x}`}>{plain(x)}</li>)}</ul>}</details>}
     </div>
   </details></li>;
 }
@@ -384,7 +384,7 @@ function WhatIfSettings({ w }: { w: NonNullable<AgentState["whatif"]> }) {
     <details className="card sam-disclosure" aria-label="What-if settings">
       <summary><span>What Sam is testing</span><small>{w.settings.length} changes</small></summary>
       <div className="sam-disclosure-body">
-      {w.settings.length ? <ul className="sam-moves">{w.settings.map((x) => <li key={x}>{x}</li>)}</ul>
+      {w.settings.length ? <ul className="sam-moves">{w.settings.map((x, i) => <li key={`${i}:${x}`}>{x}</li>)}</ul>
         : <div className="hint">{w.error ?? "Nothing in that maps to a setting."}</div>}
       {w.unsupported.length > 0 && <div className="hint">Not supported: {w.unsupported.join("; ")}</div>}
       <p className="sam-data-caption">{methodText(w.method)}</p>
@@ -439,7 +439,7 @@ function WhatIfCard({ f }: { f: AgentFinal }) {
       )}
       {note && <div className="alert info" role="status">{note}</div>}
       <details className="sam-disclosure sam-kitchen-changes"><summary><span>Changes & simulation details</span><small>{f.settings?.length ?? 0} settings</small></summary><div className="sam-disclosure-body">
-        {!!f.settings?.length && <ul className="sam-moves">{f.settings.map((x) => <li key={x}>{plain(x)}</li>)}</ul>}
+        {!!f.settings?.length && <ul className="sam-moves">{f.settings.map((x, i) => <li key={`${i}:${x}`}>{plain(x)}</li>)}</ul>}
         {m && <Metric label="Empty-pan time across dishes" h={m.stockout_min_total} unit="dish-min" dec />}
         <p className="sam-data-caption">{methodText(f.method)}{ran ? ` · ${f.nights_simulated ?? 60} simulated nights, including the current plan.` : ""}</p>
       </div></details>

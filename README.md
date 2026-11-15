@@ -59,7 +59,7 @@ There is also a standalone **calibration page** (`web/public/calibration.html`, 
 | Google Chrome | any recent | only for the browser smoke tests |
 
 ### Live demo
-**https://155-138-211-252.sslip.io**: the app and API on a Vultr server (since 2026-11-14). How it's deployed and how to update it: [`deploy/README.md`](deploy/README.md).
+**https://dineamics.compare**: the app and API on a Vultr server (since 2026-11-14; on the domain since 2026-11-15). How it's deployed and how to update it: [`deploy/README.md`](deploy/README.md).
 
 ### Just look at the app (2 minutes, no backend)
 ```bash

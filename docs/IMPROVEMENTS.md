@@ -219,7 +219,7 @@ These fix behavior that every later improvement would otherwise inherit.
 | **Auth token for write routes + rate limit on LLM routes** (ISSUES A1) | Safe to host publicly | S |
 | **Expire jobs; smaller trace cache** (ISSUES A2) | Stable memory on a long demo day | S |
 | **CI** (tests + quick bundle on every push) | Catches regressions | S (after git) |
-| ~~**Docker + deploy**~~ **Done 2026-11-14** on a Vultr server without Docker (https://155-138-211-252.sslip.io, `deploy/`) | A shareable demo URL | ✅ |
+| ~~**Docker + deploy**~~ **Done 2026-11-14** on a Vultr server without Docker (https://dineamics.compare, `deploy/`) | A shareable demo URL | ✅ |
 | **`POST /warm`**: precompute the configs the UI might ask for next | Instant results while sliders move | S |
 | **Daily menu refresh** (scraper → `dcsim prepare`) | Always tomorrow's real menu | M |
 

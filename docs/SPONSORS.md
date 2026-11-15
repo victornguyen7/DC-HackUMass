@@ -14,13 +14,13 @@ Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). 
 | 1 | Best Use of Gemini API | Plain-English what-if box on **Gemini function calling**; Sam's tool loop | ✅ built | — | |
 | 2 | Best Agentic Hack (Sentient) | **Planning agent, Sam the Minuteman**: goal → Tiger lookups (MCP) + ≤ 5 simulations → checks its own results → production plan; questions answered from Tiger; history | ✅ built 2026-11-14 | S (demo polish) | |
 | 3 | Best Use of Tiger Data | Every simulated and "observed" night as time series, side by side; similar-night and dish search; every plan search kept and queried in SQL | ✅ built (500-night query done 2026-11-14) | S (demo) | |
-| 4 | Best Use of Vultr | API + simulation workers in the cloud; **a temporary fleet: every menu date optimized at once on rented 16-vCPU servers (3.3 min, $0.07)**; 1,000-night uncertainty sweep | ✅ **deployed 2026-11-14** at https://155-138-211-252.sslip.io (`deploy/`) | S (time the 1,000-world sweep there, write-up) | |
-| 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link | ✗ not done (the server uses a free sslip.io name until then) | ~10 min | |
+| 4 | Best Use of Vultr | API + simulation workers in the cloud; **a temporary fleet: every menu date optimized at once on rented 16-vCPU servers (3.3 min, $0.07)**; 1,000-night uncertainty sweep | ✅ **deployed 2026-11-14**, at https://dineamics.compare since 2026-11-15 (`deploy/`) | S (time the 1,000-world sweep there, write-up) | |
+| 5 | Best Domain Name (GoDaddy Registry) | A real domain for the demo link: **https://dineamics.compare** | ✅ live 2026-11-15 (HTTPS, served from the Vultr server) | — (slide + Devpost) | |
 
 ✅ built · ◐ partly built · ✗ not started
 
 **Prizes 1 and 2 share most of their code.** The agent is Gemini function calling plus a loop, so one feature can enter both.
-**Prizes 4 and 5 go together.** Point the domain at the Vultr server (`155.138.211.252`) and re-run setup with it, and the demo link becomes `https://<our-domain>` (today: https://155-138-211-252.sslip.io).
+**Prizes 4 and 5 go together.** ✅ Done 2026-11-15: **https://dineamics.compare** points at the Vultr server (`A @ → 155.138.211.252`), with HTTPS from Let's Encrypt.
 
 **Check at the event (don't assume):**
 - [ ] Sentient track rules: does it require Sentient's own platform or SDK? We couldn't find the rules.
@@ -173,7 +173,7 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 **Pitch:** "Running 1,000 nights for the uncertainty sweep happens on a cloud server, not a laptop."
 
 ### Done (2026-11-14): the app runs on Vultr
-**Live link: https://155-138-211-252.sslip.io**. Runbook, settings and troubleshooting: [`deploy/README.md`](../deploy/README.md).
+**Live link: https://dineamics.compare** (the domain from §5; the server was first reachable at https://155-138-211-252.sslip.io). Runbook, settings and troubleshooting: [`deploy/README.md`](../deploy/README.md).
 
 | Piece | Where / state |
 | --- | --- |
@@ -207,7 +207,10 @@ One command creates temporary 16-vCPU Vultr servers, runs the optimizer for ever
 
 **Pitch:** a clean, memorable demo link on the slides instead of `localhost:5173`.
 
-### To do (~10 min)
+### ✅ Done (2026-11-15): **https://dineamics.compare**
+`.compare` is a GoDaddy Registry extension. DNS: `A @ → 155.138.211.252` at the registrar; then on the server `DOMAIN=dineamics.compare TIGER_CLI=1 bash /srv/dc-whatif/deploy/setup.sh` (Caddy got the Let's Encrypt certificate, valid until 2027-02-13; the API's allowed origin is the domain). Checked: `/`, `/api/health`, `/tiger` and `/lab` answer 200 over HTTPS. Left: put the link on the title slide and in the Devpost submission. `www.` isn't served.
+
+### How it was done (for the record)
 1. **Check which extensions qualify first.** The prize is for a domain from *GoDaddy Registry*. Get the claim link or code from MLH at the event and see which extensions it covers. Not every extension counts. For example, `.tech` is run by a different registry, so `dcwhatif.tech` may **not** qualify.
 2. Pick a name: short, says what it does, easy to say on stage. Ideas: `dcwhatif`, `whatifdining`, `platewise`, `panplanner`. Check what's available.
 3. Register it with the team's shared account, not someone's personal one if avoidable, and write down who owns it.
@@ -218,7 +221,7 @@ One command creates temporary 16-vCPU Vultr servers, runs the optimizer for ever
 
 ## Suggested order
 
-1. ✅ **Vultr server (§4)**: live 2026-11-14 at https://155-138-211-252.sslip.io. **Domain (§5)** still open: DNS takes a while, so do it early.
+1. ✅ **Vultr server (§4)**: live 2026-11-14. ✅ **Domain (§5)**: https://dineamics.compare since 2026-11-15.
 2. **Agent (§2)**: the biggest new feature, and it enters two prizes. Start with 3 tools and the loop. Add `optimize` only if there's time.
 3. ✅ **Gemini (§1)**: function calling is built for the what-if box and for Sam.
 4. **Tiger polish (§3)**: the 500-night query (track record, situational fit and MCP questions are done).
@@ -226,6 +229,6 @@ One command creates temporary 16-vCPU Vultr servers, runs the optimizer for ever
 
 ## One demo story that hits all five
 
-> Open **https://our-domain** (5, served from Vultr: 4; until the domain exists, https://155-138-211-252.sslip.io). Type *"one more server at Grill and 10% busier"* → Gemini's function calls set it up and the Lab runs it (1).
+> Open **https://dineamics.compare** (5, served from Vultr: 4). Type *"one more server at Grill and 10% busier"* → Gemini's function calls set it up and the Lab runs it (1).
 > Type *"cut waste 20% without any vegetarian dish running out"* → the agent runs simulations on the server, shows each try, and hands back a cook sheet (2, 1, 4).
 > Adopt it → the forecast is logged to Tiger; open the calibration page and ask the Tiger MCP *"which dishes ran out on rainy Fridays?"* (3).

@@ -6,9 +6,9 @@ The app and API run on one Ubuntu server. Caddy serves `web/dist` over HTTPS and
 
 | | |
 | --- | --- |
-| **Link** | **https://155-138-211-252.sslip.io** (sslip.io turns the IP into a hostname until we have a domain, §5 of SPONSORS.md) |
+| **Link** | **https://dineamics.compare** (GoDaddy Registry domain, `A @ → 155.138.211.252`; since 2026-11-15. The earlier https://155-138-211-252.sslip.io stopped working when Caddy switched to the domain) |
 | Server | Vultr, Ubuntu 24.04, IP `155.138.211.252`, app in `/srv/dc-whatif` |
-| HTTPS | Let's Encrypt certificate from Caddy, valid until 2027-02-13 (Caddy renews it) |
+| HTTPS | Let's Encrypt certificate for `dineamics.compare` from Caddy, valid until 2027-02-13 (Caddy renews it) |
 | Checked from outside | the web app and direct links (`/sam`) load; the demo bundle is served; `/api/health` OK with the laptop's cache copied over (729 configs, 16,168 nights, 6 scenarios, 992 LLM responses); `/tiger` loads; Gemini answers; **Ask Sam's Tiger lookups work** ("Which dishes ran out on rainy Fridays?") |
 | Server settings | `/etc/dcsim.env`: workers = core count, `DCSIM_CORS` = the link, admin token set, `DCSIM_AI_RATE=10`, **`DCSIM_LEDGER_WRITES=0`** (Adopt doesn't write to Tiger yet) |
 | Deployed from | `main` (setup pulls GitHub; it never deploys uncommitted work) |
@@ -16,7 +16,7 @@ The app and API run on one Ubuntu server. Caddy serves `web/dist` over HTTPS and
 **Still to do:**
 - [ ] Time the 1,000-world sweep on the server and keep the output and screenshots (`htop`, the Vultr dashboard) for Devpost (command below).
 - [ ] Before the demo: `DCSIM_LEDGER_WRITES=1` (command below), so Adopt logs forecasts to Tiger on stage.
-- [ ] Register the GoDaddy Registry domain, point its `A` record at `155.138.211.252`, re-run setup with `DOMAIN=` it (SPONSORS.md §5).
+- [x] Domain: `dineamics.compare` (GoDaddy Registry), `A @ → 155.138.211.252`, setup re-run with `DOMAIN=dineamics.compare` (2026-11-15). Let's Encrypt certificate valid until 2027-02-13. `www.dineamics.compare` isn't served (the Caddy template takes one hostname).
 - [ ] Optional hardening: SSH with keys only (`PasswordAuthentication no` in `/etc/ssh/sshd_config`).
 
 ## Files
@@ -65,7 +65,7 @@ The Sam check names 3 rainy Fridays, Cumin Basmati Rice and Savory Baked Chicken
 
 | Task | Command |
 | --- | --- |
-| Update to the latest `main` | `DOMAIN=155-138-211-252.sslip.io TIGER_CLI=1 bash /srv/dc-whatif/deploy/setup.sh` |
+| Update to the latest `main` | `DOMAIN=dineamics.compare TIGER_CLI=1 bash /srv/dc-whatif/deploy/setup.sh` (always pass the domain: without it the site falls back to plain HTTP) |
 | Change the domain | the same command with the new `DOMAIN` (it updates `DCSIM_CORS` and keeps the admin token and other settings) |
 | Logs | `journalctl -u dcsim -f` (Caddy: `journalctl -u caddy -n 50 --no-pager`) |
 | Restart | `systemctl restart dcsim` |

@@ -3,7 +3,7 @@
 Tracks we're entering: **[HackUMass] Best UMass Hack** · **[MLH] Best Use of Gemini API** · **[MLH] Best Use of Vultr** · **[Sentient OS] Best Agentic Hack**
 Judged on: **Innovation · Functionality · Practicality · Presentation**
 
-Live link: **https://155-138-211-252.sslip.io** (Vultr). Use the date **Fri Nov 13** for the hall and Lab, **Wed Nov 18** (Thanksgiving dinner) for the 4,000-night beat.
+Live link: **https://dineamics.compare** (Vultr, GoDaddy Registry domain). Use the date **Fri Nov 13** for the hall and Lab, **Wed Nov 18** (Thanksgiving dinner) for the 4,000-night beat.
 
 ---
 

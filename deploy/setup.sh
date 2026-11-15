@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # DC What-If: set up (or update) a fresh Ubuntu 24.04 server. Run ON THE SERVER as root.
 #
-#   curl -fsSL https://raw.githubusercontent.com/victornguyen7/dineamics/main/deploy/setup.sh | DOMAIN=your-domain bash
+#   curl -fsSL https://raw.githubusercontent.com/victornguyen7/Dineamics/main/deploy/setup.sh | DOMAIN=your-domain bash
 #
 # or, from a clone: DOMAIN=your-domain bash /srv/dc-whatif/deploy/setup.sh
 #
@@ -18,7 +18,7 @@
 # engine/.env (your secrets) or /etc/dcsim.env once they exist.
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/victornguyen7/dineamics.git}"
+REPO_URL="${REPO_URL:-https://github.com/victornguyen7/Dineamics.git}"
 BRANCH="${BRANCH:-main}"
 APP_DIR=/srv/dc-whatif
 APP_USER=dcsim

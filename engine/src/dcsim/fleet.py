@@ -37,7 +37,7 @@ import httpx
 API = "https://api.vultr.com/v2"
 TAG = "dcsim-fleet"
 SNAPSHOT_DESC = "dcsim-worker"
-REPO = "https://github.com/victornguyen7/dineamics"
+REPO = "https://github.com/victornguyen7/Dineamics"
 OS_NAME = "Ubuntu 24.04 LTS x64"
 LIVE_IP = "155.138.211.252"  # the live server (deploy/README.md); VULTR_LIVE_IP overrides
 MAX_WORKERS = 8

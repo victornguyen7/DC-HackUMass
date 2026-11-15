@@ -1,0 +1,1039 @@
+{
+ "output": "output/dineamics_demo_v13.mp4",
+ "duration": 137.5,
+ "scenes": [
+  {
+   "start": 0.0,
+   "end": 12.7,
+   "segs": [
+    {
+     "start": 0.0,
+     "end": 5.4
+    },
+    {
+     "start": 5.4,
+     "end": 8.5
+    },
+    {
+     "start": 8.5,
+     "end": 12.7
+    }
+   ]
+  },
+  {
+   "start": 12.1,
+   "end": 17.0,
+   "segs": [
+    {
+     "start": 12.1,
+     "end": 17.0
+    }
+   ]
+  },
+  {
+   "start": 16.4,
+   "end": 25.4,
+   "segs": [
+    {
+     "start": 16.4,
+     "end": 25.4
+    }
+   ]
+  },
+  {
+   "start": 24.8,
+   "end": 43.8,
+   "segs": [
+    {
+     "start": 24.8,
+     "end": 34.8
+    },
+    {
+     "start": 34.8,
+     "end": 43.8
+    }
+   ]
+  },
+  {
+   "start": 43.2,
+   "end": 54.2,
+   "segs": [
+    {
+     "start": 43.2,
+     "end": 48.2
+    },
+    {
+     "start": 48.2,
+     "end": 54.2
+    }
+   ]
+  },
+  {
+   "start": 53.6,
+   "end": 75.6,
+   "segs": [
+    {
+     "start": 53.6,
+     "end": 60.6
+    },
+    {
+     "start": 60.6,
+     "end": 64.6
+    },
+    {
+     "start": 64.6,
+     "end": 70.6
+    },
+    {
+     "start": 70.6,
+     "end": 75.6
+    }
+   ]
+  },
+  {
+   "start": 75.0,
+   "end": 85.0,
+   "segs": [
+    {
+     "start": 75.0,
+     "end": 81.5
+    },
+    {
+     "start": 81.5,
+     "end": 85.0
+    }
+   ]
+  },
+  {
+   "start": 84.4,
+   "end": 99.4,
+   "segs": [
+    {
+     "start": 84.4,
+     "end": 91.4
+    },
+    {
+     "start": 91.4,
+     "end": 99.4
+    }
+   ]
+  },
+  {
+   "start": 98.8,
+   "end": 124.8,
+   "segs": [
+    {
+     "start": 98.8,
+     "end": 104.8
+    },
+    {
+     "start": 104.8,
+     "end": 107.8
+    },
+    {
+     "start": 107.8,
+     "end": 113.8
+    },
+    {
+     "start": 113.8,
+     "end": 124.8
+    }
+   ]
+  },
+  {
+   "start": 124.2,
+   "end": 130.5,
+   "segs": [
+    {
+     "start": 124.2,
+     "end": 130.5
+    }
+   ]
+  },
+  {
+   "start": 129.9,
+   "end": 137.5,
+   "segs": [
+    {
+     "start": 129.9,
+     "end": 137.5
+    }
+   ]
+  }
+ ],
+ "cut": {
+  "name": "dineamics_demo",
+  "output": "output/dineamics_demo_v13.mp4",
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "crossfade": 0.6,
+  "transitions": [
+   "fadeblack",
+   "fadewhite",
+   "smoothleft",
+   "smoothleft",
+   "smoothup",
+   "smoothleft",
+   "smoothright",
+   "smoothup",
+   "fadeblack",
+   "fade"
+  ],
+  "clip_volume": 0,
+  "sources": {
+   "A": {
+    "path": "Screen Recording 2026-11-15 at 02.10.47.mov",
+    "crop": [
+     0,
+     240,
+     3024,
+     1701
+    ]
+   },
+   "B": {
+    "path": "Screen Recording 2026-11-15 at 02.14.18.mov",
+    "crop": [
+     0,
+     240,
+     3024,
+     1701
+    ]
+   },
+   "C": {
+    "path": "Screen Recording 2026-11-15 at 02.15.14.mov",
+    "crop": [
+     0,
+     240,
+     3024,
+     1701
+    ]
+   },
+   "D": {
+    "path": "Screen Recording 2026-11-15 at 02.16.09.mov",
+    "crop": [
+     0,
+     240,
+     3024,
+     1701
+    ]
+   },
+   "P1": "877bc5ca-54ed-46a5-a18b-d7ff51142aba.mp4",
+   "P2": "c665497b-3c45-4347-8c37-a8a4040dcf69.mp4",
+   "P3": "ea30ae27-42ef-4af8-a094-d062ec9ae341.mp4"
+  },
+  "scenes": [
+   {
+    "title": "Real world",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "P1",
+      "in": 0,
+      "out": 5.4,
+      "volume": 0.3
+     },
+     {
+      "kind": "clip",
+      "src": "P2",
+      "in": 0,
+      "out": 3.1,
+      "volume": 0.3
+     },
+     {
+      "kind": "clip",
+      "src": "P3",
+      "in": 0,
+      "out": 4.2,
+      "volume": 0.3
+     }
+    ]
+   },
+   {
+    "title": "Title",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "card",
+      "src": "A",
+      "t": 14,
+      "dur": 4.9,
+      "texts": [
+       {
+        "text": "Dineamics",
+        "font": "bold",
+        "size": 150,
+        "y": "(h/2)-130"
+       },
+       {
+        "text": "See tonight's dinner before it happens.",
+        "font": "regular",
+        "size": 52,
+        "y": "(h/2)+50"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "The hall",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 0,
+      "out": 9,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Every dot is a student",
+        "target": [
+         0.47,
+         0.42
+        ],
+        "at": 1.0,
+        "dur": 5.5,
+        "label": [
+         0.62,
+         0.13
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Simulation",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 9,
+      "out": 19,
+      "fx": [
+       {
+        "type": "lift",
+        "rect": [
+         0.748,
+         0.762,
+         0.238,
+         0.222
+        ],
+        "at": 3.3,
+        "scale": 1.45,
+        "pos": [
+         0.6,
+         0.6
+        ],
+        "dur": 5.9
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 19,
+      "out": 28,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Who's waiting, and what's left in each pan",
+        "target": [
+         0.05,
+         0.26
+        ],
+        "at": 3.4,
+        "dur": 4.8,
+        "label": [
+         0.4,
+         0.2
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Compare",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 29,
+      "out": 34,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Try a change",
+        "target": [
+         0.07,
+         0.215
+        ],
+        "at": 0.3,
+        "dur": 2.0,
+        "label": [
+         0.3,
+         0.2
+        ]
+       },
+       {
+        "type": "click",
+        "pos": [
+         0.12,
+         0.86
+        ],
+        "at": 2.5,
+        "dur": 1.7
+       },
+       {
+        "type": "click",
+        "pos": [
+         0.12,
+         0.96
+        ],
+        "at": 3.6,
+        "dur": 0.6
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 34,
+      "out": 40,
+      "fx": [
+       {
+        "type": "lift",
+        "rect": [
+         0.018,
+         0.17,
+         0.205,
+         0.81
+        ],
+        "at": 0.5,
+        "scale": 1.12,
+        "pos": [
+         0.42,
+         0.54
+        ],
+        "dur": 4.7
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "What-If Lab",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 40,
+      "out": 47,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Every trade-off, with a range",
+        "target": [
+         0.33,
+         0.33
+        ],
+        "at": 0.4,
+        "dur": 2.4,
+        "label": [
+         0.42,
+         0.62
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 59,
+      "out": 63,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Optimize",
+        "target": [
+         0.14,
+         0.92
+        ],
+        "at": 0.3,
+        "dur": 2.9,
+        "label": [
+         0.3,
+         0.75
+        ]
+       },
+       {
+        "type": "click",
+        "pos": [
+         0.14,
+         0.92
+        ],
+        "at": 2.6,
+        "dur": 0.6
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 118,
+      "out": 124,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "80 plans searched: the best trade-offs",
+        "target": [
+         0.45,
+         0.34
+        ],
+        "at": 0.4,
+        "dur": 2.6,
+        "label": [
+         0.72,
+         0.2
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "A",
+      "in": 140,
+      "out": 145,
+      "fx": [
+       {
+        "type": "lift",
+        "rect": [
+         0.235,
+         0.125,
+         0.745,
+         0.255
+        ],
+        "at": 0.4,
+        "scale": 1.12,
+        "pos": [
+         0.56,
+         0.42
+        ],
+        "dur": 3.8
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Ask Sam",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "D",
+      "in": 0,
+      "out": 6.5,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Ask in plain English",
+        "target": [
+         0.3,
+         0.57
+        ],
+        "at": 0.6,
+        "dur": 2.4,
+        "label": [
+         0.3,
+         0.37
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "D",
+      "in": 6.5,
+      "out": 10,
+      "fx": [
+       {
+        "type": "lift",
+        "rect": [
+         0.18,
+         0.49,
+         0.64,
+         0.35
+        ],
+        "at": 0.4,
+        "scale": 1.12,
+        "pos": [
+         0.5,
+         0.55
+        ],
+        "dur": 2.3
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Similar nights",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "C",
+      "in": 29,
+      "out": 36,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Describe tonight",
+        "target": [
+         0.13,
+         0.48
+        ],
+        "at": 0.6,
+        "dur": 3.5,
+        "label": [
+         0.45,
+         0.4
+        ]
+       },
+       {
+        "type": "click",
+        "pos": [
+         0.135,
+         0.92
+        ],
+        "at": 5.9,
+        "dur": 0.3
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "C",
+      "in": 36,
+      "out": 44,
+      "fx": [
+       {
+        "type": "lift",
+        "rect": [
+         0.262,
+         0.44,
+         0.72,
+         0.12
+        ],
+        "at": 0.9,
+        "scale": 1.18,
+        "pos": [
+         0.56,
+         0.56
+        ],
+        "dur": 6.3
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Kitchen plan",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "clip",
+      "src": "B",
+      "in": 0,
+      "out": 6,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Arrivals, every 10 minutes",
+        "target": [
+         0.44,
+         0.7
+        ],
+        "at": 0.6,
+        "dur": 4.6,
+        "label": [
+         0.66,
+         0.48
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "B",
+      "in": 13,
+      "out": 16,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "The cook sheet",
+        "target": [
+         0.25,
+         0.25
+        ],
+        "at": 0.3,
+        "dur": 1.9,
+        "label": [
+         0.25,
+         0.07
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "B",
+      "in": 33,
+      "out": 39,
+      "fx": [
+       {
+        "type": "callout",
+        "text": "Every dish, station by station",
+        "target": [
+         0.07,
+         0.44
+        ],
+        "at": 0.5,
+        "dur": 4.7,
+        "label": [
+         0.4,
+         0.3
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "clip",
+      "src": "C",
+      "in": 0,
+      "out": 11,
+      "fx": [
+       {
+        "type": "lift",
+        "rect": [
+         0.012,
+         0.125,
+         0.976,
+         0.175
+        ],
+        "at": 0.6,
+        "scale": 1.0,
+        "dur": 4.4
+       },
+       {
+        "type": "callout",
+        "text": "Synthetic history, clearly labeled",
+        "target": [
+         0.053,
+         0.258
+        ],
+        "at": 5.4,
+        "dur": 4.8,
+        "label": [
+         0.3,
+         0.45
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "End",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "card",
+      "color": "#881c1c",
+      "dur": 6.3,
+      "texts": [
+       {
+        "text": "Dineamics",
+        "font": "bold",
+        "size": 150,
+        "y": "(h/2)-150"
+       },
+       {
+        "text": "Test it on simulated students before you try it on real ones.",
+        "font": "regular",
+        "size": 46,
+        "y": "(h/2)+50"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "title": "Built at UMass",
+    "show_title": false,
+    "segs": [
+     {
+      "kind": "card",
+      "color": "#f7f2ec",
+      "dur": 7.6,
+      "texts": [
+       {
+        "text": "Built at UMass.",
+        "font": "bold",
+        "size": 80,
+        "x": "110",
+        "y": "300",
+        "color": "#881c1c",
+        "at": 0.5
+       },
+       {
+        "text": "Built for UMass Dining.",
+        "font": "bold",
+        "size": 80,
+        "x": "110",
+        "y": "405",
+        "color": "#881c1c",
+        "at": 1.2
+       },
+       {
+        "text": "For the best dining in the US.",
+        "font": "regular",
+        "size": 46,
+        "x": "112",
+        "y": "545",
+        "color": "#2b3038",
+        "at": 2.6
+       },
+       {
+        "text": "dineamics.compare",
+        "font": "regular",
+        "size": 38,
+        "x": "112",
+        "y": "630",
+        "color": "#8a8f98",
+        "at": 3.4
+       }
+      ],
+      "images": [
+       {
+        "src": "sam_minuteman.png",
+        "height": 820,
+        "x": "W-w",
+        "y": "H-h",
+        "at": 0.2,
+        "rise": 160
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "audio": [
+   {
+    "src": "voices/Seven p.m. at Worcester. The line is out the door, the Grill is running low, and every table is full..mp3",
+    "at": 0.5,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/What if the kitchen could see tonight before it happens?.mp3",
+    "at": 12.7,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/This is Dineamics. Three thousand students eat here every night, and the kitchen has to guess how much to cook..mp3",
+    "at": 17.15,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/We take tonight's real menu and play it out, student by student. Every dot is a student. When a line builds up, an alert tells you where. Click a station to see who's waiting, and how much is left in each pan..mp3",
+    "at": 25.5,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/Now try a change. We run thirty nights with the same students both times, so the difference comes from the decision, not luck..mp3",
+    "at": 43.9,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/The What-If Lab shows every trade-off, with honest ranges. .mp3",
+    "at": 54.3,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/Press Optimize, and it searches eighty kitchen plans, then charts waste against stockouts, so you can pick the balance..mp3",
+    "at": 60.8,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/One click adopts the plan for that night..mp3",
+    "at": 70.9,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/Or just ask Sam the Minuteman, our planning agent. Ask a what-if in plain English, and he shows you what changes..mp3",
+    "at": 75.7,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/Tiger Data's vector search finds the past nights most like tonight. For Friendsgiving dinner on November 18th, the closest match is 98 percent similar..mp3",
+    "at": 85.1,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/In the end, the manager gets a cook sheet,how many pans to cook, and when, for every dish, station by station. .mp3",
+    "at": 99.5,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/And a waste outlook for the next eight nights, built on synthetic history and real menus..mp3",
+    "at": 114.0,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/Dineamics. Test it on simulated students before you try it on real ones..mp3",
+    "at": 124.85,
+    "volume": 1.0
+   },
+   {
+    "src": "voices/We built at UMass, built for UMass Dining, for the best dining in the US..mp3",
+    "at": 130.6,
+    "volume": 1.0
+   }
+  ],
+  "texts": [
+   {
+    "text": "Seven p.m. at Worcester.",
+    "at": 0.5,
+    "duration": 1.36,
+    "y": "h-120"
+   },
+   {
+    "text": "The line is out the door, the Grill is running low,",
+    "at": 1.96,
+    "duration": 3.92,
+    "y": "h-120"
+   },
+   {
+    "text": "and every table is full.",
+    "at": 5.99,
+    "duration": 2.18,
+    "y": "h-120"
+   },
+   {
+    "text": "This is Dineamics. Three thousand students eat here every night,",
+    "at": 17.15,
+    "duration": 3.52,
+    "y": "h-120"
+   },
+   {
+    "text": "and the kitchen has to guess how much to cook.",
+    "at": 20.77,
+    "duration": 3.97,
+    "y": "h-120"
+   },
+   {
+    "text": "We take tonight's real menu and play it out, student by student.",
+    "at": 25.5,
+    "duration": 3.71,
+    "y": "h-120"
+   },
+   {
+    "text": "Every dot is a student. When a line builds up, an alert tells you where.",
+    "at": 29.31,
+    "duration": 4.66,
+    "y": "h-120"
+   },
+   {
+    "text": "Click a station to see who's waiting, and how much is left in each pan.",
+    "at": 34.06,
+    "duration": 5.11,
+    "y": "h-120"
+   },
+   {
+    "text": "Now try a change. We run thirty nights with the same students both times,",
+    "at": 43.9,
+    "duration": 4.89,
+    "y": "h-120"
+   },
+   {
+    "text": "so the difference comes from the decision, not luck.",
+    "at": 48.89,
+    "duration": 3.56,
+    "y": "h-120"
+   },
+   {
+    "text": "The What-If Lab shows every trade-off, with honest ranges.",
+    "at": 54.3,
+    "duration": 4.4,
+    "y": "h-120"
+   },
+   {
+    "text": "Press Optimize, and it searches eighty kitchen plans,",
+    "at": 60.8,
+    "duration": 3.05,
+    "y": "h-120"
+   },
+   {
+    "text": "then charts waste against stockouts, so you can pick the balance.",
+    "at": 63.95,
+    "duration": 4.68,
+    "y": "h-120"
+   },
+   {
+    "text": "One click adopts the plan for that night.",
+    "at": 70.9,
+    "duration": 3.12,
+    "y": "h-120"
+   },
+   {
+    "text": "Or just ask Sam the Minuteman, our planning agent.",
+    "at": 75.7,
+    "duration": 3.03,
+    "y": "h-120"
+   },
+   {
+    "text": "Ask a what-if in plain English, and he shows you what changes.",
+    "at": 78.83,
+    "duration": 4.53,
+    "y": "h-120"
+   },
+   {
+    "text": "Tiger Data's vector search finds the past nights most like tonight.",
+    "at": 85.1,
+    "duration": 4.43,
+    "y": "h-120"
+   },
+   {
+    "text": "For Friendsgiving dinner on November 18th, the closest match is 98 percent similar.",
+    "at": 89.63,
+    "duration": 5.7,
+    "y": "h-120"
+   },
+   {
+    "text": "In the end, the manager gets a cook sheet:",
+    "at": 99.5,
+    "duration": 3.1,
+    "y": "h-120"
+   },
+   {
+    "text": "how many pans to cook, and when, for every dish, station by station.",
+    "at": 102.7,
+    "duration": 4.97,
+    "y": "h-120"
+   },
+   {
+    "text": "And a waste outlook for the next eight nights, built on synthetic history and real menus.",
+    "at": 114.0,
+    "duration": 6.38,
+    "y": "h-120"
+   }
+  ]
+ }
+}

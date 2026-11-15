@@ -1,0 +1,13 @@
+# Render cache, thumbnails and history (rebuilt by vedit)
+.vedit/
+# Test renders: only the final cut is kept
+output/*
+!output/dineamics_demo_v13.mp4
+!output/dineamics_demo_v13.json
+!output/thumbnail.png
+!output/thumbnail_1280x720.jpg
+# Raw screen recordings (the largest is over GitHub's 100 MB limit)
+Screen Recording *.mov
+# Reference material that isn't ours
+YTDown.com_*
+resize.webp

@@ -8,6 +8,28 @@
 
 ---
 
+## Voiceover script (matches the edited video, `video/output/dineamics_demo_v9.mp4`, 2:16, voiced from `video/voices/`)
+
+One line per scene, ready to paste into an AI voice tool. Generate **one audio file per scene** (`video/voice/01.mp3` … `10.mp3`). Each file starts at that scene's time below. A calm, friendly student voice at a normal pace (about 150 words a minute) fits each window with a little room to spare. The on-screen captions use the same words, so keep them in sync if you change a line.
+
+| # | Starts | Window | On screen | Voiceover |
+| --- | --- | --- | --- | --- |
+| 1 | 0:00 | 12 s | Three real clips: walking into Worcester, the Grill line, the full tables | Seven p.m. at Worcester. The line is out the door, the Grill is running low, and every table is full. |
+| 2 | 0:12 | 4 s | Title card: **Dineamics**, "See tonight's dinner before it happens." | What if the kitchen could see tonight before it happens? |
+| 3 | 0:16 | 8 s | The isometric hall filling with students; callout "Every dot is a student" | This is Dineamics. Three thousand students eat here every night, and the kitchen has to guess how much to cook. |
+| 4 | 0:23 | 20 s | Replay; the "Grill has a long line" alert lifts out as a card; callout on the Grill station panel | We take tonight's real menu and play it out, student by student. Every dot is a student. When a line builds up, an alert tells you where. Click a station to see who's waiting, and how much is left in each pan. |
+| 5 | 0:43 | 11 s | Try a change (click rings on "Test a busier night" and "Compare 30 nights") → Results & trade-offs lifts out | Now try a change. We run thirty nights with the same students both times, so the difference comes from the decision, not luck. |
+| 6 | 0:53 | 22 s | What-If Lab results → Optimize click → the waste-vs-stockouts chart ("80 plans searched" callout) → the adopted results lift out | The What-If Lab shows every trade-off, with honest ranges. *(pause ~2 s)* Press Optimize, and it searches eighty kitchen plans, then charts waste against stockouts, so you can pick the balance. *(pause ~1 s)* One click adopts the plan for that night. |
+| 7 | 1:14 | 10 s | Ask Sam: "What if we add a Grill server and it's 10% busier?" → "Here's what changes" lifts out | Or just ask Sam the Minuteman, our planning agent. Ask a what-if in plain English, and he shows you what changes. |
+| 8 | 1:24 | 15 s | Similar nights for Wed, Nov 18 (click on Find similar nights) → the 98% match lifts out | Tiger Data's vector search finds the past nights most like tonight. For Friendsgiving dinner on November 18th, the closest match is 98 percent similar. |
+| 9 | 1:38 | 26 s | Kitchen plan → production plan → menu by station → waste outlook (KPI row lifts out, "Synthetic history" callout) | In the end, the manager gets a cook sheet: how many pans to cook, and when, for every dish, station by station. *(pause ~3 s)* And a waste outlook for the next eight nights, built on synthetic history and real menus. |
+| 10 | 2:04 | 5 s | Maroon end card: Dineamics | Dineamics. Test it on simulated students before you try it on real ones. |
+| 11 | 2:09 | 7 s | Over a blurred Worcester shot: "Built at UMass. Built for UMass Dining." · dineamics.compare | We built at UMass, built for UMass Dining, for the best dining in the US. |
+
+For scenes 6 and 9, start each sentence with its shot. Either export the sentences as separate files or keep the pauses. The captions start at 0:53 / 1:00 / 1:04 / 1:10 (scene 6) and 1:38 / 1:42 / 1:53 (scene 9).
+
+---
+
 ## Script
 
 | Time | On screen | Voiceover | Feature shown |

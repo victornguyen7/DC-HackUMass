@@ -34,7 +34,7 @@ Last updated: 2026-11-14, engine 0.6.2, `main` at `9a0b389` + this docs pass; la
 - ✅ Tiger loader fills the engine 0.4+ columns and category tables (`1ab7e16`, `4a5d6fb`, `094dbc4`); T3 fixed.
 
 ## Recently merged (2026-11-13)
-All branches are merged into `main`; details in [README §14](../README.md#14-branches-and-merges).
+All branches are merged into `main`; details in [GUIDE §14](GUIDE.md#14-branches-and-merges).
 - ✅ PR #1 `frontend/redesign`: top navigation, guided Watch → Try a change → Compare, isometric hall ([FRONTEND_REDESIGN_PLAN.md](FRONTEND_REDESIGN_PLAN.md)).
 - ✅ PR #2 `fix-bug`: Hall comparison and replay-retry fixes.
 - ✅ PR #3 `codex/similar-nights-docs`: Similar nights handoff, then the feature itself (`137c784`, [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md)).

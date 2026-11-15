@@ -3,7 +3,7 @@
 Five sponsor prizes that fit Dineamics, what already exists in the repo for each one, and the steps to finish it.
 Pick one, put your name in the **Owner** column, and update **Status** as you go.
 
-Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (README §14). Engine 0.6.1 notes: kitchen capacity since 0.5.0 makes the optimizer meaningful: small batches now cost cook and oven time; a `forecast_reorder` preset exists to compare against). Roll-up of everything done / open: [STATUS.md](STATUS.md).
+Status as of 2026-11-13, engine 0.6.2, after merging PRs #1–#3 (GUIDE §14). Engine 0.6.1 notes: kitchen capacity since 0.5.0 makes the optimizer meaningful: small batches now cost cook and oven time; a `forecast_reorder` preset exists to compare against). Roll-up of everything done / open: [STATUS.md](STATUS.md).
 
 ---
 
@@ -164,7 +164,7 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 4. **Show the aggregates:** open `http://127.0.0.1:8000/tiger` (API page, not in the web app) and follow the 2-minute script in TIGER.md §8: a new night appears within 5 s, then raw vs aggregate timings.
 5. **Show it in the app:** link the calibration page from Insights › Waste history, and show "forecast logged to Tiger ✓" after **Adopt**.
 6. **Plan searches and new dishes on stage** (TIGER.md §9–10): run Optimize in the Lab, point at "Saved to Tiger ✓" and "What keeps showing up on the frontier", then open the `/tiger` Plan searches card. In Menu › Add a new dish, type a name and show the "In Tiger: dishes like this … sold …" line. Tiger already holds one saved run per menu date (2026-11-14), so the lever table shows a pattern: Seasons and Mediterranean batches smaller on every date's frontier. Say plainly that the popularity check finds no per-dish error because the history is synthetic.
-7. **Be honest on stage:** the "observed" nights are **synthetic**. Say so (README §8).
+7. **Be honest on stage:** the "observed" nights are **synthetic**. Say so ([GUIDE §8](GUIDE.md#8-whats-real-and-whats-made-up)).
 
 ---
 

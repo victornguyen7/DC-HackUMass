@@ -85,7 +85,7 @@ Also fixed while testing the second pass:
 
 | Change | Where |
 | --- | --- |
-| **Ask Sam** page (`/sam`, top nav, original tricorn-hat avatar): one box for goals (planned in ≤ 5 simulated tries with a goal check and an unseen-night check), what-ifs (simulated as asked vs tonight's plan) and history questions (answered from Tiger through the Tiger MCP server); live tries with Sam's notes and pass/fail chips, Tiger lookups with their SQL, the plan / what-if / answer card with Adopt, Open in the Lab and Watch a night, and a **History** panel of final analyses labeled with prompt, menu date and time asked (API + `localStorage` copy) | `pages/Sam.tsx`, `lib/agent.ts`, `components/SamAvatar.tsx`, `sam.css` |
+| **Ask Sam** page (`/sam`, top nav, supplied Sam artwork): one box for goals (planned in ≤ 5 simulated tries with a goal check and an unseen-night check), what-ifs (simulated as asked vs tonight's plan) and history questions (answered from Tiger through the Tiger MCP server); compact expandable attempts, a recommendation shown before the test history, visible unmet-goal and extra-night checks, expandable kitchen changes and Tiger lookups, Adopt / Open in the Lab / Watch a night actions, and an on-demand **Recent chats** dialog (API + `localStorage` copy) | `pages/Sam.tsx`, `lib/agent.ts`, `components/SamAvatar.tsx`, `sam.css` |
 | The Lab accepts a plan from Sam (**Open in the Lab** passes the request as router state) | `pages/Lab.tsx` |
 | The plain-English box shows which method read the question: Gemini function calling, AI JSON settings, or keyword matching | `pages/Lab.tsx` |
 | **Insights › Waste history opens on the next 8 nights**: recorded nights, a "Recorded \| Simulated" divider, then each coming night's tonight's-plan bar and its plan point (maroon = adopted from the Lab or Sam, green = recommended, not adopted); KPI cards and a "Plan per night" table with **Change in the Lab**; Export. "Last 4 weeks" / "All recorded · 6 weeks" show the history as before | `pages/WasteOutlook.tsx`, `lib/outlook.ts`, `pages/Waste.tsx` |
@@ -97,7 +97,7 @@ Also fixed while testing the second pass:
 | ID | Sev | Page | Issue |
 | --- | --- | --- | --- |
 | U1 | High | All | Figma numbers are placeholders and differ from the real data |
-| U2 | Medium | Hall | ~~Only the top-down view is live~~ **Partly fixed (PR #1):** the illustrated isometric view (Canvas) plays the full trace; no orbital 3D |
+| U2 | ~~Medium~~ | Hall | ~~Only the top-down view is live~~ **Fixed 2026-11-14:** interactive Three.js hall, touch/mouse orbit, pan, zoom, reset, station/student selection; both views play the full trace |
 | U4 | ~~Medium~~ | Dashboard | ~~Dinner only~~ **Closed 2026-11-14:** late night (9 pm–12 am) shown since 0.4.1; breakfast and lunch not needed (ISSUES N4) |
 | U5 | ~~Medium~~ | Dashboard | ~~Staffing "needed" isn't computed~~ **Fixed (0.6.2):** "Needed at peak" column + by-hour line for short stations, from `result.staffing`; **verified with data** on the 0.6.2 bundle (8 of 8 staffed stations; e.g. Grill has 2, needs 3 at 6 pm) |
 | U7 | ~~Medium~~ Low | Lab | ~~Optimize and the uncertainty sweep are not built~~ Built 2026-11-14; dish swap is still two steps |
@@ -128,10 +128,11 @@ The first demo script (SPEC §12: "≈18% less waste (11–24%), with stockouts 
 - **Done 2026-11-13:** SPEC §12 (demo flow) now uses the real numbers and dishes ("about 6% less waste (1–8%) … stockouts about the same"). The pitch slides, if any, need the same change.
 - **Still open:** refresh the Figma frames from the bundle so design and app agree, and decide whether engine fixes E1–E3 (ISSUES.md) land before the numbers are final; they will move every figure.
 
-### U2 · Medium · Hall: illustrated isometric replay, no orbital 3D
-- **Updated 2026-11-13:** Guided Watch/Try/Compare now runs in the main app. Both the Canvas isometric view and SVG top-down view use the full trace, with continuous Play/Pause, scrubbing, all station menus and pan levels, whole-night queues, and student selection. Closed stations retain their dinner menus.
+### U2 · Fixed · Hall: interactive 3D replay
+- **Updated 2026-11-14:** Three.js replaces the illustrated canvas with an antialiased, lit 3D hall. Mouse/touch orbit, pan, scroll/pinch zoom, keyboard controls, reset and station-label toggle work with the existing replay. Shared geometry and poses preserve 2D routes and collision constraints. The camera survives playback/filter updates; dragging and multi-touch do not trigger student selection. WebGL/context-loss failures offer the top-down view. Rendering is demand-driven, uses instanced furniture/students and caps the drawing buffer for tablet performance.
+- Both 3D and SVG top-down views use the full trace, with continuous Play/Pause, scrubbing, all station menus and pan levels, whole-night queues, and student selection. Closed stations retain their dinner menus.
 - Presets show paired 30-night comparisons on every bundled date, even without an animation. Their own replay loads separately when available; loading or failure never hides comparison results. The current bundle includes preset animations only for Nov 13 and baseline animations for all dates. Advanced controls remain in the Lab. Split-screen comparison (SPEC P2) isn't built.
-- The scene is an illustrated isometric view. Orbital WebGL/React Three Fiber and the serving-line camera remain future work.
+- A dedicated serving-line camera remains future work. The model is still an approximate architectural representation; seating remains assumed. Landscape layouts are checked at 1024×768 and 1194×834; physical iPad touch/performance needs a device check.
 
 ### U4 · Closed · Dashboard: dinner only
 - **Partly fixed (engine 0.4.1):** the Dashboard shows dinner + late night (KPI chip, arrivals chart, "late" tags on dishes and in the production plan). Breakfast and lunch below are still open.

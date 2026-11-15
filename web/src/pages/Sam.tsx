@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TopBar } from "../components/Shell";
 import { SamAvatar } from "../components/SamAvatar";
+import { DetailDialog } from "../components/DetailDialog";
 import {
   AGENT_IDLE, agentReducer, deleteHistory, listHistory, openHistory, rememberLocal, runAgent,
   type AgentFinal, type AgentState, type AgentTry, type Check, type HistoryItem, type TigerLookup,
@@ -12,244 +13,212 @@ import { useApiUp, useAsync } from "../lib/hooks";
 import { useApp } from "../lib/store";
 
 const EXAMPLES = [
-  "Cut waste 20% without any vegetarian dish running out",
-  "Cut waste 15% and keep every halal dish stocked",
-  "Cut waste 10% without longer lines or missed meals",
-  "What if we add a Grill server and it's 10% busier?",
-  "Which dishes ran out on rainy Fridays?",
-];
-
+  { title: "Waste a little less", detail: "Keep vegetarian dishes available", icon: "leaf", prompt: "Cut waste 20% without any vegetarian dish running out" },
+  { title: "Try a what-if", detail: "See what an extra server changes", icon: "spark", prompt: "What if we add a Grill server and it's 10% busier?" },
+  { title: "Learn from past nights", detail: "Find patterns in the dining hall", icon: "history", prompt: "Which dishes ran out on rainy Fridays?" },
+] as const;
+const MORE_EXAMPLES = ["Cut waste 15% and keep every halal dish stocked", "Cut waste 10% without longer lines or missed meals"];
 const pct = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${fmt1(Math.abs(n))}%`;
+const plain = (text: string) => text.replace(/\b(batch_size|reorder_point|max_batches|starting_batches|wait_p90)\b/g,
+  (word) => ({ batch_size: "batch size", reorder_point: "refill threshold", max_batches: "extra batches", starting_batches: "opening pans", wait_p90: "long waits" })[word] ?? word);
 
-/** Sam the Minuteman: give a goal, the agent runs the simulator, checks, adjusts, and hands back a plan. */
+function SamIcon({ name }: { name: "leaf" | "spark" | "history" | "arrow" }) {
+  return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {name === "leaf" ? <><path d="M20 4c-9-2-16 2-14 9s14 7 14-9Z" /><path d="m4 20 10-10" /></>
+      : name === "spark" ? <><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z" /></>
+      : name === "history" ? <><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6" /><path d="M12 7v5l3 2" /></>
+      : <path d="M5 12h14m-6-6 6 6-6 6" />}
+  </svg>;
+}
+
+/** Sam's conversation stays brief; the evidence is available on demand. */
 export default function Sam() {
   const { date } = useApp();
   const apiOn = useApiUp();
-  const [goal, setGoal] = useState(EXAMPLES[0]);
+  const [goal, setGoal] = useState("");
+  const [runDate, setRunDate] = useState(date);
+  const input = useRef<HTMLTextAreaElement>(null);
   const [s, dispatch] = useReducer(agentReducer, AGENT_IDLE);
   const stop = useRef<(() => void) | null>(null);
   useEffect(() => () => stop.current?.(), []);
   const [viewing, setViewing] = useState<AgentFinal | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
   const history = useAsync(() => listHistory(apiOn), [apiOn, tick]);
   useEffect(() => {
     if (s.final) { rememberLocal(s.final); setTick((t) => t + 1); }
   }, [s.final]);
+  useEffect(() => {
+    if (s.status === "error") setGoal((draft) => draft || s.goalText || "");
+  }, [s.status, s.goalText]);
 
-  const go = async (text = goal) => {
-    if (text.trim().length < 5) return;
+  const go = async () => {
+    const text = goal.trim();
+    if (!apiOn || s.status === "running" || text.length < 5) return;
     stop.current?.();
     setViewing(null);
+    setRunDate(date);
+    setGoal("");
     dispatch({ event: "start", data: { goal_text: text } });
     dispatch({ event: "progress", data: { what: "starting", done: 0, total: 1 } });
     try {
-      stop.current = await runAgent(text.trim(), date, dispatch);
+      stop.current = await runAgent(text, date, dispatch);
     } catch (e) {
       dispatch({ event: "error", data: { message: (e as Error).message } });
     }
   };
   const running = s.status === "running";
+  const started = !!viewing || s.status !== "idle";
+  const choosePrompt = (text: string) => { setGoal(text); input.current?.focus(); };
 
-  return (
-    <>
-      <TopBar title="Ask Sam" sub="A planning agent that tests its own plans on simulated nights before you try them" showBadges={false} />
-      <div className="content sam-page">
-       <div className="sam-layout">
-        <div className="stack" style={{ minWidth: 0 }}>
-        <section className="card sam-hero" aria-label="Give Sam a goal">
-          <SamAvatar size={72} busy={running} />
-          <div className="sam-hero-body">
-            <div className="overline">Planning agent · {dateLabel(date)}</div>
-            <h2>Sam the Minuteman</h2>
-            <p className="muted">Tell Sam what tonight's kitchen should achieve. Sam checks the recorded history in Tiger Data,
-              proposes batch, staffing and menu changes, runs each one on simulated nights (at most 5 tries), adjusts, and hands you a
-              production plan and its reasons. You can also try a what-if ("what if we add a Grill server?"), or ask a question about
-              past nights and Sam answers it from Tiger.</p>
-            <form className="sam-ask" onSubmit={(e) => { e.preventDefault(); go(); }}>
-              <label htmlFor="sam-goal" className="sr-only">Goal</label>
-              <input id="sam-goal" className="btn" value={goal} onChange={(e) => setGoal(e.target.value)} disabled={!apiOn || running}
-                placeholder="e.g. cut waste 20% without any vegetarian dish running out" />
-              <button className="btn primary" type="submit" disabled={!apiOn || running || goal.trim().length < 5}>
-                {running ? "Sam is working…" : "Ask Sam"}
-              </button>
-            </form>
-            <div className="row" style={{ marginTop: 8 }}>
-              {EXAMPLES.map((x) => (
-                <button key={x} className="pill" disabled={!apiOn || running} aria-pressed={goal === x} onClick={() => { setGoal(x); go(x); }}>{x}</button>
-              ))}
-            </div>
-            {!apiOn && <div className="alert warn" role="status" style={{ marginTop: 10 }}><b>Sam needs the API</b>Start it with <code>make server</code>. Sam runs real simulations, so there is no offline version.</div>}
+  return <>
+    <TopBar title="Ask Sam" sub="A little help planning a better night." showBadges={false} />
+    <div className="content sam-page">
+      <div className="sam-toolbar">
+        <span className="sam-presence"><i className={apiOn ? "online" : ""} aria-hidden />{running ? "Sam is working on your request" : apiOn ? "Your kitchen planning partner" : "Saved chats are available offline"}</span>
+        <button className="btn sam-history-button" onClick={() => { setHistoryError(null); setHistoryOpen(true); }}><SamIcon name="history" />Recent chats{(history.data?.length ?? 0) > 0 && <span>{history.data!.length}</span>}</button>
+      </div>
+      <section className={`card sam-hero${started ? " has-conversation" : ""}`} aria-label="Give Sam a goal">
+        <div className="sam-welcome">
+          <div className="sam-welcome-art"><SamAvatar size={112} busy={running} /><span aria-hidden>Hi!</span></div>
+          <div>
+            <p className="sam-eyebrow">SAM THE MINUTEMAN</p>
+            <h2>{started ? "What else is on your mind?" : <>Let’s plan a better dinner.</>}</h2>
+            <p className="sam-intro">Tell me what you’d like to improve. I’ll test a few ideas, then help you choose.</p>
           </div>
-        </section>
-
-        {viewing ? (
-          <div className="stack">
-            <div className="alert muted sam-viewing" role="status">
-              <span>From history: <span className="sam-viewing-q">{viewing.goal_text}</span> · for {dateLabel(viewing.date)}{viewing.created_at ? ` · asked ${askedLabel(viewing.created_at)}` : ""}</span>
-              <button className="btn ghost" onClick={() => setViewing(null)}>{s.status === "idle" ? "Close" : "Back to the current run"}</button>
-            </div>
-            {viewing.kind === "question" ? <AnswerCard f={viewing} /> : viewing.kind === "whatif" ? <WhatIfCard f={viewing} /> : <PlanCard f={viewing} />}
-            {(viewing.tiger_lookups?.length ?? 0) > 0 && <TigerCard lookups={viewing.tiger_lookups!} />}
-          </div>
-        ) : s.status !== "idle" && <Run s={s} />}
         </div>
+        <form className="sam-ask" onSubmit={(e) => { e.preventDefault(); void go(); }}>
+          <label htmlFor="sam-goal" className="sr-only">Message Sam</label>
+          <textarea ref={input} id="sam-goal" value={goal} onChange={(e) => setGoal(e.target.value)} disabled={running} rows={2}
+            placeholder="How can we cut waste and keep everyone well fed?" />
+          <div className="sam-composer-bottom"><span>{running ? "Your current request is in progress" : "A goal, a what-if, or just a question."}</span>
+            <button className="btn primary" type="submit" disabled={!apiOn || running || goal.trim().length < 5}>{running ? "Working…" : "Ask Sam"}<SamIcon name="arrow" /></button>
+          </div>
+        </form>
+        {!started && <div className="sam-starters" aria-label="Ideas to get started">
+          <p className="sam-eyebrow">A FEW IDEAS TO GET STARTED</p>
+          <div className="sam-starter-grid">{EXAMPLES.map((x) => <button key={x.title} className="sam-starter" onClick={() => choosePrompt(x.prompt)}>
+            <span className={`sam-starter-icon ${x.icon}`}><SamIcon name={x.icon} /></span><span><b>{x.title}</b><small>{x.detail}</small></span><span className="sam-starter-arrow" aria-hidden>↗</span>
+          </button>)}</div>
+          <details className="sam-more-ideas"><summary>More ideas</summary><div>{MORE_EXAMPLES.map((x) => <button key={x} className="link" onClick={() => choosePrompt(x)}>{x}</button>)}</div></details>
+        </div>}
+        {!apiOn && <div className="sam-offline" role="status"><b>Sam is offline right now.</b> You can still open your recent chats.<details><summary>Connection details</summary>Start the planning service with <code>make server</code>, then refresh this page.</details></div>}
+      </section>
+      {viewing ? <div className="sam-thread">
+        <div className="sam-viewing" role="status"><span>Saved chat · {dateLabel(viewing.date)}{viewing.created_at ? ` · ${askedLabel(viewing.created_at)}` : ""}</span><button className="btn ghost" onClick={() => setViewing(null)}>{s.status === "idle" ? "Close chat" : "Back to the current run"}</button></div>
+        <div className="sam-user-message"><span>You asked</span><p>{viewing.goal_text}</p></div>
+        <FinalCard key={viewing.history_id ?? viewing.config_hash} f={viewing} />
+        {!!viewing.tiger_lookups?.length && <TigerCard lookups={viewing.tiger_lookups} />}
+      </div> : s.status !== "idle" ? <Run s={s} date={runDate} /> : <p className="sam-trust-note">You choose what to adopt. Sam’s suggestions are tested in simulation.</p>}
+      {historyOpen && <DetailDialog title="Recent chats" context="Ask Sam" onClose={() => setHistoryOpen(false)}>
+        {historyError && <div className="alert warn" role="alert">{historyError}</div>}
         <HistoryPanel items={history.data ?? []} loading={history.loading} activeId={viewing?.history_id}
           onOpen={async (id) => {
-            try { setViewing({ ...(await openHistory(id, apiOn)), history_id: id }); } catch (e) { alert((e as Error).message); }
+            try { setViewing({ ...(await openHistory(id, apiOn)), history_id: id }); setHistoryOpen(false); }
+            catch (e) { setHistoryError((e as Error).message); }
           }}
           onDelete={async (id) => {
-            const msg = await deleteHistory(id, apiOn);
-            if (viewing?.history_id === id) setViewing(null);
-            setTick((t) => t + 1);
-            if (msg) alert(msg);
+            try {
+              const msg = await deleteHistory(id, apiOn);
+              if (viewing?.history_id === id) setViewing(null);
+              setTick((t) => t + 1);
+              setHistoryError(msg);
+            } catch (e) { setHistoryError((e as Error).message); }
           }} />
-       </div>
-      </div>
-    </>
-  );
+      </DetailDialog>}
+    </div>
+  </>;
 }
 
-function Run({ s }: { s: AgentState }) {
+function FinalCard({ f }: { f: AgentFinal }) {
+  return f.kind === "question" ? <AnswerCard f={f} /> : f.kind === "whatif" ? <WhatIfCard f={f} /> : <PlanCard f={f} />;
+}
+
+function Run({ s, date }: { s: AgentState; date: string }) {
   const running = s.status === "running";
-  return (
-    <div className="stack">
-      {s.goal && <GoalCard s={s} />}
-      {s.notices.map((n) => <div key={n} className="alert info" role="status">{n}</div>)}
-      {s.tiger.length > 0 && <TigerCard lookups={s.tiger} live={running} />}
-      {s.goal?.kind !== "whatif" && (
-        <ol className="sam-tries" aria-label="Sam's tries">
-          {s.tries.map((t) => <TryCard key={t.id} t={t} s={s} chosen={s.final?.chosen === t.id} />)}
-        </ol>
-      )}
-      {s.goal?.kind === "whatif" && s.whatif && !s.final && <WhatIfSettings w={s.whatif} />}
-      {running && <Working s={s} />}
-      {s.status === "error" && <div className="alert bad" role="alert"><b>Sam couldn't finish</b>{s.error}</div>}
-      {s.final && (s.final.kind === "question" ? <AnswerCard f={s.final} /> : s.final.kind === "whatif" ? <WhatIfCard f={s.final} /> : <PlanCard f={s.final} />)}
-    </div>
-  );
+  const attempts = <ol className="sam-tries" aria-label="Sam's tries">{s.tries.map((t) => <TryCard key={t.id} t={t} s={s} chosen={s.final?.chosen === t.id} />)}</ol>;
+  return <div className="sam-thread">
+    <GoalCard s={s} date={date} />
+    {running && <Working s={s} />}
+    {s.status === "error" && <div className="alert bad" role="alert"><b>Sam couldn’t finish this request</b>{s.error}<p>You can edit your message above and try again.</p></div>}
+    {s.final && <FinalCard key={s.final.history_id ?? s.final.config_hash} f={s.final} />}
+    {s.goal?.kind !== "whatif" && s.tries.length > 0 && (s.final
+      ? <details className="card sam-disclosure"><summary><span>How Sam tested this</span><small>{s.tries.length} attempts</small></summary><div className="sam-disclosure-body">{attempts}</div></details>
+      : <section className="sam-attempts" aria-label="Plans being tested"><div className="sam-section-heading"><h3>Finding a plan that fits</h3><span>{s.tries.length} of {s.maxTries ?? 5} attempts</span></div>{attempts}</section>)}
+    {s.goal?.kind === "whatif" && s.whatif && !s.final && <WhatIfSettings w={s.whatif} />}
+    {s.tiger.length > 0 && <TigerCard lookups={s.tiger} live={running} />}
+    {s.notices.length > 0 && <details className="card sam-disclosure"><summary><span>Run notes</span><small>{s.notices.length}</small></summary><div className="sam-disclosure-body">{s.notices.map((n) => <p key={n}>{n}</p>)}</div></details>}
+  </div>;
 }
 
 function Working({ s }: { s: AgentState }) {
   const p = s.progress;
   const question = s.goal?.kind === "question";
   const whatif = s.goal?.kind === "whatif";
-  const what = question ? "Sam is asking Tiger Data"
-    : whatif ? (s.whatif ? `Simulating the what-if on ${s.nNights ?? 30} nights` : "Reading the what-if into settings")
-    : s.validating ? `Checking try ${s.validating.try_id} on nights Sam never saw (${s.validating.seeds[0]}–${s.validating.seeds[1]})`
-    : !s.goal ? "Reading the goal and simulating tonight's baseline"
-    : p?.what.startsWith("try") ? `Simulating ${p.what}`
-    : s.tries.length ? "Sam is reading the results and deciding what to try next"
-    : s.tiger.length ? "Sam is reading the history and planning the first try" : "Sam is planning the first try";
-  return (
-    <div className="sam-working" role="status" aria-live="polite">
-      <SamAvatar size={28} busy />
-      <span>{what}…</span>
-      {p && p.total > 1 && <progress max={p.total} value={p.done} aria-label="Nights simulated" />}
-    </div>
-  );
+  const what = question ? "Looking through past nights"
+    : whatif ? (s.whatif ? `Testing your what-if on ${s.nNights ?? 30} nights` : "Understanding your what-if")
+    : s.validating ? "Checking the plan on a fresh set of nights"
+    : !s.goal ? "Understanding your goal and checking the current plan"
+    : p?.what.startsWith("try") ? `Testing attempt ${s.tries.at(-1)?.id ?? 1}`
+    : s.tries.length ? "Comparing the results and refining the plan"
+    : "Looking for a good place to start";
+  return <div className="sam-working" role="status" aria-live="polite">
+    <SamAvatar size={40} busy /><div><b>{what}…</b><span>{question ? "Checking the recorded history" : "I’ll bring back the results when they’re ready."}</span></div>
+    {p && p.total > 1 && <div className="sam-progress"><span>{p.done} / {p.total} nights</span><progress max={p.total} value={p.done} aria-label="Nights simulated" /></div>}
+  </div>;
 }
 
-function GoalCard({ s }: { s: AgentState }) {
-  const g = s.goal!;
-  if (g.kind === "whatif") {
-    return (
-      <section className="card" aria-label="What-if">
-        <div className="overline">What-if · simulated exactly as asked, against tonight's plan</div>
-        <h3>{s.goalText}</h3>
-      </section>
-    );
-  }
-  if (g.kind === "question") {
-    return (
-      <section className="card" aria-label="Question">
-        <div className="overline">Question · answered from the recorded history in Tiger Data</div>
-        <h3>{s.goalText}</h3>
-      </section>
-    );
-  }
-  const chips: string[] = [];
-  if (g.waste_cut_pct) chips.push(`Waste −${g.waste_cut_pct}%`);
-  if (g.protect_diets.length || g.protect_dishes.length)
-    chips.push(`Protect ${[...g.protect_diets, ...(g.protect_dishes.length ? [`${g.protect_dishes.length} named dishes`] : [])].join(", ")} · ${s.protectedDishes?.length ?? 0} dishes`);
-  if (g.keep_missed_meals) chips.push("Missed meals no worse");
-  if (g.keep_wait) chips.push("Long wait no worse");
-  return (
-    <section className="card" aria-label="Goal">
-      <div className="card-head">
-        <div>
-          <div className="overline">Goal</div>
-          <h3>{g.summary || s.goalText}</h3>
-        </div>
-        <span className="chip">{s.goalSource === "mock" ? "read by keywords" : `read by ${s.model ?? "Gemini"}`}</span>
-      </div>
-      <div className="row">{chips.map((c) => <span key={c} className="chip maroon">{c}</span>)}</div>
-      {s.baseline && (
-        <div className="hint" style={{ marginTop: 8 }}>
-          Tonight's plan, median of {s.nNights ?? 30} nights: {fmtInt(s.baseline.waste_total)} portions wasted · {fmtInt(s.baseline.missed_meal)} students
-          missed a meal · 90% wait under {fmt1(s.baseline.wait_p90)} min. Protected means a dish may not run out more often than it does today.
-          Budget: at most {s.maxTries ?? 5} tries.
-        </div>
-      )}
-      {g.unsupported.length > 0 && <div className="hint">Sam can't plan for: {g.unsupported.join("; ")}</div>}
-    </section>
-  );
+function GoalCard({ s, date }: { s: AgentState; date: string }) {
+  const g = s.goal;
+  return <div className="sam-user-message">
+    <span>You asked · {dateLabel(date)}</span><p>{s.goalText}</p>
+    {g && g.kind !== "question" && g.kind !== "whatif" && <details className="sam-goal-details"><summary>Your goals & starting point</summary>
+      <ul>
+        {g.waste_cut_pct > 0 && <li>Reduce waste by {g.waste_cut_pct}%.</li>}
+        {(g.protect_diets.length > 0 || g.protect_dishes.length > 0) && <li>Keep {g.protect_diets.join(", ") || "selected"} dishes at least as available as in the current plan ({s.protectedDishes?.length ?? 0} dishes).</li>}
+        {g.keep_missed_meals && <li>No increase in missed meals.</li>}{g.keep_wait && <li>No longer waits.</li>}
+      </ul>
+      {s.baseline && <p>Current plan, median of {s.nNights ?? 30} nights: {fmtInt(s.baseline.waste_total)} portions wasted, {fmtInt(s.baseline.missed_meal)} missed meals, and 90% of waits under {fmt1(s.baseline.wait_p90)} minutes.</p>}
+      <p>Sam tests up to {s.maxTries ?? 5} ideas. Protected dishes should run out no more often than in the current plan.</p>
+    </details>}
+    {!!g?.unsupported.length && <p className="sam-caution">Outside this model: {g.unsupported.join("; ")}</p>}
+  </div>;
 }
 
-function CheckChip({ c }: { c: Check }) {
-  return <span className={`chip ${c.ok ? "good" : "bad"}`}>{c.ok ? "✓" : "✗"} {c.text}</span>;
+function CheckList({ checks }: { checks: Check[] }) {
+  return <ul className="sam-checks">{checks.map((c) => <li key={c.name}><span className={c.ok ? "good-t" : "warn-t"} aria-label={c.ok ? "Passed" : "Needs attention"}>{c.ok ? "✓" : "!"}</span><span>{plain(c.text)}</span></li>)}</ul>;
 }
 
 function TryCard({ t, s, chosen }: { t: AgentState["tries"][number]; s: AgentState; chosen: boolean }) {
-  const done = !!t.check;
-  return (
-    <li className={`card sam-try${chosen ? " chosen" : ""}`}>
-      <div className="sam-try-num" aria-hidden>{t.id}</div>
-      <div className="sam-try-body">
-        <div className="row" style={{ justifyContent: "space-between" }}>
-          <h3>Try {t.id}{chosen ? " · the plan" : ""}</h3>
-          {done ? <span className={`chip ${t.check!.met ? "good" : "warn"}`}>{t.check!.met ? "Meets the goal" : "Misses the goal"}</span>
-            : <span className="chip info">simulating {s.nNights ?? 30} nights…</span>}
-        </div>
-        {t.note && <blockquote className="sam-says"><SamAvatar size={20} /><span>{t.note}</span></blockquote>}
-        <ul className="sam-moves">{t.moves.map((m) => <li key={m}>{m}</li>)}</ul>
-        {done && (
-          <>
-            <div className="sam-metrics">
-              <Metric label="Waste" h={t.waste!} unit="portions" pct={t.check!.waste_pct} />
-              <Metric label="Missed meals" h={t.missed_meal!} unit="students" />
-              <Metric label="90% wait" h={t.wait_p90!} unit="min" dec />
-            </div>
-            <div className="row" style={{ marginTop: 8 }}>{t.check!.checks.map((c) => <CheckChip key={c.name} c={c} />)}</div>
-            {t.check!.protected_worse.length > 0 && (
-              <div className="hint" style={{ marginTop: 6 }}>
-                Runs out more: {t.check!.protected_worse.slice(0, 6).map((w) => `${w.name} (${stationName(w.station)}, ${Math.round(w.runout_share[0] * 100)}% → ${Math.round(w.runout_share[1] * 100)}% of nights)`).join(" · ")}
-                {t.check!.protected_worse.length > 6 ? ` · +${t.check!.protected_worse.length - 6} more` : ""}
-              </div>
-            )}
-            {t.settings && t.settings.length > 0 && (
-              <details className="sam-settings"><summary>{t.settings.length} settings changed</summary>
-                <ul>{t.settings.map((x) => <li key={x}>{x}</li>)}</ul>
-              </details>
-            )}
-          </>
-        )}
-      </div>
-    </li>
-  );
+  const failed = t.check?.checks.filter((c) => !c.ok).length ?? 0;
+  const waste = t.check ? `Waste ${t.check.waste_pct < 0 ? "down" : t.check.waste_pct > 0 ? "up" : "unchanged"}${t.check.waste_pct ? ` ${fmt1(Math.abs(t.check.waste_pct))}%` : ""}` : "Testing against the current plan";
+  return <li className={`sam-try${chosen ? " chosen" : ""}`}><details>
+    <summary className="sam-try-summary"><span className="sam-try-num" aria-hidden>{t.id}</span><span className="sam-try-heading"><b>Attempt {t.id}{chosen ? " · selected plan" : ""}</b><small>{waste}{failed > 0 ? ` · ${failed} ${failed === 1 ? "check needs" : "checks need"} attention` : ""}</small></span>
+      <span className={`chip ${t.check ? t.check.met ? "good" : "warn" : "info"}`}>{t.check ? t.check.met ? "Goal met" : "Needs adjusting" : "Testing…"}</span><span className="sam-chevron" aria-hidden>⌄</span>
+    </summary>
+    <div className="sam-try-body">
+      {t.note && <p className="sam-attempt-note">{plain(t.note)}</p>}
+      {t.check && <>
+        <p className="sam-data-caption">Median results across {s.nNights ?? 30} simulated nights</p>
+        <div className="sam-metrics">
+          {t.waste && <Metric label="Food waste" h={t.waste} unit="portions" pct={t.check.waste_pct} />}
+          {t.missed_meal && <Metric label="Missed meals" h={t.missed_meal} unit="students" />}
+          {t.wait_p90 && <Metric label="Long waits (90%)" h={t.wait_p90} unit="min" dec />}
+        </div><CheckList checks={t.check.checks} />
+        {t.check.protected_worse.length > 0 && <details className="sam-settings"><summary>Dishes that run out more ({t.check.protected_worse.length})</summary><div className="sam-table"><table className="t"><thead><tr><th>Dish</th><th>Station</th><th>Before → after</th></tr></thead><tbody>{t.check.protected_worse.map((w) => <tr key={w.dish_id}><td>{w.name}</td><td>{stationName(w.station)}</td><td>{Math.round(w.runout_share[0] * 100)}% → {Math.round(w.runout_share[1] * 100)}% of nights</td></tr>)}</tbody></table></div></details>}
+      </>}
+      {(t.moves.length > 0 || !!t.settings?.length) && <details className="sam-settings"><summary>Changes tested{t.settings?.length ? ` · ${t.settings.length} settings` : ""}</summary><ul className="sam-moves">{t.moves.map((m) => <li key={m}>{plain(m)}</li>)}</ul>{!!t.settings?.length && <ul className="sam-setting-values">{t.settings.map((x) => <li key={x}>{plain(x)}</li>)}</ul>}</details>}
+    </div>
+  </details></li>;
 }
 
 function Metric({ label, h, unit, pct: p, dec }: { label: string; h: AgentTry["waste"]; unit: string; pct?: number; dec?: boolean }) {
   const f = dec ? fmt1 : fmtInt;
-  const bad = h.verdict === "worse", good = h.verdict === "better";
-  return (
-    <div className="sam-metric">
-      <div className="overline">{label}</div>
-      <div className="sam-metric-v">{f(h.now)} <span className="faint">{unit}</span></div>
-      <div className={good ? "good-t" : bad ? "bad-t" : "faint"}>
-        {p !== undefined ? pct(p) : h.median_change !== undefined ? `${h.median_change > 0 ? "+" : ""}${dec ? fmt1(h.median_change) : fmtInt(h.median_change)}` : ""} vs {f(h.baseline)}{h.verdict ? ` · ${h.verdict}` : ""}
-      </div>
-    </div>
-  );
+  return <div className="sam-metric"><span className="sam-data-caption">{label}</span><div className="sam-metric-v">{f(h.now)} <small>{unit}</small></div>
+    <div className={`sam-metric-change ${h.verdict === "better" ? "good-t" : h.verdict === "worse" ? "bad-t" : "muted"}`}>{p !== undefined ? pct(p) : h.median_change !== undefined ? `${h.median_change > 0 ? "+" : ""}${f(h.median_change)}` : ""}{h.verdict ? ` · ${h.verdict === "same" ? "similar" : h.verdict}` : ""}</div>
+    <small className="sam-baseline">Current plan: {f(h.baseline)} {unit}</small>
+  </div>;
 }
 
 function PlanCard({ f }: { f: AgentFinal }) {
@@ -270,61 +239,50 @@ function PlanCard({ f }: { f: AgentFinal }) {
     }
   };
   const by = f.source === "mock" ? "rule-based search (no AI key)" : f.source === "cache" ? `${f.model}, replayed from cache` : f.source === "mixed" ? `${f.model}, finished by the rule-based search` : f.model;
-  return (
-    <section className="card sam-plan" aria-label="Sam's plan">
-      <div className="card-head">
-        <div className="row" style={{ alignItems: "flex-start", flexWrap: "nowrap" }}>
-          <SamAvatar size={44} />
-          <div>
-            <div className="overline">Sam's plan · try {f.chosen}{f.chosen_by === "goal check" ? " (picked by the goal check)" : ""}</div>
-            <h2>{f.check.met ? "This plan meets your goal" : "Closest plan: the goal isn't fully met"}</h2>
-          </div>
-        </div>
-        <div className="row" style={{ justifyContent: "flex-end" }}>
-          <span className={`chip ${f.check.met ? "good" : "warn"}`}>Waste {pct(f.check.waste_pct)} on Sam's nights</span>
-          <span className={`chip ${hold.met ? "good" : "warn"}`} title={hold.checks.filter((c) => !c.ok).map((c) => c.text).join("; ")}>
-            {hold.met ? "Holds" : "Doesn't fully hold"} on {hold.seeds[1] - hold.seeds[0] + 1} unseen nights · waste {pct(hold.waste_pct)}
-          </span>
-        </div>
+  const selected = f.tries?.find((t) => t.id === f.chosen);
+  const failures = f.check.checks.filter((c) => !c.ok);
+  const extraNights = hold.seeds[1] - hold.seeds[0] + 1;
+  return <section className="card sam-plan" aria-label="Sam's plan">
+    <div className="sam-response-heading"><SamAvatar size={48} /><div><p className="sam-eyebrow">SAM’S RECOMMENDATION</p><h2>{f.check.met ? "A plan that meets your goal" : "Here’s the closest plan"}</h2></div><span className={`chip ${f.check.met ? "good" : "warn"}`}>{f.check.met ? "Goal met" : "Needs review"}</span></div>
+    <Explanation text={f.reasoning} />
+    {selected ? <><p className="sam-data-caption">Compared with the current plan · simulated results</p><div className="sam-metrics">
+      <Metric label="Food waste" h={selected.waste} unit="portions" pct={f.check.waste_pct} />
+      <Metric label="Missed meals" h={selected.missed_meal} unit="students" />
+      <Metric label="Long waits (90%)" h={selected.wait_p90} unit="min" dec />
+    </div></> : <div className="sam-saved-metric"><strong>{pct(f.check.waste_pct)}</strong><span>change in food waste<br /><small>compared with the current plan</small></span></div>}
+    {failures.length > 0 && <div className="sam-caution"><b>Still needs attention</b><CheckList checks={failures} /></div>}
+    {f.caveats && <p className="sam-caveat"><b>Keep in mind:</b> {plain(f.caveats)}</p>}
+    <div className={`sam-validation ${hold.met ? "passed" : "review"}`}>
+      <span className="sam-validation-icon" aria-hidden>{hold.met ? "✓" : "!"}</span><div><b>{hold.met ? `Also passed on ${extraNights} extra nights` : `Some goals didn’t hold on ${extraNights} extra nights`}</b><p>Waste {pct(hold.waste_pct)} on nights Sam hadn’t used to choose the plan.</p>
+        <details><summary>View validation details</summary><CheckList checks={hold.checks} /></details>
       </div>
-      <blockquote className="sam-says big"><span>{f.reasoning}</span></blockquote>
-      {f.caveats && <div className="hint"><b>Watch tonight:</b> {f.caveats}</div>}
-      {!hold.met && (
-        <div className="alert warn" style={{ marginTop: 10 }}>
-          <b>On nights Sam never saw ({hold.seeds[0]}–{hold.seeds[1]})</b>
-          {hold.checks.filter((c) => !c.ok).map((c) => c.text).join(" · ")}
-        </div>
-      )}
-      <div className="row" style={{ margin: "12px 0" }}>
-        <button className="btn primary" onClick={onAdopt} disabled={isAdopted}>{isAdopted ? "Adopted for tonight" : "Adopt this plan"}</button>
-        <button className="btn" onClick={() => nav("/lab", { state: { agentRequest: f.request } })}>Open in the Lab</button>
-        <button className="btn ghost" onClick={() => { useApp.getState().setScenario(scenario); nav("/hall"); }}>Watch a night</button>
-      </div>
-      {note && <div className="alert info" role="status">{note}</div>}
-      <h3 style={{ marginTop: 8 }}>Cook sheet changes ({f.changed_dishes.length} dishes)</h3>
-      <div className="sam-table">
-        <table className="t">
-          <thead><tr><th>Dish</th><th>Station</th><th className="n">Batch</th><th className="n">Opening pans</th><th className="n">Reorder at</th><th className="n">Max extra</th><th className="n">Waste</th><th className="n">Runs out</th></tr></thead>
-          <tbody>
-            {f.changed_dishes.map((r) => (
-              <tr key={r.dish_id}>
-                <td>{r.name}{r.period === "late_night" ? <span className="faint"> · late</span> : null}{r.protected ? <span className="chip good" style={{ marginLeft: 6 }}>protected</span> : null}</td>
-                <td>{stationName(r.station)}</td>
-                {(["batch_size", "starting_batches", "reorder_point", "max_batches"] as const).map((k) => (
-                  <td key={k} className="n">{r.before[k] === r.after[k] ? r.after[k] : <><span className="faint">{r.before[k]} →</span> <b>{r.after[k]}</b></>}</td>
-                ))}
-                <td className="n">{fmtInt(r.waste[0])} → {fmtInt(r.waste[1])}</td>
-                <td className="n">{Math.round(r.runout_share[0] * 100)}% → {Math.round(r.runout_share[1] * 100)}%</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="faint" style={{ marginTop: 8, fontSize: 11 }}>
-        Planned by {by} · {f.tries_run ?? f.tries?.length ?? 0} tries · {f.tiger_lookups?.length ?? 0} Tiger lookups · {fmtInt(f.nights_simulated)} simulated nights · "Runs out" is the share of nights a dish ran out at least once.
-      </div>
-    </section>
-  );
+    </div>
+    <div className="sam-plan-actions">
+      <button className="btn primary" onClick={onAdopt} disabled={isAdopted}>{isAdopted ? "Plan adopted" : "Adopt this plan"}</button>
+      <button className="btn" onClick={() => { useApp.getState().setDate(f.date); useApp.getState().setScenario(scenario); nav("/hall"); }}>Watch a night <SamIcon name="arrow" /></button>
+      <button className="btn ghost" onClick={() => nav("/lab", { state: { agentRequest: f.request } })}>Open in the Lab</button>
+    </div>
+    {note && <div className="alert info" role="status">{note}</div>}
+    <details className="sam-disclosure sam-kitchen-changes"><summary><span>Kitchen changes</span><small>{f.changed_dishes.length} dishes</small></summary><div className="sam-disclosure-body">
+      <p className="sam-data-caption">Current plan → Sam’s plan. “Runs out” is the share of simulated nights with a stockout.</p>
+      <div className="sam-table" role="region" aria-label="Cook sheet changes" tabIndex={0}><table className="t">
+        <thead><tr><th>Dish</th><th>Station</th><th className="n">Batch</th><th className="n">Opening pans</th><th className="n">Refill at</th><th className="n">Max extra</th><th className="n">Waste</th><th className="n">Runs out</th></tr></thead>
+        <tbody>{f.changed_dishes.map((r) => <tr key={r.dish_id}>
+          <td>{r.name}{r.period === "late_night" ? <small className="muted"> · late night</small> : null}{r.protected && <small className="sam-protected">Protected</small>}</td><td>{stationName(r.station)}</td>
+          {(["batch_size", "starting_batches", "reorder_point", "max_batches"] as const).map((k) => <td key={k} className="n">{r.before[k] === r.after[k] ? r.after[k] : <><span className="muted">{r.before[k]} →</span> <b>{r.after[k]}</b></>}</td>)}
+          <td className="n">{fmtInt(r.waste[0])} → {fmtInt(r.waste[1])}</td><td className="n">{Math.round(r.runout_share[0] * 100)}% → {Math.round(r.runout_share[1] * 100)}%</td>
+        </tr>)}</tbody>
+      </table></div>
+    </div></details>
+    <details className="sam-method"><summary>About this analysis</summary><p>Planned by {by} · {f.tries_run ?? f.tries?.length ?? 0} attempts · {f.tiger_lookups?.length ?? 0} history lookups · {fmtInt(f.nights_simulated)} simulated nights. Selected attempt {f.chosen}{f.chosen_by === "goal check" ? " by the goal check" : ""}.</p><CheckList checks={f.check.checks} /></details>
+  </section>;
+}
+
+function Explanation({ text }: { text: string }) {
+  const readable = plain(text).replace(/\*\*/g, "");
+  if (readable.length < 360) return <p className="sam-explanation">{readable}</p>;
+  const first = readable.split(/(?<=[.!?])\s/)[0];
+  return <div className="sam-explanation"><p>{first.length < 320 ? first : "Here’s how this compares with the current plan."}</p><details><summary>Read Sam’s explanation</summary><p>{readable}</p></details></div>;
 }
 
 function askedLabel(iso: string) {
@@ -335,14 +293,10 @@ function askedLabel(iso: string) {
 /** What Sam looked up in Tiger Data (through the Tiger MCP server), with the SQL and the first rows. */
 function TigerCard({ lookups, live = false }: { lookups: TigerLookup[]; live?: boolean }) {
   return (
-    <section className="card" aria-label="Tiger Data lookups">
-      <div className="card-head">
-        <div>
-          <div className="overline">Tiger Data · via the Tiger MCP server</div>
-          <h3>Sam checked the recorded history ({lookups.length} {lookups.length === 1 ? "lookup" : "lookups"})</h3>
-        </div>
-        <span className="chip">read-only · SYNTHETIC history</span>
-      </div>
+    <details className="card sam-disclosure" aria-label="Tiger Data lookups">
+      <summary><span>History Sam checked</span><small>{lookups.length} {lookups.length === 1 ? "lookup" : "lookups"} · synthetic records</small></summary>
+      <div className="sam-disclosure-body">
+      <p className="sam-data-caption">Read-only queries of the synthetic dining history in Tiger Data.</p>
       <ol className="sam-tiger">
         {lookups.map((x, i) => (
           <li key={i}>
@@ -369,8 +323,9 @@ function TigerCard({ lookups, live = false }: { lookups: TigerLookup[]; live?: b
           </li>
         ))}
       </ol>
-      {live && <div className="faint" style={{ fontSize: 11 }}>Lookups don't use simulation tries.</div>}
-    </section>
+      {live && <p className="sam-data-caption">Sam may check more records as the plan develops.</p>}
+      </div>
+    </details>
   );
 }
 
@@ -378,16 +333,16 @@ function AnswerCard({ f }: { f: AgentFinal }) {
   const by = f.source === "mock" ? "no AI key" : f.source === "cache" ? `${f.model}, replayed from cache` : f.model;
   return (
     <section className="card sam-plan" aria-label="Sam's answer">
-      <div className="row" style={{ alignItems: "flex-start", flexWrap: "nowrap", marginBottom: 8 }}>
+      <div className="sam-response-heading">
         <SamAvatar size={44} />
         <div>
-          <div className="overline">Sam's answer · from Tiger Data</div>
-          <h2>{f.goal_text}</h2>
+          <p className="sam-eyebrow">SAM’S ANSWER</p>
+          <h2>Here’s what I found</h2>
         </div>
       </div>
-      <blockquote className="sam-says big"><span style={{ whiteSpace: "pre-wrap" }}>{(f.answer ?? "").replace(/\*\*/g, "")}</span></blockquote>
+      <div className="sam-answer-copy">{(f.answer ?? "").replace(/\*\*/g, "").split(/\n\s*\n/).filter(Boolean).map((paragraph, i) => <p key={i}>{paragraph}</p>)}</div>
       {f.caveats && <div className="hint"><b>Note:</b> {f.caveats}</div>}
-      <div className="faint" style={{ marginTop: 8, fontSize: 11 }}>Answered by {by} · {f.tiger_lookups?.length ?? 0} read-only Tiger lookups · no simulations</div>
+      <details className="sam-method"><summary>About this answer</summary><p>Answered by {by} · {f.tiger_lookups?.length ?? 0} read-only Tiger lookups · no simulations.</p></details>
     </section>
   );
 }
@@ -396,11 +351,11 @@ function HistoryPanel({ items, loading, activeId, onOpen, onDelete }: {
   items: HistoryItem[]; loading: boolean; activeId?: string; onOpen: (id: string) => void; onDelete: (id: string) => void;
 }) {
   return (
-    <aside className="card sam-history" aria-label="Sam's history">
-      <h3>History</h3>
-      <div className="hint" style={{ marginBottom: 8 }}>Sam's final analyses, newest first.</div>
+    <section className="sam-history" aria-label="Sam's history">
+      <h2>Pick up where you left off</h2>
+      <p className="muted">Your finished plans and answers, newest first.</p>
       {loading && items.length === 0 && <div className="hint">Loading…</div>}
-      {!loading && items.length === 0 && <div className="hint">Nothing yet. Each finished plan or answer is kept here.</div>}
+      {!loading && items.length === 0 && <div className="sam-history-empty"><SamAvatar size={72} /><h3>Your first chat starts here</h3><p>Finished plans and answers will be saved here for next time.</p></div>}
       <ul>
         {items.map((h) => (
           <li key={h.run_id} className={activeId === h.run_id ? "active" : ""}>
@@ -416,7 +371,7 @@ function HistoryPanel({ items, loading, activeId, onOpen, onDelete }: {
           </li>
         ))}
       </ul>
-    </aside>
+    </section>
   );
 }
 
@@ -426,12 +381,15 @@ function methodText(m?: string) {
 
 function WhatIfSettings({ w }: { w: NonNullable<AgentState["whatif"]> }) {
   return (
-    <section className="card" aria-label="What-if settings">
-      <div className="overline">{methodText(w.method)}</div>
+    <details className="card sam-disclosure" aria-label="What-if settings">
+      <summary><span>What Sam is testing</span><small>{w.settings.length} changes</small></summary>
+      <div className="sam-disclosure-body">
       {w.settings.length ? <ul className="sam-moves">{w.settings.map((x) => <li key={x}>{x}</li>)}</ul>
         : <div className="hint">{w.error ?? "Nothing in that maps to a setting."}</div>}
       {w.unsupported.length > 0 && <div className="hint">Not supported: {w.unsupported.join("; ")}</div>}
-    </section>
+      <p className="sam-data-caption">{methodText(w.method)}</p>
+      </div>
+    </details>
   );
 }
 
@@ -456,33 +414,35 @@ function WhatIfCard({ f }: { f: AgentFinal }) {
   const m = f.metrics;
   return (
     <section className="card sam-plan" aria-label="Sam's what-if">
-      <div className="row" style={{ alignItems: "flex-start", flexWrap: "nowrap", marginBottom: 8 }}>
+      <div className="sam-response-heading">
         <SamAvatar size={44} />
         <div>
-          <div className="overline">What-if · {dateLabel(f.date)}</div>
-          <h2>{f.goal_text}</h2>
+          <p className="sam-eyebrow">YOUR WHAT-IF · {dateLabel(f.date)}</p>
+          <h2>Here’s what changes</h2>
         </div>
       </div>
-      {f.settings?.length ? <ul className="sam-moves">{f.settings.map((x) => <li key={x}>{x}</li>)}</ul> : null}
-      {f.explanation && <blockquote className="sam-says"><SamAvatar size={20} /><span>{f.explanation}</span></blockquote>}
-      {(f.unsupported?.length ?? 0) > 0 && <div className="hint">Not supported: {f.unsupported!.join("; ")}</div>}
+      {f.explanation && <Explanation text={f.explanation} />}
+      {(f.unsupported?.length ?? 0) > 0 && <p className="sam-caution">Outside this model: {f.unsupported!.join("; ")}</p>}
       {m ? (
-        <div className="sam-metrics" style={{ gridTemplateColumns: "repeat(4, minmax(0, 1fr))" }}>
-          <Metric label="Waste" h={m.waste_total} unit="portions" pct={m.waste_total.baseline ? (100 * (m.waste_total.median_change ?? 0)) / m.waste_total.baseline : 0} />
+        <div className="sam-metrics">
+          <Metric label="Food waste" h={m.waste_total} unit="portions" pct={m.waste_total.baseline ? (100 * (m.waste_total.median_change ?? 0)) / m.waste_total.baseline : 0} />
           <Metric label="Missed meals" h={m.missed_meal} unit="students" />
-          <Metric label="90% wait" h={m.wait_p90} unit="min" dec />
-          <Metric label="Empty-pan minutes" h={m.stockout_min_total} unit="min" dec />
+          <Metric label="Long waits (90%)" h={m.wait_p90} unit="min" dec />
         </div>
       ) : <div className="alert warn" style={{ marginTop: 8 }}><b>Nothing simulated</b>{f.summary}</div>}
       {ran && (
-        <div className="row" style={{ margin: "12px 0 4px" }}>
-          <button className="btn primary" onClick={onAdopt} disabled={isAdopted}>{isAdopted ? "Adopted for tonight" : "Adopt this what-if"}</button>
-          <button className="btn" onClick={() => nav("/lab", { state: { agentRequest: f.request } })}>Open in the Lab</button>
-          <button className="btn ghost" onClick={() => { useApp.getState().setScenario(scenario); nav("/hall"); }}>Watch a night</button>
+        <div className="sam-plan-actions">
+          <button className="btn primary" onClick={onAdopt} disabled={isAdopted}>{isAdopted ? "Plan adopted" : "Adopt this what-if"}</button>
+          <button className="btn" onClick={() => { useApp.getState().setDate(f.date); useApp.getState().setScenario(scenario); nav("/hall"); }}>Watch a night <SamIcon name="arrow" /></button>
+          <button className="btn ghost" onClick={() => nav("/lab", { state: { agentRequest: f.request } })}>Open in the Lab</button>
         </div>
       )}
       {note && <div className="alert info" role="status">{note}</div>}
-      <div className="faint" style={{ marginTop: 8, fontSize: 11 }}>{methodText(f.method)} · {ran ? `${f.nights_simulated ?? 60} simulated nights (what-if + tonight's plan) · ` : ""}the Lab's "Ask in plain English" box does the same, without Sam</div>
+      <details className="sam-disclosure sam-kitchen-changes"><summary><span>Changes & simulation details</span><small>{f.settings?.length ?? 0} settings</small></summary><div className="sam-disclosure-body">
+        {!!f.settings?.length && <ul className="sam-moves">{f.settings.map((x) => <li key={x}>{plain(x)}</li>)}</ul>}
+        {m && <Metric label="Empty-pan time across dishes" h={m.stockout_min_total} unit="dish-min" dec />}
+        <p className="sam-data-caption">{methodText(f.method)}{ran ? ` · ${f.nights_simulated ?? 60} simulated nights, including the current plan.` : ""}</p>
+      </div></details>
     </section>
   );
 }

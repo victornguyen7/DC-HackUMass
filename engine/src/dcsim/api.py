@@ -28,6 +28,9 @@
     POST /api/optimize | GET /api/optimize/{id}[/stream]   search kitchen plans (Optuna): waste-vs-stockouts frontier,
                                                     re-checked on unseen seeds (SSE trial, progress, final)
     POST /api/worlds | GET /api/worlds/{id}[/stream]       a plan vs baseline in plausible worlds + waste tornado
+    GET  /api/searches[?date=&kind=] | /api/searches/changes | /api/searches/{id}
+                                                    past plan searches kept in Tiger (searchlog.py)
+    POST /api/dish-evidence                         a new dish's look-alikes in Tiger, what they sold, its spread
     Admin (DCSIM_ADMIN_TOKEN, if set: header `Authorization: Bearer <token>` or `X-Admin-Token`):
     DELETE /api/scenarios/{id}
     POST /api/warm  | GET /api/warm                 precompute baseline + presets per date (background job)
@@ -1010,6 +1013,7 @@ class UncertaintyIn(BaseModel):
     crowd_sd: float = Field(0.10, ge=0, le=0.5)
     peak_shift_sd_min: float = Field(10.0, ge=0, le=60)
     popularity_sd: float = Field(0.3, ge=0, le=1.0)
+    new_dish_popularity_sd: float | None = Field(None, ge=0, le=1.5)  # None: from Tiger when the plan adds dishes
 
 
 class WorldsRequest(BaseModel):
@@ -1037,8 +1041,33 @@ def _search_jobs(request: Request) -> dict[str, SearchJob]:
     return jobs
 
 
-def _search_start(request: Request, kind: str, date: str, work) -> dict:
-    """Run `work(emit)` in a thread as a background job; events stream over GET /api/{kind}/{id}/stream."""
+def _tiger_conn():
+    """A Tiger connection or None (not configured / unreachable): same rules as the Similar nights page."""
+    from . import similar_nights as sn
+
+    return sn._connect()
+
+
+def _save_search(kind: str, result: dict, meta: dict) -> dict:
+    """Keep a finished search in Tiger (searchlog.py) when ledger writes are on. Never fails the run."""
+    from . import searchlog
+
+    if not _ledger_writes():
+        return {"saved": False, "reason": "Tiger writes are off (DCSIM_LEDGER_WRITES=0 or Tiger not set up)"}
+    conn = _tiger_conn()
+    if conn is None:
+        return {"saved": False, "reason": "Tiger isn't reachable"}
+    try:
+        with conn:
+            searchlog.init(conn)
+            return searchlog.save(conn, kind, result, meta)
+    except Exception as e:  # noqa: BLE001
+        return {"saved": False, "reason": f"{type(e).__name__}: {str(e)[:200]}"}
+
+
+def _search_start(request: Request, kind: str, date: str, work, meta: dict | None = None) -> dict:
+    """Run `work(emit)` in a thread as a background job; events stream over GET /api/{kind}/{id}/stream.
+    The result is saved to Tiger (when writes are on) before `final` goes out, so it says whether it was."""
     jobs = _search_jobs(request)
     if sum(j.status == "running" for j in jobs.values()) >= SEARCH_MAX_RUNNING:
         raise HTTPException(429, "Another plan search is running; try again in a minute")
@@ -1049,9 +1078,20 @@ def _search_start(request: Request, kind: str, date: str, work) -> dict:
     def emit(event: str, data: dict) -> None:  # from the worker thread
         asyncio.run_coroutine_threadsafe(job.emit(event, data), loop).result(timeout=10)
 
+    from datetime import datetime, timezone
+
+    started = datetime.now(timezone.utc).isoformat()
+
     async def run() -> None:
         try:
-            job.result = await asyncio.to_thread(work, emit)
+            result = await asyncio.to_thread(work, emit)
+            m = {"search_id": job.id, "date": date, "started_at": started, "engine_version": ENGINE_VERSION,
+                 "source": "api"} | (meta or {})
+            try:
+                saved = await asyncio.wait_for(asyncio.to_thread(_save_search, kind, result, m), timeout=15)
+            except TimeoutError:
+                saved = {"saved": False, "reason": "Tiger took too long to answer"}
+            job.result = {k: v for k, v in result.items() if not k.startswith("_")} | {"tiger": saved}
             await job.emit("final", job.result)
             await job.finish("done")
         except Exception as e:  # surfaced as an SSE `error`
@@ -1086,7 +1126,9 @@ async def optimize_start(body: OptimizeRequest, request: Request) -> dict:
                         worlds_n=body.worlds, on_trial=lambda t: emit("trial", t),
                         on_progress=lambda done, total: emit("progress", {"done": done, "total": total}))
 
-    return _search_start(request, "optimize", date, work)
+
+
+    return _search_start(request, "optimize", date, work, {"baseline_hash": hash_of(load_baseline(date))})
 
 
 @app.post("/api/worlds", status_code=202)
@@ -1102,12 +1144,40 @@ async def worlds_start(body: WorldsRequest, request: Request) -> dict:
         raise _bad(e) from e
     u = Uncertainty(**body.uncertainty.model_dump())
     svc = _svc(request)
+    new = [d for d in plan.menu if d.estimate]
 
     def work(emit) -> dict:
-        return worlds.sweep(svc, baseline_of(plan), plan, u, n_worlds=body.n_worlds, tornado_worlds=body.tornado_worlds,
-                            on_progress=lambda done, total: emit("progress", {"done": done, "total": total}))
+        uu, source = u, None
+        if new and u.new_dish_popularity_sd is None:
+            sd = _new_dish_sd(plan, new, u.popularity_sd)
+            if sd is not None:
+                uu, source = u.model_copy(update={"new_dish_popularity_sd": sd}), "tiger"
+        elif new:
+            source = "request"
+        out = worlds.sweep(svc, baseline_of(plan), plan, uu, n_worlds=body.n_worlds, tornado_worlds=body.tornado_worlds,
+                           on_progress=lambda done, total: emit("progress", {"done": done, "total": total}))
+        return out | {"new_dishes": [d.name for d in new], "new_dish_sd_source": source}
 
-    return _search_start(request, "worlds", plan.date, work)
+
+
+    return _search_start(request, "worlds", plan.date, work,
+                         {"baseline_hash": hash_of(baseline_of(plan)), "plan_hash": hash_of(plan)})
+
+
+def _new_dish_sd(plan, new, default_sd: float) -> float | None:
+    """The widest new-dish spread among the plan's added dishes, from their look-alikes in Tiger (None without Tiger)."""
+    from . import dishsearch
+
+    conn = _tiger_conn()
+    if conn is None:
+        return None
+    try:
+        with conn:
+            sds = [dishsearch.evidence(conn, d.name, d.station, d.role, d.period, d.diet_tags, d.hot, d.vessel,
+                                       default_sd=default_sd)["new_dish_sd"] for d in new]
+        return max(sds) if sds else None
+    except Exception:  # noqa: BLE001 - the sweep still runs, with the default spread
+        return None
 
 
 @app.get("/api/optimize/{job_id}")
@@ -1128,3 +1198,85 @@ def worlds_status(job_id: str, request: Request) -> dict:
 @app.get("/api/worlds/{job_id}/stream")
 def worlds_stream(job_id: str, request: Request):
     return _sse(_search_job(request, "worlds", job_id))
+
+
+TIGER_DOWN = "Tiger isn't reachable right now, so past searches and dish history can't be shown."
+
+
+def _tiger_search_read(fn):
+    conn = _tiger_conn()
+    if conn is None:
+        raise HTTPException(503, TIGER_DOWN)
+    try:
+        with conn:
+            return fn(conn)
+    except HTTPException:
+        raise
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(503, TIGER_DOWN) from e
+
+
+@app.get("/api/searches")
+def searches_list(date: str | None = None, kind: Literal["optimize", "worlds"] | None = None,
+                  limit: int = Query(20, ge=1, le=100)) -> dict:
+    """Past Optimize plan and Plausible worlds runs kept in Tiger, newest first."""
+    from . import searchlog
+
+    def read(conn):
+        if not searchlog.exists(conn):
+            return {"searches": [], "totals": {"searches": 0, "optimize_runs": 0, "worlds_runs": 0, "trials": 0, "worlds": 0}}
+        return {"searches": searchlog.list_searches(conn, date, kind, limit), "totals": searchlog.totals(conn)}
+
+    return _tiger_search_read(read)
+
+
+@app.get("/api/searches/changes")
+def searches_changes(date: str | None = None, limit: int = Query(12, ge=1, le=50)) -> dict:
+    """Changes that keep showing up on the optimizer's frontier across saved runs, and the best by weekday."""
+    from . import searchlog
+
+    def read(conn):
+        if not searchlog.exists(conn):
+            return {"changes": [], "by_weekday": []}
+        return {"changes": searchlog.recurring_changes(conn, date, limit), "by_weekday": searchlog.by_weekday(conn)}
+
+    return _tiger_search_read(read)
+
+
+@app.get("/api/searches/{search_id}")
+def searches_get(search_id: str) -> dict:
+    """One saved search, in the shape its live result had (Load into builder works on optimize runs)."""
+    from . import searchlog
+
+    def read(conn):
+        r = searchlog.get_search(conn, search_id) if searchlog.exists(conn) else None
+        if r is None:
+            raise HTTPException(404, "unknown search")
+        return r
+
+    return _tiger_search_read(read)
+
+
+class DishEvidenceRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    date: str | None = None
+    station: str | None = None
+    role: str | None = None
+    period: Literal["dinner", "late_night"] = "dinner"
+    diet_tags: list[str] = []
+    hot: bool | None = None
+    vessel: Literal["plate", "bowl", "cup"] | None = None
+    similar_to: list[str] = Field([], max_length=3)
+    popularity_sd: float = Field(0.3, ge=0, le=1.0)
+    k: int = Field(5, ge=3, le=10)
+
+
+@app.post("/api/dish-evidence")
+def dish_evidence(body: DishEvidenceRequest) -> dict:
+    """A new dish's look-alikes across every menu in Tiger (pgvector), what they really sold, the spread
+    its popularity gets in plausible worlds, and whether dish popularity is off at all (popularity check)."""
+    from . import dishsearch
+
+    return _tiger_search_read(lambda conn: dishsearch.evidence(
+        conn, body.name, body.station, body.role, body.period, tuple(body.diet_tags), body.hot, body.vessel,
+        tuple(body.similar_to), default_sd=body.popularity_sd, k=body.k))

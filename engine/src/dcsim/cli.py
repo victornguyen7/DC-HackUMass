@@ -132,6 +132,20 @@ def _search(args) -> None:
                          on_trial=on_trial, on_progress=progress)
     print(file=sys.stderr)
     print(_search_text(args.cmd, r, time.time() - t0))
+    if getattr(args, "save", False):
+        import datetime as dt
+
+        from . import searchlog, tsdb
+        from .config import ENGINE_VERSION, config_hash
+
+        base = load_baseline(date)
+        meta = {"search_id": searchlog.new_id(), "date": date, "engine_version": ENGINE_VERSION,
+                "started_at": dt.datetime.fromtimestamp(t0, dt.timezone.utc).isoformat(),
+                "baseline_hash": config_hash(base), "source": getattr(args, "source", "cli")}
+        with tsdb.connect() as conn:
+            searchlog.init(conn)
+            print(f"saved to Tiger: {searchlog.save(conn, args.cmd, r, meta)['search_id']}")
+    r = {k: v for k, v in r.items() if not k.startswith("_")}
     if args.json:
         Path(args.json).write_text(json.dumps(r, indent=2))
 
@@ -200,12 +214,16 @@ def main(argv: list[str] | None = None) -> None:
     wo.add_argument("--preset", choices=sorted(PRESETS), default="smaller_batches")
     wo.add_argument("--worlds", type=int, default=200)
     wo.add_argument("--json", help="write the result to this file")
+    wo.add_argument("--save", action="store_true", help="keep the run in Tiger (dcsim.plan_searches, search_worlds)")
+    wo.add_argument("--source", default="cli", help="`--save`: the source tag stored with it")
     op = sub.add_parser("optimize", help="search batch plans for the least waste (Optuna), validated on unseen seeds")
     op.add_argument("--date")
     op.add_argument("--trials", type=int, default=80)
     op.add_argument("--seeds", type=int, default=10, help="nights per trial (seeds 1..N)")
     op.add_argument("--max-stockout-min", type=float, default=None, help="default: no more than today's plan")
     op.add_argument("--json", help="write the result to this file")
+    op.add_argument("--save", action="store_true", help="keep the run in Tiger (dcsim.plan_searches, search_trials)")
+    op.add_argument("--source", default="cli", help="`--save`: the source tag stored with it")
     bt = sub.add_parser("backtest", help="re-simulate every recorded night with the recommended plan")
     bt.add_argument("--plan", default=None, choices=sorted(PRESETS))
     bd = sub.add_parser("bundle", help="export the static demo bundle (web/public/cache)")
@@ -249,14 +267,19 @@ def main(argv: list[str] | None = None) -> None:
     ex.add_argument("--nights", type=int, default=30)
     tq = sub.add_parser("tsdb", help="Tiger Data (TimescaleDB): observed nights and simulated runs side by side")
     tq.add_argument("action", choices=["init", "load", "query", "compress", "observe", "similar", "bench", "refresh",
-                                       "track"],
+                                       "track", "dishes", "searches"],
                     help="init: create schema · load: recorded history -> observed rows · query: run a named query or SQL"
                          " · compress: convert older chunks to the columnstore now and report sizes"
                          " · observe: generate + load the SYNTHETIC observation for --date (scores its logged forecasts)"
                          " · similar: past nights most like --date (pgvector) and a held-out check"
                          " · bench: time the same questions on the raw hypertables and on their continuous aggregates"
                          " · refresh: bring every continuous aggregate up to date now"
-                         " · track: score every observed night now and show the weekly track record")
+                         " · track: score every observed night now and show the weekly track record"
+                         " · dishes: the dish-popularity check, and look-alikes of --name (pgvector) with what they sold"
+                         " · searches: saved plan searches and the changes that keep showing up on the frontier")
+    tq.add_argument("--name", help="`dishes`: a (new) dish name to find look-alikes for")
+    tq.add_argument("--station", help="`dishes`: its station id")
+    tq.add_argument("--role", choices=["entree", "starch", "side", "soup", "dessert", "bread"], help="`dishes`: its role")
     tq.add_argument("--repeat", type=int, default=5, help="`bench`: timed runs per query (median is reported)")
     tq.add_argument("--sql", action="store_true", help="`bench`: also print each pair of queries")
     tq.add_argument("--date", help="night for `observe` / `similar`")
@@ -483,6 +506,41 @@ def _tiger(args) -> None:
                     e = bt[m]
                     print(f"  {m:<13} similar nights {e['knn']:>6}   training mean {e['train_mean']:>6}"
                           f"   same-weekday mean {e['weekday_mean']:>6}")
+        elif args.cmd == "tsdb" and args.action == "dishes":
+            from . import dishsearch as ds
+
+            index = ds.init(conn)
+            n = ds.build(conn)
+            print(f"{n} dishes embedded ({ds.DIM} dims, index: {index}).")
+            summ = ds.summarize(ds.evidence_rows(conn))
+            chk = ds.popularity_check({d: x["log_ratio"] for d, x in summ.items()})
+            print(f"\npopularity check (observed vs replay, {chk['dishes']} dishes, {chk.get('nights', 0)} dish-nights): "
+                  f"tau {chk['tau']}, noise sd {chk['sigma']}, detected {chk['detected']}\n  {chk['note']}")
+            if args.name:
+                r = ds.evidence(conn, args.name, args.station, args.role, k=args.k)
+                print(f"\nlook-alikes of {args.name!r}:")
+                cols = ["name", "station", "role", "distance", "nights", "eaten_per_night", "per_student"]
+                print(tsdb.format_table(cols, [[x[c] for c in cols] for x in r["neighbors"]]))
+                print(f"\nnew-dish popularity spread in plausible worlds: ±{r['new_dish_sd']:.0%} "
+                      f"(default ±{r['default_sd']:.0%}, look-alikes differ by ±{(r['neighbor_spread'] or 0):.0%})")
+        elif args.cmd == "tsdb" and args.action == "searches":
+            from . import searchlog
+
+            searchlog.init(conn)
+            conn.commit()
+            t = searchlog.totals(conn)
+            print(f"{t['searches']} saved searches ({t['optimize_runs']} optimize, {t['worlds_runs']} worlds), "
+                  f"{t['trials']} trials, {t['worlds']} world rows\n")
+            rows = searchlog.list_searches(conn, args.date, limit=args.k * 4)
+            cols = ["search_id", "kind", "menu_date", "weekday", "trials", "best_validated_waste_pct",
+                    "best_validated_stockout_diff", "source"]
+            print(tsdb.format_table(cols, [[x[c] for c in cols] for x in rows]))
+            ch = searchlog.recurring_changes(conn, args.date)
+            if ch:
+                print("\nchanges that keep showing up on the frontier:")
+                cols = ["label", "searches", "frontier_plans", "lower", "higher", "avg_multiplier", "waste_pct",
+                        "stockout_diff_min"]
+                print(tsdb.format_table(cols, [[x[c] for c in cols] for x in ch]))
         elif args.cmd == "tsdb" and args.action == "compress":
             tsdb.init_schema(conn)
             r = tsdb.compress_now(conn)

@@ -3,8 +3,9 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import type { ApiLevers } from "../lib/data";
 import { fmt1, fmtInt, signed } from "../lib/format";
 import {
-  frontierChart, runSearch, SEARCH_IDLE, searchReducer, winText,
-  type FrontierPlan, type OptimizeResult, type SearchState, type TornadoBar, type WorldsResult,
+  frontierChart, leverText, loadSearch, pastSearches, runSearch, SEARCH_IDLE, searchReducer, winText,
+  type FrontierPlan, type OptimizeResult, type RecurringChange, type SavedSearch, type SearchState, type TigerSaved,
+  type TornadoBar, type WorldsResult,
 } from "../lib/planSearch";
 
 function useSearch<R>(kind: "optimize" | "worlds") {
@@ -39,7 +40,8 @@ function Progress({ label, done, total }: { label: string; done: number; total: 
 export function OptimizePanel({ date, apiUp, onLoad }: { date: string; apiUp: boolean; onLoad: (levers: ApiLevers) => void }) {
   const { state, start } = useSearch<OptimizeResult>("optimize");
   const last = state.trials[state.trials.length - 1];
-  const r = state.result;
+  const [opened, setOpened] = useState<OptimizeResult | null>(null);
+  const r = opened ?? state.result;
   return (
     <div>
       <p className="hint" style={{ marginTop: 0 }}>
@@ -47,8 +49,8 @@ export function OptimizePanel({ date, apiUp, onLoad }: { date: string; apiUp: bo
         scoring waste and stockouts together. About a minute.
       </p>
       <button className="btn primary" disabled={!apiUp || state.status === "running"}
-        title={apiUp ? "" : "Needs the API (make server)"} onClick={() => start({ date })}>
-        {state.status === "running" ? "Searching…" : r ? "Search again" : "Optimize plan"}
+        title={apiUp ? "" : "Needs the API (make server)"} onClick={() => { setOpened(null); start({ date }); }}>
+        {state.status === "running" ? "Searching…" : state.result ? "Search again" : "Optimize plan"}
       </button>
       {!apiUp && <div className="hint" style={{ marginTop: 6 }}>Needs the API. Start it with <code>make server</code>.</div>}
       {state.status === "running" && last && !state.progress && (
@@ -56,9 +58,77 @@ export function OptimizePanel({ date, apiUp, onLoad }: { date: string; apiUp: bo
       )}
       {state.status === "running" && state.progress && <Progress label="Re-checking the best plans on nights the search never saw" {...state.progress} />}
       {state.status === "error" && <div className="alert warn" role="alert" style={{ marginTop: 8 }}><b>Search failed</b>{state.error}</div>}
-      {r && <OptimizeResultView r={r} onLoad={onLoad} />}
+      {opened && (
+        <div className="row hint" style={{ marginTop: 10, justifyContent: "space-between" }}>
+          <span>Saved search from {when(opened.finished_at)}, read back from Tiger</span>
+          <button className="btn ghost" onClick={() => setOpened(null)}>Hide saved search</button>
+        </div>
+      )}
+      {r && state.status !== "running" && <OptimizeResultView r={r} onLoad={onLoad} />}
+      {apiUp && state.status !== "running" && (
+        <PastSearches date={date} refresh={state.result?.tiger?.search_id ?? ""} current={r?.search_id ?? r?.tiger?.search_id}
+          onOpen={setOpened} />
+      )}
     </div>
   );
+}
+
+const when = (iso?: string | null) => (iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "");
+
+/** Past optimizer runs for this date and the levers that keep showing up on the frontier, from Tiger.
+ *  Shows nothing when Tiger isn't reachable or nothing was saved yet. */
+function PastSearches({ date, refresh, current, onOpen }: {
+  date: string; refresh: string; current?: string; onOpen: (r: OptimizeResult) => void;
+}) {
+  const [data, setData] = useState<{ searches: SavedSearch[]; changes: RecurringChange[] } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    pastSearches(date).then((d) => { if (live) setData(d); });
+    return () => { live = false; };
+  }, [date, refresh]);
+  if (!data || (data.searches.length === 0 && data.changes.length === 0)) return null;
+  const open = (id: string) => loadSearch(id).then((r) => { setError(null); onOpen(r); }, (e) => setError((e as Error).message));
+  return (
+    <div style={{ marginTop: 14, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+      {data.changes.length > 0 && (
+        <>
+          <h3 style={{ margin: "0 0 4px" }}>What keeps showing up on the frontier</h3>
+          <div className="hint" style={{ marginBottom: 6 }}>Across every saved search, from <code>dcsim.search_trials</code> in Tiger.</div>
+          <ul style={{ margin: "0 0 10px", paddingLeft: 18, fontSize: 12 }}>
+            {data.changes.slice(0, 5).map((c) => (
+              <li key={c.lever}><b>{c.label}</b>: {leverText(c)} (avg ×{c.avg_multiplier.toFixed(2)})</li>
+            ))}
+          </ul>
+        </>
+      )}
+      {data.searches.length > 0 && (
+        <>
+          <h3 style={{ margin: "0 0 4px" }}>Past searches for this date</h3>
+          <div className="stack" style={{ gap: 4 }}>
+            {data.searches.slice(0, 5).map((s) => (
+              <button key={s.search_id} className="btn ghost" style={{ justifyContent: "space-between", textAlign: "left", width: "100%" }}
+                disabled={s.search_id === current} onClick={() => open(s.search_id)}>
+                <span>{when(s.finished_at)} · {s.trials} plans</span>
+                <span className="num">{s.best_validated_waste_pct != null
+                  ? `${signed(s.best_validated_waste_pct, fmt1)}% waste · ${signed(s.best_validated_stockout_diff ?? 0, fmt1)} min`
+                  : "no frontier plan"}</span>
+              </button>
+            ))}
+          </div>
+          {error && <div className="hint" role="alert">Couldn't open it: {error}</div>}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** "Saved to Tiger" after a search, or why it wasn't. */
+function SavedChip({ t }: { t?: TigerSaved }) {
+  if (!t) return null;
+  return t.saved
+    ? <span className="chip good" title={`dcsim.plan_searches ${t.search_id}`}>Saved to Tiger ✓</span>
+    : <span className="hint" title={t.reason}>Not saved to Tiger{t.reason?.includes("off") ? " (writes off)" : ""}</span>;
 }
 
 export function OptimizeResultView({ r, onLoad }: { r: OptimizeResult; onLoad: (levers: ApiLevers) => void }) {
@@ -82,6 +152,7 @@ export function OptimizeResultView({ r, onLoad }: { r: OptimizeResult; onLoad: (
         {plans.map((f) => <FrontierCard key={f.n} f={f} baseStockout={r.baseline.stockout_min} onLoad={onLoad} />)}
       </div>
       <div className="hint" style={{ marginTop: 8 }}>{r.method}</div>
+      <div style={{ marginTop: 6 }}><SavedChip t={r.tiger} /></div>
     </div>
   );
 }
@@ -197,10 +268,15 @@ export function WorldsResultView({ r }: { r: WorldsResult }) {
         })}
       </div>
       <div className="hint" style={{ marginBottom: 10 }}>
-        Spread used: crowd ±{Math.round(u.crowd_sd * 100)}%, rush ±{u.peak_shift_sd_min} min, dish popularity ±{Math.round(u.popularity_sd * 100)}% (one standard deviation).
-        Both plans face the same worlds. The spreads are judgement, not data.
+        Spread used: crowd ±{Math.round(u.crowd_sd * 100)}%, rush ±{u.peak_shift_sd_min} min, dish popularity ±{Math.round(u.popularity_sd * 100)}% (one standard deviation)
+        {u.new_dish_popularity_sd != null && r.new_dishes?.length ? (
+          <>, new dish{r.new_dishes.length > 1 ? "es" : ""} ±{Math.round(u.new_dish_popularity_sd * 100)}%
+            {r.new_dish_sd_source === "tiger" ? " (from how similar dishes sold, in Tiger)" : ""}</>
+        ) : null}.
+        {" "}Both plans face the same worlds. The spreads are judgement, not data.
       </div>
       {r.tornado && <Tornado bars={r.tornado.bars} n={r.tornado.n_worlds} />}
+      <div style={{ marginTop: 6 }}><SavedChip t={r.tiger} /></div>
     </div>
   );
 }

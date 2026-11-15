@@ -160,6 +160,38 @@ CREATE TABLE IF NOT EXISTS dcsim.forecast_results (
   PRIMARY KEY (night, origin, method)
 );
 
+-- Dish search (dishsearch.py; `dcsim tsdb dishes` fills it and adds a DiskANN index)
+
+CREATE TABLE IF NOT EXISTS dcsim.dish_vectors (
+  dish_id text PRIMARY KEY, name text NOT NULL, station text, role text, period text,
+  menu_dates date[], embedding vector(111) NOT NULL
+);
+
+-- Plan searches (searchlog.py): one row per Optimize plan or Plausible worlds run.
+CREATE TABLE IF NOT EXISTS dcsim.plan_searches (
+  search_id text PRIMARY KEY,
+  kind text NOT NULL CHECK (kind IN ('optimize', 'worlds')),
+  menu_date date NOT NULL, weekday text,
+  started_at timestamptz, finished_at timestamptz NOT NULL DEFAULT now(),
+  engine_version text, baseline_hash text, plan_hash text,
+  trials int, seeds int, nights int,
+  limits jsonb, baseline jsonb, summary jsonb,
+  source text NOT NULL DEFAULT 'api'
+);
+CREATE TABLE IF NOT EXISTS dcsim.search_trials (
+  ts timestamptz NOT NULL, search_id text NOT NULL, menu_date date NOT NULL, n int NOT NULL,
+  waste double precision, stockout_min double precision, wait_p90 double precision,
+  within boolean, on_frontier boolean,
+  validated_waste_pct double precision, validated_stockout_diff double precision,
+  params jsonb, levers jsonb, changes text[]
+);
+CREATE INDEX IF NOT EXISTS search_trials_search_idx ON dcsim.search_trials (search_id, n);
+CREATE TABLE IF NOT EXISTS dcsim.search_worlds (
+  search_id text NOT NULL, side text NOT NULL CHECK (side IN ('baseline', 'plan')), seed int NOT NULL,
+  waste double precision, stockout_min double precision, wait_p90 double precision,
+  PRIMARY KEY (search_id, side, seed)
+);
+
 -- ============ 4. Category tables ============
 
 -- Small fixed lists: what each code in the fact tables means.
@@ -224,6 +256,8 @@ SELECT create_hypertable('dcsim.station_hours', by_range('ts', INTERVAL '7 days'
 SELECT create_hypertable('dcsim.minute_series', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
 
 SELECT create_hypertable('dcsim.forecast_results', by_range('night', INTERVAL '28 days'), if_not_exists => TRUE);
+
+SELECT create_hypertable('dcsim.search_trials', by_range('ts', INTERVAL '7 days'), if_not_exists => TRUE);
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM timescaledb_information.hypertables
                  WHERE hypertable_schema = 'dcsim' AND hypertable_name = 'nights' AND compression_enabled) THEN
@@ -266,6 +300,13 @@ DO $$ BEGIN
   END IF;
 END $$;
 CALL add_columnstore_policy('dcsim.minute_series', after => INTERVAL '1 day', if_not_exists => true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM timescaledb_information.hypertables
+                 WHERE hypertable_schema = 'dcsim' AND hypertable_name = 'search_trials' AND compression_enabled) THEN
+    ALTER TABLE dcsim.search_trials SET (timescaledb.enable_columnstore, timescaledb.segmentby = 'menu_date', timescaledb.orderby = 'ts, n');
+  END IF;
+END $$;
+CALL add_columnstore_policy('dcsim.search_trials', after => INTERVAL '1 day', if_not_exists => true);
 CREATE MATERIALIZED VIEW IF NOT EXISTS dcsim.dish_nightly WITH (timescaledb.continuous) AS
 SELECT time_bucket('1 day', ts, 'America/New_York') AS day, source, scenario, run_id, seed, station, dish_id,
        sum(portions_out) AS cooked, sum(portions_eaten) AS eaten,
@@ -474,6 +515,10 @@ COMMENT ON VIEW dcsim.forecast_scorecard IS 'Every logged forecast next to what 
 COMMENT ON TABLE dcsim.dishes IS 'Menu: one row per dish per menu date. Past nights reuse a same-weekday menu (nights.menu_date).';
 COMMENT ON TABLE dcsim.date_context IS 'Per date: weekday, crowd factors and named campus events.';
 COMMENT ON TABLE dcsim.cat_values IS 'Code -> label lookup by category (source, waste_reason, weather, role, diet, ...).';
+
+COMMENT ON TABLE dcsim.plan_searches IS 'One row per plan search: kind optimize (Optuna search over kitchen plans: summary has the waste-vs-stockouts frontier, each plan re-checked on unseen seeds) or worlds (a plan vs the baseline in plausible worlds: summary has win rates and the waste tornado). Simulated, not observed.';
+COMMENT ON TABLE dcsim.search_trials IS 'Every kitchen plan the optimizer tried: median waste, stockout minutes and p90 wait over its search seeds; within = met the stockout and wait limits; on_frontier = no other plan had both less waste and fewer stockouts; validated_* = frontier plans re-checked on seeds the search never saw (waste % vs today, stockout minutes added). changes are readable (e.g. ''Soups: batches x0.6'').';
+COMMENT ON TABLE dcsim.search_worlds IS 'Per plausible world (seed) of a worlds run: waste, stockout minutes and p90 wait for the baseline and the plan, which faced the same worlds.';
 
 COMMENT ON VIEW dcsim.forecast_weekly IS 'Continuous aggregate (real-time) of forecast_results by week (weeks start Thursday 2026-10-01; weeks of 2026-10-29 and 2026-11-05 are the held-out split): nights, nights inside the 10-90% range, bias (observed minus median).';
 COMMENT ON VIEW dcsim.waste_daily_by_dish IS 'Continuous aggregate (real-time) of waste_log per night, dish and reason.';

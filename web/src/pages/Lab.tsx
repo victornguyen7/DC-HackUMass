@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { OptimizePanel, WorldsPanel } from "../components/PlanSearch";
 import { ErrorBox, Loading, TopBar } from "../components/Shell";
 import {
-  apiUp, ask, dishPrior, explain, findEntry, listScenarios, loadApiResult, loadManifest, loadResult, saveScenario, similarDishes, simulate,
-  type ApiLevers, type AskReply, type NewDish, type SavedScenario,
+  apiUp, ask, dishEvidence, dishPrior, explain, findEntry, listScenarios, loadApiResult, loadManifest, loadResult, saveScenario, similarDishes, simulate,
+  type ApiLevers, type AskReply, type DishEvidence, type NewDish, type SavedScenario,
 } from "../lib/data";
 import { clock, dateLabel, dishWindow, fmt1, fmtInt, groupFlags, PRESET_LABELS, scenarioLabel, signed, stationName } from "../lib/format";
 import { useApiUp, useAsync } from "../lib/hooks";
@@ -534,6 +534,7 @@ function NewDishForm({ base, date, apiUp, dishes, taken, onAdd, onCancel }: {
             ))}
           </div>
         </div>
+        <TigerEvidence date={date} apiUp={apiUp} dish={d} />
         <Slider label="Popularity vs. those dishes" min={0.5} max={2} step={0.1} base={1} value={d.popularity_multiplier ?? 1}
           onChange={(v) => set({ popularity_multiplier: +v.toFixed(1) })} fmt={(v) => `×${v.toFixed(1)}`} />
         <div className="row">
@@ -554,6 +555,32 @@ function NewDishForm({ base, date, apiUp, dishes, taken, onAdd, onCancel }: {
         </div>
         {!prior && ready && <div className="faint" style={{ fontSize: 11 }}>Without an AI estimate, each student type likes it as much as the similar dishes.</div>}
       </div>
+    </div>
+  );
+}
+
+/** What dishes like this one really sold, from Tiger's history (pgvector look-alikes across every menu).
+ *  Nothing shows when Tiger isn't reachable. */
+export function TigerEvidence({ date, apiUp, dish }: { date: string; apiUp: boolean; dish: NewDish }) {
+  const [ev, setEv] = useState<DishEvidence | null>(null);
+  const name = dish.name.trim();
+  const key = JSON.stringify([name, dish.station, dish.role, dish.diet_tags, dish.hot]);
+  useEffect(() => {
+    if (!apiUp || name.length < 3) { setEv(null); return; }
+    let live = true;
+    const t = setTimeout(() => {
+      dishEvidence(date, { ...dish, name }).then((r) => { if (live) setEv(r); }, () => { if (live) setEv(null); });
+    }, 400);
+    return () => { live = false; clearTimeout(t); };
+  }, [key, apiUp, date]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!ev || !ev.per_student_range) return null;
+  const per100 = (x: number) => (x * 100).toFixed(1);
+  const names = ev.neighbors.slice(0, 3).map((n) => n.name).join(", ");
+  return (
+    <div className="hint" aria-label="Tiger history for similar dishes">
+      In Tiger: dishes like this ({names}) sold {per100(ev.per_student_range[0])}–{per100(ev.per_student_range[1])} portions
+      per 100 students over {ev.neighbor_nights} recorded nights. In plausible worlds its popularity varies ±{Math.round(ev.new_dish_sd * 100)}%
+      {ev.neighbor_spread != null ? ` (±${Math.round(ev.default_sd * 100)}% for every dish, plus how differently those sold)` : ""}.
     </div>
   );
 }

@@ -191,6 +191,8 @@ class Uncertainty(_Frozen):
     crowd_sd: float = Field(0.0, ge=0, le=0.5)  # lognormal sd of the crowd size (both periods)
     peak_shift_sd_min: float = Field(0.0, ge=0, le=60)  # sd of a shift of every dinner wave
     popularity_sd: float = Field(0.0, ge=0, le=1.0)  # lognormal sd of each dish's popularity
+    # New dishes (Dish.estimate) instead get this sd when set: from similar dishes' sales in Tiger (dishsearch.py)
+    new_dish_popularity_sd: float | None = Field(None, ge=0, le=1.5)
 
 
 class Persona(_Frozen):
@@ -345,6 +347,9 @@ def canonical_json(cfg: ScenarioConfig) -> str:
     for k in _DROP_IF_NONE:
         if data.get(k) is None:
             data.pop(k, None)
+    u = data.get("uncertainty")
+    if isinstance(u, dict) and u.get("new_dish_popularity_sd") is None:  # added later: absent keeps older hashes
+        u.pop("new_dish_popularity_sd", None)
     return json.dumps(_canon(data), sort_keys=True, separators=(",", ":"))
 
 

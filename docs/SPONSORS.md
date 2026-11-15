@@ -151,6 +151,8 @@ Full details: [`TIGER.md`](TIGER.md). Code: `engine/src/dcsim/tsdb.py`, `engine/
 | **Calibration over time**: every night scored into hypertable `forecast_results` by a nightly Tiger job (`add_job`), weekly real-time continuous aggregate `forecast_weekly` (`uv run dcsim tsdb track`) | ✅ built 2026-11-14 (TIGER.md §4) |
 | **Weather/event flags** in the crowd error, kept only if held-out CRPS improves (`uv run dcsim calibrate --situations-only`) | ✅ built 2026-11-14; not kept on this history (205.8 vs 200.0), TIGER.md §5 |
 | **Tiger MCP for live questions**: schema comments for the assistant, question set answered live (*"which dishes ran out on rainy Fridays?"*) | ✅ built 2026-11-14 (TIGER.md §6); service is DEV, so the MCP is not read-only |
+| **Dish search + popularity check**: look-alike dishes across every menu (pgvector + DiskANN over 111-dim dish vectors) with what they sold; a new dish's popularity spread in plausible worlds comes from them. Per-dish popularity error measured from observed vs replay: none on this synthetic history (τ 0.021), recovered on a fixture with a known spread (`uv run dcsim tsdb dishes --name "Butter Chicken" --role entree`) | ✅ built 2026-11-14 (TIGER.md §9; Lab new-dish form, `POST /api/dish-evidence`) |
+| **Plan searches in Tiger**: every Optimize plan / Plausible worlds run kept (`plan_searches`, hypertable `search_trials`, `search_worlds`); "which lever keeps showing up on the frontier" in one SQL query (`uv run dcsim tsdb searches`) | ✅ built 2026-11-14 (TIGER.md §10; Lab Optimize card, `/tiger` dashboard card, `GET /api/searches`) |
 
 Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql://...` in `engine/.env`.
 

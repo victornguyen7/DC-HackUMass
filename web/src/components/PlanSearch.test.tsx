@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { OptimizePanel, OptimizeResultView, WorldsPanel, WorldsResultView } from "./PlanSearch";
-import { frontierChart, searchReducer, SEARCH_IDLE, winText, type OptimizeResult, type WorldsResult } from "../lib/planSearch";
+import { frontierChart, leverText, searchReducer, SEARCH_IDLE, winText, type OptimizeResult, type RecurringChange, type WorldsResult } from "../lib/planSearch";
 
 const cmp = (waste: number, win: number) => ({
   n_pairs: 30,
@@ -127,4 +127,53 @@ it("needs the API and a plan the builder made", () => {
   cleanup();
   render(<WorldsPanel apiUp request={null} />);
   expect(screen.getByRole("button", { name: "Test in 100 worlds" })).toHaveProperty("disabled", true);
+});
+
+const SAVED = {
+  search_id: "s1", kind: "optimize", menu_date: "2026-11-13", weekday: "Friday", started_at: null,
+  finished_at: "2026-11-14T15:00:00+00:00", trials: 40, seeds: 10, nights: 400, source: "api",
+  best_validated_waste_pct: -28.6, best_validated_stockout_diff: 5.8, worlds_waste_win: null, n_worlds: null,
+};
+const CHANGE: RecurringChange = { lever: "batch:soups", label: "Soups · batch size", searches: 2, frontier_plans: 3, lower: 3, higher: 0,
+  avg_multiplier: 0.77, waste_pct: -28, stockout_diff_min: 20 };
+
+it("words recurring levers by direction", () => {
+  expect(leverText(CHANGE)).toBe("smaller in 3 of 3 frontier plans");
+  expect(leverText({ ...CHANGE, lever: "reorder:grill", lower: 0, higher: 1, frontier_plans: 1 })).toBe("higher in 1 of 1 frontier plan");
+});
+
+it("lists past searches from Tiger and opens one", async () => {
+  const gets: string[] = [];
+  vi.stubGlobal("fetch", async (url: string) => {
+    gets.push(url);
+    if (url.startsWith("/api/searches?")) return Response.json({ searches: [SAVED], totals: {} });
+    if (url === "/api/searches/changes") return Response.json({ changes: [CHANGE], by_weekday: [] });
+    if (url === "/api/searches/s1") return Response.json({ ...OPT, search_id: "s1", finished_at: SAVED.finished_at });
+    throw new Error(`Unexpected request: ${url}`);
+  });
+  render(<OptimizePanel date="2026-11-13" apiUp onLoad={() => undefined} />);
+  await screen.findByText("What keeps showing up on the frontier");
+  expect(gets[0]).toBe("/api/searches?kind=optimize&date=2026-11-13");
+  screen.getByText("Soups · batch size");
+  screen.getByText(/smaller in 3 of 3 frontier plans \(avg ×0\.77\)/);
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: /40 plans/ })); });
+  screen.getByText(/read back from Tiger/);
+  screen.getByText("Less waste costs stockouts here");
+  fireEvent.click(screen.getByRole("button", { name: "Hide saved search" }));
+  expect(screen.queryByText(/read back from Tiger/)).toBeNull();
+});
+
+it("shows nothing from Tiger when it is down, and says whether a run was saved", async () => {
+  vi.stubGlobal("fetch", async () => new Response(JSON.stringify({ detail: "Tiger isn't reachable" }), { status: 503 }));
+  render(<OptimizePanel date="2026-11-13" apiUp onLoad={() => undefined} />);
+  await act(async () => { await Promise.resolve(); });
+  expect(screen.queryByText("Past searches for this date")).toBeNull();
+  cleanup();
+  render(<OptimizeResultView r={{ ...OPT, tiger: { saved: true, search_id: "s9" } }} onLoad={() => undefined} />);
+  screen.getByText("Saved to Tiger ✓");
+  cleanup();
+  render(<WorldsResultView r={{ ...WORLDS, tiger: { saved: false, reason: "Tiger writes are off (DCSIM_LEDGER_WRITES=0)" },
+    uncertainty: { ...WORLDS.uncertainty, new_dish_popularity_sd: 0.42 }, new_dishes: ["Butter Chicken"], new_dish_sd_source: "tiger" }} />);
+  screen.getByText("Not saved to Tiger (writes off)");
+  screen.getByText(/new dish ±42% \(from how similar dishes sold, in Tiger\)/);
 });

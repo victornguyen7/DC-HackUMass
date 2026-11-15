@@ -42,6 +42,8 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | 6 | **Tiger MCP** for live questions: schema comments for the assistant, verified question set | built 2026-11-14 (§6) | `COMMENT ON` in `tsdb.COMMENTS`; questions below |
 | 8 | **Live dashboard**: two real-time continuous aggregates with refresh policies, raw-vs-aggregate benchmark, one query across the stack | built 2026-11-14 (commit `78d9239`; §8) | `dcsim tsdb bench`, `/api/tiger/*`, API page `/tiger` |
 | 7 | **Similar-night search** with pgvector + a pgvectorscale DiskANN index | built | `dcsim tsdb similar`, `dcsim.night_vectors` (§7); API + web page handoff: [SIMILAR_NIGHTS.md](SIMILAR_NIGHTS.md) |
+| 9 | **Dish search + dish-popularity check**: look-alike dishes across every menu (pgvector + DiskANN), what they sold, a new dish's popularity spread in plausible worlds; per-dish popularity error measured from observed vs replay | built 2026-11-14 (§9); **no dish-level error found** on this synthetic history (τ 0.021) | `dcsim tsdb dishes`, `POST /api/dish-evidence`, `dcsim.dish_vectors` |
+| 10 | **Plan searches in Tiger**: every Optimize plan / Plausible worlds run kept (search row, one hypertable row per plan tried, one row per world); "which lever keeps showing up on the frontier" in SQL | built 2026-11-14 (§10) | `dcsim tsdb searches`, `GET /api/searches[...]`, `dcsim.plan_searches`, `search_trials`, `search_worlds` |
 
 ## Schema (`dcsim`)
 
@@ -58,6 +60,10 @@ Lab's **Adopt** button makes that call when the API is up, so adopting in the we
 | `forecast_check` | view | | per observed night and scenario: simulated p10 / p50 / p90 and whether the observation fell inside |
 | `forecasts` | table, **append-only** | 1 per forecast | the ledger: naive and calibrated p10 / p50 / p90 for students, waste, stockouts, cooked, plus samples (JSONB) |
 | `night_vectors` | table + DiskANN index | 1 per observed night | 77-dim night vector (weekday, weather, event, hashed menu) for `dcsim tsdb similar` and the Similar nights page |
+| `dish_vectors` | table + DiskANN index | 268 (one per dish id) | 111-dim dish vector (station, role, period, diet, allergens, hot/vessel, hashed name words) for the new-dish search (§9) |
+| `plan_searches` | table | 1 per saved search | Optimize plan / Plausible worlds run: date, weekday, limits, baseline, summary (frontier with unseen-night check, or win rates + tornado) as JSONB (§10) |
+| `search_trials` | hypertable on `ts` | 40 per optimizer run | every plan tried: waste, stockouts, wait, within limits, on the frontier, unseen-night waste % and stockout cost, params, levers, readable changes |
+| `search_worlds` | table | 2 per world | per world of a worlds run: baseline and plan waste, stockouts, wait |
 | `forecast_scorecard` | view | | each ledger forecast next to the observed night: `issued_before_open`, `inside` / `outside` / `awaiting` |
 | `dish_nights` | hypertable (engine 0.6.2 loader) | ~23k (replays) | per dish per replay night: cooked, served, expired, leftover, waste, stockout min, run-out time, first-choice demand, period |
 | `station_hours` | hypertable | ~31k (replays) | per station and hour: servers planned (shifts), servers needed for ≤ 85% busy, peak line that hour |
@@ -440,6 +446,48 @@ Details: SPONSORS.md §2.
 
 Similar-night search: the CLI version is in §7 below. A teammate's API and web page version (`GET /api/similar-nights`,
 exact pgvector cosine scoring, local synthetic fallback) is described in [the integration handoff](SIMILAR_NIGHTS.md).
+
+## 9. Dish search and the dish-popularity check
+
+The plausible-worlds tornado ranks dish popularity second for waste (±30% per dish moves waste by 290 portions on Nov 13), and that ±30% is a guess. Tiger holds every recorded dish-night, so two questions can be asked of it (`engine/src/dcsim/dishsearch.py`):
+
+**1. Is each dish's popularity off?** For every recorded night, a dish's observed portions eaten (`dish_nightly`, `observed`) is compared with the replay of the same night (`replay`: that night's crowd and production). The log ratio mixes noise with any real per-dish error; `popularity_check` separates them (method-of-moments empirical Bayes: τ² = var(dish means) − mean(σ²/n), each dish's factor shrunk toward 1 by how many nights back it).
+
+- **Result on Tiger (`uv run dcsim tsdb dishes`):** 240 dishes, 2,142 dish-nights, noise sd 0.093, **τ = 0.021: no dish-level popularity error detected** (threshold 5%).
+- That is the honest answer, not a weak method: the synthetic generator (`synthetic.py`) draws crowd, weather, over-prep and plate waste per night, but no per-dish popularity error, so there is none to find. Worlds therefore keeps the flat ±30% for menu dishes. With R04 consumption data the same check would measure the real spread.
+- **The method works when there is something to find** (`tests/test_dishsearch.py`): on a fixture of 60 dishes × 8 nights with a known spread τ = 0.25 and noise 0.1, it recovers τ within ±0.07, its shrunk factors correlate > 0.8 with the truth, and with τ = 0 it reports nothing.
+
+**2. What is a new dish like?** Every dish id on every menu date is a 111-dim vector in `dcsim.dish_vectors` (station 16 hashed, role 6, period 2, diet 3, allergens 16 hashed, hot + vessel 4, name words 64 hashed; blocks unit length and weighted; cosine distance; DiskANN index). It is a hand-built feature vector, not a learned embedding.
+
+- `POST /api/dish-evidence` returns the k = 5 nearest dishes with what they sold (portions per student, from the observed history), and the new dish's popularity spread for plausible worlds: `sqrt(0.30² + s²)`, where s is the sd of log portions-per-student among the look-alikes (dishes that look alike but sell differently → a wider spread).
+- Example: "Butter Chicken" (entree) → Mandarin Chicken w/Cashews, Kung Pao Peanut Chicken, Savory Baked Chicken Leg / Thigh, Chicken Noodle; they sold 3.4–6.8 portions per 100 students over 30 recorded nights; spread ±42% (look-alikes differ by ±30%).
+- **Where it shows:** the Lab's new-dish form ("In Tiger: dishes like this … sold …"), and `POST /api/worlds`: when the plan adds dishes and the request doesn't set `uncertainty.new_dish_popularity_sd`, the API fills it from Tiger (`new_dish_sd_source: "tiger"`), so a new dish is less certain than a known one. Without Tiger the dish gets the ordinary ±30%.
+- `Uncertainty.new_dish_popularity_sd` is left out of the config hash when unset, so no cached config changed.
+
+## 10. Plan searches kept in Tiger
+
+Optimize plan and Plausible worlds results used to live only in the API's memory. `engine/src/dcsim/searchlog.py` keeps every finished run:
+
+| Table | One row per |
+| --- | --- |
+| `plan_searches` | search: kind, menu date, weekday, engine version, baseline / plan hash, limits, baseline, summary (JSONB: frontier with its unseen-night check and lever labels, or win rates and tornado) |
+| `search_trials` (hypertable on `ts`, columnstore segment-by `menu_date`) | plan the optimizer tried: waste, stockouts, p90 wait, within limits, on the frontier, unseen-night waste % and stockout minutes added, params (multipliers), levers (frontier plans), readable changes |
+| `search_worlds` | world (seed) and side (baseline / plan) of a worlds run |
+
+- **When it saves:** the API saves after a run finishes and before `final` goes out, so the result carries `tiger: {saved, search_id | reason}` (Lab: "Saved to Tiger ✓" or "Not saved to Tiger (writes off)"). It is gated like the ledger: Tiger configured and `DCSIM_LEDGER_WRITES` ≠ 0, so `make server-test` writes nothing. A failed save never fails the run. CLI: `dcsim optimize --save` / `dcsim worlds --save` (`--source` tags it). These tables are not append-only.
+- **Reads:** `GET /api/searches[?date=&kind=]`, `GET /api/searches/changes`, `GET /api/searches/{id}` (a past optimize run in its live shape, so **Load into builder** works on it). Reads never create tables. The Lab's Optimize card lists past searches for the date and "What keeps showing up on the frontier"; the `/tiger` dashboard has a **Plan searches** card.
+- **"Which lever keeps showing up?"** (`searchlog.RECURRING_CHANGES_SQL`): per search parameter (e.g. `batch:soups`), over frontier plans that were re-checked on unseen nights, how often it moved down or up, its mean multiplier, and the mean waste and stockout change of those plans. `BY_WEEKDAY_SQL` gives the median best unseen-night waste change per weekday, one value per search.
+- **On Tiger now:** one 40-trial Nov 13 run (`source = 'cli-test'`, search `09178621d771`). Its three frontier plans all made **Soups batches smaller (avg ×0.77)**, Latino batches smaller (×0.80), Teriyaki Salmon batches smaller (×0.80), and lowered the Display, Grill, Mediterranean and Seasons reorder points (×0.87). Unseen-night results: −28.6% waste for +48.6 stockout min, −27.4% / +35.9, −28.6% / +5.8. One run is not a pattern; the query becomes useful as runs accumulate across dates.
+- The tables have `COMMENT ON` text, so the Tiger MCP and Sam can answer "which change keeps showing up?" from the schema.
+
+```sql
+-- the lever query, as the dashboard runs it
+SELECT p.key, count(*) FILTER (WHERE p.value::float8 < 0.999) AS lower, count(*) AS frontier_plans,
+       round(avg(p.value::float8)::numeric, 2) AS avg_multiplier
+FROM dcsim.search_trials t CROSS JOIN LATERAL jsonb_each_text(t.params) AS p(key, value)
+WHERE t.on_frontier AND t.validated_waste_pct IS NOT NULL
+GROUP BY p.key ORDER BY lower DESC LIMIT 8;
+```
 
 ## Useful queries
 

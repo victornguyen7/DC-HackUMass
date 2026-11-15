@@ -24,6 +24,8 @@ other Lab plan.
 
 from __future__ import annotations
 
+import datetime as dt
+
 import math
 from collections.abc import Callable
 
@@ -82,6 +84,13 @@ def levers_for(base: ScenarioConfig, params: dict[str, float]) -> Levers:
         if change:
             kitchen[d.id] = KitchenLever(**change)
     return Levers(kitchen=kitchen)
+
+
+def param_labels(base: ScenarioConfig, keys) -> dict[str, str]:
+    """Search parameter -> readable lever, e.g. "batch:soups" -> "Soups · batch size" (kept with saved searches)."""
+    names = {s.id: s.name for s in base.stations} | {d.id: d.name for d in base.menu}
+    what = {"batch": "batch size", "reorder": "reorder point", "dish": "batch size (dish)"}
+    return {k: f"{names.get(k.split(':', 1)[1], k.split(':', 1)[1])} · {what[k.split(':', 1)[0]]}" for k in keys}
 
 
 def describe(base: ScenarioConfig, params: dict[str, float]) -> list[str]:
@@ -156,10 +165,11 @@ def optimize(svc, date: str, trials: int = 80, seeds: int = 10, max_stockout_min
         best = min([r["waste"] for r in rows if r["within"]] + ([waste] if within else []), default=None)
         row = {"n": len(rows) + 1, "of": trials, "waste": round(waste, 1), "stockout_min": round(stock, 1),
                "wait_p90": round(wait, 2), "wait_ok": wait <= limits["wait_p90"], "within": within,
-               "feasible": within, "best_waste": None if best is None else round(best, 1), "params": params}
+               "feasible": within, "best_waste": None if best is None else round(best, 1), "params": params,
+               "ts": dt.datetime.now(dt.timezone.utc).isoformat()}
         rows.append(row)
         if on_trial:
-            on_trial({k: v for k, v in row.items() if k != "params"})
+            on_trial({k: v for k, v in row.items() if k not in ("params", "ts")})
         return waste, stock
 
     sampler = optuna.samplers.TPESampler(seed=sampler_seed, multivariate=True)
@@ -170,7 +180,7 @@ def optimize(svc, date: str, trials: int = 80, seeds: int = 10, max_stockout_min
 
     def public(r: dict) -> dict:
         lv = levers_for(base, r["params"])
-        return {k: v for k, v in r.items() if k not in ("params", "of", "best_waste", "feasible")} | {
+        return {k: v for k, v in r.items() if k not in ("params", "of", "best_waste", "feasible", "ts")} | {
             "changes": describe(base, r["params"]) or ["Today's plan"],
             "levers": lv.model_dump(exclude_defaults=True),
             "waste_pct": round(100 * (r["waste"] - b_waste) / b_waste, 1) if b_waste else 0.0,
@@ -183,7 +193,10 @@ def optimize(svc, date: str, trials: int = 80, seeds: int = 10, max_stockout_min
         "baseline": {"waste": round(b_waste, 1), "stockout_min": round(b_stock, 1), "wait_p90": round(b_wait, 2)},
         "limits": {k: round(v, 2) for k, v in limits.items()},
         "search_space": {"stations": stations, "top_dishes": top, "ranges": RANGES, "step": STEP},
-        "history": [{k: v for k, v in r.items() if k not in ("params", "of", "feasible")} for r in rows],
+        "param_labels": param_labels(base, keys),
+        # params, changes and ts are what Tiger keeps per trial (searchlog.trial_rows)
+        "history": [{k: v for k, v in r.items() if k not in ("of", "feasible")}
+                    | {"changes": describe(base, r["params"]) or ["Today's plan"]} for r in rows],
         "frontier": [public(r) for r in frontier],
         "levers": None, "changes": [],
         "method": (f"Searched {trials} plans across {trials * seeds} simulated nights (Optuna, black-box search, "

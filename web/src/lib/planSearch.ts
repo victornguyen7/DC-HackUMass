@@ -18,9 +18,14 @@ export type FrontierPlan = {
   validation?: { seeds: [number, number]; waste_pct: number; stockout_diff_min: number; vs_baseline: Compare };
 };
 
+/** Whether the API kept the run in Tiger (dcsim.plan_searches); off on test servers. */
+export type TigerSaved = { saved: boolean; search_id?: string; reason?: string };
+
 export type WorldsResult = {
   n_worlds: number;
-  uncertainty: { crowd_sd: number; peak_shift_sd_min: number; popularity_sd: number };
+  uncertainty: { crowd_sd: number; peak_shift_sd_min: number; popularity_sd: number; new_dish_popularity_sd?: number | null };
+  new_dishes?: string[]; new_dish_sd_source?: "tiger" | "request" | null;
+  tiger?: TigerSaved;
   baseline_label?: string; plan_label?: string;
   vs_baseline: Compare;
   waste: { baseline: Range; plan: Range };
@@ -39,7 +44,46 @@ export type OptimizeResult = {
   levers: ApiLevers | null; changes: string[]; method: string;
   validation?: { seeds: [number, number]; vs_baseline: Compare };
   worlds?: Pick<WorldsResult, "n_worlds" | "uncertainty" | "vs_baseline" | "waste">;
+  tiger?: TigerSaved;
+  search_id?: string; finished_at?: string; source?: string; // a saved search read back from Tiger
 };
+
+/** One saved search (GET /api/searches). */
+export type SavedSearch = {
+  search_id: string; kind: "optimize" | "worlds"; menu_date: string; weekday: string;
+  started_at: string | null; finished_at: string; trials: number | null; seeds: number | null; nights: number | null;
+  source: string; best_validated_waste_pct: number | null; best_validated_stockout_diff: number | null;
+  worlds_waste_win: number | null; n_worlds: number | null;
+};
+
+/** A lever across saved frontier plans: how often it moved down or up (GET /api/searches/changes). */
+export type RecurringChange = {
+  lever: string; label: string; searches: number; frontier_plans: number; lower: number; higher: number;
+  avg_multiplier: number; waste_pct: number | null; stockout_diff_min: number | null;
+};
+
+/** "smaller in 3 of 3 frontier plans" */
+export function leverText(c: RecurringChange): string {
+  const down = c.lower >= c.higher;
+  const noun = c.lever.startsWith("reorder:") ? (down ? "lower" : "higher") : down ? "smaller" : "bigger";
+  return `${noun} in ${down ? c.lower : c.higher} of ${c.frontier_plans} frontier plan${c.frontier_plans === 1 ? "" : "s"}`;
+}
+
+/** Past optimizer runs for a date and the changes that keep showing up on the frontier, from Tiger.
+ *  Null when Tiger isn't reachable (the API answers 503): the list just doesn't show. */
+export async function pastSearches(date: string): Promise<{ searches: SavedSearch[]; changes: RecurringChange[] } | null> {
+  try {
+    const [l, c] = await Promise.all([
+      api<{ searches: SavedSearch[] }>(`searches?kind=optimize&date=${encodeURIComponent(date)}`),
+      api<{ changes: RecurringChange[] }>("searches/changes"),
+    ]);
+    return { searches: l.searches, changes: c.changes };
+  } catch {
+    return null;
+  }
+}
+
+export const loadSearch = (id: string) => api<OptimizeResult>(`searches/${encodeURIComponent(id)}`);
 
 export type SearchState<R> = {
   status: "idle" | "running" | "done" | "error";

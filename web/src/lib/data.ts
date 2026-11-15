@@ -184,6 +184,17 @@ export const ask = (question: string, date: string) => api<AskReply>("ask", { qu
 export const similarDishes = (name: string, date: string, station?: string, role?: string) =>
   api<{ suggestions: { dish_id: string; name: string; station: string; role: string; similarity: number }[]; similar_to: string[]; source: string }>(
     "ai/similar-dishes", { name, date, station, role, k: 3 });
+/** A new dish's look-alikes across every menu in Tiger and what they sold (POST /api/dish-evidence). */
+export type DishEvidence = {
+  neighbors: { dish_id: string; name: string; station: string; role: string; distance: number; nights: number;
+    eaten_per_night: number | null; per_student: number | null }[];
+  per_student_range: [number, number] | null; neighbor_nights: number;
+  new_dish_sd: number; neighbor_spread: number | null; default_sd: number;
+  popularity_check: { dishes: number; tau: number | null; detected: boolean; note: string };
+};
+export const dishEvidence = (date: string, dish: Pick<NewDish, "name" | "station" | "role" | "diet_tags" | "hot" | "similar_to">) =>
+  api<DishEvidence>("dish-evidence", { date, name: dish.name, station: dish.station, role: dish.role,
+    diet_tags: dish.diet_tags, hot: dish.hot, similar_to: dish.similar_to });
 export const dishPrior = (date: string, dish: NewDish) =>
   api<{ affinity: Record<string, number>; reasons: Record<string, string>; label: string; source: string;
     popularity: { value: number; range: [number, number]; borrowed_from: string[] }; lever: NewDish }>("ai/dish-prior", { date, dish });

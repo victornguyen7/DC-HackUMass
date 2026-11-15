@@ -36,15 +36,21 @@ def _z(seed: int, *keys: object) -> float:
     return float(np.clip(std_normal(seed, Stream.WORLD, *keys), -Z_CLAMP, Z_CLAMP))
 
 
-def draws(u: Uncertainty, seed: int, dish_ids) -> dict:
+def draws(u: Uncertainty, seed: int, dish_ids, new_dishes=()) -> dict:
     """This seed's world: crowd factor, peak shift (min) and a popularity factor per dish.
-    Each draw has its own key, so changing the menu never moves the crowd or another dish."""
+    Each draw has its own key, so changing the menu never moves the crowd or another dish.
+    Dishes in `new_dishes` use `u.new_dish_popularity_sd` when it is set."""
+    new = set(new_dishes) if u.new_dish_popularity_sd is not None else set()
+
+    def sd(d: str) -> float:
+        return u.new_dish_popularity_sd if d in new else u.popularity_sd
+
+    # mean-one lognormal: exp(sd z - sd^2/2)
+    pop = {d: math.exp(sd(d) * _z(seed, "popularity", d) - sd(d) ** 2 / 2) for d in dish_ids if sd(d)}
     return {
         "crowd": math.exp(u.crowd_sd * _z(seed, "crowd")) if u.crowd_sd else 1.0,
         "shift": u.peak_shift_sd_min * _z(seed, "peak_shift") if u.peak_shift_sd_min else 0.0,
-        # mean-one lognormal: exp(sd z - sd^2/2)
-        "popularity": {d: math.exp(u.popularity_sd * _z(seed, "popularity", d) - u.popularity_sd ** 2 / 2)
-                       for d in dish_ids} if u.popularity_sd else {},
+        "popularity": pop,
     }
 
 
@@ -53,7 +59,7 @@ def world_of(cfg: ScenarioConfig, seed: int) -> ScenarioConfig:
     u = cfg.uncertainty
     if u is None:
         return cfg
-    w = draws(u, seed, [d.id for d in cfg.menu])
+    w = draws(u, seed, [d.id for d in cfg.menu], [d.id for d in cfg.menu if d.estimate])
     changes: dict = {"uncertainty": None}
     if w["crowd"] != 1.0:
         changes |= cfg.crowd_scaled(w["crowd"])
@@ -61,7 +67,7 @@ def world_of(cfg: ScenarioConfig, seed: int) -> ScenarioConfig:
         crowd = changes.get("crowd", cfg.crowd.model_dump())
         changes["crowd"] = crowd | {"shift_min": cfg.crowd.shift_min + w["shift"]}
     if w["popularity"]:
-        changes["menu"] = [d.model_dump() | {"popularity": d.popularity * w["popularity"][d.id]} for d in cfg.menu]
+        changes["menu"] = [d.model_dump() | {"popularity": d.popularity * w["popularity"].get(d.id, 1.0)} for d in cfg.menu]
     return cfg.updated(**changes)
 
 
@@ -86,6 +92,11 @@ def _run_all(svc, jobs: list[tuple[ScenarioConfig, int]], on_progress: Progress 
 def _band(values) -> dict:
     p10, p50, p90 = np.percentile(np.asarray(values, float), [10, 50, 90])
     return {"p10": round(float(p10), 1), "p50": round(float(p50), 1), "p90": round(float(p90), 1)}
+
+
+def _metrics(m) -> dict:
+    return {"waste": round(float(m.waste_total), 1), "stockout_min": round(float(m.stockout_min_total), 1),
+            "wait_p90": round(float(m.wait_p90), 2)}
 
 
 def tornado_jobs(baseline: ScenarioConfig, u: Uncertainty) -> list[tuple[str, ScenarioConfig]]:
@@ -127,6 +138,8 @@ def sweep(svc, baseline: ScenarioConfig, plan: ScenarioConfig, u: Uncertainty = 
         "waste": {"baseline": _band([m.waste_total for m in b_n]), "plan": _band([m.waste_total for m in p_n])},
         "tornado": {"metric": "waste_total", "n_worlds": tornado_worlds,
                     "bars": tornado_bars([(name, ns) for (name, _), ns in zip(t_jobs, t_n)])} if t_jobs else None,
+        # per world, for Tiger (searchlog.world_rows); the API drops it before sending the result
+        "_per_world": [{"seed": m_b.seed, "baseline": _metrics(m_b), "plan": _metrics(m_p)} for m_b, m_p in zip(b_n, p_n)],
         "note": ("Each world draws the crowd size, the rush timing and every dish's popularity from the stated spread; "
                  "the kitchen plan stays as planned. Both plans face the same worlds. The spreads are judgement, "
                  "not data: the tornado says which data request would narrow them most."),

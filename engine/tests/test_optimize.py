@@ -86,6 +86,8 @@ def test_api_jobs(tmp_path_factory):
             body = c.get(j["stream"]).text
             assert body.index("event: trial") < body.index("event: final")
             assert s["result"]["frontier"]
+            assert s["result"]["tiger"]["saved"] is False  # conftest leaves Tiger unset: nothing written
+            assert {"params", "changes", "ts"} <= set(s["result"]["history"][0])
             assert c.get(f"/api/worlds/{j['job_id']}").status_code == 404  # jobs are per kind
 
             j = c.post("/api/worlds", json={"request": {"date": DATE, "preset": "smaller_batches"},
@@ -93,6 +95,8 @@ def test_api_jobs(tmp_path_factory):
             s = wait(c, "worlds", j["job_id"])
             assert s["status"] == "done", s
             assert s["result"]["vs_baseline"]["n_pairs"] == 4 and s["result"]["tornado"] is None
+            assert "_per_world" not in s["result"] and s["result"]["tiger"]["saved"] is False
+            assert s["result"]["new_dishes"] == [] and s["result"]["new_dish_sd_source"] is None
             assert "event: final" in c.get(j["stream"]).text
             assert c.post("/api/worlds", json={"request": {"date": DATE, "preset": "nope"}}).status_code in (400, 422)
     finally:

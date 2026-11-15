@@ -74,4 +74,5 @@ def test_sweep_and_tornado(tmp_path, base):
     assert {b["input"] for b in bars} == {"seed", "crowd_sd", "peak_shift_sd_min", "popularity_sd"}
     assert [b["width"] for b in bars] == sorted((b["width"] for b in bars), reverse=True)
     assert seen and seen[-1][0] == seen[-1][1] == 4 + 4 + 4 * 3
+    assert [w["seed"] for w in r["_per_world"]] == [1, 2, 3, 4]  # what Tiger keeps (searchlog.world_rows)
     assert worlds.sweep(svc, base, base, U, n_worlds=4, tornado_worlds=0)["tornado"] is None

@@ -277,7 +277,7 @@ Speed: one Nov 13 night takes ~0.22 s serially with every 0.6 feature on (0.21 s
 | N4 | ~~Breakfast and lunch (full-day arrivals)~~ **Closed 2026-11-14:** not needed (dinner + late night only); the menu snapshot still has both meals | SPEC §7 |
 | N5 | Survey adjustment of personas and dish popularity, held-out check, `POST /personas/calibrate` | ENGINE §7.3 |
 | N6 | ✅ **Built 2026-11-14** (IMPROVEMENTS 2.1): Optimize plan, a waste-vs-stockouts frontier re-checked on unseen seeds. The back-test still uses `smaller_batches`; switching it to an optimized plan is a separate decision | SPEC §6.1 |
-| N7 | ✅ **Built 2026-11-14** (IMPROVEMENTS 2.2): plausible worlds (crowd, rush timing, dish popularity drawn per seed) + waste tornado. AI-estimated dishes get no extra spread yet | ENGINE §7.3 |
+| N7 | ✅ **Built 2026-11-14** (IMPROVEMENTS 2.2): plausible worlds (crowd, rush timing, dish popularity drawn per seed) + waste tornado. New dishes (AI estimate or similar-dish borrowing) get a wider spread from how their look-alikes sold in Tiger (TIGER.md §9, 2026-11-14); the per-dish popularity check finds no error on the synthetic history (τ 0.021), so menu dishes keep ±30% | ENGINE §7.3 |
 | N8 | ✅ **Built (0.6.0):** allergies at the 2022–23 survey shares (drawn per student; dishes labeled with the allergen avoided) and a 2% pescetarian diet. ~~Allergen modeling (10% of students report an allergy or intolerance)~~ | ASSUMPTIONS context |
 | N9 | Real data hookups: attendance (R01), staffing (R02), production and waste exports (R06, R07) | ASSUMPTIONS |
 

@@ -181,7 +181,7 @@ Setup: `tiger db save-password <service-id>`, or put `DCSIM_TSDB_URL=postgresql:
 | One-command setup | `deploy/setup.sh` (as root; safe to re-run, that's how it updates): Node 24, uv, build, `/etc/dcsim.env`, systemd, Caddy, firewall (22/80/443). Commits `1e7c8c5`, `e3ffbc2`, `3ebc72c` and the Tiger-password follow-up |
 | Secrets and cache | `deploy/push-secrets.sh root@<ip>` from a laptop: `engine/.env` plus `DCSIM_TSDB_URL` from `tiger db uri`, and the 275 MB `cache/` (the server shows 729 configs, 16,168 nights, 992 LLM responses cached) |
 | API | `dcsim.service` (user `dcsim`, `127.0.0.1:8000`, `DCSIM_WORKERS` = core count) |
-| HTTPS, one origin | Caddy serves `web/dist` and passes `/api/*`, `/tiger`, `/docs` to the API (SSE unbuffered). Let's Encrypt certificate for the sslip.io name, valid until 2027-02-13 |
+| HTTPS, one origin | Caddy serves `web/dist` and passes `/api/*`, `/tiger`, `/docs` to the API (SSE unbuffered). Let's Encrypt certificate for `dineamics.compare`, valid until 2027-02-13 |
 | Public-site safety (ISSUES A1) | admin token set, AI rate limit 10/min per visitor, **`DCSIM_LEDGER_WRITES=0`** so visitors' Adopt clicks don't write to the append-only Tiger ledger |
 | Ask Sam's Tiger lookups | work on the server: Tiger CLI logged in as `dcsim`, password in `~/.pgpass` (`deploy/tiger-password.sh`; a server has no keyring) |
 | Checked from outside | the app and direct links load, the bundle is served, `/api/health` OK, `/tiger` loads, Gemini answers, Sam answers "Which dishes ran out on rainy Fridays?" from Tiger |

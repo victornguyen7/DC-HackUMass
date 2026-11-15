@@ -77,6 +77,9 @@ def load(conn, svc, date: str, n: int = DEFAULT_NIGHTS, log: Callable[[str], Non
     nights = svc.ensure_nights(cfg, n, on_batch=progress)
     night_rows, dish_rows = rows(cfg, nights, h)
     rid = run_id_of(date, h)
+    # Two loads of the same date at once would both delete, then both insert (duplicate key): the second
+    # waits here until the first commits, then replaces its rows. Released at commit or rollback.
+    conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"dcsim.sweep:{date}",))
     for t in ("nights", "dish_nights"):
         conn.execute(f"DELETE FROM dcsim.{t} WHERE scenario = %s AND night = %s", (SCENARIO, date))
     tsdb.load_categories(conn)  # dish names for the menu dates (dishes table)

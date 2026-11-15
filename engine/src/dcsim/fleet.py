@@ -229,6 +229,30 @@ def ssh_run(ip: str, command: str, on_line: Callable[[str], None] | None = None,
     return p.wait(), "\n".join(out)
 
 
+def public_key() -> str:
+    """The laptop's public SSH key (VULTR_SSH_PUBKEY or ~/.ssh/id_ed25519.pub) for the workers' root login."""
+    path = os.path.expanduser(os.environ.get("VULTR_SSH_PUBKEY", "~/.ssh/id_ed25519.pub"))
+    try:
+        key = open(path).read().strip()
+    except OSError as e:
+        raise VultrError(f"no public SSH key at {path} (set VULTR_SSH_PUBKEY)") from e
+    if not key.startswith(("ssh-ed25519 ", "ssh-rsa ", "ecdsa-")) or "PRIVATE" in key:
+        raise VultrError(f"{path} doesn't look like a public SSH key")
+    return key
+
+
+def user_data(pubkey: str) -> str:
+    """cloud-init for a worker (base64, as Vultr wants it): lets this laptop's key log in as root. Workers
+    come from a snapshot of a server set up with a password, so they have no key of ours otherwise."""
+    import base64
+
+    script = ("#cloud-config\ndisable_root: false\nruncmd:\n"
+              "  - mkdir -p /root/.ssh && chmod 700 /root/.ssh\n"
+              f"  - echo '{pubkey}' >> /root/.ssh/authorized_keys\n"
+              "  - chmod 600 /root/.ssh/authorized_keys\n")
+    return base64.b64encode(script.encode()).decode()
+
+
 def prep_command() -> str:
     """On a fresh worker: no web services, current `main`, packages in sync."""
     return ("systemctl stop dcsim caddy >/dev/null 2>&1; systemctl disable dcsim caddy >/dev/null 2>&1; "
@@ -312,7 +336,7 @@ def plan_run(api: Vultr, dates: list[str], workers: int, vcpus: int) -> dict:
 def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX_WORKERS, vcpus: int = 16,
               max_minutes: float = 30, dry_run: bool = False, ssh=ssh_run, board: Board | None = None,
               log: Callable[[str], None] = print, sleep: Callable[[float], None] = time.sleep,
-              boot_timeout_s: float = 600) -> dict:
+              boot_timeout_s: float = 600, pubkey: str | None = None) -> dict:
     """Run `dcsim optimize --save` for every date on temporary Vultr servers. Returns a summary."""
     p = plan_run(api, dates, workers, vcpus)
     plan, n = p["plan"], p["workers"]
@@ -324,6 +348,7 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
     if p["image"] is None:
         raise VultrError("no worker image yet: run `dcsim fleet image` first")
     board = board or Board(None, log)
+    boot = user_data(pubkey or public_key())
     run_id = "f" + uuid.uuid4().hex[:7]
     source = f"fleet:{run_id}"
     queue, qlock = deque(dates), threading.Lock()
@@ -362,7 +387,7 @@ def run_fleet(api: Vultr, dates: list[str], trials: int = 80, workers: int = MAX
         try:
             inst = api.create_instance(region=p["region"], plan=plan["id"], snapshot_id=p["image"]["id"],
                                        label=f"{TAG}-{run_id}-{k}", hostname=f"{TAG}-{k}",
-                                       tags=[TAG, f"run:{run_id}"], backups="disabled")
+                                       tags=[TAG, f"run:{run_id}"], backups="disabled", user_data=boot)
         except VultrError as e:  # e.g. the account's server limit: give the date back to the others
             log(f"worker {k}: not created ({e}); the other workers take its dates")
             board.task(run_id, first, worker=None, status="queued", created_at=None)

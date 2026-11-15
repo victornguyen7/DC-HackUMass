@@ -56,7 +56,7 @@ class FakeVultr:
                 self.n += 1
                 i = {"id": f"w{self.n}", "label": body["label"], "main_ip": f"10.0.0.{self.n}", "region": body["region"],
                      "plan": body["plan"], "status": "active", "power_status": "running", "tags": body["tags"],
-                     "date_created": "now", "snapshot_id": body["snapshot_id"]}
+                     "date_created": "now", "snapshot_id": body["snapshot_id"], "user_data": body.get("user_data")}
                 self.servers[i["id"]] = i
                 self.created.append(i["id"])
                 return httpx.Response(202, json={"instance": i})
@@ -113,6 +113,7 @@ class FakeBoard(fleet.Board):
 
 
 DATES = [f"2026-11-{d}" for d in range(13, 21)]
+KEY = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAItest laptop"
 
 
 def test_pick_plan_cheapest_cpu_optimized_in_region():
@@ -137,7 +138,7 @@ def test_dry_run_creates_nothing():
 
 def test_run_spreads_dates_saves_each_and_deletes_every_server():
     v, ssh, board = FakeVultr(), FakeSSH(), FakeBoard()
-    r = fleet.run_fleet(v.api(), DATES, workers=3, ssh=ssh, board=board, log=lambda s: None, sleep=lambda s: None)
+    r = fleet.run_fleet(v.api(), DATES, workers=3, ssh=ssh, board=board, pubkey=KEY, log=lambda s: None, sleep=lambda s: None)
     assert r["status"] == "done" and r["saved"] == DATES and not r["failed"]
     assert len(v.created) == 3 and sorted(v.deleted) == sorted(v.created)  # 3 servers took 8 dates
     assert set(v.servers) == {"live"}  # the live server is never touched
@@ -151,7 +152,7 @@ def test_run_spreads_dates_saves_each_and_deletes_every_server():
 
 def test_a_failed_date_still_deletes_and_is_reported():
     v, board = FakeVultr(), FakeBoard()
-    r = fleet.run_fleet(v.api(), DATES[:4], workers=2, ssh=FakeSSH(fail_dates={DATES[1]}), board=board,
+    r = fleet.run_fleet(v.api(), DATES[:4], workers=2, pubkey=KEY, ssh=FakeSSH(fail_dates={DATES[1]}), board=board,
                         log=lambda s: None, sleep=lambda s: None)
     assert r["failed"] == [DATES[1]] and len(r["saved"]) == 3
     assert board.tasks[(r["run_id"], DATES[1])]["status"] == "failed"
@@ -160,14 +161,14 @@ def test_a_failed_date_still_deletes_and_is_reported():
 
 def test_account_limit_shrinks_the_fleet_without_failing():
     v = FakeVultr(max_servers=2)
-    r = fleet.run_fleet(v.api(), DATES, workers=8, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
+    r = fleet.run_fleet(v.api(), DATES, workers=8, pubkey=KEY, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
                         sleep=lambda s: None)
     assert r["saved"] == DATES and r["servers"] == 2 and set(v.servers) == {"live"}
 
 
 def test_time_limit_deletes_everything():
     v = FakeVultr()
-    r = fleet.run_fleet(v.api(), DATES[:2], workers=2, ssh=FakeSSH(hang=True), board=FakeBoard(),
+    r = fleet.run_fleet(v.api(), DATES[:2], workers=2, pubkey=KEY, ssh=FakeSSH(hang=True), board=FakeBoard(),
                         max_minutes=0.02, log=lambda s: None, sleep=lambda s: None)
     assert r["status"] == "stopped" and not r["saved"] and set(v.servers) == {"live"} and len(v.deleted) == 2
 
@@ -222,3 +223,30 @@ def test_service_batches_fill_the_pool():
     with tempfile.TemporaryDirectory() as d, ThreadPoolExecutor(16) as pool:
         assert [len(b) for b in Service(Store(d)).batches(cfg, 10)] == [BATCH, 2]
         assert [len(b) for b in Service(Store(d), pool).batches(cfg, 10)] == [10]  # one trial = one map on 16 cores
+
+
+def test_workers_get_the_laptop_key_and_nothing_secret():
+    import base64
+
+    v = FakeVultr()
+    seen = []
+    orig = v.handler
+
+    def spy(req):
+        if req.method == "POST" and req.url.path.endswith("/instances"):
+            seen.append(json.loads(req.content))
+        return orig(req)
+
+    api = fleet.Vultr("test-key", transport=httpx.MockTransport(spy), sleep=lambda s: None)
+    fleet.run_fleet(api, DATES[:1], workers=1, pubkey=KEY, ssh=FakeSSH(), board=FakeBoard(), log=lambda s: None,
+                    sleep=lambda s: None)
+    ud = base64.b64decode(seen[0]["user_data"]).decode()
+    assert ud.startswith("#cloud-config") and KEY in ud and "/root/.ssh/authorized_keys" in ud
+    assert "test-key" not in ud and "VULTR" not in ud
+    with pytest.raises(fleet.VultrError):
+        import os
+        os.environ["VULTR_SSH_PUBKEY"] = "/nonexistent.pub"
+        try:
+            fleet.public_key()
+        finally:
+            del os.environ["VULTR_SSH_PUBKEY"]

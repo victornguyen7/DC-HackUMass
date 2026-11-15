@@ -511,7 +511,7 @@ uv run dcsim tsdb sweep --date 2026-11-13 --report-only --dish "hot pot"   # one
 uv run dcsim tsdb query sweep                                      # all sweeps: per date, the top 5 dishes
 ```
 
-**On Tiger now (2026-11-14):** Fri Nov 13, 500 nights (440 simulated for this, 60 from the cache, 55 s on the 8-core laptop), 29,500 dish rows. The query runs in about **115 ms** on the server (`EXPLAIN ANALYZE`, median of 5).
+**On Tiger now (2026-11-15):** all 8 menu dates, Nov 13–20, 500 nights each: **4,000 simulated nights, 221,500 dish rows**. Nov 13 ran on the 8-core laptop (440 new nights in 55 s); Nov 14–20 ran on the 16-core Vultr server (`/home/dcsim/sweep-all.sh`, about 14 s of simulation for 320 new nights). The query runs in about **115 ms** on the server (`EXPLAIN ANALYZE`, median of 5, measured with Nov 13 loaded). `dcsim tsdb query sweep` lists the top 5 per date.
 
 | Dish (Nov 13) | Period | Avg min out | Median | p90 | Nights out | Median first run-out |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -523,6 +523,7 @@ uv run dcsim tsdb query sweep                                      # all sweeps:
 | Hot Pot | dinner | 1.2 | 0.0 | 4.8 | 35.4% | 8:56 pm |
 
 - **What the numbers mean:** `stockout_min` is minutes the pan was empty while that dish was being served (the same number the cook sheet shows). The run-out time is the median over the nights it ran out. Savory Baked Chicken Thigh is out for exactly the last 5 minutes every night, and that is the plan, not chance: the pan put out at 7:55 pm reaches its 60-minute hold limit at 8:55 and is thrown out (11–17 portions left in it on the seeds checked), and no batch may start after 8:45 pm (`last_batch_min`), so nothing replaces it before the 9:00 pm close. The sweep shows a stockout and waste with the same cause, a lead for the planner.
+- **Across all dates:** several grill dinner dishes (Black Bean Burger, Halal Burger Patty, the chicken thighs) are out for exactly 5 minutes on 100% of nights on every date, the same pattern as the chicken thigh above (traced for that one dish only). The longest real stockout is **Southern Cornbread on Nov 18** (Thanksgiving menu): 11.1 min on average, 24.1 at p90, out on 97.6% of nights; then Nashville Hot Chic'n at late night that night (8.9 min, 88.8%).
 - **General Tso's** was the spec's example; it isn't on any of the real menus, so the demo uses a real dish (Roasted Cauliflower, or Hot Pot for a dinner favourite).
 - A dish on both the dinner and the late-night menu has two ids, so it shows as two rows (Roasted Cauliflower: dinner 0.3 min, out on 7.4% of nights; late night 5.8 min, 69.0%).
 - **Sam answers it too.** The MCP schema digest describes the `sweep` scenario, so *"Across the 500 simulated nights of the Nov 13 menu, how long is the Roasted Cauliflower out of stock on average, and how often does it run out?"* is answered with one Tiger lookup and gives the same numbers (checked 2026-11-14).
@@ -543,7 +544,9 @@ WHERE x.scenario = 'sweep' AND x.night = '2026-11-13' AND d.name ILIKE '%caulifl
 GROUP BY x.dish_id, d.name, x.period;
 ```
 
-**Still to do:** load sweeps for the other menu dates if the demo needs them (about 1 min each on the laptop, faster on the Vultr server: `sudo -iu dcsim bash -lc 'cd /srv/dc-whatif/engine && uv run dcsim tsdb sweep --date 2026-11-14'`); a card on the `/tiger` dashboard is not built.
+- Two loads of the same date at once are safe: each takes a per-date advisory lock, so the second waits and then replaces the rows (`b8c170c`; two copies of the server script once collided before the lock).
+
+**Still to do:** a sweep card on the `/tiger` dashboard is not built; check whether the 8:55 pm grill pattern is the same hold-limit cause on every date, and whether the planner should allow a smaller last batch.
 
 ## Useful queries
 

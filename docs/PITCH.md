@@ -9,10 +9,10 @@ Live link: **https://dineamics.compare** (Vultr, GoDaddy Registry domain). Use t
 
 ## 1. The one-liner (memorize it)
 
-> **"Dineamics lets a dining hall test tonight's dinner before it happens. We simulate thousands of nights on the real menu, student by student, so a kitchen manager can try a change on simulated students instead of real ones, and walk away with a cook sheet: how many pans, and when."**
+> **"Every night, a dining hall kitchen makes a bet it can't take back: how much food to cook. Dineamics lets them play tonight out a thousand times first, on the real menu with simulated students, so the mistake happens in a computer instead of in a trash can or a 40-person line."**
 
-Short version for a sponsor booth (10 seconds):
-> "A flight simulator for a dining hall kitchen. Real menu, simulated students, an AI agent that plans, and a cook sheet at the end."
+Ten seconds at a sponsor table:
+> "A flight simulator for a dining hall kitchen. Try the decision on simulated students before real ones."
 
 ---
 
@@ -23,30 +23,61 @@ Pitch so that a UMass judge **recognizes** the problem and an outside judge **un
 | | Judge who knows UMass | Judge who doesn't |
 | --- | --- | --- |
 | What they already have | They've stood in the Worcester line at 7 pm. They know the Grill runs out. | Nothing. "Worcester" sounds like a city. |
-| What to give them | The **recognition hit**: "you know this line." Real details: the 7–8 pm rush, the class-change waves, late night after 9, Thanksgiving dinner. | The **scale**: UMass Amherst runs one of the biggest college dining programs in the US. Worcester Dining Commons alone serves on the order of **12,000 meals a day**. |
-| What lands | "It's *our* dining hall, with *tonight's* real menu." | "Any cafeteria, hospital or stadium kitchen has this same guess-and-throw-away problem." |
-
-**The bridge sentence** (say it in the first 20 seconds, it serves both):
-> "Worcester is one of the dining halls at UMass Amherst. About 3,000 students eat dinner there every night, and every night the kitchen has to guess how much food to cook. Guess low and the Grill runs out at 7 pm. Guess high and it goes in the trash."
+| What to give them | The **recognition**: "you know this line." | The **scale**: UMass Amherst runs one of the biggest college dining programs in the US; Worcester alone serves on the order of **12,000 meals a day**. |
+| What lands | "It's *our* dining hall, with *tonight's* real menu." | "Every cafeteria, hospital and stadium kitchen makes this same bet every day." |
 
 ---
 
-## 3. The 3-minute talk (with live demo)
+## 3. The 3-minute talk
 
-Two speakers works best: a **narrator** (story, numbers) and a **driver** (clicks, never talks over the narrator). Swap for the Q&A so the whole team is visible.
+Tell a story, not a tour. The app stays on screen behind you as evidence; the driver touches it only at the three marked moments. Speak in short sentences, one number per beat, and pause after each number.
 
-| Time | Say | Show (driver) | Scores on |
-| --- | --- | --- | --- |
-| **0:00–0:20 Hook** | "Raise your hand if you've watched the Grill at Worcester run out at 7 pm." *(pause)* Then the bridge sentence from §2. | Title slide with the live link, or the hall already loaded. | Presentation, UMass |
-| **0:20–0:45 The idea** | "Kitchens can't experiment on real students. So we built a simulator: tonight's **real menu** from umassdining.com, about 3,700 simulated students, each with their own diet, tastes and patience. They arrive in waves after class, pick a line, skip a line that's too long, and get a plate or find an empty pan." | **Simulation** (`/hall`), Nov 13, press play at 30–60×. Let a "pan empty" alert pop. Click one student: their AI-written story streams in. | Innovation, Functionality |
-| **0:45–1:10 Honest what-ifs** | "Now change one thing: an extra Grill server. We don't run one night. We run **30 nights, with the same students both times**, so the difference is the decision, not luck. And it tells you honestly: better, worse, or *can't tell*." | **Try a change → Compare**: extra Grill server. Point at a verdict and its range. | Innovation, Practicality |
-| **1:10–1:35 Gemini** | "Managers don't want sliders. So you just ask." *(type)* "Gemini doesn't guess numbers. It **calls the simulator's own functions**, one per setting, and it can only name stations and dishes that are really on tonight's menu." | **What-If Lab**: type *"one more server at Grill and 10% busier"* → Apply and run. Point at "answered by: function calling". | **Gemini** |
-| **1:35–2:10 Sam, the agent** | "Or give it a goal. This is **Sam the Minuteman**, our planning agent." *(type the goal)* "Sam looks up past nights in our database, proposes a plan, runs the simulation, reads the result, and tries again, up to five times. The pass/fail check is **code, not the AI**, and the final plan is re-checked on 30 nights Sam never saw. If the goal can't be met, Sam says so and hands back the closest plan." | **Ask Sam** (`/sam`): *"cut waste 20% without any vegetarian dish running out"*. Let the live steps scroll (Tiger lookup → try → check → adjust). Press **Adopt**. | **Agentic**, Gemini, Functionality |
-| **2:10–2:35 Scale on Vultr** | "One night is a toy. We ran **500 nights of every menu date this week, 4,000 nights**, the heavy runs on a **16-core Vultr server**, plus a temporary Vultr fleet that ran the plan search for all 8 dates in **3.3 minutes for about 7 cents** and then deleted itself. The answer comes back in about a tenth of a second: on Thanksgiving dinner, **the cornbread runs out on 97.6% of nights.**" | The 4,000-night result (Tiger query or `/tiger` dashboard), the Nov 18 cornbread row. Optional: the Fleet (Vultr) card. | **Vultr**, Practicality |
-| **2:35–2:55 The payoff** | "At the end the manager gets what they actually use: a **cook sheet**. Portions to prepare, batch sizes, when to start the last batch. Printable." | **Kitchen plan** (`/dashboard`) → production plan → Print preview. | Practicality |
-| **2:55–3:00 Close** | "Built at UMass, for UMass Dining. **Test it on simulated students before you try it on real ones.**" | End slide: link + team. | Presentation |
+### 0:00 · The bet (about 30 s)
+"Raise your hand if you've waited in the Grill line at Worcester at 7 pm. *(pause)* Now picture the same kitchen at 9 pm, scraping pans of food nobody ate into the trash.
 
-**If the Wi-Fi dies:** the app runs fully offline from its built-in bundle (`make web`, no backend). Simulation, Compare, Kitchen plan and Insights all work. Sam and the Lab's plain-English box need the API: show Sam's **History** panel (saved in the browser) instead of a live run.
+Same night, same kitchen. At three in the afternoon, someone has to decide how much to cook for about three thousand students without knowing who's coming or what they'll want. Guess low, the line backs up. Guess high, it goes in the bin: about seven ounces of waste for every meal swiped."
+
+### 0:30 · Why nobody fixes it (about 25 s)
+"The fix is to try something different. But a kitchen can't experiment on three thousand real students; one bad night means hungry people. So the plan rarely changes, and the waste becomes part of the job."
+
+### 0:55 · What we built (about 30 s)
+"So we built a place to experiment where nobody goes hungry. Dineamics runs tonight's real menu thousands of times with simulated students, each with their own diet, tastes and patience. They arrive in waves after class, give up on long lines, and find out when a pan is empty.
+
+And because both versions of the night use the same students, the difference you see is the decision, not luck. When the evidence isn't there, it says so: *better, worse, or can't tell.*"
+
+> **Moment 1:** the hall is already playing behind you. Let one "pan empty" alert appear while you say "find out when a pan is empty."
+
+### 1:25 · What it finds (about 35 s)
+"Here's what that buys you. Over 39 past nights, cooking the favorites in smaller batches would have thrown away **about 9% less food**.
+
+It also finds problems before they happen: on Thanksgiving dinner this week, the cornbread runs out on **98% of simulated nights**. That's a fix you make on Tuesday, not an apology you make on Wednesday.
+
+And it's honest about trade-offs: our optimizer can cut waste by almost a third, but only with a few more minutes of empty pans, and it shows the manager that trade."
+
+### 2:00 · AI that has a job (about 30 s)
+"Managers don't drag sliders; they ask. Meet Sam the Minuteman, our planning agent. Give Sam a goal like *cut waste 20% without any vegetarian dish running out.* Sam checks past nights, proposes a plan, simulates it, reads the result and tries again.
+
+Sam proposes, the simulator decides, and plain code grades the result, not the AI. When a goal can't be met, Sam says so."
+
+> **Moment 2:** type Sam's goal (warmed up beforehand) and let two or three steps scroll by. Don't wait for the end.
+
+### 2:30 · Cheap enough to use every day (about 15 s)
+"Planning a week is thousands of simulated nights. One command rents Vultr servers, runs the week in parallel and gives them back: **about three minutes, for about seven cents.**"
+
+### 2:45 · What the kitchen gets (about 15 s)
+"At the end, the manager gets the thing they already use: a cook sheet. How much to make, in what batches, and when to start the last one.
+
+Built at UMass, for UMass Dining. **Test it on simulated students before you try it on real ones.**"
+
+> **Moment 3:** the printed cook sheet (Kitchen plan → production plan → Print preview) on screen for the last line.
+
+### Why it matters (keep these in your back pocket)
+- **Food:** less of it thrown away every night, measured against the kitchen's own plan.
+- **Students:** shorter lines and fewer empty pans at the dishes they came for.
+- **Staff:** decisions made at 3 pm with evidence instead of instinct, and a cook sheet they already know how to use.
+- **Beyond UMass:** any kitchen that cooks before it knows who's coming (hospitals, stadiums, other campuses) has the same problem. Another dining hall is new data files, not new code.
+
+**If the Wi-Fi dies:** the app runs fully offline from its built-in bundle (`make web`, no backend). The hall, comparisons and the cook sheet all work. Sam needs the API: open Sam's **History** panel (saved in the browser) and tell the story from a past run.
 
 ---
 

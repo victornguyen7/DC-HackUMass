@@ -22,7 +22,9 @@ echo "==> engine/.env -> $HOST"
 {
   cat "$ENV_FILE"
   if ! grep -q '^DCSIM_TSDB_URL=' "$ENV_FILE"; then
-    if command -v tiger >/dev/null && URI=$(tiger db uri --with-password 2>/dev/null) && [ -n "$URI" ]; then
+    # The service ID is needed unless the CLI has a default service (tiger config set service_id).
+    SID=$(grep '^TIGER_SERVICE_ID=' "$ENV_FILE" | cut -d= -f2- | tr -d "'\" ")
+    if command -v tiger >/dev/null && URI=$(tiger db uri $SID --with-password 2>/dev/null) && [ -n "$URI" ]; then
       printf '\n# Added by deploy/push-secrets.sh\nDCSIM_TSDB_URL=%s\n' "$URI"
     else
       echo "   (no DCSIM_TSDB_URL and \`tiger db uri\` failed: Tiger features will be off on the server)" >&2

@@ -263,3 +263,23 @@ def test_workers_get_the_laptop_key_and_nothing_secret():
             fleet.public_key()
         finally:
             del os.environ["VULTR_SSH_PUBKEY"]
+
+
+def test_board_sends_updates_for_partial_changes():
+    class Conn:
+        def __init__(self):
+            self.sql = []
+
+        def execute(self, sql, args):
+            self.sql.append((sql, args))
+
+    c = Conn()
+    b = fleet.Board(c, log=lambda s: None)
+    b.task("r1", "2026-11-13", status="queued")
+    b.task("r1", "2026-11-13", progress="trial 3/80")
+    b.run(run_id="r1", kind="optimize", status="running")
+    b.run(run_id="r1", wall_s=1.0)
+    assert c.sql[0][0].startswith("INSERT INTO dcsim.fleet_tasks") and "ON CONFLICT" in c.sql[0][0]
+    assert c.sql[1][0].startswith("UPDATE dcsim.fleet_tasks SET progress")
+    assert c.sql[2][0].startswith("INSERT INTO dcsim.fleet_runs") and c.sql[3][0].startswith("UPDATE dcsim.fleet_runs")
+    assert b.conn is c  # nothing failed, so live status stays on

@@ -327,12 +327,21 @@ class Board:
                 self.conn = None
 
     def run(self, **f) -> None:
+        if "status" not in f or "kind" not in f:
+            sets = ", ".join(f"{c} = %({c})s" for c in f if c != "run_id")
+            self._exec(f"UPDATE dcsim.fleet_runs SET {sets} WHERE run_id = %(run_id)s", f)
+            return
         cols = list(f)
         upd = ", ".join(f"{c} = EXCLUDED.{c}" for c in cols if c != "run_id")
         self._exec(f"INSERT INTO dcsim.fleet_runs ({', '.join(cols)}) VALUES ({', '.join(f'%({c})s' for c in cols)}) "
                    f"ON CONFLICT (run_id) DO UPDATE SET {upd}", f)
 
     def task(self, run_id: str, date: str, **f) -> None:
+        if "status" not in f:  # a partial change: the row exists (queued first), so a plain UPDATE
+            sets = ", ".join(f"{c} = %({c})s" for c in f)
+            self._exec(f"UPDATE dcsim.fleet_tasks SET {sets} WHERE run_id = %(run_id)s AND menu_date = %(menu_date)s",
+                       f | {"run_id": run_id, "menu_date": date})
+            return
         f = {"run_id": run_id, "menu_date": date} | f
         cols = list(f)
         upd = ", ".join(f"{c} = EXCLUDED.{c}" for c in cols if c not in ("run_id", "menu_date"))

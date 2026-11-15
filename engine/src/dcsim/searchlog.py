@@ -73,6 +73,7 @@ LIMIT %(limit)s
 """
 # "Which change keeps showing up on the frontier?" across every saved optimizer run: per lever (a search
 # parameter such as batch:soups), how often the frontier plans that changed anything moved it down or up.
+# Levers seen in the most searches come first (station levers recur across dates; dish levers are per menu).
 RECURRING_CHANGES_SQL = """
 SELECT p.key AS lever, coalesce(max(s.summary->'param_labels'->>p.key), p.key) AS label,
        count(DISTINCT t.search_id) AS searches, count(*) AS frontier_plans,
@@ -88,7 +89,8 @@ WHERE t.on_frontier AND t.validated_waste_pct IS NOT NULL
   AND (%(date)s::date IS NULL OR t.menu_date = %(date)s::date)
 GROUP BY p.key
 HAVING count(*) FILTER (WHERE abs(p.value::float8 - 1) > 0.001) > 0
-ORDER BY greatest(count(*) FILTER (WHERE p.value::float8 < 0.999),
+ORDER BY count(DISTINCT t.search_id) DESC,
+         greatest(count(*) FILTER (WHERE p.value::float8 < 0.999),
                   count(*) FILTER (WHERE p.value::float8 > 1.001))::float8 / count(*) DESC,
          abs(avg(p.value::float8) - 1) DESC, p.key
 LIMIT %(limit)s
